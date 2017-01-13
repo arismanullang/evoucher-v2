@@ -24,12 +24,11 @@ type (
 		FinishDate        time.Time `json:"finishDate"`
 		ImgUrl            string    `json:"imgUrl"`
 		VariantTnc        string    `json:"variantTnc"`
-		CreatedBy         string    `json:"createdBy"`
-		Status            string    `json:"status"`
+		User              string    `json:"createdBy"`
 		ValidUsers        []string  `json:"validUsers"`
 	}
 	DeleteRequest struct {
-		User string `json:"user"`
+		User string `json:"createdBy"`
 	}
 )
 
@@ -49,7 +48,7 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		AllowAccumulative: rd.AllowAccumulative,
 		ImgUrl:            rd.ImgUrl,
 		VariantTnc:        rd.VariantTnc,
-		User:              rd.CreatedBy,
+		User:              rd.User,
 		ValidUsers:        rd.ValidUsers,
 	}
 	if err := d.Insert(); err != nil {
@@ -104,7 +103,7 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 		AllowAccumulative: rd.AllowAccumulative,
 		ImgUrl:            rd.ImgUrl,
 		VariantTnc:        rd.VariantTnc,
-		User:              rd.CreatedBy,
+		User:              rd.User,
 		ValidUsers:        rd.ValidUsers,
 	}
 	if err := d.Update(); err != nil {

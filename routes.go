@@ -12,15 +12,14 @@ func setRoutes() http.Handler {
 	r := bone.New()
 	r.GetFunc("/ping", ping)
 
+	//variant
 	r.PostFunc("/variant/createVariant", controller.CreateVariant)
 	r.GetFunc("/variant/", controller.GetVariantDetails)
 	r.PostFunc("/variant/:id/update", controller.UpdateVariant)
 	r.PostFunc("/variant/:id/delete", controller.DeleteVariant)
-	// notify payment
-	// r.PostFunc("/v1/payments/:account/notify/credit-card", ping)
 
-	// redirect after payment
-	// r.PostFunc("/v1/payment/:account/redirect/credit-card", ping)
+	//transaction
+	r.PostFunc("/transaction/createTransaction", controller.CreateTransaction)
 
 	return r
 }
