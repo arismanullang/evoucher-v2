@@ -1,6 +1,7 @@
 package model
 
 import (
+	"strings"
 	"time"
 )
 
@@ -26,6 +27,11 @@ type (
 		Status       string
 		Message      string
 		VariantValue Variant
+	}
+	VariantsResponse struct {
+		Status       string
+		Message      string
+		VariantValue []Variant
 	}
 	DeleteVariantRequest struct {
 		ID   string `db:"id"`
@@ -164,7 +170,7 @@ func (d *DeleteVariantRequest) Delete() error {
 			id = ?;
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), "deleted", d.ID)
+	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID)
 	if err != nil {
 		return err
 	}
@@ -178,7 +184,7 @@ func (d *DeleteVariantRequest) Delete() error {
 		WHERE
 			variant_id = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), "deleted", d.ID)
+	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID)
 	if err != nil {
 		return err
 	}
@@ -190,14 +196,6 @@ func (d *DeleteVariantRequest) Delete() error {
 }
 
 func FindVariantByID(id string) (VariantResponse, error) {
-	return findVariant("id", id)
-}
-
-func FindVariantByName(name string) (VariantResponse, error) {
-	return findVariant("variant_name", name)
-}
-
-func findVariant(field, value string) (VariantResponse, error) {
 	q := `
 		SELECT
 			id
@@ -216,12 +214,12 @@ func findVariant(field, value string) (VariantResponse, error) {
 		FROM
 			variants
 		WHERE
-			` + field + ` = ?
+			id = ?
 			AND status = ?
 	`
 
 	var resv []Variant
-	if err := db.Select(&resv, db.Rebind(q), value, StatusCreated); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), id, StatusCreated); err != nil {
 		return VariantResponse{Status: "Error", Message: "Error at select variant", VariantValue: Variant{}}, err
 	}
 	if len(resv) < 1 {
@@ -238,7 +236,7 @@ func findVariant(field, value string) (VariantResponse, error) {
 			AND status = ?
 	`
 	var resd []string
-	if err := db.Select(&resd, db.Rebind(q), value, StatusCreated); err != nil {
+	if err := db.Select(&resd, db.Rebind(q), id, StatusCreated); err != nil {
 		return VariantResponse{Status: "Error", Message: "Error at select user", VariantValue: Variant{}}, err
 	}
 	if len(resd) < 1 {
@@ -247,9 +245,248 @@ func findVariant(field, value string) (VariantResponse, error) {
 	resv[0].ValidUsers = resd
 
 	res := VariantResponse{
-		Status:       "Ok",
+		Status:       "200",
 		Message:      "Ok",
 		VariantValue: resv[0],
+	}
+
+	return res, nil
+}
+
+func FindVariantByName(name string) (VariantsResponse, error) {
+	q := `
+		SELECT
+			id
+			, company_id
+			, variant_name
+			, variant_type
+			, point_needed
+			, max_voucher
+			, allow_accumulative
+			, start_date
+			, end_date
+			, img_url
+			, variant_tnc
+			, created_by
+			, created_at
+		FROM
+			variants
+		WHERE
+			name LIKE ?
+			AND status = ?
+	`
+
+	var resv []Variant
+	if err := db.Select(&resv, db.Rebind(q), name, StatusCreated); err != nil {
+		return VariantsResponse{Status: "500", Message: "Error at select variant", VariantValue: []Variant{}}, err
+	}
+	if len(resv) < 1 {
+		return VariantsResponse{Status: "404", Message: "Error at select variant", VariantValue: []Variant{}}, ErrResourceNotFound
+	}
+
+	for i, v := range resv {
+		q = `
+			SELECT
+				account_id
+			FROM
+				variant_users
+			WHERE
+				variant_id = ?
+				AND status = ?
+		`
+		var resd []string
+		if err := db.Select(&resd, db.Rebind(q), v.ID, StatusCreated); err != nil {
+			return VariantsResponse{Status: "500", Message: "Error at select user", VariantValue: []Variant{}}, err
+		}
+		if len(resd) < 1 {
+			return VariantsResponse{Status: "404", Message: "Error at select user", VariantValue: []Variant{}}, ErrResourceNotFound
+		}
+		resv[i].ValidUsers = resd
+	}
+
+	res := VariantsResponse{
+		Status:       "200",
+		Message:      "Ok",
+		VariantValue: resv,
+	}
+
+	return res, nil
+}
+
+func FindVariantByCompanyID(id string) (VariantsResponse, error) {
+	q := `
+		SELECT
+			id
+			, company_id
+			, variant_name
+			, variant_type
+			, point_needed
+			, max_voucher
+			, allow_accumulative
+			, start_date
+			, end_date
+			, img_url
+			, variant_tnc
+			, created_by
+			, created_at
+		FROM
+			variants
+		WHERE
+			company_id = ?
+			AND status = ?
+	`
+
+	var resv []Variant
+	if err := db.Select(&resv, db.Rebind(q), id, StatusCreated); err != nil {
+		return VariantsResponse{Status: "500", Message: "Error at select variant", VariantValue: []Variant{}}, err
+	}
+	if len(resv) < 1 {
+		return VariantsResponse{Status: "404", Message: "Error at select variant", VariantValue: []Variant{}}, ErrResourceNotFound
+	}
+
+	for i, v := range resv {
+		q = `
+			SELECT
+				account_id
+			FROM
+				variant_users
+			WHERE
+				variant_id = ?
+				AND status = ?
+		`
+		var resd []string
+		if err := db.Select(&resd, db.Rebind(q), v.ID, StatusCreated); err != nil {
+			return VariantsResponse{Status: "500", Message: "Error at select user", VariantValue: []Variant{}}, err
+		}
+		if len(resd) < 1 {
+			return VariantsResponse{Status: "404", Message: "Error at select user", VariantValue: []Variant{}}, ErrResourceNotFound
+		}
+		resv[i].ValidUsers = resd
+	}
+
+	res := VariantsResponse{
+		Status:       "200",
+		Message:      "Ok",
+		VariantValue: resv,
+	}
+
+	return res, nil
+}
+
+func FindVariantByDate(date string) (VariantsResponse, error) {
+	dateSplit := strings.Split(date, ";")
+	q := `
+		SELECT
+			id
+			, company_id
+			, variant_name
+			, variant_type
+			, point_needed
+			, max_voucher
+			, allow_accumulative
+			, start_date
+			, end_date
+			, img_url
+			, variant_tnc
+			, created_by
+			, created_at
+		FROM
+			variants
+		WHERE
+			created_at > ?
+			AND created_at < ?
+			AND status = ?
+	`
+
+	var resv []Variant
+	if err := db.Select(&resv, db.Rebind(q), dateSplit[0], dateSplit[1], StatusCreated); err != nil {
+		return VariantsResponse{Status: "500", Message: "Error at select variant", VariantValue: []Variant{}}, err
+	}
+	if len(resv) < 1 {
+		return VariantsResponse{Status: "404", Message: "Error at select variant", VariantValue: []Variant{}}, ErrResourceNotFound
+	}
+
+	for i, v := range resv {
+		q = `
+			SELECT
+				account_id
+			FROM
+				variant_users
+			WHERE
+				variant_id = ?
+				AND status = ?
+		`
+		var resd []string
+		if err := db.Select(&resd, db.Rebind(q), v.ID, StatusCreated); err != nil {
+			return VariantsResponse{Status: "500", Message: "Error at select user", VariantValue: []Variant{}}, err
+		}
+		if len(resd) < 1 {
+			return VariantsResponse{Status: "404", Message: "Error at select user", VariantValue: []Variant{}}, ErrResourceNotFound
+		}
+		resv[i].ValidUsers = resd
+	}
+
+	res := VariantsResponse{
+		Status:       "200",
+		Message:      "Ok",
+		VariantValue: resv,
+	}
+
+	return res, nil
+}
+
+func FindAllVariants() (VariantsResponse, error) {
+	q := `
+		SELECT
+			id
+			, company_id
+			, variant_name
+			, variant_type
+			, point_needed
+			, max_voucher
+			, allow_accumulative
+			, start_date
+			, end_date
+			, img_url
+			, variant_tnc
+			, created_by
+			, created_at
+		FROM
+			variants
+	`
+
+	var resv []Variant
+	if err := db.Select(&resv, db.Rebind(q)); err != nil {
+		return VariantsResponse{Status: "500", Message: "Error at select variant", VariantValue: []Variant{}}, err
+	}
+	if len(resv) < 1 {
+		return VariantsResponse{Status: "404", Message: "Error at select variant", VariantValue: []Variant{}}, ErrResourceNotFound
+	}
+
+	for i, v := range resv {
+		q = `
+			SELECT
+				account_id
+			FROM
+				variant_users
+			WHERE
+				variant_id = ?
+				AND status = ?
+		`
+		var resd []string
+		if err := db.Select(&resd, db.Rebind(q), v.ID, StatusCreated); err != nil {
+			return VariantsResponse{Status: "500", Message: "Error at select user", VariantValue: []Variant{}}, err
+		}
+		if len(resd) < 1 {
+			return VariantsResponse{Status: "404", Message: "Error at select user", VariantValue: []Variant{}}, ErrResourceNotFound
+		}
+		resv[i].ValidUsers = resd
+	}
+
+	res := VariantsResponse{
+		Status:       "200",
+		Message:      "Ok",
+		VariantValue: resv,
 	}
 
 	return res, nil

@@ -1,0 +1,38 @@
+.page-header {
+  width: 100%;
+  height: 100px;
+  background-color: black;
+  top: 0px;
+  margin: 0px;
+  padding: 10px;
+}
+
+.page-header .page-header_logo{
+  margin: 25px;
+}
+
+.page-header .page-header_logo-image{
+  height: 75px;
+}
+
+.page-content{
+  width: 100%;
+  height: 100%;
+  margin: 10px;
+}
+
+.left-content{
+
+}
+
+.list-group-1st{
+  background-color: #fdeeec;
+}
+
+.page-footer{
+  background-color: black;
+}
+
+.page-footer a{
+  color: white;
+}

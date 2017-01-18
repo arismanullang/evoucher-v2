@@ -12,7 +12,9 @@ var config Config
 
 type Config struct {
 	Server struct {
-		Host string
+		Host              string
+		PublicDirectory   string `yaml:"public_directory"`
+		TemplateDirectory string `yaml:"template_directory"`
 	}
 
 	Database struct {

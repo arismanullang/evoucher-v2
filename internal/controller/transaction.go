@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
@@ -23,8 +22,8 @@ type (
 		User             string   `json:"createdBy"`
 		Vouchers         []string `json:"vouchers"`
 	}
-	DeleteRequest struct {
-		User string `json:"createdBy"`
+	DeleteTransactionRequest struct {
+		User string `json:"requestedBy"`
 	}
 )
 
@@ -37,7 +36,7 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	d := &model.Transaction{
 		CompanyID:        rd.CompanyID,
-		PointNeeded:      rd.MerchantID,
+		MerchantID:       rd.MerchantID,
 		TransactionCode:  rd.TransactionCode,
 		TotalTransaction: rd.TotalTransaction,
 		DiscountValue:    rd.DiscountValue,
@@ -51,4 +50,62 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	res := NewResponse(nil)
 	render.JSON(w, res, http.StatusCreated)
+}
+
+func GetTransactionDetails(w http.ResponseWriter, r *http.Request) {
+	id := bone.GetValue(r, "id")
+	variant, err := model.FindVariantByID(id)
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
+	}
+
+	res := NewResponse(variant)
+	render.JSON(w, res)
+}
+
+func UpdateTransaction(w http.ResponseWriter, r *http.Request) {
+	id := bone.GetValue(r, "id")
+	var rd TransactionRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	d := &model.Transaction{
+		ID:               id,
+		CompanyID:        rd.CompanyID,
+		MerchantID:       rd.MerchantID,
+		TransactionCode:  rd.TransactionCode,
+		TotalTransaction: rd.TotalTransaction,
+		DiscountValue:    rd.DiscountValue,
+		PaymentType:      rd.PaymentType,
+		User:             rd.User,
+		Vouchers:         rd.Vouchers,
+	}
+	if err := d.Update(); err != nil {
+		log.Panic(err)
+	}
+
+	res := NewResponse(nil)
+	render.JSON(w, res, http.StatusOK)
+}
+
+func DeleteTransaction(w http.ResponseWriter, r *http.Request) {
+	id := bone.GetValue(r, "id")
+	var rd DeleteTransactionRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	d := &model.DeleteTransactionRequest{
+		ID:   id,
+		User: rd.User,
+	}
+	if err := d.Delete(); err != nil {
+		log.Panic(err)
+	}
+
+	res := NewResponse(nil)
+	render.JSON(w, res, http.StatusOK)
 }

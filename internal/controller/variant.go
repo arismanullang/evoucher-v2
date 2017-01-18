@@ -27,8 +27,12 @@ type (
 		User              string    `json:"createdBy"`
 		ValidUsers        []string  `json:"validUsers"`
 	}
-	DeleteRequest struct {
-		User string `json:"createdBy"`
+	DeleteVariantRequest struct {
+		User string `json:"requestedBy"`
+	}
+	SearchVariantRequest struct {
+		Field string `json:"fields"`
+		Value string `json:"values"`
 	}
 )
 
@@ -59,24 +63,46 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, http.StatusCreated)
 }
 
-func GetVariantDetails(w http.ResponseWriter, r *http.Request) {
-	id := r.FormValue("id")
-	name := r.FormValue("name")
+func GetAllVariant(w http.ResponseWriter, r *http.Request) {
+	variant, err := model.FindAllVariants()
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
+	}
 
-	var variant model.VariantResponse
+	res := NewResponse(variant)
+	render.JSON(w, res)
+}
+
+func SearchVariant(w http.ResponseWriter, r *http.Request) {
+	var rd SearchVariantRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	var variant model.VariantsResponse
 	var err error
-	if id != "" && name != "" {
-		w.Write([]byte("Please choose id or name"))
-		return
+
+	switch rd.Field {
+	case "variant_name":
+		variant, err = model.FindVariantByName(rd.Value)
+	case "company_id":
+		variant, err = model.FindVariantByCompanyID(rd.Value)
+	case "date":
+		variant, err = model.FindVariantByDate(rd.Value)
 	}
 
-	if id != "" {
-		variant, err = model.FindVariantByID(id)
-	}
-	if name != "" {
-		variant, err = model.FindVariantByName(name)
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
 	}
 
+	res := NewResponse(variant)
+	render.JSON(w, res)
+}
+
+func GetVariantDetailsByID(w http.ResponseWriter, r *http.Request) {
+	id := bone.GetValue(r, "id")
+	variant, err := model.FindVariantByID(id)
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}
@@ -116,7 +142,7 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 
 func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
-	var rd DeleteRequest
+	var rd DeleteVariantRequest
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
 		log.Panic(err)

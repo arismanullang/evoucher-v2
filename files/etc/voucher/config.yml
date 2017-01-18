@@ -1,9 +1,7 @@
 server:
   host: ":8080"
+  public_directory: "files/etc/voucher/public"
+  template_directory: "files/etc/voucher/templates"
 
 database:
   endpoint: "postgres://postgres:postgres@127.0.0.1:5432/evoucher?sslmode=disable"
-
-api:
-  mall:
-    register: ""
