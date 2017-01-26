@@ -1,44 +1,33 @@
 {{ template "layout" . }}
 
-{{ define "title" }}Create Variant{{ end }}
+{{ define "title" }}Elys - eVoucher{{ end }}
 
 {{ define "content" }}
-<form>
-  <div class="form-group">
-    <label for="exampleInputEmail1">Company</label>
-    <input type="text" class="form-control" id="exampleInputEmail1" placeholder="Email">
+<div class="row content-table">
+  <div class="row">
+    <h3>Welcome Richard</h3>
   </div>
-  <div class="form-group">
-    <label for="exampleInputPassword1">Name</label>
-    <input type="text" class="form-control" id="exampleInputPassword1" placeholder="Password">
+  <div class="row">
+    <div class="col-lg-6 variant-index-title">
+      <strong>Daftar Program</strong>
+    </div>
+    <div class="col-lg-6">
+      <div class="input-group">
+        <input type="text" class="input-search" name="variantName" id="variantName" placeholder="Search for...">
+        <span class="input-group-btn">
+          <button class="btn btn-primary btn-xs" onclick="search()" type="button">Go!</button>
+        </span>
+      </div><!-- /input-group -->
+    </div>
   </div>
-  <div class="form-group">
-    <label>
-      <input type="checkbox"> Redeem Point
-    </label>
-    <input type="text" class="form-control" id="exampleInputPassword1" placeholder="Password">
+  <div class="row">
+    <ul class="list-unstyled" id="listProgram" name="listProgram">
+
+    </ul>
   </div>
-  <div class="form-group">
-    <label for="exampleInputPassword1">Max Voucher</label>
-    <input type="text" class="form-control" id="exampleInputPassword1" placeholder="Password">
-  </div>
-  <div class="form-group">
-    <label>
-      <input type="checkbox"> Allow Accumulative
-    </label>
-  </div>
-  <div class="form-group">
-    <label for="exampleInputPassword1">Image URL</label>
-    <input type="text" class="form-control" id="exampleInputPassword1" placeholder="Password">
-  </div>
-  <div class="form-group">
-    <label for="exampleInputPassword1">T&C</label>
-    <textarea name="comment" class="form-control" form="usrform">Enter text here...</textarea>
-  </div>
-  <button type="submit" class="btn btn-default">Submit</button>
-</form>
+</div>
 {{ end }}
 
 {{ define "scripts" }}
-<script type="text/javascript" src="/assets/js/confirm/index.js"></script>
+<script type="text/javascript" src="/assets/js/variant/index.js"></script>
 {{ end }}

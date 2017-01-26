@@ -14,25 +14,30 @@ import (
 
 type (
 	VariantRequest struct {
-		CompanyID         string    `json:"companyId"`
-		VariantName       string    `json:"variantName"`
-		VariantType       string    `json:"variantType"`
-		PointNeeded       float64   `json:"pointNeeded"`
-		MaxVoucher        float64   `json:"maxVoucher"`
-		AllowAccumulative bool      `json:"allowAccumulative"`
-		StartDate         time.Time `json:"startDate"`
-		FinishDate        time.Time `json:"finishDate"`
-		ImgUrl            string    `json:"imgUrl"`
-		VariantTnc        string    `json:"variantTnc"`
-		User              string    `json:"createdBy"`
-		ValidUsers        []string  `json:"validUsers"`
+		CompanyID         string   `json:"companyId"`
+		VariantName       string   `json:"variantName"`
+		VariantType       string   `json:"variantType"`
+		PointNeeded       float64  `json:"pointNeeded"`
+		MaxVoucher        float64  `json:"maxVoucher"`
+		AllowAccumulative bool     `json:"allowAccumulative"`
+		StartDate         string   `json:"startDate"`
+		FinishDate        string   `json:"finishDate"`
+		DiscountValue     float64  `json:"discountValue"`
+		ImgUrl            string   `json:"imgUrl"`
+		VariantTnc        string   `json:"variantTnc"`
+		User              string   `json:"createdBy"`
+		ValidUsers        []string `json:"validUsers"`
 	}
 	DeleteVariantRequest struct {
 		User string `json:"requestedBy"`
 	}
 	SearchVariantRequest struct {
-		Field string `json:"fields"`
-		Value string `json:"values"`
+		Field string `json:"field"`
+		Value string `json:"value"`
+	}
+	SearchVariantRequests struct {
+		Fields []string `json:"fields"`
+		Values []string `json:"values"`
 	}
 )
 
@@ -43,6 +48,16 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
+	ts, err := time.Parse("01/02/2006", rd.StartDate)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	tf, err := time.Parse("01/02/2006", rd.FinishDate)
+	if err != nil {
+		log.Panic(err)
+	}
+
 	d := &model.Variant{
 		CompanyID:         rd.CompanyID,
 		PointNeeded:       rd.PointNeeded,
@@ -50,6 +65,9 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		VariantType:       rd.VariantType,
 		MaxVoucher:        rd.MaxVoucher,
 		AllowAccumulative: rd.AllowAccumulative,
+		DiscountValue:     rd.DiscountValue,
+		StartDate:         ts.Format("2006-01-02 15:04:05.000"),
+		FinishDate:        tf.Format("2006-01-02 15:04:05.000"),
 		ImgUrl:            rd.ImgUrl,
 		VariantTnc:        rd.VariantTnc,
 		User:              rd.User,
@@ -85,7 +103,7 @@ func SearchVariant(w http.ResponseWriter, r *http.Request) {
 
 	switch rd.Field {
 	case "variant_name":
-		variant, err = model.FindVariantByName(rd.Value)
+		variant, err = model.FindVariantByName("%" + rd.Value + "%")
 	case "company_id":
 		variant, err = model.FindVariantByCompanyID(rd.Value)
 	case "date":
@@ -100,9 +118,37 @@ func SearchVariant(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res)
 }
 
+func GetVariantDetails(w http.ResponseWriter, r *http.Request) {
+	var rd SearchVariantRequests
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	variant, err := model.FindVariantMultipleParam(rd.Fields, rd.Values)
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
+	}
+
+	res := NewResponse(variant)
+	render.JSON(w, res)
+}
+
 func GetVariantDetailsByID(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
 	variant, err := model.FindVariantByID(id)
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
+	}
+
+	res := NewResponse(variant)
+	render.JSON(w, res)
+}
+
+func GetVariantDetailsByUser(w http.ResponseWriter, r *http.Request) {
+	//id := bone.GetValue(r, "id")
+	id := "nZ9Xmo-2"
+	variant, err := model.FindVariantByUser(id)
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}
@@ -127,6 +173,9 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 		VariantType:       rd.VariantType,
 		MaxVoucher:        rd.MaxVoucher,
 		AllowAccumulative: rd.AllowAccumulative,
+		StartDate:         rd.StartDate,
+		FinishDate:        rd.FinishDate,
+		DiscountValue:     rd.DiscountValue,
 		ImgUrl:            rd.ImgUrl,
 		VariantTnc:        rd.VariantTnc,
 		User:              rd.User,

@@ -1,0 +1,111 @@
+{{ template "layout" . }}
+
+{{ define "title" }}Daftar Akun{{ end }}
+
+{{ define "content" }}
+<form>
+  <div class="row">
+    <div class="form-group left-panel">
+      <div class="form-group">
+        <div class="row">
+          <label class="panel-content_left" for="endDate">Jenis Identitas</label>
+          <input type="text" class="form-control panel-content_right" name="endDate" id="Jenis Identitas" placeholder="Jenis Identitas" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="row">
+          <label class="panel-content_left" for="endDate">Nomor Identitas</label>
+          <input type="text" class="form-control panel-content_right" name="endDate" id="endDate" placeholder="Nomor Identitas" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="row">
+          <label class="panel-content_left" for="variantName">Nama</label>
+          <input type="text" class="form-control panel-content_right" id="variantName" name="variantName" placeholder="Variant Name" value="a" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="row">
+          <label class="panel-content_left" for="variantType">Jenis Kelamin</label>
+          <select class="panel-content_right">
+            <option>Laki-Laki</option>
+            <option>Perempuan</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="row">
+          <label class="panel-content_left" for="discountValue">Status Pernikahan</label>
+          <select class="panel-content_right">
+            <option>Belum Kawin</option>
+            <option>Kawin</option>
+            <option>Cerai Hidup</option>
+            <option>Cerai Mati</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="row">
+          <label class="panel-content_left" for="maxVoucher">Tanggal Lahir</label>
+          <div class="panel-content_right">
+            <select class="date col-md-5 col-lg-5">
+              <option>2001</option>
+              <option>2002</option>
+              <option>2003</option>
+              <option>2004</option>
+              <option>2005</option>
+            </select>
+            <select class="date date-not-first col-md-3 col-lg-3">
+              <option>01</option>
+              <option>02</option>
+              <option>03</option>
+              <option>04</option>
+              <option>05</option>
+            </select>
+            <select class="date date-not-first col-md-3 col-lg-3">
+              <option>01</option>
+              <option>02</option>
+              <option>03</option>
+              <option>04</option>
+              <option>05</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="row">
+          <label class="panel-content_left" for="startDate">Tempat Lahir</label>
+          <input type="text" class="form-control panel-content_right" name="startDate" id="startDate" placeholder="Tempat Lahir" required>
+        </div>
+      </div>
+      <input type="hidden" class="form-control panel-content_right" name="endDate" id="endDate" placeholder="Kode Negara" required>
+
+      <input type="button" class="btn btn-default" value="Submit" onclick="send()"></input>
+    </div>
+    <div class="form-group right-panel">
+      <div class="form-group">
+        <div class="row">
+          <label class="panel-content_left" for="exampleInputPassword1">Alamat</label>
+          <textarea id="variantTnc" name="variantTnc" class="form-control panel-content_right" form="usrform" value="a" placeholder="Enter text here..."></textarea>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="row">
+          <label class="panel-content_left" for="endDate">Provinsi</label>
+          <input type="text" class="form-control panel-content_right" name="endDate" id="endDate" placeholder="Provinsi" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="row">
+          <label class="panel-content_left" for="endDate">Kota</label>
+          <input type="text" class="form-control panel-content_right" name="endDate" id="endDate" placeholder="Kota" required>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{{ end }}
+
+{{ define "scripts" }}
+<script type="text/javascript" src="/assets/js/variant/variant.js"></script>
+{{ end }}

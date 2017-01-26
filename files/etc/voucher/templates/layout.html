@@ -10,46 +10,56 @@
 
 <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
 <link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/jquery-ui.min.css">
 {{ block "stylesheets" . }}{{ end }}
 
 <script src="/assets/js/jquery.min.js"></script>
 <script src="/assets/js/bootstrap.min.js"></script>
+<script src="/assets/js/style.js"></script>
+<script src="/assets/js/jquery-ui.js"></script>
 {{ block "scripts" . }}{{ end }}
 </head>
 
 <body>
   <div class="page-header">
-    <a href="https://flixcinema.com" target="_blank" class="page-header_logo">
-      <img src="/assets/images/logo.png" alt="FLIX" class="page-header_logo-image">
+    <a href="https://gilkor.com" target="_blank" class="page-header_logo">
+      <img class="page-header_logo-image" src="//static1.squarespace.com/static/5652ecfbe4b0070eb05c03bb/t/5656c8c5e4b09e258542fe59/1480922090183/?format=1500w" alt="Gilkor">
     </a>
   </div>
 
   <!-- <div class="site-layout__spacer"></div> -->
 
   <div class="page-content">
-    <div class="container">
-      <div class="col-xs-12 col-md-5 col-lg-4 left-content">
+    <div class="row">
+      <div class="col-xs-12 col-md-4 col-lg-3 left-content">
         <ul class="list-group">
-          <li class="list-group-item list-group-1st"><a href="#" target="_blank">Variant</a></li>
-            <ul class="list-group-item">
-              <li class="list-group-item"><a href="#" target="_blank">Create</a></li>
+          <li class="list-group-item list-group-1st"><a href="http://127.0.0.1:8080/variant/" target="_blank">Variant</a></li>
+            <ul class="list-group-item list-group-2nd">
+              <li class="list-group-item"><a href="http://127.0.0.1:8080/variant/create" target="_blank">Create</a></li>
               <li class="list-group-item"><a href="#" target="_blank">Check</a></li>
             </ul>
           <li class="list-group-item list-group-1st"><a href="#" target="_blank">Voucher</a></li>
-            <ul class="list-group-item">
+            <ul class="list-group-item list-group-2nd">
               <li class="list-group-item"><a href="#" target="_blank">Create</a></li>
               <li class="list-group-item"><a href="#" target="_blank">Check</a></li>
             </ul>
           <li class="list-group-item list-group-1st"><a href="#" target="_blank">Report</a></li>
-            <ul class="list-group-item">
-              <li class="list-group-item"><a href="#" target="_blank">Variant</a></li>
+            <ul class="list-group-item list-group-2nd">
+              <li class="list-group-item"><a href="http://127.0.0.1:8080/variant/search" target="_blank">Variant</a></li>
               <li class="list-group-item"><a href="#" target="_blank">Voucher</a></li>
-              <li class="list-group-item"><a href="#" target="_blank">Transaction</a></li>
+              <li class="list-group-item list-group-item-last"><a href="#" target="_blank">Transaction</a></li>
             </ul>
         </ul>
       </div>
-      <div class="col-xs-12 col-md-7 col-lg-8 right-content">
-        {{ template "content" . }}
+      <div class="col-xs-12 col-md-8 col-lg-9 right-content">
+        <div class="panel">
+          <div class="panel-header">
+            <h3 class="content-title">{{ template "title" }}</h3>
+          </div>
+          <div class="panel-content">
+            {{ template "content" . }}
+          </div>
+        </div>
       </div>
     </div>
   </div>
