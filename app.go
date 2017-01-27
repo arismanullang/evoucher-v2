@@ -6,8 +6,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	//"path/filepath"
 
 	"github.com/pkg/profile"
+	"github.com/ruizu/render"
 	"github.com/urfave/negroni"
 
 	"github.com/evoucher/voucher/internal/model"
@@ -51,9 +53,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	render.SetPath(config.Server.TemplateDirectory)
+
 	r := setRoutes()
 	m := negroni.New()
 	m.Use(negroni.NewRecovery())
+	m.Use(negroni.NewStatic(http.Dir(config.Server.PublicDirectory)))
 	m.UseHandler(r)
 
 	log.Printf("Server is listening on %q\n", config.Server.Host)

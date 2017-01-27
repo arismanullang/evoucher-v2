@@ -1,0 +1,33 @@
+{{ template "layout" . }}
+
+{{ define "title" }}Elys - eVoucher{{ end }}
+
+{{ define "content" }}
+<div class="row content-table">
+  <div class="row">
+    <h3>Welcome Richard</h3>
+  </div>
+  <div class="row">
+    <div class="col-lg-6 variant-index-title">
+      <strong>Daftar Program</strong>
+    </div>
+    <div class="col-lg-6">
+      <div class="input-group">
+        <input type="text" class="input-search" name="variantName" id="variantName" placeholder="Search for...">
+        <span class="input-group-btn">
+          <button class="btn btn-primary btn-xs" onclick="search()" type="button">Go!</button>
+        </span>
+      </div><!-- /input-group -->
+    </div>
+  </div>
+  <div class="row">
+    <ul class="list-unstyled" id="listProgram" name="listProgram">
+
+    </ul>
+  </div>
+</div>
+{{ end }}
+
+{{ define "scripts" }}
+<script type="text/javascript" src="/assets/js/variant/index.js"></script>
+{{ end }}

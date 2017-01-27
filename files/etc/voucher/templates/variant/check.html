@@ -1,0 +1,26 @@
+{{ template "layout" . }}
+
+{{ define "title" }}Check Variant{{ end }}
+
+{{ define "content" }}
+<div class="row content-table">
+  <form class="form-inline">
+    <div class="form-group">
+      <label for="variantName">Variant Name</label>
+      <input type="text" class="form-control" id="variantName" name="variantName" placeholder="Variant">
+    </div>
+    <div class="form-group">
+      <input type="button" class="btn btn-default" value="Search" onclick="search()"></input>
+    </div>
+  </form>
+</div>
+<div class="row content-table">
+  <table class="table" id="searchTable" name="searchTable">
+
+  </table>
+</div>
+{{ end }}
+
+{{ define "scripts" }}
+<script type="text/javascript" src="/assets/js/variant/variant.js"></script>
+{{ end }}
