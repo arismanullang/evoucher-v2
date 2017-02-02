@@ -17,12 +17,15 @@ func setRoutes() http.Handler {
 	r.GetFunc("/variant/:page", viewVariant)
 
 	//variant
+	r.PostFunc("/variant/getAllVariant", controller.GetAllVariant)
 	r.PostFunc("/variant/getVariant", controller.GetVariantDetails)
 	r.PostFunc("/variant/getVariantByUser", controller.GetVariantDetailsByUser)
-	r.PostFunc("/variant/searchVariant", controller.SearchVariant)
+	r.PostFunc("/variant/getVariantByDate", controller.GetVariantDetailsByDate)
 	r.PostFunc("/variant/createVariant", controller.CreateVariant)
 	r.PostFunc("/variant/:id", controller.GetVariantDetailsByID)
 	r.PostFunc("/variant/:id/update", controller.UpdateVariant)
+	r.PostFunc("/variant/:id/updateBroadcastUser", controller.UpdateVariantBroadcast)
+	r.PostFunc("/variant/:id/updateTenant", controller.UpdateVariantTenant)
 	r.PostFunc("/variant/:id/delete", controller.DeleteVariant)
 
 	//transaction
@@ -32,7 +35,8 @@ func setRoutes() http.Handler {
 	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)
 
 	//user
-	r.PostFunc("/login", controller.GetToken)
+	r.PostFunc("/user/getUserByRole", controller.GetUserByRole)
+	r.GetFunc("/login", viewHandlers)
 	r.GetFunc("/:id/", controller.GetToken)
 
 	//custom
@@ -52,6 +56,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 
 func viewVariant(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
+
 	switch page {
 	case "create":
 		render.FileInLayout(w, "layout.html", "variant/create.html", nil)

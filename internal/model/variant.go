@@ -1,54 +1,59 @@
 package model
 
 import (
-	"strings"
+	"strconv"
 	"time"
 	//"fmt"
 )
 
 type (
 	Variant struct {
-		ID                string   `db:"id"`
-		CompanyID         string   `db:"company_id"`
-		VariantName       string   `db:"variant_name"`
-		VariantType       string   `db:"variant_type"`
-		PointNeeded       float64  `db:"point_needed"`
-		MaxVoucher        float64  `db:"max_voucher"`
-		AllowAccumulative bool     `db:"allow_accumulative"`
-		StartDate         string   `db:"start_date"`
-		FinishDate        string   `db:"end_date"`
-		DiscountValue     float64  `db:"discount_value"`
-		ImgUrl            string   `db:"img_url"`
-		VariantTnc        string   `db:"variant_tnc"`
-		User              string   `db:"created_by"`
-		CreatedAt         string   `db:"created_at"`
-		Status            string   `db:"status"`
-		ValidUsers        []string `db:"-"`
-	}
-	VariantResponse struct {
-		Status       string
-		Message      string
-		VariantValue Variant
+		ID                 string   `db:"id"`
+		CompanyID          string   `db:"company_id"`
+		VariantName        string   `db:"variant_name"`
+		VariantType        string   `db:"variant_type"`
+		VoucherType        string   `db:"voucher_type"`
+		PointNeeded        float64  `db:"point_needed"`
+		MaxQuantityVoucher float64  `db:"max_quantity_voucher"`
+		MaxUsageVoucher    float64  `db:"max_usage_voucher"`
+		AllowAccumulative  bool     `db:"allow_accumulative"`
+		RedeemtionMethod   string   `db:"redeemtion_method"`
+		StartDate          string   `db:"start_date"`
+		EndDate            string   `db:"end_date"`
+		DiscountValue      float64  `db:"discount_value"`
+		ImgUrl             string   `db:"img_url"`
+		VariantTnc         string   `db:"variant_tnc"`
+		User               string   `db:"created_by"`
+		CreatedAt          string   `db:"created_at"`
+		Status             string   `db:"status"`
+		BlastUsers         []string `db:"-"`
+		ValidTenants       []string `db:"-"`
 	}
 	DeleteVariantRequest struct {
 		ID   string `db:"id"`
 		User string `db:"deleted_by"`
 	}
-	VariantsResponse struct {
-		Status       string
-		Message      string
-		VariantValue []SearchVariant
+	VariantResponse struct {
+		Status  string
+		Message string
+		Data    interface{}
 	}
 	SearchVariant struct {
 		ID          string   `db:"id"`
 		CompanyID   string   `db:"company_id"`
 		VariantName string   `db:"variant_name"`
+		VoucherType string   `db:"voucher_type"`
 		PointNeeded float64  `db:"point_needed"`
-		MaxVoucher  float64  `db:"max_voucher"`
+		MaxVoucher  float64  `db:"max_quantity_voucher"`
 		StartDate   string   `db:"start_date"`
-		FinishDate  string   `db:"end_date"`
-		VariantTnc  string   `db:"variant_tnc"`
+		EndDate     string   `db:"end_date"`
 		ValidUsers  []string `db:"-"`
+	}
+	UpdateVariantUsersRequest struct {
+		ID        string   `db:"id"`
+		CompanyID string   `db:"company_id"`
+		User      string   `db:"updated_by"`
+		Data      []string `db:"-"`
 	}
 )
 
@@ -64,40 +69,65 @@ func (d *Variant) Insert() error {
 			company_id
 			, variant_name
 			, variant_type
+			, voucher_type
 			, point_needed
-			, max_voucher
+			, max_quantity_voucher
+			, max_usage_voucher
 			, allow_accumulative
+			, redeemtion_method
 			, start_date
 			, end_date
 			, discount_value
 			, img_url
 			, variant_tnc
 			, created_by
+			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING
 			id
 	`
 	var res []string
-	if err := tx.Select(&res, tx.Rebind(q), d.CompanyID, d.VariantName, d.VariantType, d.PointNeeded, d.MaxVoucher, d.AllowAccumulative, d.StartDate, d.FinishDate, d.DiscountValue, d.ImgUrl, d.VariantTnc, d.User); err != nil {
+	if err := tx.Select(&res, tx.Rebind(q), d.CompanyID, d.VariantName, d.VariantType, d.VoucherType, d.PointNeeded, d.MaxQuantityVoucher, d.MaxUsageVoucher, d.AllowAccumulative, d.RedeemtionMethod, d.StartDate, d.EndDate, d.DiscountValue, d.ImgUrl, d.VariantTnc, d.User, StatusCreated); err != nil {
 		return err
 	}
 	d.ID = res[0]
 
-	for _, v := range d.ValidUsers {
-		q := `
-			INSERT INTO variant_users(
-				company_id
-				, variant_id
-				, account_id
-				, created_by
-			)
-			VALUES (?, ?, ?, ?)
-		`
+	if len(d.BlastUsers) > 0 {
+		for _, v := range d.BlastUsers {
+			q := `
+				INSERT INTO broadcast_users(
+					company_id
+					, variant_id
+					, account_id
+					, created_by
+				)
+				VALUES (?, ?, ?, ?)
+			`
 
-		_, err := tx.Exec(tx.Rebind(q), d.CompanyID, d.ID, v, d.User)
-		if err != nil {
-			return err
+			_, err := tx.Exec(tx.Rebind(q), d.CompanyID, d.ID, v, d.User)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(d.ValidTenants) > 0 {
+		for _, v := range d.ValidTenants {
+			q := `
+				INSERT INTO variant_users(
+					company_id
+					, variant_id
+					, account_id
+					, created_by
+				)
+				VALUES (?, ?, ?, ?)
+			`
+
+			_, err := tx.Exec(tx.Rebind(q), d.CompanyID, d.ID, v, d.User)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -119,9 +149,12 @@ func (d *Variant) Update() error {
 		SET
 			variant_name = ?
 			, variant_type = ?
+			, voucher_type = ?
 			, point_needed = ?
-			, max_voucher = ?
+			, max_quantity_voucher = ?
+			, max_usage_voucher = ?
 			, allow_accumulative = ?
+			, redeemtion_method = ?
 			, start_date = ?
 			, end_date = ?
 			, discount_value = ?
@@ -130,25 +163,66 @@ func (d *Variant) Update() error {
 			, updated_by = ?
 			, updated_at = ?
 		WHERE
-			id = ?;
+			id = ?
+			AND status = ?;
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), d.VariantName, d.VariantType, d.PointNeeded, d.MaxVoucher, d.AllowAccumulative, d.StartDate, d.FinishDate, d.DiscountValue, d.ImgUrl, d.VariantTnc, d.User, time.Now(), d.ID)
+	_, err = tx.Exec(tx.Rebind(q), d.VariantName, d.VariantType, d.VoucherType, d.PointNeeded, d.MaxQuantityVoucher, d.MaxUsageVoucher, d.AllowAccumulative, d.RedeemtionMethod, d.StartDate, d.EndDate, d.DiscountValue, d.ImgUrl, d.VariantTnc, d.User, time.Now(), d.ID, StatusCreated)
 	if err != nil {
 		return err
 	}
-	/*
+
+	if len(d.BlastUsers) > 0 {
 		q = `
-			DELETE FROM variant_users
+			UPDATE broadcast_users
+			SET
+				status = ?
+				, updated_by = ?
+				, updated_at = ?
 			WHERE
-				variant_id = ?;
+				variant_id = ?
+				AND status = ?;
 		`
-		_, err = tx.Exec(tx.Rebind(q), d.ID)
+		_, err = tx.Exec(tx.Rebind(q), StatusDeleted, d.User, time.Now(), d.ID, StatusCreated)
 		if err != nil {
 			return err
 		}
 
-		for _, v := range d.ValidUsers {
+		for _, v := range d.BlastUsers {
+			q := `
+				INSERT INTO broadcast_users (
+					company_id
+					, variant_id
+					, account_id
+					, created_by
+				)
+				VALUES (?, ?, ?, ?)
+			`
+
+			_, err := tx.Exec(tx.Rebind(q), d.CompanyID, d.ID, v, d.User)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(d.ValidTenants) > 0 {
+		q = `
+			UPDATE variant_users
+			SET
+				status = ?
+				, updated_by = ?
+				, updated_at = ?
+			WHERE
+				variant_id = ?
+				AND status = ?;
+		`
+		_, err = tx.Exec(tx.Rebind(q), StatusDeleted, d.User, time.Now(), d.ID, StatusCreated)
+		if err != nil {
+			return err
+		}
+
+		for _, v := range d.BlastUsers {
 			q := `
 				INSERT INTO variant_users (
 					company_id
@@ -164,7 +238,98 @@ func (d *Variant) Update() error {
 				return err
 			}
 		}
-	*/
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateBroadcast(user UpdateVariantUsersRequest) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE broadcast_users
+		SET
+			status = ?
+			, updated_by = ?
+			, updated_at = ?
+		WHERE
+			variant_id = ?
+			AND status = ?;
+	`
+	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, user.User, time.Now(), user.ID, StatusCreated)
+	if err != nil {
+		return err
+	}
+
+	for _, v := range user.Data {
+		q := `
+			INSERT INTO broadcast_users (
+				company_id
+				, variant_id
+				, account_id
+				, created_by
+			)
+			VALUES (?, ?, ?, ?)
+		`
+
+		_, err := tx.Exec(tx.Rebind(q), user.CompanyID, user.ID, v, user.User)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateTenant(user UpdateVariantUsersRequest) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE variant_users
+		SET
+			status = ?
+			, updated_by = ?
+			, updated_at = ?
+		WHERE
+			variant_id = ?
+			AND status = ?;
+	`
+	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, user.User, time.Now(), user.ID, StatusCreated)
+	if err != nil {
+		return err
+	}
+
+	for _, v := range user.Data {
+		q := `
+			INSERT INTO variant_users (
+				company_id
+				, variant_id
+				, account_id
+				, created_by
+			)
+			VALUES (?, ?, ?, ?)
+		`
+
+		_, err := tx.Exec(tx.Rebind(q), user.CompanyID, user.ID, v, user.User)
+		if err != nil {
+			return err
+		}
+	}
+
 	if err := tx.Commit(); err != nil {
 		return err
 	}
@@ -185,10 +350,11 @@ func (d *DeleteVariantRequest) Delete() error {
 			, deleted_at = ?
 			, status = ?
 		WHERE
-			id = ?;
+			id = ?
+			AND status = ?;
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID)
+	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID, StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -200,9 +366,25 @@ func (d *DeleteVariantRequest) Delete() error {
 			, updated_at = ?
 			, status = ?
 		WHERE
-			variant_id = ?;
+			variant_id = ?
+			AND status = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID)
+	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID, StatusCreated)
+	if err != nil {
+		return err
+	}
+
+	q = `
+		UPDATE broadcast_users
+		SET
+			updated_by = ?
+			, updated_at = ?
+			, status = ?
+		WHERE
+			variant_id = ?
+			AND status = ?;
+	`
+	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID, StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -220,16 +402,18 @@ func FindVariantByID(id string) (VariantResponse, error) {
 			, company_id
 			, variant_name
 			, variant_type
+			, voucher_type
 			, point_needed
-			, max_voucher
+			, max_quantity_voucher
+			, max_usage_voucher
 			, allow_accumulative
+			, redeemtion_method
 			, start_date
 			, end_date
 			, discount_value
 			, img_url
 			, variant_tnc
 			, created_by
-			, created_at
 		FROM
 			variants
 		WHERE
@@ -239,10 +423,10 @@ func FindVariantByID(id string) (VariantResponse, error) {
 
 	var resv []Variant
 	if err := db.Select(&resv, db.Rebind(q), id, StatusCreated); err != nil {
-		return VariantResponse{Status: "Error", Message: q, VariantValue: Variant{}}, err
+		return VariantResponse{Status: "Error", Message: q, Data: nil}, err
 	}
 	if len(resv) < 1 {
-		return VariantResponse{Status: "404", Message: q, VariantValue: Variant{}}, ErrResourceNotFound
+		return VariantResponse{Status: "404", Message: q, Data: nil}, ErrResourceNotFound
 	}
 
 	q = `
@@ -256,29 +440,29 @@ func FindVariantByID(id string) (VariantResponse, error) {
 	`
 	var resd []string
 	if err := db.Select(&resd, db.Rebind(q), id, StatusCreated); err != nil {
-		return VariantResponse{Status: "Error", Message: q, VariantValue: Variant{}}, err
+		return VariantResponse{Status: "Error", Message: q, Data: nil}, err
 	}
-	resv[0].ValidUsers = resd
+	resv[0].ValidTenants = resd
 
 	res := VariantResponse{
-		Status:       "200",
-		Message:      "Ok",
-		VariantValue: resv[0],
+		Status:  "200",
+		Message: "Ok",
+		Data:    resv[0],
 	}
 
 	return res, nil
 }
 
-func FindVariantByName(name string) (VariantsResponse, error) {
+func FindVariantByName(name string) (VariantResponse, error) {
 	q := `
 		SELECT
 			id
 			, variant_name
+			, voucher_type
 			, point_needed
-			, max_voucher
+			, max_quantity_voucher
 			, start_date
 			, end_date
-			, variant_tnc
 		FROM
 			variants
 		WHERE
@@ -288,10 +472,10 @@ func FindVariantByName(name string) (VariantsResponse, error) {
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), name, StatusCreated); err != nil {
-		return VariantsResponse{Status: "500", Message: "Error at select variant", VariantValue: []SearchVariant{}}, err
+		return VariantResponse{Status: "500", Message: "Error at select variant", Data: nil}, err
 	}
 	if len(resv) < 1 {
-		return VariantsResponse{Status: "404", Message: "Error at select variant", VariantValue: []SearchVariant{}}, ErrResourceNotFound
+		return VariantResponse{Status: "404", Message: "Error at select variant", Data: nil}, ErrResourceNotFound
 	}
 
 	for i, v := range resv {
@@ -306,30 +490,30 @@ func FindVariantByName(name string) (VariantsResponse, error) {
 		`
 		var resd []string
 		if err := db.Select(&resd, db.Rebind(q), v.ID, StatusCreated); err != nil {
-			return VariantsResponse{Status: "500", Message: "Error at select user", VariantValue: []SearchVariant{}}, err
+			return VariantResponse{Status: "500", Message: "Error at select user", Data: nil}, err
 		}
 		resv[i].ValidUsers = resd
 	}
 
-	res := VariantsResponse{
-		Status:       "200",
-		Message:      "Ok",
-		VariantValue: resv,
+	res := VariantResponse{
+		Status:  "200",
+		Message: "Ok",
+		Data:    resv,
 	}
 
 	return res, nil
 }
 
-func FindVariantByUser(user string) (VariantsResponse, error) {
+func FindVariantByUser(user string) (VariantResponse, error) {
 	q := `
 		SELECT
 			id
 			, variant_name
+			, voucher_type
 			, point_needed
-			, max_voucher
+			, max_quantity_voucher
 			, start_date
 			, end_date
-			, variant_tnc
 		FROM
 			variants
 		WHERE
@@ -339,10 +523,10 @@ func FindVariantByUser(user string) (VariantsResponse, error) {
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), user, StatusCreated); err != nil {
-		return VariantsResponse{Status: "500", Message: "Error at select variant", VariantValue: []SearchVariant{}}, err
+		return VariantResponse{Status: "500", Message: "Error at select variant", Data: nil}, err
 	}
 	if len(resv) < 1 {
-		return VariantsResponse{Status: "404", Message: "Error at select variant", VariantValue: []SearchVariant{}}, ErrResourceNotFound
+		return VariantResponse{Status: "404", Message: "Error at select variant", Data: nil}, ErrResourceNotFound
 	}
 
 	for i, v := range resv {
@@ -357,30 +541,30 @@ func FindVariantByUser(user string) (VariantsResponse, error) {
 		`
 		var resd []string
 		if err := db.Select(&resd, db.Rebind(q), v.ID, StatusCreated); err != nil {
-			return VariantsResponse{Status: "500", Message: "Error at select user", VariantValue: []SearchVariant{}}, err
+			return VariantResponse{Status: "500", Message: "Error at select user", Data: nil}, err
 		}
 		resv[i].ValidUsers = resd
 	}
 
-	res := VariantsResponse{
-		Status:       "200",
-		Message:      "Ok",
-		VariantValue: resv,
+	res := VariantResponse{
+		Status:  "200",
+		Message: "Ok",
+		Data:    resv,
 	}
 
 	return res, nil
 }
 
-func FindVariantByCompanyID(id string) (VariantsResponse, error) {
+func FindVariantByCompanyID(id string) (VariantResponse, error) {
 	q := `
 		SELECT
 			id
 			, variant_name
+			, voucher_type
 			, point_needed
-			, max_voucher
+			, max_quantity_voucher
 			, start_date
 			, end_date
-			, variant_tnc
 		FROM
 			variants
 		WHERE
@@ -390,10 +574,10 @@ func FindVariantByCompanyID(id string) (VariantsResponse, error) {
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), id, StatusCreated); err != nil {
-		return VariantsResponse{Status: "500", Message: "Error at select variant", VariantValue: []SearchVariant{}}, err
+		return VariantResponse{Status: "500", Message: "Error at select variant", Data: nil}, err
 	}
 	if len(resv) < 1 {
-		return VariantsResponse{Status: "404", Message: "Error at select variant", VariantValue: []SearchVariant{}}, ErrResourceNotFound
+		return VariantResponse{Status: "404", Message: "Error at select variant", Data: nil}, ErrResourceNotFound
 	}
 
 	for i, v := range resv {
@@ -408,45 +592,44 @@ func FindVariantByCompanyID(id string) (VariantsResponse, error) {
 		`
 		var resd []string
 		if err := db.Select(&resd, db.Rebind(q), v.ID, StatusCreated); err != nil {
-			return VariantsResponse{Status: "500", Message: "Error at select user", VariantValue: []SearchVariant{}}, err
+			return VariantResponse{Status: "500", Message: "Error at select user", Data: nil}, err
 		}
 		resv[i].ValidUsers = resd
 	}
 
-	res := VariantsResponse{
-		Status:       "200",
-		Message:      "Ok",
-		VariantValue: resv,
+	res := VariantResponse{
+		Status:  "200",
+		Message: "Ok",
+		Data:    resv,
 	}
 
 	return res, nil
 }
 
-func FindVariantByDate(date string) (VariantsResponse, error) {
-	dateSplit := strings.Split(date, ";")
+func FindVariantByDate(start, end string) (VariantResponse, error) {
 	q := `
 		SELECT
 			id
 			, variant_name
+			, voucher_type
 			, point_needed
-			, max_voucher
+			, max_quantity_voucher
 			, start_date
 			, end_date
-			, variant_tnc
 		FROM
 			variants
 		WHERE
-			created_at > ?
-			AND created_at < ?
+			(start_date > ? AND start_date < ?)
+			OR (end_date > ? AND end_date < ?)
 			AND status = ?
 	`
 
 	var resv []SearchVariant
-	if err := db.Select(&resv, db.Rebind(q), dateSplit[0], dateSplit[1], StatusCreated); err != nil {
-		return VariantsResponse{Status: "500", Message: "Error at select variant", VariantValue: []SearchVariant{}}, err
+	if err := db.Select(&resv, db.Rebind(q), start, end, start, end, StatusCreated); err != nil {
+		return VariantResponse{Status: "500", Message: "Error at select variant", Data: nil}, err
 	}
 	if len(resv) < 1 {
-		return VariantsResponse{Status: "404", Message: "Error at select variant", VariantValue: []SearchVariant{}}, ErrResourceNotFound
+		return VariantResponse{Status: "404", Message: "Error at select variant", Data: nil}, ErrResourceNotFound
 	}
 
 	for i, v := range resv {
@@ -461,40 +644,40 @@ func FindVariantByDate(date string) (VariantsResponse, error) {
 		`
 		var resd []string
 		if err := db.Select(&resd, db.Rebind(q), v.ID, StatusCreated); err != nil {
-			return VariantsResponse{Status: "500", Message: "Error at select user", VariantValue: []SearchVariant{}}, err
+			return VariantResponse{Status: "500", Message: "Error at select user", Data: nil}, err
 		}
 		resv[i].ValidUsers = resd
 	}
 
-	res := VariantsResponse{
-		Status:       "200",
-		Message:      "Ok",
-		VariantValue: resv,
+	res := VariantResponse{
+		Status:  "200",
+		Message: "Ok",
+		Data:    resv,
 	}
 
 	return res, nil
 }
 
-func FindAllVariants() (VariantsResponse, error) {
+func FindAllVariants() (VariantResponse, error) {
 	q := `
 		SELECT
 			id
 			, variant_name
+			, voucher_type
 			, point_needed
-			, max_voucher
+			, max_quantity_voucher
 			, start_date
 			, end_date
-			, variant_tnc
 		FROM
 			variants
 	`
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q)); err != nil {
-		return VariantsResponse{Status: "500", Message: "Error at select variant", VariantValue: []SearchVariant{}}, err
+		return VariantResponse{Status: "500", Message: "Error at select variant", Data: nil}, err
 	}
 	if len(resv) < 1 {
-		return VariantsResponse{Status: "404", Message: "Error at select variant", VariantValue: []SearchVariant{}}, ErrResourceNotFound
+		return VariantResponse{Status: "404", Message: "Error at select variant", Data: nil}, ErrResourceNotFound
 	}
 
 	for i, v := range resv {
@@ -509,45 +692,51 @@ func FindAllVariants() (VariantsResponse, error) {
 		`
 		var resd []string
 		if err := db.Select(&resd, db.Rebind(q), v.ID, StatusCreated); err != nil {
-			return VariantsResponse{Status: "500", Message: "Error at select user", VariantValue: []SearchVariant{}}, err
+			return VariantResponse{Status: "500", Message: "Error at select user", Data: nil}, err
 		}
 		resv[i].ValidUsers = resd
 	}
 
-	res := VariantsResponse{
-		Status:       "200",
-		Message:      "Ok",
-		VariantValue: resv,
+	res := VariantResponse{
+		Status:  "200",
+		Message: "Ok",
+		Data:    resv,
 	}
 
 	return res, nil
 }
 
-func FindVariantMultipleParam(field, value []string) (VariantsResponse, error) {
+func FindVariantMultipleParam(field, value []string) (VariantResponse, error) {
 	q := `
 		SELECT
 			id
 			, variant_name
+			, voucher_type
 			, point_needed
-			, max_voucher
+			, max_quantity_voucher
 			, start_date
 			, end_date
-			, variant_tnc
 		FROM
 			variants
 		WHERE
 			status = ?
 	`
 	for i := 0; i < len(field); i++ {
-		q += ` AND ` + field[i] + ` = '` + value[i] + `'`
+		if _, err := strconv.Atoi(value[i]); err == nil {
+			q += ` AND ` + field[i] + ` = '` + value[i] + `'`
+		} else {
+			q += ` AND ` + field[i] + ` LIKE '%` + value[i] + `%'`
+
+		}
 	}
 
 	var resv []SearchVariant
+
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
-		return VariantsResponse{Status: "Error", Message: q, VariantValue: []SearchVariant{}}, err
+		return VariantResponse{Status: "Error", Message: q, Data: nil}, err
 	}
 	if len(resv) < 1 {
-		return VariantsResponse{Status: "404", Message: q, VariantValue: []SearchVariant{}}, ErrResourceNotFound
+		return VariantResponse{Status: "404", Message: q, Data: nil}, ErrResourceNotFound
 	}
 
 	for i, v := range resv {
@@ -562,15 +751,15 @@ func FindVariantMultipleParam(field, value []string) (VariantsResponse, error) {
 		`
 		var resd []string
 		if err := db.Select(&resd, db.Rebind(q), v.ID, StatusCreated); err != nil {
-			return VariantsResponse{Status: "500", Message: "Error at select user", VariantValue: []SearchVariant{}}, err
+			return VariantResponse{Status: "500", Message: "Error at select user", Data: nil}, err
 		}
 		resv[i].ValidUsers = resd
 	}
 
-	res := VariantsResponse{
-		Status:       "200",
-		Message:      "Ok",
-		VariantValue: resv,
+	res := VariantResponse{
+		Status:  "200",
+		Message: "Ok",
+		Data:    resv,
 	}
 
 	return res, nil

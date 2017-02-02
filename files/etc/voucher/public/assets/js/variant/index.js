@@ -73,7 +73,7 @@ function renderData(data) {
   $('#listProgram').html("");
   $.each(data, function(key, val) {
     $.each(val, function(k, v){
-      if (k == "VariantValue"){
+      if (k == "Data"){
         var length= v.length;
 
         $.each(v, function(x, y){

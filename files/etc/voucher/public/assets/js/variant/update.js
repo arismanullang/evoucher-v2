@@ -27,7 +27,7 @@ function searchById(id) {
         success: function (data) {
           $.each(data, function(key, val) {
             $.each(val, function(k, v){
-                if (k == "VariantValue"){
+                if (k == "Data"){
                   $.each(v, function(x, y){
                     switch(x){
                       case "ID":

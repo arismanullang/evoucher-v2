@@ -113,20 +113,24 @@ func (d *Transaction) Update() error {
 			, updated_by = ?
 			, updated_at = ?
 		WHERE
-			id = ?;
+			id = ?
+			AND stauts = ?;
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), d.CompanyID, d.MerchantID, d.TransactionCode, d.TotalTransaction, d.DiscountValue, d.PaymentType, d.User, time.Now(), d.ID)
+	_, err = tx.Exec(tx.Rebind(q), d.CompanyID, d.MerchantID, d.TransactionCode, d.TotalTransaction, d.DiscountValue, d.PaymentType, d.User, time.Now(), d.ID, StatusCreated)
 	if err != nil {
 		return err
 	}
 
 	q = `
-		DELETE FROM transaction_details
+		UPDATE transaction_details
+		SET
+			status = ?
 		WHERE
-			transaction_id = ?;
+			transaction_id = ?
+			AND status = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), d.ID)
+	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, d.ID, StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -168,10 +172,11 @@ func (d *DeleteTransactionRequest) Delete() error {
 			, deleted_at = ?
 			, status = ?
 		WHERE
-			id = ?;
+			id = ?
+			AND status = ?;
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID)
+	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID, StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -183,9 +188,10 @@ func (d *DeleteTransactionRequest) Delete() error {
 			, updated_at = ?
 			, status = ?
 		WHERE
-			variant_id = ?;
+			variant_id = ?
+			AND status = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID)
+	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID, StatusCreated)
 	if err != nil {
 		return err
 	}
