@@ -14,7 +14,7 @@ function toTwoDigit(val){
 function search() {
     var request = {
         fields: ["created_by", "variant_name"],
-        values: ["nZ9Xmo-2", $("#variantName").val()]
+        values: ["IzKyd9yX", $("#variantName").val()]
       };
 
     $.ajax({
@@ -31,8 +31,7 @@ function search() {
 
 function searchByUser() {
     var request = {
-        fields: "user",
-        values: "a" //$("#variantName").val()
+        user: "IzKyd9yX" //$("#variantName").val()
       };
 
     $.ajax({
@@ -45,26 +44,6 @@ function searchByUser() {
           renderData(data);
         }
     });
-}
-
-function searchByName() {
-
-    var arrData = [];
-    var request = {
-        fields: "variant_name",
-        values: $("#variantName").val()
-      };
-
-    $.ajax({
-      url: 'http://127.0.0.1:8080/variant/searchVariant',
-      type: 'post',
-      dataType: 'json',
-      contentType: "application/json",
-      data: JSON.stringify(request),
-      success: function (data) {
-        renderData(data);
-      }
-  });
 }
 
 function renderData(data) {
@@ -90,7 +69,7 @@ function renderData(data) {
           var li = "";
           li = li + "<div class='row'>";
           li = li + "<div class='col-md-6'>Nama Program : <i>"+arrData[1]+"</i></div>";
-          li = li + "<div class='col-md-6'><button type='button' class='btn btn-warning btn-xs'>Edit</button></div>";
+          li = li + "<div class='col-md-6'><button type='button' class='btn btn-warning btn-xs' value="+arrData[0]+" onclick='goUpdate(this.value)'>Edit</button></div>";
           li = li + "</div>";
           $(tr).html(li);
           tr.appendTo('#listProgram');
@@ -99,15 +78,19 @@ function renderData(data) {
           var ul=$("<ul class='list-unstyled'></ul>");
           var li = "";
           li = li + "<li class='li-second'><div class='row'>";
-          li = li + "<label class='col-md-6'>Point</label>";
+          li = li + "<label class='col-md-6'>Voucher Type</label>";
           li = li + "<label class='col-md-6'>"+arrData[2]+"</label>";
           li = li + "</div></li>";
           li = li + "<li class='li-second'><div class='row'>";
+          li = li + "<label class='col-md-6'>Harga Voucher</label>";
+          li = li + "<label class='col-md-6'>"+arrData[3]+" Poin</label>";
+          li = li + "</div></li>";
+          li = li + "<li class='li-second'><div class='row'>";
           li = li + "<label class='col-md-6'>Limit Voucher</label>";
-          li = li + "<label class='col-md-6'>"+arrData[3]+"</label>";
+          li = li + "<label class='col-md-6'>"+arrData[4]+"</label>";
           li = li + "</div></li>";
 
-          var d = new Date(arrData[4]);
+          var d = new Date(arrData[5]);
           var date = toTwoDigit(d.getDate());
           var month = toTwoDigit(d.getMonth()+1);
           var hour = toTwoDigit(d.getHours());
@@ -119,7 +102,7 @@ function renderData(data) {
           li = li + "<label class='col-md-6'>"+date+"</label>";
           li = li + "</div></li>";
 
-          d = new Date(arrData[5]);
+          d = new Date(arrData[6]);
           date = toTwoDigit(d.getDate());
           month = toTwoDigit(d.getMonth()+1);
           hour = toTwoDigit(d.getHours());
@@ -138,4 +121,8 @@ function renderData(data) {
       }
     });
   });
+}
+
+function goUpdate(data){
+  window.location = "http://127.0.0.1:8080/variant/update?id="+data;
 }

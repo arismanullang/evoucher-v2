@@ -12,7 +12,7 @@ import (
 	"github.com/ruizu/render"
 	"github.com/urfave/negroni"
 
-	"github.com/evoucher/voucher/internal/model"
+	"github.com/gilkor/evoucher/internal/model"
 )
 
 var (

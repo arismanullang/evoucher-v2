@@ -10,7 +10,7 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
 
-	"github.com/evoucher/voucher/internal/model"
+	"github.com/gilkor/evoucher/internal/model"
 )
 
 type (

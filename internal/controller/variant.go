@@ -10,7 +10,7 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
 
-	"github.com/evoucher/voucher/internal/model"
+	"github.com/gilkor/evoucher/internal/model"
 )
 
 type (
@@ -44,10 +44,6 @@ type (
 		CompanyID string   `json:"companyId"`
 		User      string   `json:"user"`
 		Data      []string `json:"data"`
-	}
-	SearchVariantRequest struct {
-		Field string `json:"field"`
-		Value string `json:"value"`
 	}
 	SearchVariantRequests struct {
 		Fields []string `json:"fields"`
@@ -144,7 +140,15 @@ func GetVariantDetailsByUser(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	variant, err := model.FindVariantByUser(rd.User)
+	field := []string{"created_by"}
+	value := []string{rd.User}
+
+	param := SearchVariantRequests{
+		Fields: field,
+		Values: value,
+	}
+
+	variant, err := model.FindVariantMultipleParam(param.Fields, param.Values)
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}
