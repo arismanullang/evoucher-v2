@@ -218,6 +218,15 @@ html, body {
   margin-left: 10px;
 }
 
+.btn-list{
+  width: 100%;
+}
+
+.name-op{
+  padding: 5px;
+  margin: 5px;
+}
+
 /* footer */
 .page-footer{
   background-color: black;

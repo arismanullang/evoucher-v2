@@ -18,7 +18,27 @@ type (
 		Username string `json:"username"`
 		Password string `json:"password"`
 	}
+
+	RoleReq struct {
+		Role string `json:"role"`
+	}
 )
+
+func GetUserByRole(w http.ResponseWriter, r *http.Request) {
+	var rd RoleReq
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	user, err := model.FindAccountByRole(rd.Role)
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
+	}
+
+	res := NewResponse(user)
+	render.JSON(w, res)
+}
 
 func GetToken(w http.ResponseWriter, r *http.Request) {
 	var rd User

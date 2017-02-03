@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+	//"fmt"
 
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
@@ -14,22 +15,35 @@ import (
 
 type (
 	VariantRequest struct {
-		CompanyID         string   `json:"companyId"`
-		VariantName       string   `json:"variantName"`
-		VariantType       string   `json:"variantType"`
-		PointNeeded       float64  `json:"pointNeeded"`
-		MaxVoucher        float64  `json:"maxVoucher"`
-		AllowAccumulative bool     `json:"allowAccumulative"`
-		StartDate         string   `json:"startDate"`
-		FinishDate        string   `json:"finishDate"`
-		DiscountValue     float64  `json:"discountValue"`
-		ImgUrl            string   `json:"imgUrl"`
-		VariantTnc        string   `json:"variantTnc"`
-		User              string   `json:"createdBy"`
-		ValidUsers        []string `json:"validUsers"`
+		CompanyID          string   `json:"companyId"`
+		VariantName        string   `json:"variantName"`
+		VariantType        string   `json:"variantType"`
+		VoucherType        string   `json:"voucherType"`
+		PointNeeded        float64  `json:"pointNeeded"`
+		MaxQuantityVoucher float64  `json:"maxQuantity"`
+		MaxUsageVoucher    float64  `json:"maxUsage"`
+		AllowAccumulative  bool     `json:"allowAccumulative"`
+		RedeemtionMethod   string   `json:"redeem"`
+		StartDate          string   `json:"startDate"`
+		EndDate            string   `json:"endDate"`
+		DiscountValue      float64  `json:"discountValue"`
+		ImgUrl             string   `json:"imgUrl"`
+		VariantTnc         string   `json:"variantTnc"`
+		User               string   `json:"createdBy"`
+		BlastUsers         []string `json:"blastUsers"`
+		ValidTenants       []string `json:"validTenants"`
 	}
-	DeleteVariantRequest struct {
-		User string `json:"requestedBy"`
+	UserVariantRequest struct {
+		User string `json:"user"`
+	}
+	DateVariantRequest struct {
+		Start string `json:"start"`
+		End   string `json:"end"`
+	}
+	MultiUserVariantRequest struct {
+		CompanyID string   `json:"companyId"`
+		User      string   `json:"user"`
+		Data      []string `json:"data"`
 	}
 	SearchVariantRequest struct {
 		Field string `json:"field"`
@@ -53,25 +67,29 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	tf, err := time.Parse("01/02/2006", rd.FinishDate)
+	tf, err := time.Parse("01/02/2006", rd.EndDate)
 	if err != nil {
 		log.Panic(err)
 	}
 
 	d := &model.Variant{
-		CompanyID:         rd.CompanyID,
-		PointNeeded:       rd.PointNeeded,
-		VariantName:       rd.VariantName,
-		VariantType:       rd.VariantType,
-		MaxVoucher:        rd.MaxVoucher,
-		AllowAccumulative: rd.AllowAccumulative,
-		DiscountValue:     rd.DiscountValue,
-		StartDate:         ts.Format("2006-01-02 15:04:05.000"),
-		FinishDate:        tf.Format("2006-01-02 15:04:05.000"),
-		ImgUrl:            rd.ImgUrl,
-		VariantTnc:        rd.VariantTnc,
-		User:              rd.User,
-		ValidUsers:        rd.ValidUsers,
+		CompanyID:          rd.CompanyID,
+		VariantName:        rd.VariantName,
+		VariantType:        rd.VariantType,
+		VoucherType:        rd.VoucherType,
+		PointNeeded:        rd.PointNeeded,
+		MaxQuantityVoucher: rd.MaxQuantityVoucher,
+		MaxUsageVoucher:    rd.MaxUsageVoucher,
+		AllowAccumulative:  rd.AllowAccumulative,
+		RedeemtionMethod:   rd.RedeemtionMethod,
+		DiscountValue:      rd.DiscountValue,
+		StartDate:          ts.Format("2006-01-02 15:04:05.000"),
+		EndDate:            tf.Format("2006-01-02 15:04:05.000"),
+		ImgUrl:             rd.ImgUrl,
+		VariantTnc:         rd.VariantTnc,
+		User:               rd.User,
+		BlastUsers:         rd.BlastUsers,
+		ValidTenants:       rd.ValidTenants,
 	}
 	if err := d.Insert(); err != nil {
 		log.Panic(err)
@@ -83,33 +101,6 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 
 func GetAllVariant(w http.ResponseWriter, r *http.Request) {
 	variant, err := model.FindAllVariants()
-	if err != nil && err != model.ErrResourceNotFound {
-		log.Panic(err)
-	}
-
-	res := NewResponse(variant)
-	render.JSON(w, res)
-}
-
-func SearchVariant(w http.ResponseWriter, r *http.Request) {
-	var rd SearchVariantRequest
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
-	}
-
-	var variant model.VariantsResponse
-	var err error
-
-	switch rd.Field {
-	case "variant_name":
-		variant, err = model.FindVariantByName("%" + rd.Value + "%")
-	case "company_id":
-		variant, err = model.FindVariantByCompanyID(rd.Value)
-	case "date":
-		variant, err = model.FindVariantByDate(rd.Value)
-	}
-
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}
@@ -146,9 +137,30 @@ func GetVariantDetailsByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetVariantDetailsByUser(w http.ResponseWriter, r *http.Request) {
-	//id := bone.GetValue(r, "id")
-	id := "nZ9Xmo-2"
-	variant, err := model.FindVariantByUser(id)
+	//userId := "nZ9Xmo-2"
+	var rd UserVariantRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	variant, err := model.FindVariantByUser(rd.User)
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
+	}
+
+	res := NewResponse(variant)
+	render.JSON(w, res)
+}
+
+func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
+	var rd DateVariantRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	variant, err := model.FindVariantByDate(rd.Start, rd.End)
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}
@@ -166,20 +178,24 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	d := &model.Variant{
-		ID:                id,
-		CompanyID:         rd.CompanyID,
-		PointNeeded:       rd.PointNeeded,
-		VariantName:       rd.VariantName,
-		VariantType:       rd.VariantType,
-		MaxVoucher:        rd.MaxVoucher,
-		AllowAccumulative: rd.AllowAccumulative,
-		StartDate:         rd.StartDate,
-		FinishDate:        rd.FinishDate,
-		DiscountValue:     rd.DiscountValue,
-		ImgUrl:            rd.ImgUrl,
-		VariantTnc:        rd.VariantTnc,
-		User:              rd.User,
-		ValidUsers:        rd.ValidUsers,
+		ID:                 id,
+		CompanyID:          rd.CompanyID,
+		VariantName:        rd.VariantName,
+		VariantType:        rd.VariantType,
+		VoucherType:        rd.VoucherType,
+		PointNeeded:        rd.PointNeeded,
+		MaxQuantityVoucher: rd.MaxQuantityVoucher,
+		MaxUsageVoucher:    rd.MaxUsageVoucher,
+		AllowAccumulative:  rd.AllowAccumulative,
+		RedeemtionMethod:   rd.RedeemtionMethod,
+		DiscountValue:      rd.DiscountValue,
+		StartDate:          rd.StartDate,
+		EndDate:            rd.EndDate,
+		ImgUrl:             rd.ImgUrl,
+		VariantTnc:         rd.VariantTnc,
+		User:               rd.User,
+		BlastUsers:         rd.BlastUsers,
+		ValidTenants:       rd.ValidTenants,
 	}
 	if err := d.Update(); err != nil {
 		log.Panic(err)
@@ -189,9 +205,55 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, http.StatusOK)
 }
 
+func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {
+	id := bone.GetValue(r, "id")
+	var rd MultiUserVariantRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	d := model.UpdateVariantUsersRequest{
+		ID:        id,
+		CompanyID: rd.CompanyID,
+		User:      rd.User,
+		Data:      rd.Data,
+	}
+
+	if err := model.UpdateBroadcast(d); err != nil {
+		log.Panic(err)
+	}
+
+	res := NewResponse(nil)
+	render.JSON(w, res)
+}
+
+func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
+	id := bone.GetValue(r, "id")
+	var rd MultiUserVariantRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	d := model.UpdateVariantUsersRequest{
+		ID:        id,
+		CompanyID: rd.CompanyID,
+		User:      rd.User,
+		Data:      rd.Data,
+	}
+
+	if err := model.UpdateTenant(d); err != nil {
+		log.Panic(err)
+	}
+
+	res := NewResponse(nil)
+	render.JSON(w, res)
+}
+
 func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
-	var rd DeleteVariantRequest
+	var rd UserVariantRequest
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
 		log.Panic(err)
