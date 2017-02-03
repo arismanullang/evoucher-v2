@@ -36,6 +36,9 @@ function searchById(id) {
                       case "VariantName":
                         $("#variantName").val(y);
                         break;
+                      case "VoucherType":
+                        $("#voucherType").val(y);
+                        break;
                       case "VariantType":
                         $("#variantType").val(y);
                         break;
@@ -48,7 +51,7 @@ function searchById(id) {
                       case "StartDate":
                         $("#startDate").val(y);
                         break;
-                      case "FinishDate":
+                      case "EndDate":
                         $("#endDate").val(y);
                         break;
                       case "AllowAccumulative":

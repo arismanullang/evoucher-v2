@@ -15,7 +15,8 @@ const (
 	StatusCreated string = "created"
 	StatusDeleted string = "deleted"
 
-	TransactionStateOutstanding string = "outstanding"
-	TransactionStatePaid        string = "paid"
-	TransactionStateVoided      string = "voided"
+	VoucherStateCreated string = "created"
+	VoucherStateUsed    string = "used"
+	VoucherStatePaid    string = "paid"
+	VoucherStateDeleted string = "deleted"
 )

@@ -6,7 +6,7 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
 
-	"github.com/evoucher/voucher/internal/controller"
+	"github.com/gilkor/evoucher/internal/controller"
 )
 
 func setRoutes() http.Handler {
@@ -41,6 +41,7 @@ func setRoutes() http.Handler {
 
 	//custom
 	r.GetFunc("/view/", viewHandler)
+	r.GetFunc("/viewNoLayout", viewNoLayoutHandler)
 	r.GetFunc("/viewNoLayout/", viewHandlers)
 
 	return r
@@ -52,6 +53,10 @@ func ping(w http.ResponseWriter, r *http.Request) {
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	render.FileInLayout(w, "layout.html", "view/index.html", nil)
+}
+
+func viewNoLayoutHandler(w http.ResponseWriter, r *http.Request) {
+	render.File(w, "view/noLayout.html", nil)
 }
 
 func viewVariant(w http.ResponseWriter, r *http.Request) {
