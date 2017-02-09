@@ -55,6 +55,34 @@ func AddAccount(acc AccountDetail) error {
 	return nil
 }
 
+func FindAllAccount() (UserResponse, error) {
+	q := `
+		SELECT
+			id
+			, user_id
+		FROM
+			accounts
+		WHERE
+			status = ?
+	`
+
+	var resv []Account
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+		return UserResponse{Status: "Error", Message: q, Data: []Account{}}, err
+	}
+	if len(resv) < 1 {
+		return UserResponse{Status: "404", Message: q, Data: []Account{}}, ErrResourceNotFound
+	}
+
+	res := UserResponse{
+		Status:  "200",
+		Message: "Ok",
+		Data:    resv,
+	}
+
+	return res, nil
+}
+
 func FindAccountByRole(role string) (UserResponse, error) {
 	q := `
 		SELECT

@@ -52,10 +52,10 @@ type (
 	}
 )
 
-func GetUserByRole(w http.ResponseWriter, r *http.Request) {
-	param := getUrlParam(r.URL.String())
+func GetUser(w http.ResponseWriter, r *http.Request) {
+	//param := getUrlParam(r.URL.String())
 
-	user, err := model.FindAccount(param)
+	user, err := model.FindAllAccount()
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}
