@@ -1,23 +1,30 @@
 package model
 
-import "time"
+import (
+	"database/sql"
+	"time"
+
+	"github.com/lib/pq"
+)
 
 type (
 	Voucher struct {
-		ID            string    `db:"id"`
-		VoucherCode   string    `db:"voucher_code"`
-		ReferenceNo   string    `db:"reference_no"`
-		AccountID     string    `db:"account_id"`
-		VariantID     string    `db:"variant_id"`
-		ValidAt       time.Time `db:"valid_at"`
-		ExpiredAt     time.Time `db:"expired_at"`
-		VoucherType   string    `db:"voucher_type"`
-		DiscountValue float64   `db:"discount_value"`
-		PaymentType   string    `db:"payment_type"`
-		State         string    `db:"state"`
-		CreatedBy     string    `db:"created_by"`
-		CreatedAt     time.Time `db:"created_at"`
-		Status        string    `db:"status"`
+		ID            string         `db:"id"`
+		VoucherCode   string         `db:"voucher_code"`
+		ReferenceNo   string         `db:"reference_no"`
+		AccountID     string         `db:"account_id"`
+		VariantID     string         `db:"variant_id"`
+		ValidAt       time.Time      `db:"valid_at"`
+		ExpiredAt     time.Time      `db:"expired_at"`
+		DiscountValue float64        `db:"discount_value"`
+		State         string         `db:"state"`
+		CreatedBy     string         `db:"created_by"`
+		CreatedAt     time.Time      `db:"created_at"`
+		UpdatedBy     sql.NullString `db:"updated_by"`
+		UpdatedAt     pq.NullTime    `db:"updated_at"`
+		DeletedBy     sql.NullString `db:"deleted_by"`
+		DeletedAt     pq.NullTime    `db:"deleted_at"`
+		Status        string         `db:"status"`
 	}
 
 	VoucherResponse struct {
@@ -50,12 +57,14 @@ func findVoucher(field, value string) (VoucherResponse, error) {
 			, variant_id
 			, valid_at
 			, expired_at
-			, voucher_type
 			, discount_value
-			, payment_type
 			, state
 			, created_by
 			, created_at
+			, updated_by
+			, updated_at
+			, deleted_by
+			, deleted_at
 			, status
 		FROM
 			vouchers
@@ -65,19 +74,19 @@ func findVoucher(field, value string) (VoucherResponse, error) {
 	`
 	var resd []Voucher
 	if err := db.Select(&resd, db.Rebind(q), value, StatusCreated); err != nil {
-		return VoucherResponse{Status: "Nok", Message: err.Error(), VoucherData: Voucher{}}, err
+		return VoucherResponse{Status: ResponseStateNok, Message: err.Error(), VoucherData: Voucher{}}, err
 	}
 	if len(resd) < 1 {
-		return VoucherResponse{Status: "Nok", Message: ErrResourceNotFound.Error(), VoucherData: Voucher{}}, ErrResourceNotFound
+		return VoucherResponse{Status: ResponseStateNok, Message: ErrResourceNotFound.Error(), VoucherData: Voucher{}}, ErrResourceNotFound
 	} else if resd[0].State != VoucherStateActived && resd[0].State != VoucherStateCreated {
-		return VoucherResponse{Status: "Nok", Message: "voucher has been disabled", VoucherData: resd[0]}, nil
+		return VoucherResponse{Status: ErrCodeVoucherDisabled, Message: ErrMessageVoucherDisabled, VoucherData: resd[0]}, nil
 	} else if resd[0].ValidAt.After(time.Now()) {
-		return VoucherResponse{Status: "Nok", Message: "voucher is not active yet (before start date)", VoucherData: resd[0]}, nil
+		return VoucherResponse{Status: ErrCodeVoucherNotActive, Message: ErrMessageVoucherNotActive, VoucherData: resd[0]}, nil
 	} else if resd[0].ExpiredAt.Before(time.Now()) {
-		return VoucherResponse{Status: "Nok", Message: "voucher has already expired (after expiration date)", VoucherData: resd[0]}, nil
+		return VoucherResponse{Status: ErrCodeVoucherExpired, Message: ErrMessageVoucherExpired, VoucherData: resd[0]}, nil
 	}
 
-	res := VoucherResponse{Status: "Ok", Message: "success", VoucherData: resd[0]}
+	res := VoucherResponse{Status: ResponseStateOk, Message: "success", VoucherData: resd[0]}
 	return res, nil
 }
 
@@ -97,13 +106,11 @@ func (d *Voucher) InsertVc() error {
 			      , variant_id
 			      , valid_at
 			      , expired_at
-			      , voucher_type
 			      , discount_value
-			      , payment_type
 			      , state
 			      , created_by
 	      		)
-	      	 VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	      	 VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	      RETURNING
 			      id
 			      , voucher_code
@@ -112,17 +119,18 @@ func (d *Voucher) InsertVc() error {
 			      , variant_id
 			      , valid_at
 			      , expired_at
-			      , voucher_type
 			      , discount_value
-			      , payment_type
 			      , state
 			      , created_by
 			      , created_at
+			      , updated_by
+			      , updated_at
+			      , deleted_by
+			      , deleted_at
 			      , status
       `
 	var res []Voucher
-	if err := vc.Select(&res, vc.Rebind(q), d.VoucherCode, d.ReferenceNo, d.AccountID, d.VariantID, d.ValidAt, d.ExpiredAt,
-		d.VoucherType, d.DiscountValue, d.PaymentType, VoucherStateCreated, d.CreatedBy); err != nil {
+	if err := vc.Select(&res, vc.Rebind(q), d.VoucherCode, d.ReferenceNo, d.AccountID, d.VariantID, d.ValidAt, d.ExpiredAt, d.DiscountValue, VoucherStateCreated, d.CreatedBy); err != nil {
 		return err
 	}
 
@@ -145,7 +153,6 @@ func (d *UpdateDeleteRequest) DeleteVc() error {
 		UPDATE 	vouchers
 		SET
 			state = ?
-			, active_state = ?
 			, status = ?
 			, deleted_by = ?
 			, deleted_at = ?
@@ -160,7 +167,7 @@ func (d *UpdateDeleteRequest) DeleteVc() error {
 	}
 
 	if len(result) < 1 {
-		return ErrResourceNotFound
+		return ErrNotModified
 	}
 
 	if err := vc.Commit(); err != nil {
@@ -187,17 +194,32 @@ func (d *UpdateDeleteRequest) UpdateVc() error {
 			AND status = ?
 		RETURNING
 			id
+			, voucher_code
+			, reference_no
+			, account_id
+			, variant_id
+			, valid_at
+			, expired_at
+			, discount_value
+			, state
+			, created_by
+			, created_at
+			, updated_by
+			, updated_at
+			, deleted_by
+			, deleted_at
+			, status
 	`
 
-	var result []string
+	var result []Voucher
 	if err := vc.Select(&result, vc.Rebind(q), d.State, d.User, time.Now(), d.ID, StatusCreated); err != nil {
 		return err
 	}
 
 	if len(result) < 1 {
-		return ErrResourceNotFound
+		return ErrNotModified
 	}
-
+	//*d = result[0]
 	if err := vc.Commit(); err != nil {
 		return err
 	}
