@@ -1,25 +1,59 @@
 package model
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
 	"fmt"
 )
 
-var commonIV = []byte{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f}
-var key_text = "astaxie12798akljzmknm.ahkjkljl;k"
-
 type (
-	User struct {
+	AccountDetail struct {
+		CompanyID   string `db:"company_id"`
+		UserID      string `db:"user_id"`
+		AccountRole string `db:"account_role"`
+		AssignBy    string `db:"assign_by"`
+		CreatedBy   string `db:"created_by"`
+	}
+	Account struct {
 		ID     string `db:"id"`
 		UserId string `db:"user_id"`
 	}
 	UserResponse struct {
 		Status  string
 		Message string
-		Data    []User
+		Data    interface{}
 	}
 )
+
+func AddAccount(acc AccountDetail) error {
+	fmt.Println("Add")
+	tx, err := db.Beginx()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	q := `
+		INSERT INTO accounts(
+			company_id
+			, user_id
+			, account_role
+			, assign_by
+			, created_by
+			, status
+		)
+		VALUES (?, ?, ?, ?, ?, ?)
+		RETURNING
+			id
+	`
+	var res []string
+	if err := tx.Select(&res, tx.Rebind(q), acc.CompanyID, acc.UserID, acc.AccountRole, acc.AssignBy, acc.CreatedBy, StatusCreated); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	return nil
+}
 
 func FindAccountByRole(role string) (UserResponse, error) {
 	q := `
@@ -33,12 +67,12 @@ func FindAccountByRole(role string) (UserResponse, error) {
 			AND status = ?
 	`
 
-	var resv []User
+	var resv []Account
 	if err := db.Select(&resv, db.Rebind(q), role, StatusCreated); err != nil {
-		return UserResponse{Status: "Error", Message: q, Data: []User{}}, err
+		return UserResponse{Status: "Error", Message: q, Data: []Account{}}, err
 	}
 	if len(resv) < 1 {
-		return UserResponse{Status: "404", Message: q, Data: []User{}}, ErrResourceNotFound
+		return UserResponse{Status: "404", Message: q, Data: []Account{}}, ErrResourceNotFound
 	}
 
 	res := UserResponse{
@@ -50,42 +84,35 @@ func FindAccountByRole(role string) (UserResponse, error) {
 	return res, nil
 }
 
-func Encrypt(param []byte) []byte {
-	c, err := initCipher()
-	if err != nil {
-		fmt.Print(err)
+func FindAccount(usr map[string]string) (UserResponse, error) {
+	q := `
+		SELECT
+			id
+			, user_id
+		FROM
+			accounts
+		WHERE
+			status = ?
+	`
+	for key, value := range usr {
+		if key == "q" {
+			q = q + `AND ` + key + ` ILIKE '%` + value + `%'`
+		}
 	}
 
-	// Encrypted string
-	cfb := cipher.NewCFBEncrypter(c, commonIV)
-	ciphertext := make([]byte, len(param))
-	cfb.XORKeyStream(ciphertext, param)
-
-	return ciphertext
-}
-
-func Decrypt(param []byte) string {
-	c, err := initCipher()
-	if err != nil {
-		fmt.Print(err)
+	var resv []AccountDetail
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+		return UserResponse{Status: "Error", Message: q, Data: []AccountDetail{}}, err
+	}
+	if len(resv) < 1 {
+		return UserResponse{Status: "404", Message: q, Data: []AccountDetail{}}, ErrResourceNotFound
 	}
 
-	// Decrypt strings
-	cfbdec := cipher.NewCFBDecrypter(c, commonIV)
-	plaintextCopy := make([]byte, len(param))
-	cfbdec.XORKeyStream(plaintextCopy, param)
-
-	s := string(plaintextCopy[:len(plaintextCopy)])
-
-	return s
-}
-
-func initCipher() (cipher.Block, error) {
-	// Create the aes encryption algorithm
-	c, err := aes.NewCipher([]byte(key_text))
-	if err != nil {
-		fmt.Print(err)
+	res := UserResponse{
+		Status:  "200",
+		Message: "Ok",
+		Data:    resv,
 	}
 
-	return c, err
+	return res, nil
 }

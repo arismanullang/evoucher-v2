@@ -13,17 +13,17 @@ import (
 
 type (
 	TransactionRequest struct {
-		CompanyID        string   `json:"companyId"`
-		MerchantID       string   `json:"merchantId"`
-		TransactionCode  string   `json:"transactionCode"`
-		TotalTransaction float64  `json:"totalTransaction"`
-		DiscountValue    float64  `json:"discountValue"`
-		PaymentType      string   `json:"paymentType"`
-		User             string   `json:"createdBy"`
+		CompanyID        string   `json:"company_id"`
+		MerchantID       string   `json:"merchant_id"`
+		TransactionCode  string   `json:"transaction_code"`
+		TotalTransaction float64  `json:"total_transaction"`
+		DiscountValue    float64  `json:"discount_value"`
+		PaymentType      string   `json:"payment_type"`
+		User             string   `json:"created_by"`
 		Vouchers         []string `json:"vouchers"`
 	}
 	DeleteTransactionRequest struct {
-		User string `json:"requestedBy"`
+		User string `json:"requested_by"`
 	}
 	DateTransactionRequest struct {
 		Start string `json:"start"`

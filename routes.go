@@ -13,16 +13,17 @@ func setRoutes() http.Handler {
 	r := bone.New()
 	r.GetFunc("/ping", ping)
 
-	//variant ui
+	//ui
 	r.GetFunc("/variant/:page", viewVariant)
+	r.GetFunc("/user/:page", viewUser)
 
 	//variant
-	r.PostFunc("/variant/getAllVariant", controller.GetAllVariant)
+	r.GetFunc("/variant/getAllVariant", controller.GetAllVariant)
 	r.PostFunc("/variant/getVariant", controller.GetVariantDetails)
 	r.PostFunc("/variant/getVariantByUser", controller.GetVariantDetailsByUser)
 	r.PostFunc("/variant/getVariantByDate", controller.GetVariantDetailsByDate)
 	r.PostFunc("/variant/createVariant", controller.CreateVariant)
-	r.PostFunc("/variant/:id", controller.GetVariantDetailsByID)
+	r.GetFunc("/variant/:id", controller.GetVariantDetailsByID)
 	r.PostFunc("/variant/:id/update", controller.UpdateVariant)
 	r.PostFunc("/variant/:id/updateBroadcastUser", controller.UpdateVariantBroadcast)
 	r.PostFunc("/variant/:id/updateTenant", controller.UpdateVariantTenant)
@@ -35,14 +36,12 @@ func setRoutes() http.Handler {
 	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)
 
 	//user
+	r.PostFunc("/user/register", controller.RegisterUser)
 	r.PostFunc("/user/getUserByRole", controller.GetUserByRole)
-	r.GetFunc("/login", viewHandlers)
-	r.GetFunc("/:id/", controller.GetToken)
 
 	//custom
 	r.GetFunc("/view/", viewHandler)
 	r.GetFunc("/viewNoLayout", viewNoLayoutHandler)
-	r.GetFunc("/viewNoLayout/", viewHandlers)
 
 	return r
 }
@@ -74,8 +73,31 @@ func viewVariant(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func viewHandlers(w http.ResponseWriter, r *http.Request) {
+func viewUser(w http.ResponseWriter, r *http.Request) {
+	page := bone.GetValue(r, "page")
+
+	switch page {
+	case "create":
+		render.FileInLayout(w, "layout.html", "user/create.html", nil)
+	case "search":
+		render.FileInLayout(w, "layout.html", "user/check.html", nil)
+	case "update":
+		render.FileInLayout(w, "layout.html", "user/update.html", nil)
+	case "login":
+		http.Redirect(w, r, "http://juno-staging.elys.id/v1/signin?redirect_url=http://evoucher.elys.id:8080/variant/", http.StatusFound)
+	default:
+		http.Redirect(w, r, "http://juno-staging.elys.id/v1/signin?redirect_url=http://evoucher.elys.id:8080/variant/", http.StatusFound)
+	}
+}
+
+func login(w http.ResponseWriter, r *http.Request) {
 	//url := "http://juno-staging.elys.id/v1/signin?redirect_url=http://127.0.0.1:8080/ping"
-	url := "http://juno-staging.elys.id/v1/signin?redirect_url=http://juno-staging.elys.id/v1/signin"
+	url := "http://juno-staging.elys.id/v1/signin?redirect_url=http://evoucher.elys.id:8080/variant/"
+	http.Redirect(w, r, url, http.StatusFound)
+}
+
+func register(w http.ResponseWriter, r *http.Request) {
+	//url := "http://juno-staging.elys.id/v1/signin?redirect_url=http://127.0.0.1:8080/ping"
+	url := "http://juno-staging.elys.id/v1/register?redirect_url=http://evoucher.elys.id:8080/variant/"
 	http.Redirect(w, r, url, http.StatusFound)
 }
