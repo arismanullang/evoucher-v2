@@ -176,10 +176,10 @@ func (d *UpdateDeleteRequest) DeleteVc() error {
 	return nil
 }
 
-func (d *UpdateDeleteRequest) UpdateVc() error {
+func (d *UpdateDeleteRequest) UpdateVc() (Voucher, error) {
 	vc, err := db.Beginx()
 	if err != nil {
-		return err
+		return Voucher{}, err
 	}
 	defer vc.Rollback()
 
@@ -213,15 +213,14 @@ func (d *UpdateDeleteRequest) UpdateVc() error {
 
 	var result []Voucher
 	if err := vc.Select(&result, vc.Rebind(q), d.State, d.User, time.Now(), d.ID, StatusCreated); err != nil {
-		return err
+		return Voucher{}, err
 	}
 
 	if len(result) < 1 {
-		return ErrNotModified
+		return Voucher{}, ErrNotModified
 	}
-	//*d = result[0]
 	if err := vc.Commit(); err != nil {
-		return err
+		return Voucher{}, err
 	}
-	return nil
+	return result[0], nil
 }

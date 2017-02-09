@@ -148,14 +148,33 @@ func RedeemVoucher(w http.ResponseWriter, r *http.Request) {
 		d.State = model.VoucherStateUsed
 		d.User = vrr.AccountID
 
-		err := d.UpdateVc()
+		uv, err := d.UpdateVc()
 		if err != nil {
 			vr.State = model.ResponseStateNok
 			vr.Description = err.Error()
 		} else {
 			vr.State = model.ResponseStateOk
 			vr.Description = ""
-			vr.VoucherData = fv.VoucherData.ID
+
+			dvr := DetailVoucherResponse{
+				ID:            uv.ID,
+				VoucherCode:   uv.VoucherCode,
+				ReferenceNo:   uv.ReferenceNo,
+				AccountID:     uv.AccountID,
+				VariantID:     uv.VariantID,
+				ValidAt:       uv.ValidAt,
+				ExpiredAt:     uv.ExpiredAt,
+				DiscountValue: uv.DiscountValue,
+				State:         uv.State,
+				CreatedBy:     uv.CreatedBy,
+				CreatedAt:     uv.CreatedAt,
+				UpdatedBy:     uv.UpdatedBy.String,
+				UpdatedAt:     uv.UpdatedAt.Time,
+				DeletedBy:     uv.DeletedBy.String,
+				DeletedAt:     uv.DeletedAt.Time,
+				Status:        uv.Status,
+			}
+			vr.VoucherData = dvr
 		}
 	}
 
@@ -226,14 +245,32 @@ func PayVoucher(w http.ResponseWriter, r *http.Request) {
 		d.State = model.VoucherStatePaid
 		d.User = fv.VoucherData.CreatedBy
 
-		err := d.UpdateVc()
+		uv, err := d.UpdateVc()
 		if err != nil {
 			vr.State = model.ResponseStateNok
 			vr.Description = err.Error()
 		} else {
 			vr.State = model.ResponseStateOk
 			vr.Description = ""
-			vr.VoucherData = fv.VoucherData.ID
+			dvr := DetailVoucherResponse{
+				ID:            uv.ID,
+				VoucherCode:   uv.VoucherCode,
+				ReferenceNo:   uv.ReferenceNo,
+				AccountID:     uv.AccountID,
+				VariantID:     uv.VariantID,
+				ValidAt:       uv.ValidAt,
+				ExpiredAt:     uv.ExpiredAt,
+				DiscountValue: uv.DiscountValue,
+				State:         uv.State,
+				CreatedBy:     uv.CreatedBy,
+				CreatedAt:     uv.CreatedAt,
+				UpdatedBy:     uv.UpdatedBy.String,
+				UpdatedAt:     uv.UpdatedAt.Time,
+				DeletedBy:     uv.DeletedBy.String,
+				DeletedAt:     uv.DeletedAt.Time,
+				Status:        uv.Status,
+			}
+			vr.VoucherData = dvr
 		}
 	}
 
@@ -264,7 +301,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 			if (int(dt.MaxQuantityVoucher) - 1) <= 0 {
 				vr.State = model.ErrCodeVoucherQtyExceeded
 				vr.Description = model.ErrMessageVoucherQtyExceeded
-			} else if dt.VariantType == model.VariantTypeBulk {
+			} else if dt.VariantType != model.VariantTypeOnDemand {
 				vr.State = model.ErrCodeVoucherRulesViolated
 				vr.Description = model.ErrMessageVoucherRulesViolated
 			} else {
@@ -309,10 +346,9 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 	vr := VoucherResponse{State: model.ResponseStateOk, Description: ""}
 
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&vr); err != nil {
+	if err := decoder.Decode(&gvd); err != nil {
 		log.Panic(err)
 	}
-
 	variant, err := model.FindVariantByID(gvd.VariantID)
 	if err == model.ErrResourceNotFound {
 		vr.State = model.ErrCodeResourceNotFound
@@ -323,10 +359,10 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 	} else {
 
 		if dt, ok := variant.Data.(model.Variant); ok {
-			if (int(dt.MaxQuantityVoucher) - gvd.Quantity) >= 0 {
+			if (int(dt.MaxQuantityVoucher) - gvd.Quantity) <= 0 {
 				vr.State = model.ErrCodeVoucherQtyExceeded
 				vr.Description = model.ErrMessageVoucherQtyExceeded
-			} else if dt.VariantType == model.VariantTypeBulk {
+			} else if dt.VariantType != model.VariantTypeBulk {
 				vr.State = model.ErrCodeVoucherRulesViolated
 				vr.Description = model.ErrMessageVoucherRulesViolated
 			} else {
@@ -374,7 +410,6 @@ func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model
 	for i := 0; i <= vr.Quantity-1; i++ {
 		rt = append(rt, randStr())
 
-		fmt.Println(v.StartDate)
 		tsd, err := time.Parse(time.RFC3339Nano, v.StartDate)
 		if err != nil {
 			log.Panic(err)

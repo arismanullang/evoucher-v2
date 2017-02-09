@@ -27,7 +27,7 @@ const (
 
 	ErrMessageInternalError        string = "internal error , failed when open the variant objects"
 	ErrMessageVoucherNotActive     string = "voucher is not active yet (before start date)"
-	ErrMessageVoucherDisabled      string = "voucher has been disabled"
+	ErrMessageVoucherDisabled      string = "voucher has been disabled (has already been used or paid)"
 	ErrMessageVoucherExpired       string = "voucher has already expired (after expiration date)"
 	ErrMessageVoucherAlreadyPaid   string = "voucher has already Paid"
 	ErrMessageInvalidVoucher       string = "invalid voucher , VariantID not found"
