@@ -15,23 +15,23 @@ import (
 
 type (
 	VariantRequest struct {
-		CompanyID          string   `json:"companyId"`
-		VariantName        string   `json:"variantName"`
-		VariantType        string   `json:"variantType"`
-		VoucherType        string   `json:"voucherType"`
-		PointNeeded        float64  `json:"pointNeeded"`
-		MaxQuantityVoucher float64  `json:"maxQuantity"`
-		MaxUsageVoucher    float64  `json:"maxUsage"`
-		AllowAccumulative  bool     `json:"allowAccumulative"`
+		CompanyID          string   `json:"company_id"`
+		VariantName        string   `json:"variant_name"`
+		VariantType        string   `json:"variant_type"`
+		VoucherType        string   `json:"voucher_type"`
+		PointNeeded        float64  `json:"point_needed"`
+		MaxQuantityVoucher float64  `json:"max_quantity"`
+		MaxUsageVoucher    float64  `json:"max_usage"`
+		AllowAccumulative  bool     `json:"allow_accumulative"`
 		RedeemtionMethod   string   `json:"redeem"`
-		StartDate          string   `json:"startDate"`
-		EndDate            string   `json:"endDate"`
-		DiscountValue      float64  `json:"discountValue"`
-		ImgUrl             string   `json:"imgUrl"`
-		VariantTnc         string   `json:"variantTnc"`
-		User               string   `json:"createdBy"`
-		BlastUsers         []string `json:"blastUsers"`
-		ValidTenants       []string `json:"validTenants"`
+		StartDate          string   `json:"start_date"`
+		EndDate            string   `json:"end_date"`
+		DiscountValue      float64  `json:"discount_value"`
+		ImgUrl             string   `json:"img_url"`
+		VariantTnc         string   `json:"variant_tnc"`
+		User               string   `json:"created_by"`
+		BlastUsers         []string `json:"blast_users"`
+		ValidTenants       []string `json:"valid_tenants"`
 	}
 	UserVariantRequest struct {
 		User string `json:"user"`
@@ -41,7 +41,7 @@ type (
 		End   string `json:"end"`
 	}
 	MultiUserVariantRequest struct {
-		CompanyID string   `json:"companyId"`
+		CompanyID string   `json:"company_id"`
 		User      string   `json:"user"`
 		Data      []string `json:"data"`
 	}

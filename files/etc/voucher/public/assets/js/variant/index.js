@@ -1,6 +1,22 @@
 $( window ).load(function() {
+  var token = findGetParameter("token");
+  var id = findGetParameter("id");
+  getName(id, token);
   searchByUser();
 });
+
+function findGetParameter(parameterName) {
+    var result = null,
+        tmp = [];
+    location.search
+    .substr(1)
+        .split("&")
+        .forEach(function (item) {
+        tmp = item.split("=");
+        if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+    });
+    return result;
+}
 
 function toTwoDigit(val){
   if (val < 10){
@@ -18,7 +34,7 @@ function search() {
       };
 
     $.ajax({
-        url: 'http://127.0.0.1:8080/variant/getVariant',
+        url: 'http://evoucher.elys.id:8080/variant/getVariant',
         type: 'post',
         dataType: 'json',
         contentType: "application/json",
@@ -35,7 +51,7 @@ function searchByUser() {
       };
 
     $.ajax({
-        url: 'http://127.0.0.1:8080/variant/getVariantByUser',
+        url: 'http://evoucher.elys.id:8080/variant/getVariantByUser',
         type: 'post',
         dataType: 'json',
         contentType: "application/json",
@@ -44,6 +60,34 @@ function searchByUser() {
           renderData(data);
         }
     });
+}
+
+function getName(id, token) {
+  $.get( 'http://juno-staging.elys.id:8888/v1/api/accounts/'+id+'?token='+token, function (data){
+    $(".username").html(data.data.name);
+  });
+}
+
+function login(username, password){
+  $.ajax({
+      url: 'http://juno-staging.elys.id:8888/v1/api/token',
+      type: 'post',
+      dataType: 'json',
+      contentType: "application/json",
+      beforeSend: function (xhr) {
+        xhr.setRequestHeader ("Authorization", "Basic " + btoa(username+":"+password));
+      },
+      success: function (data){
+        $.each(data, function(key, val) {
+          $.each(val, function(k, v){
+            if(k == "token"){
+              alert(v);
+            }
+          });
+        });
+
+      }
+  });
 }
 
 function renderData(data) {
