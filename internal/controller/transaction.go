@@ -8,22 +8,26 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
 
-	"github.com/evoucher/voucher/internal/model"
+	"github.com/gilkor/evoucher/internal/model"
 )
 
 type (
 	TransactionRequest struct {
-		CompanyID        string   `json:"companyId"`
-		MerchantID       string   `json:"merchantId"`
-		TransactionCode  string   `json:"transactionCode"`
-		TotalTransaction float64  `json:"totalTransaction"`
-		DiscountValue    float64  `json:"discountValue"`
-		PaymentType      string   `json:"paymentType"`
-		User             string   `json:"createdBy"`
+		CompanyID        string   `json:"company_id"`
+		MerchantID       string   `json:"merchant_id"`
+		TransactionCode  string   `json:"transaction_code"`
+		TotalTransaction float64  `json:"total_transaction"`
+		DiscountValue    float64  `json:"discount_value"`
+		PaymentType      string   `json:"payment_type"`
+		User             string   `json:"created_by"`
 		Vouchers         []string `json:"vouchers"`
 	}
 	DeleteTransactionRequest struct {
-		User string `json:"requestedBy"`
+		User string `json:"requested_by"`
+	}
+	DateTransactionRequest struct {
+		Start string `json:"start"`
+		End   string `json:"end"`
 	}
 )
 
@@ -54,7 +58,23 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 func GetTransactionDetails(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
-	variant, err := model.FindVariantByID(id)
+	variant, err := model.FindTransactionByID(id)
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
+	}
+
+	res := NewResponse(variant)
+	render.JSON(w, res)
+}
+
+func GetTransactionByDate(w http.ResponseWriter, r *http.Request) {
+	var rd DateTransactionRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	variant, err := model.FindTransactionByDate(rd.Start, rd.End)
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}

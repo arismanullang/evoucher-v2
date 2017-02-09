@@ -1,7 +1,6 @@
 package model
 
 import (
-	"strings"
 	"time"
 )
 
@@ -18,11 +17,6 @@ type (
 		User             string    `db:"created_by"`
 		Vouchers         []string  `db:"-"`
 	}
-	TransactionResponse struct {
-		Status           string
-		Message          string
-		TransactionValue Transaction
-	}
 	TransactionsResponse struct {
 		Status           string
 		Message          string
@@ -31,16 +25,6 @@ type (
 	DeleteTransactionRequest struct {
 		ID   string `db:"id"`
 		User string `db:"deleted_by"`
-	}
-	TransactionData struct {
-		TransactionCode  string    `db:"transaction_code"`
-		CompanyID        string    `db:"company_id"`
-		MerchantID       string    `db:"pic_merchant"`
-		TotalTransaction float64   `db:"total_transaction"`
-		DiscountValue    float64   `db:"discount_value"`
-		PaymentType      string    `db:"payment_type"`
-		CreatedAt        time.Time `db:"created_at"`
-		User             string    `db:"created_by"`
 	}
 )
 
@@ -126,11 +110,13 @@ func (d *Transaction) Update() error {
 		UPDATE transaction_details
 		SET
 			status = ?
+			, updated_by = ?
+			, updated_at = ?
 		WHERE
 			transaction_id = ?
 			AND status = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, d.ID, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, d.User, time.Now(), d.ID, StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -202,7 +188,7 @@ func (d *DeleteTransactionRequest) Delete() error {
 	return nil
 }
 
-func FindTransactionByID(id string) (TransactionResponse, error) {
+func FindTransactionByID(id string) (TransactionsResponse, error) {
 	q := `
 		SELECT
 			id
@@ -223,10 +209,10 @@ func FindTransactionByID(id string) (TransactionResponse, error) {
 
 	var resv []Transaction
 	if err := db.Select(&resv, db.Rebind(q), id, StatusCreated); err != nil {
-		return TransactionResponse{Status: "500", Message: "Error at select variant", TransactionValue: Transaction{}}, err
+		return TransactionsResponse{Status: "500", Message: "Error at select variant", TransactionValue: []Transaction{}}, err
 	}
 	if len(resv) < 1 {
-		return TransactionResponse{Status: "404", Message: "Error at select variant", TransactionValue: Transaction{}}, ErrResourceNotFound
+		return TransactionsResponse{Status: "404", Message: "Error at select variant", TransactionValue: []Transaction{}}, ErrResourceNotFound
 	}
 
 	q = `
@@ -240,24 +226,23 @@ func FindTransactionByID(id string) (TransactionResponse, error) {
 	`
 	var resd []string
 	if err := db.Select(&resd, db.Rebind(q), id, StatusCreated); err != nil {
-		return TransactionResponse{Status: "500", Message: "Error at select user", TransactionValue: Transaction{}}, err
+		return TransactionsResponse{Status: "500", Message: "Error at select user", TransactionValue: []Transaction{}}, err
 	}
 	if len(resd) < 1 {
-		return TransactionResponse{Status: "404", Message: "Error at select user", TransactionValue: Transaction{}}, ErrResourceNotFound
+		return TransactionsResponse{Status: "404", Message: "Error at select user", TransactionValue: []Transaction{}}, ErrResourceNotFound
 	}
 	resv[0].Vouchers = resd
 
-	res := TransactionResponse{
+	res := TransactionsResponse{
 		Status:           "200",
 		Message:          "Ok",
-		TransactionValue: resv[0],
+		TransactionValue: resv,
 	}
 
 	return res, nil
 }
 
-func FindTransactionByDate(date string) (TransactionsResponse, error) {
-	dateSplit := strings.Split(date, ";")
+func FindTransactionByDate(start, end string) (TransactionsResponse, error) {
 	q := `
 		SELECT
 			transaction_code
@@ -271,13 +256,13 @@ func FindTransactionByDate(date string) (TransactionsResponse, error) {
 		FROM
 			transactions
 		WHERE
-			created_at > ?
-			AND created_at < ?
+			(start_date > ? AND start_date < ?)
+			OR (end_date > ? AND end_date < ?)
 			AND status = ?
 	`
 
 	var resv []Transaction
-	if err := db.Select(&resv, db.Rebind(q), dateSplit[0], dateSplit[1], StatusCreated); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), start, end, start, end, StatusCreated); err != nil {
 		return TransactionsResponse{Status: "500", Message: "Error at select variant", TransactionValue: []Transaction{}}, err
 	}
 	if len(resv) < 1 {

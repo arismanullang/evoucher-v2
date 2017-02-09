@@ -3,61 +3,61 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "dPI35hOM4TMrLugm6M1js14jHVQ=",
+			"checksumSHA1": "Nj+NHb9SiIpcMNzb/ztkZuYFLkk=",
 			"path": "github.com/asaskevich/govalidator",
 			"revision": "fdf19785fd3558d619ef81212f5edf1d6c2a5911",
 			"revisionTime": "2017-01-04T21:11:26Z"
 		},
 		{
-			"checksumSHA1": "hmjY4MUlyj/kx/zw+R1iSu3FTlo=",
+			"checksumSHA1": "kVbqqmrosOi2vjMgxv0Iks3gs9Q=",
 			"path": "github.com/jmoiron/sqlx",
 			"revision": "cac998c4f0959c19c638c523e374fa8e4e0bcfe3",
 			"revisionTime": "2016-12-09T02:45:31Z"
 		},
 		{
-			"checksumSHA1": "NrhkMPKlj0N6LaD2JMb2KKnR03w=",
+			"checksumSHA1": "kt7wuWQ5kHrtxlis12wLWJhUhHM=",
 			"path": "github.com/jmoiron/sqlx/reflectx",
 			"revision": "cac998c4f0959c19c638c523e374fa8e4e0bcfe3",
 			"revisionTime": "2016-12-09T02:45:31Z"
 		},
 		{
-			"checksumSHA1": "JnN7V2ff27U0k2Xuc1RJSa520QQ=",
+			"checksumSHA1": "MEgsIGwSHqkYfLcxrwilNdI4S4M=",
 			"path": "github.com/lib/pq",
 			"revision": "8df6253d1317616f36b0c3740eb30c239a7372cb",
 			"revisionTime": "2017-01-03T19:20:09Z"
 		},
 		{
-			"checksumSHA1": "xppHi82MLqVx1eyQmbhTesAEjx8=",
+			"checksumSHA1": "K4XuhnpGWTFMLSDIdvDr5AH3fTw=",
 			"path": "github.com/lib/pq/oid",
 			"revision": "8df6253d1317616f36b0c3740eb30c239a7372cb",
 			"revisionTime": "2017-01-03T19:20:09Z"
 		},
 		{
-			"checksumSHA1": "uhd2I4SxpGSiMv0xaWI4N2/sGwA=",
+			"checksumSHA1": "Nni4d4SmJ7QccmWPywiIgjEM1xg=",
 			"path": "github.com/mholt/binding",
 			"revision": "da15bc6a25d54500d6d19bf8bcdea7efde27bf0c",
 			"revisionTime": "2016-12-31T17:22:12Z"
 		},
 		{
-			"checksumSHA1": "3c4yRg91RtG0yTo4C/F/22wxO5o=",
+			"checksumSHA1": "Uo810ROslR2fHfZtO5bwWZIzbV4=",
 			"path": "github.com/pkg/profile",
 			"revision": "3a8809bd8a80f8ecfe4ee1b34b3f37194968617c",
 			"revisionTime": "2016-12-23T20:39:01Z"
 		},
 		{
-			"checksumSHA1": "ov35Z0wSGGZpjejRprdPFrZ//Fk=",
+			"checksumSHA1": "CwZVOM5m2Yt6zt2m8YIrZVYiN00=",
 			"path": "github.com/ruizu/render",
 			"revision": "452433e702e2bdae723bd8e597680d5e8bb41a89",
 			"revisionTime": "2016-11-02T06:45:34Z"
 		},
 		{
-			"checksumSHA1": "2pomhK12VRaro+l83VqZ6C3zoSw=",
+			"checksumSHA1": "WjKewHHE4dWLJUHaooxcLS6dLOE=",
 			"path": "github.com/serenize/snaker",
 			"revision": "543781d2b79bd95c51ffe70e70a55c946ca211ff",
 			"revisionTime": "2016-11-23T06:43:35Z"
 		},
 		{
-			"checksumSHA1": "12GqsW8PiRPnezDDy0v4brZrndM=",
+			"checksumSHA1": "21kDrz4DnDppRHgK7vVmOFwgcSQ=",
 			"path": "gopkg.in/yaml.v2",
 			"revision": "a5b47d31c556af34a302ce5d659e6fea44d90de0",
 			"revisionTime": "2016-09-28T15:37:09Z"
