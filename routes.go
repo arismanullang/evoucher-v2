@@ -39,6 +39,14 @@ func setRoutes() http.Handler {
 	r.PostFunc("/user/register/", controller.RegisterUser)
 	r.GetFunc("/user/getUser/", controller.GetUser)
 
+	//Voucher
+	r.GetFunc("/voucher/:id/get", controller.GetVoucherDetail)
+	r.PostFunc("/voucher/redeem", controller.RedeemVoucher)
+	r.PostFunc("/voucher/delete", controller.DeleteVoucher)
+	r.PostFunc("/voucher/pay", controller.PayVoucher)
+	r.PostFunc("/voucher/generateondemand", controller.GenerateVoucherOnDemand)
+	r.PostFunc("/voucher/generate", controller.GenerateVoucher)
+
 	//custom
 	r.GetFunc("/view/", viewHandler)
 	r.GetFunc("/viewNoLayout", viewNoLayoutHandler)

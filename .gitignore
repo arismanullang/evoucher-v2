@@ -79,4 +79,5 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+#binary file
 evoucher*
