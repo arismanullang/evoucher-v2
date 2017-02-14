@@ -11,6 +11,7 @@ import (
 
 func setRoutes() http.Handler {
 	r := bone.New()
+	// http.ListenAndServe(":8888", nil)
 	r.GetFunc("/ping", ping)
 
 	//ui
