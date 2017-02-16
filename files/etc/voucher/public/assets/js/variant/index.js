@@ -34,7 +34,7 @@ function search() {
       };
 
     $.ajax({
-        url: 'http://evoucher.elys.id:8080/variant/getVariant',
+        url: '/variant/getVariant',
         type: 'post',
         dataType: 'json',
         contentType: "application/json",

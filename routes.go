@@ -23,7 +23,7 @@ func setRoutes() http.Handler {
 	r.PostFunc("/variant/getVariantByUser", controller.GetVariantDetailsByUser)
 	r.PostFunc("/variant/getVariantByDate", controller.GetVariantDetailsByDate)
 	r.PostFunc("/variant/createVariant", controller.CreateVariant)
-	r.GetFunc("/variant/:id/", controller.GetVariantDetailsByID)
+	r.GetFunc("/variant/:id/", controller.GetVariantDetailsById)
 	r.PostFunc("/variant/:id/update", controller.UpdateVariant)
 	r.PostFunc("/variant/:id/updateBroadcastUser", controller.UpdateVariantBroadcast)
 	r.PostFunc("/variant/:id/updateTenant", controller.UpdateVariantTenant)
@@ -37,7 +37,8 @@ func setRoutes() http.Handler {
 
 	//user
 	r.PostFunc("/user/register/", controller.RegisterUser)
-	r.GetFunc("/user/getUser/", controller.GetUser)
+	r.PostFunc("/user/getUserByRole/", controller.FindUserByRole)
+	r.PostFunc("/user/getUser/", controller.GetUser)
 
 	//Voucher
 	r.GetFunc("/voucher/:id/get", controller.GetVoucherDetail)
