@@ -128,15 +128,17 @@ func checkUsername(username string) (int, error) {
 }
 
 func FindAllUser(accountId string) (UserResponse, error) {
+	fmt.Println("Select User " + accountId)
 	q := `
-		SELECT DISTINCT u.username FROM users as u
+		SELECT DISTINCT u.id, u.username FROM users as u
 		JOIN user_accounts as ua ON u.id = ua.user_id
 		JOIN user_roles as ur ON u.id = ur.user_id
 		WHERE ua.account_id = ?
+		AND u.status = ?
 	`
 
 	var resv []string
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
 		return UserResponse{Status: "Error", Message: q, Data: []string{}}, err
 	}
 	if len(resv) < 1 {
@@ -154,7 +156,7 @@ func FindAllUser(accountId string) (UserResponse, error) {
 
 func FindUserByRole(role, accountId string) (UserResponse, error) {
 	q := `
-		SELECT u.username FROM users AS u
+		SELECT u.id, u.username FROM users AS u
 		JOIN user_accounts AS ua ON u.id = ua.user_id
 		JOIN user_roles AS ur ON u.id = ur.user_id
 		WHERE ua.account_id = ?
@@ -181,7 +183,7 @@ func FindUserByRole(role, accountId string) (UserResponse, error) {
 
 func FindUser(usr map[string]string) (UserResponse, error) {
 	q := `
-		SELECT u.username FROM users AS u
+		SELECT u.id, u.username FROM users AS u
 		JOIN user_accounts AS ua ON u.id = ua.user_id
 		JOIN user_roles AS ur ON u.id = ur.user_id
 		WHERE
