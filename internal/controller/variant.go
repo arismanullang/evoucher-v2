@@ -20,7 +20,7 @@ type (
 		VariantType        string   `json:"variant_type"`
 		VoucherFormatId    string   `json:"voucher_format_id"`
 		VoucherType        string   `json:"voucher_type"`
-		VoucherPrice       float64  `json:"voucher_prince"`
+		VoucherPrice       float64  `json:"voucher_price"`
 		AllowAccumulative  bool     `json:"allow_accumulative"`
 		StartDate          string   `json:"start_date"`
 		EndDate            string   `json:"end_date"`
@@ -63,11 +63,6 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	tf, err := time.Parse("01/02/2006", rd.EndDate)
-	if err != nil {
-		log.Panic(err)
-	}
-
 	d := &model.Variant{
 		AccountId:          rd.AccountId,
 		VariantName:        rd.VariantName,
@@ -81,11 +76,11 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		RedeemtionMethod:   rd.RedeemtionMethod,
 		DiscountValue:      rd.DiscountValue,
 		StartDate:          ts.Format("2006-01-02 15:04:05.000"),
-		EndDate:            tf.Format("2006-01-02 15:04:05.000"),
+		EndDate:            ts.Format("2006-01-02 15:04:05.000"),
 		ImgUrl:             rd.ImgUrl,
 		VariantTnc:         rd.VariantTnc,
 		VariantDescription: rd.VariantDescription,
-		User:               rd.User,
+		CreatedBy:          rd.User,
 		ValidPartners:      rd.ValidPartners,
 	}
 	if err := d.Insert(); err != nil {
@@ -187,6 +182,7 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 		AccountId:          rd.AccountId,
 		VariantName:        rd.VariantName,
 		VariantType:        rd.VariantType,
+		VoucherFormatId:    rd.VoucherFormatId,
 		VoucherType:        rd.VoucherType,
 		VoucherPrice:       rd.VoucherPrice,
 		MaxQuantityVoucher: rd.MaxQuantityVoucher,
@@ -198,7 +194,7 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 		EndDate:            rd.EndDate,
 		ImgUrl:             rd.ImgUrl,
 		VariantTnc:         rd.VariantTnc,
-		User:               rd.User,
+		VariantDescription: rd.VariantDescription,
 		ValidPartners:      rd.ValidPartners,
 	}
 	if err := d.Update(); err != nil {
