@@ -1,5 +1,5 @@
 server:
-  host: ":8080"
+  host: ":8889"
   public_directory: "files/etc/voucher/public"
   template_directory: "files/etc/voucher/templates"
 
