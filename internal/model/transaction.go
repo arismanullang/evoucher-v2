@@ -62,11 +62,12 @@ func (d *Transaction) Insert() error {
 				, transaction_id
 				, voucher_id
 				, created_by
+				, status
 			)
-			VALUES (?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q), d.CompanyID, d.ID, v, d.User)
+		_, err := tx.Exec(tx.Rebind(q), d.CompanyID, d.ID, v, d.User, StatusCreated)
 		if err != nil {
 			return err
 		}
