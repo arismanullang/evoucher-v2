@@ -1,20 +1,16 @@
 package controller
 
 import (
-	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"time"
 
 	"github.com/gilkor/evoucher/internal/model"
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
-)
-
-const (
-	VoucherCodeLen int32 = 4 // VoucherCodeLen length of VoucherCode to run randStr
 )
 
 type (
@@ -408,7 +404,7 @@ func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model
 	var rt []string
 
 	for i := 0; i <= vr.Quantity-1; i++ {
-		rt = append(rt, randStr())
+		rt = append(rt, randStr(10, "Alphanumeric"))
 
 		tsd, err := time.Parse(time.RFC3339Nano, v.StartDate)
 		if err != nil {
@@ -441,12 +437,18 @@ func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model
 	return ret, nil
 }
 
-func randStr() string {
-	b := make([]byte, VoucherCodeLen)
-	if _, err := rand.Read(b); err != nil {
-		return ""
+func randStr(ln int, fm string) string {
+	CharsType := map[string]string{
+		"Alphabet":     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+		"Numerals":     "1234567890",
+		"Alphanumeric": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890",
 	}
-	s := fmt.Sprintf("%X", b)
 
-	return s
+	rand.Seed(time.Now().UTC().UnixNano())
+	chars := CharsType[fm]
+	result := make([]byte, ln)
+	for i := 0; i < ln; i++ {
+		result[i] = chars[rand.Intn(len(chars))]
+	}
+	return string(result)
 }
