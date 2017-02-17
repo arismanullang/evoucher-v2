@@ -15,23 +15,24 @@ import (
 
 type (
 	VariantRequest struct {
-		CompanyID          string   `json:"company_id"`
+		AccountId          string   `json:"account_id"`
 		VariantName        string   `json:"variant_name"`
 		VariantType        string   `json:"variant_type"`
+		VoucherFormatId    string   `json:"voucher_format_id"`
 		VoucherType        string   `json:"voucher_type"`
-		PointNeeded        float64  `json:"point_needed"`
-		MaxQuantityVoucher float64  `json:"max_quantity"`
-		MaxUsageVoucher    float64  `json:"max_usage"`
+		VoucherPrice       float64  `json:"voucher_price"`
 		AllowAccumulative  bool     `json:"allow_accumulative"`
-		RedeemtionMethod   string   `json:"redeem"`
 		StartDate          string   `json:"start_date"`
 		EndDate            string   `json:"end_date"`
 		DiscountValue      float64  `json:"discount_value"`
+		MaxQuantityVoucher float64  `json:"max_quantity_voucher"`
+		MaxUsageVoucher    float64  `json:"max_usage_voucher"`
+		RedeemtionMethod   string   `json:"redeem_method"`
 		ImgUrl             string   `json:"img_url"`
 		VariantTnc         string   `json:"variant_tnc"`
+		VariantDescription string   `json:"variant_description"`
 		User               string   `json:"created_by"`
-		BlastUsers         []string `json:"blast_users"`
-		ValidTenants       []string `json:"valid_tenants"`
+		ValidPartners      []string `json:"valid_partners"`
 	}
 	UserVariantRequest struct {
 		User string `json:"user"`
@@ -41,9 +42,8 @@ type (
 		End   string `json:"end"`
 	}
 	MultiUserVariantRequest struct {
-		CompanyID string   `json:"company_id"`
-		User      string   `json:"user"`
-		Data      []string `json:"data"`
+		User string   `json:"user"`
+		Data []string `json:"data"`
 	}
 	SearchVariantRequests struct {
 		Fields []string `json:"fields"`
@@ -63,29 +63,25 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	tf, err := time.Parse("01/02/2006", rd.EndDate)
-	if err != nil {
-		log.Panic(err)
-	}
-
 	d := &model.Variant{
-		CompanyID:          rd.CompanyID,
+		AccountId:          rd.AccountId,
 		VariantName:        rd.VariantName,
 		VariantType:        rd.VariantType,
+		VoucherFormatId:    rd.VoucherFormatId,
 		VoucherType:        rd.VoucherType,
-		PointNeeded:        rd.PointNeeded,
+		VoucherPrice:       rd.VoucherPrice,
 		MaxQuantityVoucher: rd.MaxQuantityVoucher,
 		MaxUsageVoucher:    rd.MaxUsageVoucher,
 		AllowAccumulative:  rd.AllowAccumulative,
 		RedeemtionMethod:   rd.RedeemtionMethod,
 		DiscountValue:      rd.DiscountValue,
 		StartDate:          ts.Format("2006-01-02 15:04:05.000"),
-		EndDate:            tf.Format("2006-01-02 15:04:05.000"),
+		EndDate:            ts.Format("2006-01-02 15:04:05.000"),
 		ImgUrl:             rd.ImgUrl,
 		VariantTnc:         rd.VariantTnc,
-		User:               rd.User,
-		BlastUsers:         rd.BlastUsers,
-		ValidTenants:       rd.ValidTenants,
+		VariantDescription: rd.VariantDescription,
+		CreatedBy:          rd.User,
+		ValidPartners:      rd.ValidPartners,
 	}
 	if err := d.Insert(); err != nil {
 		log.Panic(err)
@@ -121,9 +117,9 @@ func GetVariantDetails(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res)
 }
 
-func GetVariantDetailsByID(w http.ResponseWriter, r *http.Request) {
+func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
-	variant, err := model.FindVariantByID(id)
+	variant, err := model.FindVariantById(id)
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}
@@ -182,12 +178,13 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	d := &model.Variant{
-		ID:                 id,
-		CompanyID:          rd.CompanyID,
+		Id:                 id,
+		AccountId:          rd.AccountId,
 		VariantName:        rd.VariantName,
 		VariantType:        rd.VariantType,
+		VoucherFormatId:    rd.VoucherFormatId,
 		VoucherType:        rd.VoucherType,
-		PointNeeded:        rd.PointNeeded,
+		VoucherPrice:       rd.VoucherPrice,
 		MaxQuantityVoucher: rd.MaxQuantityVoucher,
 		MaxUsageVoucher:    rd.MaxUsageVoucher,
 		AllowAccumulative:  rd.AllowAccumulative,
@@ -197,9 +194,8 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 		EndDate:            rd.EndDate,
 		ImgUrl:             rd.ImgUrl,
 		VariantTnc:         rd.VariantTnc,
-		User:               rd.User,
-		BlastUsers:         rd.BlastUsers,
-		ValidTenants:       rd.ValidTenants,
+		VariantDescription: rd.VariantDescription,
+		ValidPartners:      rd.ValidPartners,
 	}
 	if err := d.Update(); err != nil {
 		log.Panic(err)
@@ -218,8 +214,7 @@ func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {
 	}
 
 	d := model.UpdateVariantUsersRequest{
-		ID:        id,
-		CompanyID: rd.CompanyID,
+		VariantId: id,
 		User:      rd.User,
 		Data:      rd.Data,
 	}
@@ -241,13 +236,12 @@ func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	d := model.UpdateVariantUsersRequest{
-		ID:        id,
-		CompanyID: rd.CompanyID,
+		VariantId: id,
 		User:      rd.User,
 		Data:      rd.Data,
 	}
 
-	if err := model.UpdateTenant(d); err != nil {
+	if err := model.UpdatePartner(d); err != nil {
 		log.Panic(err)
 	}
 
@@ -264,7 +258,7 @@ func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	d := &model.DeleteVariantRequest{
-		ID:   id,
+		Id:   id,
 		User: rd.User,
 	}
 	if err := d.Delete(); err != nil {

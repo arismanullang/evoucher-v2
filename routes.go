@@ -24,7 +24,7 @@ func setRoutes() http.Handler {
 	r.PostFunc("/variant/getVariantByUser", controller.GetVariantDetailsByUser)
 	r.PostFunc("/variant/getVariantByDate", controller.GetVariantDetailsByDate)
 	r.PostFunc("/variant/createVariant", controller.CreateVariant)
-	r.GetFunc("/variant/:id", controller.GetVariantDetailsByID)
+	r.PostFunc("/variant/getVariant/:id", controller.GetVariantDetailsById)
 	r.PostFunc("/variant/:id/update", controller.UpdateVariant)
 	r.PostFunc("/variant/:id/updateBroadcastUser", controller.UpdateVariantBroadcast)
 	r.PostFunc("/variant/:id/updateTenant", controller.UpdateVariantTenant)
@@ -32,13 +32,14 @@ func setRoutes() http.Handler {
 
 	//transaction
 	r.PostFunc("/transaction/createTransaction", controller.CreateTransaction)
-	r.GetFunc("/transaction/:id", controller.GetTransactionDetails)
+	r.GetFunc("/transaction/:id/", controller.GetTransactionDetails)
 	r.PostFunc("/transaction/:id/update", controller.UpdateTransaction)
 	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)
 
 	//user
-	r.PostFunc("/user/register", controller.RegisterUser)
-	r.PostFunc("/user/getUserByRole", controller.GetUserByRole)
+	r.PostFunc("/user/register/", controller.RegisterUser)
+	r.PostFunc("/user/getUserByRole/", controller.FindUserByRole)
+	r.PostFunc("/user/getUser/", controller.GetUser)
 
 	//Voucher
 	r.GetFunc("/voucher/:id/get", controller.GetVoucherDetail)

@@ -9,6 +9,7 @@ var (
 	ErrValidationError  = errors.New("validation error.")
 	ErrInvalidPassword  = errors.New("invalid password.")
 	ErrNotModified      = errors.New("data not modified.")
+	ErrDuplicateEntry   = errors.New("duplicate entry.")
 )
 
 const (

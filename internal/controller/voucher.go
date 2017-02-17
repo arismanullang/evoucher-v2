@@ -284,7 +284,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	variant, err := model.FindVariantByID(gvd.VariantID)
+	variant, err := model.FindVariantById(gvd.VariantID)
 	if err == model.ErrResourceNotFound {
 		vr.State = model.ErrCodeInvalidVoucher
 		vr.Description = model.ErrMessageInvalidVoucher
@@ -302,7 +302,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 				vr.Description = model.ErrMessageVoucherRulesViolated
 			} else {
 				d := GenerateVoucherRequest{
-					VariantID:   dt.ID,
+					VariantID:   dt.Id,
 					Quantity:    1,
 					ReferenceNo: gvd.ReferenceNo,
 					AccountID:   gvd.AccountID,
@@ -345,7 +345,7 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 	if err := decoder.Decode(&gvd); err != nil {
 		log.Panic(err)
 	}
-	variant, err := model.FindVariantByID(gvd.VariantID)
+	variant, err := model.FindVariantById(gvd.VariantID)
 	if err == model.ErrResourceNotFound {
 		vr.State = model.ErrCodeResourceNotFound
 		vr.Description = model.ErrMessageInvalidVoucher
@@ -363,7 +363,7 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 				vr.Description = model.ErrMessageVoucherRulesViolated
 			} else {
 				d := GenerateVoucherRequest{
-					VariantID:   dt.ID,
+					VariantID:   dt.Id,
 					Quantity:    gvd.Quantity,
 					ReferenceNo: gvd.ReferenceNo,
 					AccountID:   gvd.AccountID,
@@ -419,7 +419,7 @@ func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model
 			VoucherCode:   rt[i],
 			ReferenceNo:   vr.ReferenceNo,
 			AccountID:     vr.AccountID,
-			VariantID:     v.ID,
+			VariantID:     v.Id,
 			ValidAt:       tsd,
 			ExpiredAt:     tea,
 			DiscountValue: v.DiscountValue,

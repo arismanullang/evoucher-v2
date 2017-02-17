@@ -8,29 +8,29 @@ import (
 
 type (
 	Variant struct {
-		ID                 string   `db:"id"`
-		CompanyID          string   `db:"company_id"`
+		Id                 string   `db:"id"`
+		AccountId          string   `db:"account_id"`
 		VariantName        string   `db:"variant_name"`
 		VariantType        string   `db:"variant_type"`
+		VoucherFormatId    string   `db:"voucher_format_id"`
 		VoucherType        string   `db:"voucher_type"`
-		PointNeeded        float64  `db:"point_needed"`
-		MaxQuantityVoucher float64  `db:"max_quantity_voucher"`
-		MaxUsageVoucher    float64  `db:"max_usage_voucher"`
+		VoucherPrice       float64  `db:"voucher_price"`
 		AllowAccumulative  bool     `db:"allow_accumulative"`
-		RedeemtionMethod   string   `db:"redeemtion_method"`
 		StartDate          string   `db:"start_date"`
 		EndDate            string   `db:"end_date"`
 		DiscountValue      float64  `db:"discount_value"`
+		MaxQuantityVoucher float64  `db:"max_quantity_voucher"`
+		MaxUsageVoucher    float64  `db:"max_usage_voucher"`
+		RedeemtionMethod   string   `db:"redeemtion_method"`
 		ImgUrl             string   `db:"img_url"`
 		VariantTnc         string   `db:"variant_tnc"`
-		User               string   `db:"created_by"`
+		VariantDescription string   `db:"variant_description"`
+		CreatedBy          string   `db:"created_by"`
 		CreatedAt          string   `db:"created_at"`
-		Status             string   `db:"status"`
-		BlastUsers         []string `db:"-"`
-		ValidTenants       []string `db:"-"`
+		ValidPartners      []string `db:"valid_partners"`
 	}
 	DeleteVariantRequest struct {
-		ID   string `db:"id"`
+		Id   string `db:"id"`
 		User string `db:"deleted_by"`
 	}
 	VariantResponse struct {
@@ -39,19 +39,18 @@ type (
 		Data    interface{}
 	}
 	SearchVariant struct {
-		ID          string   `db:"id"`
-		CompanyID   string   `db:"company_id"`
-		VariantName string   `db:"variant_name"`
-		VoucherType string   `db:"voucher_type"`
-		PointNeeded float64  `db:"point_needed"`
-		MaxVoucher  float64  `db:"max_quantity_voucher"`
-		StartDate   string   `db:"start_date"`
-		EndDate     string   `db:"end_date"`
-		ValidUsers  []string `db:"-"`
+		Id           string   `db:"id"`
+		AccountId    string   `db:"account_id"`
+		VariantName  string   `db:"variant_name"`
+		VoucherType  string   `db:"voucher_type"`
+		VoucherPrice float64  `db:"voucher_price"`
+		MaxVoucher   float64  `db:"max_quantity_voucher"`
+		StartDate    string   `db:"start_date"`
+		EndDate      string   `db:"end_date"`
+		ValidUsers   []string `db:"-"`
 	}
 	UpdateVariantUsersRequest struct {
-		ID        string   `db:"id"`
-		CompanyID string   `db:"company_id"`
+		VariantId string   `db:"variant_id"`
 		User      string   `db:"updated_by"`
 		Data      []string `db:"-"`
 	}
@@ -66,65 +65,48 @@ func (d *Variant) Insert() error {
 
 	q := `
 		INSERT INTO variants(
-			company_id
+			account_id
 			, variant_name
 			, variant_type
+			, voucher_format_id
 			, voucher_type
-			, point_needed
-			, max_quantity_voucher
-			, max_usage_voucher
+			, voucher_price
 			, allow_accumulative
-			, redeemtion_method
 			, start_date
 			, end_date
 			, discount_value
+			, max_quantity_voucher
+			, max_usage_voucher
+			, redeemtion_method
 			, img_url
 			, variant_tnc
+			, variant_description
 			, created_by
 			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING
 			id
 	`
 	var res []string
-	if err := tx.Select(&res, tx.Rebind(q), d.CompanyID, d.VariantName, d.VariantType, d.VoucherType, d.PointNeeded, d.MaxQuantityVoucher, d.MaxUsageVoucher, d.AllowAccumulative, d.RedeemtionMethod, d.StartDate, d.EndDate, d.DiscountValue, d.ImgUrl, d.VariantTnc, d.User, StatusCreated); err != nil {
+	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.VariantName, d.VariantType, d.VoucherFormatId, d.VoucherType, d.VoucherPrice, d.AllowAccumulative, d.StartDate, d.EndDate, d.DiscountValue, d.MaxQuantityVoucher, d.MaxUsageVoucher, d.RedeemtionMethod, d.ImgUrl, d.VariantTnc, d.VariantDescription, d.CreatedBy, StatusCreated); err != nil {
 		return err
 	}
-	d.ID = res[0]
+	d.Id = res[0]
 
-	if len(d.BlastUsers) > 0 {
-		for _, v := range d.BlastUsers {
+	if len(d.ValidPartners) > 0 {
+		for _, v := range d.ValidPartners {
 			q := `
-				INSERT INTO broadcast_users(
-					company_id
-					, variant_id
-					, account_id
+				INSERT INTO variant_partners(
+					variant_id
+					, partner_id
 					, created_by
+					, status
 				)
 				VALUES (?, ?, ?, ?)
 			`
 
-			_, err := tx.Exec(tx.Rebind(q), d.CompanyID, d.ID, v, d.User)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	if len(d.ValidTenants) > 0 {
-		for _, v := range d.ValidTenants {
-			q := `
-				INSERT INTO variant_users(
-					company_id
-					, variant_id
-					, account_id
-					, created_by
-				)
-				VALUES (?, ?, ?, ?)
-			`
-
-			_, err := tx.Exec(tx.Rebind(q), d.CompanyID, d.ID, v, d.User)
+			_, err := tx.Exec(tx.Rebind(q), d.Id, v, d.CreatedBy, StatusCreated)
 			if err != nil {
 				return err
 			}
@@ -149,17 +131,19 @@ func (d *Variant) Update() error {
 		SET
 			variant_name = ?
 			, variant_type = ?
+			, voucher_format_id = ?
 			, voucher_type = ?
-			, point_needed = ?
-			, max_quantity_voucher = ?
-			, max_usage_voucher = ?
+			, voucher_price = ?
 			, allow_accumulative = ?
-			, redeemtion_method = ?
 			, start_date = ?
 			, end_date = ?
 			, discount_value = ?
+			, max_quantity_voucher = ?
+			, max_usage_voucher = ?
+			, redeemtion_method = ?
 			, img_url = ?
 			, variant_tnc = ?
+			, variant_description = ?
 			, updated_by = ?
 			, updated_at = ?
 		WHERE
@@ -167,31 +151,18 @@ func (d *Variant) Update() error {
 			AND status = ?;
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), d.VariantName, d.VariantType, d.VoucherType, d.PointNeeded, d.MaxQuantityVoucher, d.MaxUsageVoucher, d.AllowAccumulative, d.RedeemtionMethod, d.StartDate, d.EndDate, d.DiscountValue, d.ImgUrl, d.VariantTnc, d.User, time.Now(), d.ID, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), d.VariantName, d.VariantType, d.VoucherFormatId, d.VoucherType, d.VoucherPrice, d.MaxQuantityVoucher, d.MaxUsageVoucher, d.AllowAccumulative, d.RedeemtionMethod, d.StartDate, d.EndDate, d.DiscountValue, d.ImgUrl, d.VariantTnc, d.VariantDescription, d.CreatedBy, time.Now(), d.Id, StatusCreated)
 	if err != nil {
 		return err
 	}
 
-	if len(d.BlastUsers) > 0 {
+	if len(d.ValidPartners) > 0 {
 		user := UpdateVariantUsersRequest{
-			ID:        d.ID,
-			CompanyID: d.CompanyID,
-			User:      d.User,
-			Data:      d.BlastUsers,
+			VariantId: d.Id,
+			User:      d.CreatedBy,
+			Data:      d.ValidPartners,
 		}
-		if err = UpdateBroadcast(user); err != nil {
-			return err
-		}
-	}
-
-	if len(d.ValidTenants) > 0 {
-		user := UpdateVariantUsersRequest{
-			ID:        d.ID,
-			CompanyID: d.CompanyID,
-			User:      d.User,
-			Data:      d.ValidTenants,
-		}
-		if err = UpdateTenant(user); err != nil {
+		if err = UpdatePartner(user); err != nil {
 			return err
 		}
 	}
@@ -219,7 +190,7 @@ func UpdateBroadcast(user UpdateVariantUsersRequest) error {
 			variant_id = ?
 			AND status = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, user.User, time.Now(), user.ID, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, user.User, time.Now(), user.VariantId, StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -227,15 +198,15 @@ func UpdateBroadcast(user UpdateVariantUsersRequest) error {
 	for _, v := range user.Data {
 		q := `
 			INSERT INTO broadcast_users (
-				company_id
-				, variant_id
+				variant_id
 				, account_id
 				, created_by
+				, status
 			)
 			VALUES (?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q), user.CompanyID, user.ID, v, user.User)
+		_, err := tx.Exec(tx.Rebind(q), user.VariantId, v, user.User, StatusCreated)
 		if err != nil {
 			return err
 		}
@@ -247,7 +218,7 @@ func UpdateBroadcast(user UpdateVariantUsersRequest) error {
 	return nil
 }
 
-func UpdateTenant(user UpdateVariantUsersRequest) error {
+func UpdatePartner(param UpdateVariantUsersRequest) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		return err
@@ -255,7 +226,7 @@ func UpdateTenant(user UpdateVariantUsersRequest) error {
 	defer tx.Rollback()
 
 	q := `
-		UPDATE variant_users
+		UPDATE variant_partners
 		SET
 			status = ?
 			, updated_by = ?
@@ -264,23 +235,23 @@ func UpdateTenant(user UpdateVariantUsersRequest) error {
 			variant_id = ?
 			AND status = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, user.User, time.Now(), user.ID, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, param.User, time.Now(), param.VariantId, StatusCreated)
 	if err != nil {
 		return err
 	}
 
-	for _, v := range user.Data {
+	for _, v := range param.Data {
 		q := `
-			INSERT INTO variant_users (
-				company_id
-				, variant_id
-				, account_id
+			INSERT INTO variant_partners (
+				variant_id
+				, partner_id
 				, created_by
+				, status
 			)
 			VALUES (?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q), user.CompanyID, user.ID, v, user.User)
+		_, err := tx.Exec(tx.Rebind(q), param.VariantId, v, param.User, StatusCreated)
 		if err != nil {
 			return err
 		}
@@ -310,13 +281,13 @@ func (d *DeleteVariantRequest) Delete() error {
 			AND status = ?;
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.Id, StatusCreated)
 	if err != nil {
 		return err
 	}
 
 	q = `
-		UPDATE variant_users
+		UPDATE variant_partners
 		SET
 			updated_by = ?
 			, updated_at = ?
@@ -325,7 +296,7 @@ func (d *DeleteVariantRequest) Delete() error {
 			variant_id = ?
 			AND status = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.Id, StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -340,7 +311,7 @@ func (d *DeleteVariantRequest) Delete() error {
 			variant_id = ?
 			AND status = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.Id, StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -352,12 +323,14 @@ func (d *DeleteVariantRequest) Delete() error {
 }
 
 func FindVariantByDate(start, end string) (VariantResponse, error) {
+	fmt.Println("Select By Date " + start)
 	q := `
 		SELECT
 			id
 			, variant_name
+			, account_id
 			, voucher_type
-			, point_needed
+			, voucher_price
 			, max_quantity_voucher
 			, start_date
 			, end_date
@@ -380,15 +353,15 @@ func FindVariantByDate(start, end string) (VariantResponse, error) {
 	for i, v := range resv {
 		q = `
 			SELECT
-				account_id
+				partner_id
 			FROM
-				variant_users
+				variant_partners
 			WHERE
 				variant_id = ?
 				AND status = ?
 		`
 		var resd []string
-		if err := db.Select(&resd, db.Rebind(q), v.ID, StatusCreated); err != nil {
+		if err := db.Select(&resd, db.Rebind(q), v.Id, StatusCreated); err != nil {
 			return VariantResponse{Status: "500", Message: "Error at select user", Data: nil}, err
 		}
 		resv[i].ValidUsers = resd
@@ -408,8 +381,9 @@ func FindAllVariants() (VariantResponse, error) {
 		SELECT
 			id
 			, variant_name
+			, account_id
 			, voucher_type
-			, point_needed
+			, voucher_price
 			, max_quantity_voucher
 			, start_date
 			, end_date
@@ -428,15 +402,15 @@ func FindAllVariants() (VariantResponse, error) {
 	for i, v := range resv {
 		q = `
 			SELECT
-				account_id
+				partner_id
 			FROM
-				variant_users
+				variant_partners
 			WHERE
 				variant_id = ?
 				AND status = ?
 		`
 		var resd []string
-		if err := db.Select(&resd, db.Rebind(q), v.ID, StatusCreated); err != nil {
+		if err := db.Select(&resd, db.Rebind(q), v.Id, StatusCreated); err != nil {
 			return VariantResponse{Status: "500", Message: "Error at select user", Data: nil}, err
 		}
 		resv[i].ValidUsers = resd
@@ -457,8 +431,9 @@ func FindVariantMultipleParam(field, value []string) (VariantResponse, error) {
 		SELECT
 			id
 			, variant_name
+			, account_id
 			, voucher_type
-			, point_needed
+			, voucher_price
 			, max_quantity_voucher
 			, start_date
 			, end_date
@@ -488,15 +463,15 @@ func FindVariantMultipleParam(field, value []string) (VariantResponse, error) {
 	for i, v := range resv {
 		q = `
 			SELECT
-				account_id
+				partner_id
 			FROM
-				variant_users
+				variant_partners
 			WHERE
 				variant_id = ?
 				AND status = ?
 		`
 		var resd []string
-		if err := db.Select(&resd, db.Rebind(q), v.ID, StatusCreated); err != nil {
+		if err := db.Select(&resd, db.Rebind(q), v.Id, StatusCreated); err != nil {
 			return VariantResponse{Status: "500", Message: "Error at select user", Data: nil}, err
 		}
 		resv[i].ValidUsers = resd
@@ -511,23 +486,25 @@ func FindVariantMultipleParam(field, value []string) (VariantResponse, error) {
 	return res, nil
 }
 
-func FindVariantByID(id string) (VariantResponse, error) {
+func FindVariantById(id string) (VariantResponse, error) {
 	q := `
 		SELECT
-			id
-			, company_id
+			account_id
 			, variant_name
 			, variant_type
+			, voucher_format_id
 			, voucher_type
-			, point_needed
-			, max_quantity_voucher
-			, max_usage_voucher
+			, voucher_price
 			, allow_accumulative
 			, start_date
 			, end_date
 			, discount_value
+			, max_quantity_voucher
+			, max_usage_voucher
+			, redeemtion_method
 			, img_url
 			, variant_tnc
+			, variant_description
 			, created_by
 			, created_at
 		FROM
@@ -547,9 +524,9 @@ func FindVariantByID(id string) (VariantResponse, error) {
 
 	q = `
 		SELECT
-			account_id
+			partner_id
 		FROM
-			variant_users
+			variant_partners
 		WHERE
 			variant_id = ?
 			AND status = ?
@@ -558,7 +535,7 @@ func FindVariantByID(id string) (VariantResponse, error) {
 	if err := db.Select(&resd, db.Rebind(q), id, StatusCreated); err != nil {
 		return VariantResponse{Status: "Error", Message: q, Data: Variant{}}, err
 	}
-	resv[0].BlastUsers = resd
+	resv[0].ValidPartners = resd
 
 	res := VariantResponse{
 		Status:  "200",
