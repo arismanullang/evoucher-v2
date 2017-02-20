@@ -37,6 +37,13 @@ type (
 		State string `db:"state"`
 		User  string `db:"created_by"`
 	}
+	VoucherCodeFormat struct {
+		Prefix     string `db:"prefix"`
+		Postfix    string `db:"Postfix"`
+		Body       string `db:"body"`
+		FormatType string `db:"format_type"`
+		Length     int    `db:"length"`
+	}
 )
 
 func FindVoucherByID(id string) (VoucherResponse, error) {
@@ -221,6 +228,35 @@ func (d *UpdateDeleteRequest) UpdateVc() (Voucher, error) {
 	}
 	if err := vc.Commit(); err != nil {
 		return Voucher{}, err
+	}
+	return result[0], nil
+}
+
+func GetVoucherCodeFormat(id string) (VoucherCodeFormat, error) {
+	vc, err := db.Beginx()
+	if err != nil {
+		return VoucherCodeFormat{}, err
+	}
+	defer vc.Rollback()
+
+	q := `
+		SELECT 	id
+			, prefix
+			, postfix
+			, body
+			, format_type
+			, length
+		WHERE
+			id = ?
+			AND status = ?
+	`
+
+	var result []VoucherCodeFormat
+	if err := vc.Select(&result, vc.Rebind(q), id, StatusCreated); err != nil {
+		return VoucherCodeFormat{}, err
+	}
+	if err := vc.Commit(); err != nil {
+		return VoucherCodeFormat{}, err
 	}
 	return result[0], nil
 }

@@ -402,9 +402,15 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model.Voucher, error) {
 	ret := make([]model.Voucher, vr.Quantity)
 	var rt []string
+	var vcf model.VoucherCodeFormat
+
+	vcf, err := model.GetVoucherCodeFormat(v.VoucherFormatId)
+	if err != nil {
+		return ret, err
+	}
 
 	for i := 0; i <= vr.Quantity-1; i++ {
-		rt = append(rt, randStr(10, "Alphanumeric"))
+		rt = append(rt, randStr(vcf.Length, vcf.FormatType))
 
 		tsd, err := time.Parse(time.RFC3339Nano, v.StartDate)
 		if err != nil {
@@ -439,9 +445,9 @@ func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model
 
 func randStr(ln int, fm string) string {
 	CharsType := map[string]string{
-		"Alphabet":     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-		"Numerals":     "1234567890",
-		"Alphanumeric": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890",
+		"Alphabet":     model.ALPHABET,
+		"Numerals":     model.NUMERALS,
+		"Alphanumeric": model.ALPHANUMERIC,
 	}
 
 	rand.Seed(time.Now().UTC().UnixNano())

@@ -2,6 +2,13 @@ CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 SET search_path = public, pg_catalog;
 
+
+CREATE TYPE voucher_format AS ENUM (
+    'Alphabet',
+    'Numerals',
+    'Alphanumeric'
+);
+
 CREATE TYPE broadcast_state AS ENUM (
     'created',
     'broadcast',
@@ -257,7 +264,7 @@ CREATE TABLE variants (
     account_id character varying(8) NOT NULL,
     variant_name character varying(64) NOT NULL,
     variant_type character varying(64) DEFAULT 'on-demand'::variant_type NOT NULL,
-    voucher_format_id character varying(8) NOT NULL,
+    voucher_format_id integer NOT NULL default 0,
     voucher_type character varying(16) DEFAULT 'cash'::voucher_type,
     voucher_price numeric NOT NULL,
     allow_accumulative character varying(8) NOT NULL,
@@ -285,7 +292,7 @@ CREATE TABLE voucher_formats (
     prefix character varying(8),
     postfix character varying(8),
     body character varying(8),
-    format_type character varying(16),
+    format_type voucher_format default 'Numerals' NOT NULL,
     length numeric(24,2) NOT NULL,
     created_by character varying(8) DEFAULT 'unknown'::character varying NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -320,5 +327,6 @@ CREATE TABLE vouchers (
     deleted_by character varying(8),
     deleted_at timestamp with time zone,
     status status DEFAULT 'created'::status NOT NULL ,
+    token character varying(32),
     CONSTRAINT vouchers_pkey PRIMARY KEY (id)
 );
