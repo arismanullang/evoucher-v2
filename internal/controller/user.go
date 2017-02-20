@@ -12,10 +12,13 @@ import (
 	"strings"
 
 	//"github.com/go-zoo/bone"
+	"github.com/gorilla/sessions"
 	"github.com/ruizu/render"
 
 	"github.com/gilkor/evoucher/internal/model"
 )
+
+var store = sessions.NewCookieStore([]byte("lalala"))
 
 type (
 	User struct {
@@ -68,6 +71,35 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	res := NewResponse(nil)
 	render.JSON(w, res, http.StatusCreated)
+}
+
+func CheckSession(w http.ResponseWriter, r *http.Request) {
+	username := r.FormValue("user_id")
+	data, err := store.Get(r, "sessionOne")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	ses := data.Values
+	fmt.Println(ses[username])
+	res := NewResponse(ses[username])
+	render.JSON(w, res, http.StatusOK)
+}
+
+func DoLogin(w http.ResponseWriter, r *http.Request) {
+	var rd UserLogin
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	user, err := model.Login(rd.Username, hash(rd.Password))
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
+	}
+
+	res := NewResponse(user)
+	render.JSON(w, res, http.StatusOK)
 }
 
 func FindUserByRole(w http.ResponseWriter, r *http.Request) {
@@ -204,7 +236,7 @@ func basicAuth(w http.ResponseWriter, r *http.Request) bool {
 
 	login, err := model.Login(pair[0], hash(pair[1]))
 
-	if login == 0 || err != nil {
+	if login == "" || err != nil {
 		return false
 	}
 

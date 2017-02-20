@@ -15,24 +15,31 @@ import (
 
 type (
 	VariantRequest struct {
-		AccountId          string   `json:"account_id"`
-		VariantName        string   `json:"variant_name"`
-		VariantType        string   `json:"variant_type"`
-		VoucherFormatId    string   `json:"voucher_format_id"`
-		VoucherType        string   `json:"voucher_type"`
-		VoucherPrice       float64  `json:"voucher_price"`
-		AllowAccumulative  bool     `json:"allow_accumulative"`
-		StartDate          string   `json:"start_date"`
-		EndDate            string   `json:"end_date"`
-		DiscountValue      float64  `json:"discount_value"`
-		MaxQuantityVoucher float64  `json:"max_quantity_voucher"`
-		MaxUsageVoucher    float64  `json:"max_usage_voucher"`
-		RedeemtionMethod   string   `json:"redeem_method"`
-		ImgUrl             string   `json:"img_url"`
-		VariantTnc         string   `json:"variant_tnc"`
-		VariantDescription string   `json:"variant_description"`
-		User               string   `json:"created_by"`
-		ValidPartners      []string `json:"valid_partners"`
+		AccountId          string    `json:"account_id"`
+		VariantName        string    `json:"variant_name"`
+		VariantType        string    `json:"variant_type"`
+		VoucherFormat      FormatReq `json:"voucher_format"`
+		VoucherType        string    `json:"voucher_type"`
+		VoucherPrice       float64   `json:"voucher_price"`
+		AllowAccumulative  bool      `json:"allow_accumulative"`
+		StartDate          string    `json:"start_date"`
+		EndDate            string    `json:"end_date"`
+		DiscountValue      float64   `json:"discount_value"`
+		MaxQuantityVoucher float64   `json:"max_quantity_voucher"`
+		MaxUsageVoucher    float64   `json:"max_usage_voucher"`
+		RedeemtionMethod   string    `json:"redeem_method"`
+		ImgUrl             string    `json:"img_url"`
+		VariantTnc         string    `json:"variant_tnc"`
+		VariantDescription string    `json:"variant_description"`
+		User               string    `json:"created_by"`
+		ValidPartners      []string  `json:"valid_partners"`
+	}
+	FormatReq struct {
+		Prefix     string `json:"prefix"`
+		Postfix    string `json:"postfix"`
+		Body       string `json:"body"`
+		FormatType string `json:"format_type"`
+		Length     int    `json:"length"`
 	}
 	UserVariantRequest struct {
 		User string `json:"user"`
@@ -63,11 +70,15 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	d := &model.Variant{
+	te, err := time.Parse("01/02/2006", rd.EndDate)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	vr := model.VariantReq{
 		AccountId:          rd.AccountId,
 		VariantName:        rd.VariantName,
 		VariantType:        rd.VariantType,
-		VoucherFormatId:    rd.VoucherFormatId,
 		VoucherType:        rd.VoucherType,
 		VoucherPrice:       rd.VoucherPrice,
 		MaxQuantityVoucher: rd.MaxQuantityVoucher,
@@ -76,14 +87,21 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		RedeemtionMethod:   rd.RedeemtionMethod,
 		DiscountValue:      rd.DiscountValue,
 		StartDate:          ts.Format("2006-01-02 15:04:05.000"),
-		EndDate:            ts.Format("2006-01-02 15:04:05.000"),
+		EndDate:            te.Format("2006-01-02 15:04:05.000"),
 		ImgUrl:             rd.ImgUrl,
 		VariantTnc:         rd.VariantTnc,
 		VariantDescription: rd.VariantDescription,
-		CreatedBy:          rd.User,
 		ValidPartners:      rd.ValidPartners,
 	}
-	if err := d.Insert(); err != nil {
+	fr := model.FormatReq{
+		Prefix:     rd.VoucherFormat.Prefix,
+		Postfix:    rd.VoucherFormat.Postfix,
+		Body:       rd.VoucherFormat.Body,
+		FormatType: rd.VoucherFormat.FormatType,
+		Length:     rd.VoucherFormat.Length,
+	}
+
+	if err := model.Insert(vr, fr, rd.User); err != nil {
 		log.Panic(err)
 	}
 
@@ -92,7 +110,8 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllVariant(w http.ResponseWriter, r *http.Request) {
-	variant, err := model.FindAllVariants()
+	accountId := r.FormValue("account_id")
+	variant, err := model.FindAllVariants(accountId)
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}
@@ -102,13 +121,9 @@ func GetAllVariant(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetVariantDetails(w http.ResponseWriter, r *http.Request) {
-	var rd SearchVariantRequests
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
-	}
+	param := getUrlParam(r.URL.String())
 
-	variant, err := model.FindVariantMultipleParam(rd.Fields, rd.Values)
+	variant, err := model.FindVariantMultipleParam(param)
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}
@@ -128,39 +143,11 @@ func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res)
 }
 
-func GetVariantDetailsByUser(w http.ResponseWriter, r *http.Request) {
-	//userId := "nZ9Xmo-2"
-	var rd UserVariantRequest
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
-	}
-
-	field := []string{"created_by"}
-	value := []string{rd.User}
-
-	param := SearchVariantRequests{
-		Fields: field,
-		Values: value,
-	}
-
-	variant, err := model.FindVariantMultipleParam(param.Fields, param.Values)
-	if err != nil && err != model.ErrResourceNotFound {
-		log.Panic(err)
-	}
-
-	res := NewResponse(variant)
-	render.JSON(w, res)
-}
-
 func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
-	var rd DateVariantRequest
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
-	}
+	start := r.FormValue("start")
+	end := r.FormValue("end")
 
-	variant, err := model.FindVariantByDate(rd.Start, rd.End)
+	variant, err := model.FindVariantByDate(start, end)
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}
@@ -177,12 +164,21 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
+	ts, err := time.Parse("01/02/2006", rd.StartDate)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	te, err := time.Parse("01/02/2006", rd.EndDate)
+	if err != nil {
+		log.Panic(err)
+	}
+
 	d := &model.Variant{
 		Id:                 id,
 		AccountId:          rd.AccountId,
 		VariantName:        rd.VariantName,
 		VariantType:        rd.VariantType,
-		VoucherFormatId:    rd.VoucherFormatId,
 		VoucherType:        rd.VoucherType,
 		VoucherPrice:       rd.VoucherPrice,
 		MaxQuantityVoucher: rd.MaxQuantityVoucher,
@@ -190,11 +186,12 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 		AllowAccumulative:  rd.AllowAccumulative,
 		RedeemtionMethod:   rd.RedeemtionMethod,
 		DiscountValue:      rd.DiscountValue,
-		StartDate:          rd.StartDate,
-		EndDate:            rd.EndDate,
+		StartDate:          ts.Format("2006-01-02 15:04:05.000"),
+		EndDate:            te.Format("2006-01-02 15:04:05.000"),
 		ImgUrl:             rd.ImgUrl,
 		VariantTnc:         rd.VariantTnc,
 		VariantDescription: rd.VariantDescription,
+		CreatedBy:          rd.User,
 		ValidPartners:      rd.ValidPartners,
 	}
 	if err := d.Update(); err != nil {

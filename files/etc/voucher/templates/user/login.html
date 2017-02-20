@@ -1,55 +1,80 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="description" content="">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>E-Voucher</title>
-
-<link rel="stylesheet" href="/assets/css/bootstrap.min.css">
-<link rel="stylesheet" href="/assets/css/style.css">
-<link rel="stylesheet" href="/assets/css/jquery-ui.min.css">
-
-<script src="/assets/js/jquery.min.js"></script>
-<script src="/assets/js/bootstrap.min.js"></script>
-<script src="/assets/js/style.js"></script>
-<script src="/assets/js/jquery-ui.js"></script>
-
-</head>
-
-<body>
-  <div class="page-content-large">
-    <div class="container">
-      <div class="col-xs-12 col-md-6 col-lg-6 center">
-        <div class="panel">
-          <div class="panel-header">
-            <h3 class="content-title">E-Voucher</h3>
-          </div>
-          <div class="panel-content">
-            <form class="form-horizontal">
-              <div class="form-group">
-                <label for="exampleInputEmail1" class="col-sm-2 control-label">Username</label>
-                <div class="col-sm-10">
-                  <input type="email" class="form-control" id="inputEmail3" placeholder="Username">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="Bootstrap Admin Template">
+    <meta name="keywords" content="app, responsive, jquery, bootstrap, dashboard, admin">
+    <title>Elys eVoucher - Login</title>
+    <!-- build:css(../app) css/vendor-user.css-->
+    <!-- Animate.CSS-->
+    <link rel="stylesheet" href="/assets/vendor/animate.css/animate.css">
+    <!-- Bootstrap-->
+    <link rel="stylesheet" href="/assets/vendor/bootstrap/dist/css/bootstrap.min.css">
+    <!-- Ionicons-->
+    <link rel="stylesheet" href="/assets/vendor/ionicons/css/ionicons.css">
+    <!-- Material Colors-->
+    <link rel="stylesheet" href="/assets/vendor/material-colors/dist/colors.css">
+    <!-- endbuild-->
+    <!-- Application styles-->
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/app.css">
+  </head>
+  <body>
+    <div class="layout-container">
+      <div class="page-container bg-white-grey">
+        <div class="container-full">
+          <div class="container container-xs"><img src="/assets/img/elys.png" class="mv-lg block-center img-responsive thumb">
+            <form id="user-login" action="" name="loginForm" novalidate="" class="card b0 form-validate">
+              <div class="card-offset pb0">
+                <div class="card-offset-item text-right"><a href="signup.html" class="btn-raised btn btn-info btn-circle btn-lg"><em class="ion-person-add"></em></a></div>
+                <div class="card-offset-item text-right hidden">
+                  <div class="btn btn-success btn-circle btn-lg"><em class="ion-checkmark-round"></em></div>
                 </div>
               </div>
-              <div class="form-group">
-                <label for="exampleInputPassword1" class="col-sm-2 control-label">Password</label>
-                <div class="col-sm-10">
-                  <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+              <div class="card-heading">
+                <div class="card-title text-center">E - VOUCHER</div>
+              </div>
+              <div class="card-body">
+                <div class="mda-form-group float-label mda-input-group">
+                  <div class="mda-form-control">
+                    <input type="text" id="username" name="username" required="" class="form-control">
+                    <div class="mda-form-control-line"></div>
+                    <label>Username</label>
+                  </div><span class="mda-input-group-addon"><em class="ion-ios-person icon-lg"></em></span>
+                </div>
+                <div class="mda-form-group float-label mda-input-group">
+                  <div class="mda-form-control">
+                    <input type="password" id="password" name="password" required="" class="form-control">
+                    <div class="mda-form-control-line"></div>
+                    <label>Password</label>
+                  </div><span class="mda-input-group-addon"><em class="ion-ios-locked-outline icon-lg"></em></span>
                 </div>
               </div>
-              <div class="form-group">
-                <div class="col-sm-4 col-sm-offset-8">
-                  <input type="button" class="form-control" id="sumbit" placeholder="sumbit" value="Submit">
-                </div>
-              </div>
+              <button type="submit" onclick="login()" class="btn btn-primary btn-flat">LOGIN</button>
             </form>
+            <div class="text-center text-sm"><a href="recover.html" class="text-inherit">Forgot password?</a></div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</body>
+    <!-- build:js(../app) js/vendor-user.js-->
+    <!-- Modernizr-->
+    <script src="/assets/vendor/modernizr/modernizr.custom.js"></script>
+    <!-- jQuery-->
+    <script src="/assets/vendor/jquery/dist/jquery.js"></script>
+    <!-- Bootstrap-->
+    <script src="/assets/vendor/bootstrap/dist/js/bootstrap.js"></script>
+    <!-- jQuery Browser-->
+    <script src="/assets/vendor/jquery.browser/dist/jquery.browser.js"></script>
+    <!-- Material Colors-->
+    <script src="/assets/vendor/material-colors/dist/colors.js"></script>
+    <!-- jQuery Form Validation-->
+    <script src="/assets/vendor/jquery-validation/dist/jquery.validate.js"></script>
+    <script src="/assets/vendor/jquery-validation/dist/additional-methods.js"></script>
+    <!-- endbuild-->
+    <!-- App script-->
+    <script src="/assets/js/app.js"></script>
+    <script src="/assets/js/user/index.js"></script>
+  </body>
 </html>
