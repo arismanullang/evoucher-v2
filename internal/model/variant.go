@@ -12,7 +12,7 @@ type (
 		AccountId          string   `db:"account_id"`
 		VariantName        string   `db:"variant_name"`
 		VariantType        string   `db:"variant_type"`
-		VoucherFormatId    string   `db:"voucher_format_id"`
+		VoucherFormat      int      `db:"voucher_format_id"`
 		VoucherType        string   `db:"voucher_type"`
 		VoucherPrice       float64  `db:"voucher_price"`
 		AllowAccumulative  bool     `db:"allow_accumulative"`
@@ -28,6 +28,31 @@ type (
 		CreatedBy          string   `db:"created_by"`
 		CreatedAt          string   `db:"created_at"`
 		ValidPartners      []string `db:"valid_partners"`
+	}
+	VariantReq struct {
+		AccountId          string   `db:"account_id"`
+		VariantName        string   `db:"variant_name"`
+		VariantType        string   `db:"variant_type"`
+		VoucherType        string   `db:"voucher_type"`
+		VoucherPrice       float64  `db:"voucher_price"`
+		AllowAccumulative  bool     `db:"allow_accumulative"`
+		StartDate          string   `db:"start_date"`
+		EndDate            string   `db:"end_date"`
+		DiscountValue      float64  `db:"discount_value"`
+		MaxQuantityVoucher float64  `db:"max_quantity_voucher"`
+		MaxUsageVoucher    float64  `db:"max_usage_voucher"`
+		RedeemtionMethod   string   `db:"redeemtion_method"`
+		ImgUrl             string   `db:"img_url"`
+		VariantTnc         string   `db:"variant_tnc"`
+		VariantDescription string   `db:"variant_description"`
+		ValidPartners      []string `db:"valid_partners"`
+	}
+	FormatReq struct {
+		Prefix     string `db:"prefix"`
+		Postfix    string `db:"postfix"`
+		Body       string `db:"body"`
+		FormatType string `db:"format_type"`
+		Length     int    `db:"length"`
 	}
 	DeleteVariantRequest struct {
 		Id   string `db:"id"`
@@ -56,7 +81,7 @@ type (
 	}
 )
 
-func (d *Variant) Insert() error {
+func Insert(vr VariantReq, fr FormatReq, user string) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		return err
@@ -64,6 +89,25 @@ func (d *Variant) Insert() error {
 	defer tx.Rollback()
 
 	q := `
+		INSERT INTO voucher_formats(
+			prefix
+			, postfix
+			, body
+			, format_type
+			, length
+			, created_by
+			, status
+		)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+		RETURNING
+			id
+	`
+	var res []string
+	if err := tx.Select(&res, tx.Rebind(q), fr.Prefix, fr.Postfix, fr.Body, fr.FormatType, fr.Length, user, StatusCreated); err != nil {
+		return err
+	}
+
+	q2 := `
 		INSERT INTO variants(
 			account_id
 			, variant_name
@@ -88,14 +132,13 @@ func (d *Variant) Insert() error {
 		RETURNING
 			id
 	`
-	var res []string
-	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.VariantName, d.VariantType, d.VoucherFormatId, d.VoucherType, d.VoucherPrice, d.AllowAccumulative, d.StartDate, d.EndDate, d.DiscountValue, d.MaxQuantityVoucher, d.MaxUsageVoucher, d.RedeemtionMethod, d.ImgUrl, d.VariantTnc, d.VariantDescription, d.CreatedBy, StatusCreated); err != nil {
+	var res1 []string
+	if err := tx.Select(&res1, tx.Rebind(q2), vr.AccountId, vr.VariantName, vr.VariantType, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.DiscountValue, vr.MaxQuantityVoucher, vr.MaxUsageVoucher, vr.RedeemtionMethod, vr.ImgUrl, vr.VariantTnc, vr.VariantDescription, user, StatusCreated); err != nil {
 		return err
 	}
-	d.Id = res[0]
 
-	if len(d.ValidPartners) > 0 {
-		for _, v := range d.ValidPartners {
+	if len(vr.ValidPartners) > 0 {
+		for _, v := range vr.ValidPartners {
 			q := `
 				INSERT INTO variant_partners(
 					variant_id
@@ -106,7 +149,7 @@ func (d *Variant) Insert() error {
 				VALUES (?, ?, ?, ?)
 			`
 
-			_, err := tx.Exec(tx.Rebind(q), d.Id, v, d.CreatedBy, StatusCreated)
+			_, err := tx.Exec(tx.Rebind(q), res1[0], v, user, StatusCreated)
 			if err != nil {
 				return err
 			}
@@ -131,7 +174,6 @@ func (d *Variant) Update() error {
 		SET
 			variant_name = ?
 			, variant_type = ?
-			, voucher_format_id = ?
 			, voucher_type = ?
 			, voucher_price = ?
 			, allow_accumulative = ?
@@ -148,10 +190,10 @@ func (d *Variant) Update() error {
 			, updated_at = ?
 		WHERE
 			id = ?
-			AND status = ?;
+			AND status = ?
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), d.VariantName, d.VariantType, d.VoucherFormatId, d.VoucherType, d.VoucherPrice, d.MaxQuantityVoucher, d.MaxUsageVoucher, d.AllowAccumulative, d.RedeemtionMethod, d.StartDate, d.EndDate, d.DiscountValue, d.ImgUrl, d.VariantTnc, d.VariantDescription, d.CreatedBy, time.Now(), d.Id, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), d.VariantName, d.VariantType, d.VoucherType, d.VoucherPrice, d.AllowAccumulative, d.StartDate, d.EndDate, d.DiscountValue, d.MaxQuantityVoucher, d.MaxUsageVoucher, d.RedeemtionMethod, d.ImgUrl, d.VariantTnc, d.VariantDescription, d.CreatedBy, time.Now(), d.Id, StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -376,7 +418,7 @@ func FindVariantByDate(start, end string) (VariantResponse, error) {
 	return res, nil
 }
 
-func FindAllVariants() (VariantResponse, error) {
+func FindAllVariants(accountId string) (VariantResponse, error) {
 	q := `
 		SELECT
 			id
@@ -389,10 +431,13 @@ func FindAllVariants() (VariantResponse, error) {
 			, end_date
 		FROM
 			variants
+		WHERE
+			account_id = ?
+			AND status = ?
 	`
 
 	var resv []SearchVariant
-	if err := db.Select(&resv, db.Rebind(q)); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
 		return VariantResponse{Status: "500", Message: "Error at select variant", Data: nil}, err
 	}
 	if len(resv) < 1 {
@@ -425,7 +470,7 @@ func FindAllVariants() (VariantResponse, error) {
 	return res, nil
 }
 
-func FindVariantMultipleParam(field, value []string) (VariantResponse, error) {
+func FindVariantMultipleParam(param map[string]string) (VariantResponse, error) {
 	fmt.Println("Query start")
 	q := `
 		SELECT
@@ -442,17 +487,20 @@ func FindVariantMultipleParam(field, value []string) (VariantResponse, error) {
 		WHERE
 			status = ?
 	`
-	for i := 0; i < len(field); i++ {
-		if _, err := strconv.Atoi(value[i]); err == nil {
-			q += ` AND ` + field[i] + ` = '` + value[i] + `'`
+	for key, value := range param {
+		if key == "q" {
+			q += `AND (variant_name ILIKE '%` + value + `%' OR account_id ILIKE '%` + value + `%' OR voucher_type ILIKE '%` + value + `%')`
 		} else {
-			q += ` AND ` + field[i] + ` LIKE '%` + value[i] + `%'`
+			if _, err := strconv.Atoi(value); err == nil {
+				q += ` AND ` + key + ` = '` + value + `'`
+			} else {
+				q += ` AND ` + key + ` LIKE '%` + value + `%'`
 
+			}
 		}
 	}
 
 	var resv []SearchVariant
-
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
 		return VariantResponse{Status: "Error", Message: q, Data: nil}, err
 	}

@@ -16,18 +16,19 @@ func setRoutes() http.Handler {
 	//ui
 	r.GetFunc("/variant/:page", viewVariant)
 	r.GetFunc("/user/:page", viewUser)
+	r.GetFunc("/", login)
 
 	//variant
-	r.GetFunc("/variant/getAllVariant", controller.GetAllVariant)
-	r.PostFunc("/variant/getVariant", controller.GetVariantDetails)
-	r.PostFunc("/variant/getVariantByUser", controller.GetVariantDetailsByUser)
-	r.PostFunc("/variant/getVariantByDate", controller.GetVariantDetailsByDate)
-	r.PostFunc("/variant/createVariant", controller.CreateVariant)
-	r.PostFunc("/variant/getVariant/:id", controller.GetVariantDetailsById)
-	r.PostFunc("/variant/:id/update", controller.UpdateVariant)
-	r.PostFunc("/variant/:id/updateBroadcastUser", controller.UpdateVariantBroadcast)
-	r.PostFunc("/variant/:id/updateTenant", controller.UpdateVariantTenant)
-	r.PostFunc("/variant/:id/delete", controller.DeleteVariant)
+	r.GetFunc("/get/allVariant", controller.GetAllVariant)
+	r.GetFunc("/get/variant", controller.GetVariantDetails)
+	r.GetFunc("/get/variantByDate", controller.GetVariantDetailsByDate)
+	r.PostFunc("/create/variant", controller.CreateVariant)
+	r.GetFunc("/get/variant/:id", controller.GetVariantDetailsById)
+	r.GetFunc("/get/session", controller.CheckSession)
+	r.PostFunc("/update/variant/:id", controller.UpdateVariant)
+	r.PostFunc("/update/variant/:id/broadcastUser", controller.UpdateVariantBroadcast)
+	r.PostFunc("/update/variant/:id/tenant", controller.UpdateVariantTenant)
+	r.PostFunc("/delete/variant/:id", controller.DeleteVariant)
 
 	//transaction
 	r.PostFunc("/transaction/createTransaction", controller.CreateTransaction)
@@ -36,9 +37,10 @@ func setRoutes() http.Handler {
 	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)
 
 	//user
-	r.PostFunc("/user/register/", controller.RegisterUser)
+	r.PostFunc("/user/createUser/", controller.RegisterUser)
 	r.PostFunc("/user/getUserByRole/", controller.FindUserByRole)
 	r.PostFunc("/user/getUser/", controller.GetUser)
+	r.PostFunc("/login", controller.DoLogin)
 
 	//Voucher
 	r.GetFunc("/voucher/:id/get", controller.GetVoucherDetail)
@@ -70,14 +72,13 @@ func viewNoLayoutHandler(w http.ResponseWriter, r *http.Request) {
 func viewVariant(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	switch page {
-	case "create":
+	if page == "create" {
 		render.FileInLayout(w, "layout.html", "variant/create.html", nil)
-	case "search":
+	} else if page == "search" {
 		render.FileInLayout(w, "layout.html", "variant/check.html", nil)
-	case "update":
+	} else if page == "update" {
 		render.FileInLayout(w, "layout.html", "variant/update.html", nil)
-	default:
+	} else if page == "" || page == "index.html" {
 		render.FileInLayout(w, "layout.html", "variant/index.html", nil)
 	}
 }
@@ -85,28 +86,19 @@ func viewVariant(w http.ResponseWriter, r *http.Request) {
 func viewUser(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	switch page {
-	case "create":
+	if page == "register" {
 		render.FileInLayout(w, "layout.html", "user/create.html", nil)
-	case "search":
+	} else if page == "search" {
 		render.FileInLayout(w, "layout.html", "user/check.html", nil)
-	case "update":
+	} else if page == "update" {
 		render.FileInLayout(w, "layout.html", "user/update.html", nil)
-	case "login":
-		http.Redirect(w, r, "http://juno-staging.elys.id/v1/signin?redirect_url=http://evoucher.elys.id:8080/variant/", http.StatusFound)
-	default:
-		http.Redirect(w, r, "http://juno-staging.elys.id/v1/signin?redirect_url=http://evoucher.elys.id:8080/variant/", http.StatusFound)
+	} else if page == "login" {
+		render.FileInLayout(w, "layout.html", "user/login.html", nil)
+	} else if page == "" || page == "index.html" {
+		render.FileInLayout(w, "layout.html", "user/index.html", nil)
 	}
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	//url := "http://juno-staging.elys.id/v1/signin?redirect_url=http://127.0.0.1:8080/ping"
-	url := "http://juno-staging.elys.id/v1/signin?redirect_url=http://evoucher.elys.id:8080/variant/"
-	http.Redirect(w, r, url, http.StatusFound)
-}
-
-func register(w http.ResponseWriter, r *http.Request) {
-	//url := "http://juno-staging.elys.id/v1/signin?redirect_url=http://127.0.0.1:8080/ping"
-	url := "http://juno-staging.elys.id/v1/register?redirect_url=http://evoucher.elys.id:8080/variant/"
-	http.Redirect(w, r, url, http.StatusFound)
+	render.FileInLayout(w, "layout.html", "user/login.html", nil)
 }
