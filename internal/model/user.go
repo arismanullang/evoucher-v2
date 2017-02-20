@@ -95,7 +95,7 @@ func AddUser(u User) error {
 	}
 }
 
-func Login(username, password string) (int, error) {
+func Login(username, password string) (string, error) {
 	fmt.Println("Login")
 	q := `
 		SELECT id FROM users
@@ -106,10 +106,12 @@ func Login(username, password string) (int, error) {
 	`
 	var res []string
 	if err := db.Select(&res, db.Rebind(q), username, password, StatusCreated); err != nil {
-		return 0, err
+		return "", err
 	}
-
-	return len(res), nil
+	if len(res) == 0 {
+		return "", ErrResourceNotFound
+	}
+	return res[0], nil
 }
 
 func checkUsername(username string) (int, error) {
@@ -189,9 +191,12 @@ func FindUser(usr map[string]string) (UserResponse, error) {
 		WHERE
 			status = ?
 	`
+
 	for key, value := range usr {
 		if key == "q" {
-			q = q + `AND ` + key + ` ILIKE '%` + value + `%'`
+			q += `AND (u.username ILIKE '%` + value + `%')`
+		} else {
+			q += ` AND ` + key + ` LIKE '%` + value + `%'`
 		}
 	}
 
