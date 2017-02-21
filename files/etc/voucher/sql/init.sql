@@ -1,8 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
-COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
-SET search_path = public, pg_catalog;
-
-
 CREATE TYPE voucher_format AS ENUM (
     'Alphabet',
     'Numerals',
@@ -72,11 +67,18 @@ CREATE TABLE accounts (
     CONSTRAINT accounts_pkey PRIMARY KEY (id)
 );
 
+CREATE SEQUENCE broadcast_users_id_seq
+START WITH 1
+INCREMENT BY 1
+NO MINVALUE
+NO MAXVALUE
+CACHE 1;
+
 CREATE TABLE broadcast_users (
     id integer DEFAULT nextval('broadcast_users_id_seq'::regclass) NOT NULL ,
     state character varying(8) NOT NULL,
     variant_id character varying(8) NOT NULL,
-    broadcast_target character varying(128) NOT NULL,
+    broadcast_target character varying(256) NOT NULL,
     created_by character varying(8) DEFAULT 'unknown'::character varying NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_by character varying(8),
@@ -85,15 +87,15 @@ CREATE TABLE broadcast_users (
 
     CONSTRAINT broadcast_users_pkey PRIMARY KEY (id)
 );
-
-CREATE SEQUENCE broadcast_users_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
 ALTER SEQUENCE broadcast_users_id_seq OWNED BY broadcast_users.id;
 
+
+CREATE SEQUENCE features_id_seq
+START WITH 1
+INCREMENT BY 1
+NO MINVALUE
+NO MAXVALUE
+CACHE 1;
 CREATE TABLE features (
     id integer DEFAULT nextval('features_id_seq'::regclass) NOT NULL,
     feature_detail character varying(32) NOT NULL,
@@ -102,14 +104,8 @@ CREATE TABLE features (
     status status DEFAULT 'created'::status NOT NULL ,
     CONSTRAINT features_pkey PRIMARY KEY (id)
 );
-
-CREATE SEQUENCE features_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
 ALTER SEQUENCE features_id_seq OWNED BY features.id;
+
 
 CREATE TABLE partners (
     id character varying(8) DEFAULT new_id() NOT NULL,
@@ -130,6 +126,14 @@ CREATE TABLE roles (
     CONSTRAINT roles_pkey PRIMARY KEY (id)
 );
 
+
+CREATE SEQUENCE rules_id_seq
+START WITH 1
+INCREMENT BY 1
+NO MINVALUE
+NO MAXVALUE
+CACHE 1;
+
 CREATE TABLE rules (
     id integer DEFAULT nextval('rules_id_seq'::regclass) NOT NULL,
     role_id character varying(8) NOT NULL,
@@ -139,15 +143,15 @@ CREATE TABLE rules (
     status status DEFAULT 'created'::status NOT NULL ,
     CONSTRAINT rules_pkey PRIMARY KEY (id)
 );
-
-CREATE SEQUENCE rules_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
 ALTER SEQUENCE rules_id_seq OWNED BY rules.id;
+
+
+CREATE SEQUENCE transaction_details_id_seq
+START WITH 1
+INCREMENT BY 1
+NO MINVALUE
+NO MAXVALUE
+CACHE 1;
 
 CREATE TABLE transaction_details (
     id integer DEFAULT nextval('transaction_details_id_seq'::regclass) NOT NULL,
@@ -160,15 +164,9 @@ CREATE TABLE transaction_details (
     status status DEFAULT 'created'::status NOT NULL ,
     CONSTRAINT transaction_details_pkey PRIMARY KEY (id)
 );
-
-CREATE SEQUENCE transaction_details_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
 ALTER SEQUENCE transaction_details_id_seq OWNED BY transaction_details.id;
+
+
 CREATE TABLE transactions (
     id character varying(8) DEFAULT new_id() NOT NULL,
     account_id character varying(8) NOT NULL,
@@ -186,6 +184,14 @@ CREATE TABLE transactions (
     CONSTRAINT transactions_pkey PRIMARY KEY (id)
 );
 
+
+CREATE SEQUENCE user_accounts_id_seq
+START WITH 1
+INCREMENT BY 1
+NO MINVALUE
+NO MAXVALUE
+CACHE 1;
+
 CREATE TABLE user_accounts (
     id integer DEFAULT nextval('user_accounts_id_seq'::regclass) NOT NULL,
     user_id character varying(8) NOT NULL,
@@ -197,13 +203,15 @@ CREATE TABLE user_accounts (
     status status DEFAULT 'created'::status NOT NULL ,
     CONSTRAINT user_accounts_pkey PRIMARY KEY (id)
 );
-CREATE SEQUENCE user_accounts_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
 ALTER SEQUENCE user_accounts_id_seq OWNED BY user_accounts.id;
+
+
+CREATE SEQUENCE user_roles_id_seq
+START WITH 1
+INCREMENT BY 1
+NO MINVALUE
+NO MAXVALUE
+CACHE 1;
 
 CREATE TABLE user_roles (
     id integer DEFAULT nextval('user_roles_id_seq'::regclass) NOT NULL,
@@ -216,13 +224,8 @@ CREATE TABLE user_roles (
     status status DEFAULT 'created'::status NOT NULL ,
     CONSTRAINT user_roles_pkey PRIMARY KEY (id)
 );
-CREATE SEQUENCE user_roles_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
 ALTER SEQUENCE user_roles_id_seq OWNED BY user_roles.id;
+
 
 CREATE TABLE users (
     id character varying(8) DEFAULT new_id() NOT NULL,
@@ -238,7 +241,15 @@ CREATE TABLE users (
     CONSTRAINT users_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE valid_partners (
+
+CREATE SEQUENCE variant_partners_id_seq
+START WITH 1
+INCREMENT BY 1
+NO MINVALUE
+NO MAXVALUE
+CACHE 1;
+
+CREATE TABLE variant_partners (
     id integer DEFAULT nextval('valid_partners_id_seq'::regclass) NOT NULL,
     variant_id character varying(8) NOT NULL,
     partner_id character varying(8) NOT NULL,
@@ -249,15 +260,8 @@ CREATE TABLE valid_partners (
     status status DEFAULT 'created'::status NOT NULL ,
     CONSTRAINT valid_partners_pkey PRIMARY KEY (id)
 );
+ALTER SEQUENCE variant_partners_id_seq OWNED BY variant_partners.id;
 
-CREATE SEQUENCE valid_partners_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE valid_partners_id_seq OWNED BY valid_partners.id;
 
 CREATE TABLE variants (
     id character varying(8) DEFAULT new_id() NOT NULL,
@@ -287,28 +291,28 @@ CREATE TABLE variants (
     CONSTRAINT variants_pkey PRIMARY KEY (id)
 );
 
+
+CREATE SEQUENCE voucher_formats_id_seq
+START WITH 1
+INCREMENT BY 1
+NO MINVALUE
+NO MAXVALUE
+CACHE 1;
+
 CREATE TABLE voucher_formats (
     id integer DEFAULT nextval('voucher_formats_id_seq'::regclass) NOT NULL,
     prefix character varying(8),
     postfix character varying(8),
     body character varying(8),
     format_type voucher_format default 'Numerals' NOT NULL,
-    length numeric(24,2) NOT NULL,
+    length numeric NOT NULL,
     created_by character varying(8) DEFAULT 'unknown'::character varying NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     status status DEFAULT 'created'::status NOT NULL ,
     CONSTRAINT voucher_formats_pkey PRIMARY KEY (id)
 );
-
-
-CREATE SEQUENCE voucher_formats_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
 ALTER SEQUENCE voucher_formats_id_seq OWNED BY voucher_formats.id;
+
 
 CREATE TABLE vouchers (
     id character varying(8) DEFAULT new_id() NOT NULL,
@@ -327,6 +331,5 @@ CREATE TABLE vouchers (
     deleted_by character varying(8),
     deleted_at timestamp with time zone,
     status status DEFAULT 'created'::status NOT NULL ,
-    token character varying(32),
     CONSTRAINT vouchers_pkey PRIMARY KEY (id)
 );
