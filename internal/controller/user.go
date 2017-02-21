@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	//"github.com/go-zoo/bone"
 	"github.com/gorilla/sessions"
@@ -74,15 +75,33 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func CheckSession(w http.ResponseWriter, r *http.Request) {
-	username := r.FormValue("user_id")
-	data, err := store.Get(r, "sessionOne")
-	if err != nil {
-		fmt.Println(err)
+	token := r.FormValue("token")
+
+	var valid bool = false
+	if token != "" {
+		decoded, err := base64.StdEncoding.DecodeString(token)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		session := strings.Split(string(decoded), ";")
+		sessionValue, err := store.Get(r, session[0])
+		if err != nil {
+			log.Panic(err)
+		}
+
+		user := sessionValue.Values
+		exp, err := time.Parse("2006-01-02 15:04:05", user["expired"].(string))
+		if err != nil {
+			log.Panic(err)
+		}
+
+		if exp.After(time.Now()) {
+			valid = true
+		}
 	}
 
-	ses := data.Values
-	fmt.Println(ses[username])
-	res := NewResponse(ses[username])
+	res := NewResponse(valid)
 	render.JSON(w, res, http.StatusOK)
 }
 
@@ -98,7 +117,23 @@ func DoLogin(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	res := NewResponse(user)
+	times := time.Now()
+	times = times.AddDate(0, 0, 1)
+	encoded := base64.StdEncoding.EncodeToString([]byte(user + ";" + times.String()))
+
+	session, err := store.Get(r, user)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	session.Options = &sessions.Options{
+		MaxAge: 86400,
+	}
+
+	session.Values["expired"] = times.Format("2006-01-02 15:04:05")
+	session.Save(r, w)
+
+	res := NewResponse(encoded)
 	render.JSON(w, res, http.StatusOK)
 }
 

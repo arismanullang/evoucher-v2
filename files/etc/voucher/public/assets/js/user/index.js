@@ -12,7 +12,7 @@ function login(){
       data: JSON.stringify(request),
       success: function (data){
         alert(data.data);
-        window.location = "http://evoucher.elys.id:8889/variant/create?user_id="+data.data;
+        window.location = "http://evoucher.elys.id:8889/variant/create?token="+data.data;
       }
   });
 }
