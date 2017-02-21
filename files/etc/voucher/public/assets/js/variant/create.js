@@ -1,6 +1,5 @@
 $( window ).load(function() {
   searchByRole();
-  sess();
 });
 
 function toTwoDigit(val){
@@ -43,16 +42,6 @@ function send() {
       data: JSON.stringify(variant),
       success: function () {
           alert("Variant created.");
-      }
-  });
-}
-
-function sess() {
-    $.ajax({
-      url: 'http://evoucher.elys.id:8889/get/session',
-      type: 'get',
-      success: function (data) {
-        alert(data);
       }
   });
 }
@@ -107,7 +96,6 @@ function addData(elem) {
   var tr=$("<span class='label label-success name-op' onclick='remove(this)'></span>");
   $(tr).html(elem.value);
   tr.appendTo('#listOp');
-
 }
 
 function remove(elem){

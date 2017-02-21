@@ -14,6 +14,10 @@ type (
 		RoleId    []string `db:"-"`
 		CreatedBy string   `db:"created_by"`
 	}
+	UserSession struct {
+		Id      string `db:"id"`
+		Expired string `db:"session_expired"`
+	}
 	Role struct {
 		Id         string `db:"id"`
 		RoleDetail string `db:"role_detail"`
@@ -93,25 +97,6 @@ func AddUser(u User) error {
 	} else {
 		return ErrDuplicateEntry
 	}
-}
-
-func Login(username, password string) (string, error) {
-	fmt.Println("Login")
-	q := `
-		SELECT id FROM users
-		WHERE
-			username = ?
-			AND password = ?
-			AND status = ?
-	`
-	var res []string
-	if err := db.Select(&res, db.Rebind(q), username, password, StatusCreated); err != nil {
-		return "", err
-	}
-	if len(res) == 0 {
-		return "", ErrResourceNotFound
-	}
-	return res[0], nil
 }
 
 func checkUsername(username string) (int, error) {
@@ -215,4 +200,23 @@ func FindUser(usr map[string]string) (UserResponse, error) {
 	}
 
 	return res, nil
+}
+
+func Login(username, password string) (string, error) {
+	fmt.Println("Login")
+	q := `
+		SELECT id FROM users
+		WHERE
+			username = ?
+			AND password = ?
+			AND status = ?
+	`
+	var res []string
+	if err := db.Select(&res, db.Rebind(q), username, password, StatusCreated); err != nil {
+		return "", err
+	}
+	if len(res) == 0 {
+		return "", ErrResourceNotFound
+	}
+	return res[0], nil
 }
