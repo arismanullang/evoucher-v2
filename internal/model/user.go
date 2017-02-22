@@ -14,9 +14,9 @@ type (
 		RoleId    []string `db:"-"`
 		CreatedBy string   `db:"created_by"`
 	}
-	UserSession struct {
-		Id      string `db:"id"`
-		Expired string `db:"session_expired"`
+	UserRes struct {
+		Id       string `db:"id"`
+		Username string `db:"username"`
 	}
 	Role struct {
 		Id         string `db:"id"`
@@ -124,12 +124,12 @@ func FindAllUser(accountId string) (UserResponse, error) {
 		AND u.status = ?
 	`
 
-	var resv []string
+	var resv []UserRes
 	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
-		return UserResponse{Status: "Error", Message: q, Data: []string{}}, err
+		return UserResponse{Status: "Error", Message: q, Data: []UserRes{}}, err
 	}
 	if len(resv) < 1 {
-		return UserResponse{Status: "404", Message: q, Data: []string{}}, ErrResourceNotFound
+		return UserResponse{Status: "404", Message: q, Data: []UserRes{}}, ErrResourceNotFound
 	}
 
 	res := UserResponse{
@@ -151,12 +151,12 @@ func FindUserByRole(role, accountId string) (UserResponse, error) {
 		AND u.status = ?
 	`
 
-	var resv []string
+	var resv []UserRes
 	if err := db.Select(&resv, db.Rebind(q), accountId, role, StatusCreated); err != nil {
-		return UserResponse{Status: "Error", Message: q, Data: []string{}}, err
+		return UserResponse{Status: "Error", Message: q, Data: []UserRes{}}, err
 	}
 	if len(resv) < 1 {
-		return UserResponse{Status: "404", Message: q, Data: []string{}}, ErrResourceNotFound
+		return UserResponse{Status: "404", Message: q, Data: []UserRes{}}, ErrResourceNotFound
 	}
 
 	res := UserResponse{

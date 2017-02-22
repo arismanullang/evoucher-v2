@@ -76,9 +76,9 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 func CheckSession(w http.ResponseWriter, r *http.Request) {
 	token := r.FormValue("token")
-
+	fmt.Println(token)
 	var valid bool = false
-	if token != "" {
+	if token != "" && token != "null" {
 		decoded, err := base64.StdEncoding.DecodeString(token)
 		if err != nil {
 			log.Panic(err)
@@ -138,16 +138,13 @@ func DoLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func FindUserByRole(w http.ResponseWriter, r *http.Request) {
-	var rd RoleReq
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
-	}
+	accountId := r.FormValue("account_id")
+	role := r.FormValue("role")
 
 	var user = model.UserResponse{}
 	var err error
 	if basicAuth(w, r) {
-		user, err = model.FindUserByRole(rd.Role, rd.AccountId)
+		user, err = model.FindUserByRole(role, accountId)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
 		}
@@ -161,16 +158,12 @@ func FindUserByRole(w http.ResponseWriter, r *http.Request) {
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	//param := getUrlParam(r.URL.String())
-	var rd AccountReq
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
-	}
+	accountId := r.FormValue("account_id")
 
 	var user = model.UserResponse{}
 	var err error
 	if basicAuth(w, r) {
-		user, err = model.FindAllUser(rd.AccountId)
+		user, err = model.FindAllUser(accountId)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
 		}

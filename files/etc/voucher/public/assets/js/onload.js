@@ -8,7 +8,8 @@ function getSession(token) {
       url: 'http://evoucher.elys.id:8889/get/session?token='+token,
       type: 'get',
       success: function (data) {
-        if(data.data == "false"){
+        alert(data.data);
+        if(data.data == false){
           window.location = "http://evoucher.elys.id:8889/user/login";
         }
       }
