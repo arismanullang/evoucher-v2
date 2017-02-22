@@ -2,6 +2,7 @@ package model
 
 import (
 	"database/sql"
+	"log"
 	"time"
 
 	"github.com/lib/pq"
@@ -12,7 +13,7 @@ type (
 		ID            string         `db:"id"`
 		VoucherCode   string         `db:"voucher_code"`
 		ReferenceNo   string         `db:"reference_no"`
-		AccountID     string         `db:"account_id"`
+		Holder        string         `db:"holder"`
 		VariantID     string         `db:"variant_id"`
 		ValidAt       time.Time      `db:"valid_at"`
 		ExpiredAt     time.Time      `db:"expired_at"`
@@ -37,6 +38,13 @@ type (
 		State string `db:"state"`
 		User  string `db:"created_by"`
 	}
+	VoucherCodeFormat struct {
+		Prefix     sql.NullString `db:"prefix"`
+		Postfix    sql.NullString `db:"postfix"`
+		Body       sql.NullString `db:"body"`
+		FormatType string         `db:"format_type"`
+		Length     int            `db:"length"`
+	}
 )
 
 func FindVoucherByID(id string) (VoucherResponse, error) {
@@ -53,7 +61,7 @@ func findVoucher(field, value string) (VoucherResponse, error) {
 			id
 			, voucher_code
 			, reference_no
-			, account_id
+			, holder
 			, variant_id
 			, valid_at
 			, expired_at
@@ -102,7 +110,7 @@ func (d *Voucher) InsertVc() error {
 	      	vouchers (
 			      voucher_code
 			      , reference_no
-			      , account_id
+			      , holder
 			      , variant_id
 			      , valid_at
 			      , expired_at
@@ -115,7 +123,7 @@ func (d *Voucher) InsertVc() error {
 			      id
 			      , voucher_code
 			      , reference_no
-			      , account_id
+			      , holder
 			      , variant_id
 			      , valid_at
 			      , expired_at
@@ -130,7 +138,7 @@ func (d *Voucher) InsertVc() error {
 			      , status
       `
 	var res []Voucher
-	if err := vc.Select(&res, vc.Rebind(q), d.VoucherCode, d.ReferenceNo, d.AccountID, d.VariantID, d.ValidAt, d.ExpiredAt, d.DiscountValue, VoucherStateCreated, d.CreatedBy); err != nil {
+	if err := vc.Select(&res, vc.Rebind(q), d.VoucherCode, d.ReferenceNo, d.Holder, d.VariantID, d.ValidAt, d.ExpiredAt, d.DiscountValue, VoucherStateCreated, d.CreatedBy); err != nil {
 		return err
 	}
 
@@ -196,7 +204,7 @@ func (d *UpdateDeleteRequest) UpdateVc() (Voucher, error) {
 			id
 			, voucher_code
 			, reference_no
-			, account_id
+			, holder
 			, variant_id
 			, valid_at
 			, expired_at
@@ -223,4 +231,33 @@ func (d *UpdateDeleteRequest) UpdateVc() (Voucher, error) {
 		return Voucher{}, err
 	}
 	return result[0], nil
+}
+
+func GetVoucherCodeFormat(id int) (VoucherCodeFormat, error) {
+	vc, err := db.Beginx()
+	if err != nil {
+		return VoucherCodeFormat{}, err
+	}
+	defer vc.Rollback()
+
+	q := `
+		SELECT
+			prefix
+			, postfix
+			, body
+			, format_type
+			, length
+		FROM
+			voucher_formats
+		WHERE
+			id = ?
+			AND status = ?
+	`
+
+	var resd []VoucherCodeFormat
+	if err := db.Select(&resd, db.Rebind(q), id, StatusCreated); err != nil {
+		log.Panic(err)
+		return VoucherCodeFormat{}, err
+	}
+	return resd[0], nil
 }
