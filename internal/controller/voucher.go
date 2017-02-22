@@ -1,20 +1,15 @@
 package controller
 
 import (
-	"crypto/rand"
 	"encoding/json"
-	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"time"
 
 	"github.com/gilkor/evoucher/internal/model"
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
-)
-
-const (
-	VoucherCodeLen int32 = 4 // VoucherCodeLen length of VoucherCode to run randStr
 )
 
 type (
@@ -60,7 +55,7 @@ type (
 		ID            string    `json:"id"`
 		VoucherCode   string    `json:"voucher_code"`
 		ReferenceNo   string    `json:"reference_no"`
-		AccountID     string    `json:"account_id"`
+		Holder        string    `json:"holder"`
 		VariantID     string    `json:"variant_id"`
 		ValidAt       time.Time `json:"valid_at"`
 		ExpiredAt     time.Time `json:"expired_at"`
@@ -100,7 +95,7 @@ func GetVoucherDetail(w http.ResponseWriter, r *http.Request) {
 			ID:            dv.ID,
 			VoucherCode:   dv.VoucherCode,
 			ReferenceNo:   dv.ReferenceNo,
-			AccountID:     dv.AccountID,
+			Holder:        dv.Holder,
 			VariantID:     dv.VariantID,
 			ValidAt:       dv.ValidAt,
 			ExpiredAt:     dv.ExpiredAt,
@@ -160,7 +155,7 @@ func RedeemVoucher(w http.ResponseWriter, r *http.Request) {
 				ID:            uv.ID,
 				VoucherCode:   uv.VoucherCode,
 				ReferenceNo:   uv.ReferenceNo,
-				AccountID:     uv.AccountID,
+				Holder:        uv.Holder,
 				VariantID:     uv.VariantID,
 				ValidAt:       uv.ValidAt,
 				ExpiredAt:     uv.ExpiredAt,
@@ -256,7 +251,7 @@ func PayVoucher(w http.ResponseWriter, r *http.Request) {
 				ID:            uv.ID,
 				VoucherCode:   uv.VoucherCode,
 				ReferenceNo:   uv.ReferenceNo,
-				AccountID:     uv.AccountID,
+				Holder:        uv.Holder,
 				VariantID:     uv.VariantID,
 				ValidAt:       uv.ValidAt,
 				ExpiredAt:     uv.ExpiredAt,
@@ -406,26 +401,45 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model.Voucher, error) {
 	ret := make([]model.Voucher, vr.Quantity)
 	var rt []string
+	var vcf model.VoucherCodeFormat
+	var code string
+
+	vcf, err := model.GetVoucherCodeFormat(v.VoucherFormat)
+	if err != nil {
+		return ret, err
+	}
 
 	for i := 0; i <= vr.Quantity-1; i++ {
-		rt = append(rt, randStr())
+
+		switch {
+		case v.VoucherFormat == 0:
+			code = randStr(model.DEFAULT_LENGTH, model.DEFAULT_CODE)
+			// fmt.Println("1 :", code)
+		case vcf.Body.Valid == true:
+			code = vcf.Prefix.String + vcf.Body.String + vcf.Postfix.String
+			// fmt.Println("2 :", code)
+		default:
+			code = vcf.Prefix.String + randStr(vcf.Length-(len(vcf.Prefix.String)+len(vcf.Postfix.String)), vcf.FormatType) + vcf.Postfix.String
+			// fmt.Println("3 :", code)
+		}
+
+		rt = append(rt, code)
 
 		tsd, err := time.Parse(time.RFC3339Nano, v.StartDate)
 		if err != nil {
 			log.Panic(err)
 		}
-		tea, err := time.Parse(time.RFC3339Nano, v.EndDate)
+		ted, err := time.Parse(time.RFC3339Nano, v.EndDate)
 		if err != nil {
 			log.Panic(err)
 		}
-
 		rd := model.Voucher{
 			VoucherCode:   rt[i],
 			ReferenceNo:   vr.ReferenceNo,
-			AccountID:     vr.AccountID,
+			Holder:        vr.AccountID,
 			VariantID:     v.Id,
 			ValidAt:       tsd,
-			ExpiredAt:     tea,
+			ExpiredAt:     ted,
 			DiscountValue: v.DiscountValue,
 			State:         model.VoucherStateCreated,
 			CreatedBy:     vr.AccountID,
@@ -435,18 +449,24 @@ func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model
 		if err := rd.InsertVc(); err != nil {
 			log.Panic(err)
 		}
-		fmt.Println(i)
+		// fmt.Println(i)
 		ret[i] = rd
 	}
 	return ret, nil
 }
 
-func randStr() string {
-	b := make([]byte, VoucherCodeLen)
-	if _, err := rand.Read(b); err != nil {
-		return ""
+func randStr(ln int, fm string) string {
+	CharsType := map[string]string{
+		"Alphabet":     model.ALPHABET,
+		"Numerals":     model.NUMERALS,
+		"Alphanumeric": model.ALPHANUMERIC,
 	}
-	s := fmt.Sprintf("%X", b)
 
-	return s
+	rand.Seed(time.Now().UTC().UnixNano())
+	chars := CharsType[fm]
+	result := make([]byte, ln)
+	for i := 0; i < ln; i++ {
+		result[i] = chars[rand.Intn(len(chars))]
+	}
+	return string(result)
 }
