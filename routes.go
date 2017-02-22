@@ -19,12 +19,11 @@ func setRoutes() http.Handler {
 	r.GetFunc("/", login)
 
 	//variant
+	r.PostFunc("/create/variant", controller.CreateVariant)
 	r.GetFunc("/get/allVariant", controller.GetAllVariant)
 	r.GetFunc("/get/variant", controller.GetVariantDetails)
 	r.GetFunc("/get/variantByDate", controller.GetVariantDetailsByDate)
-	r.PostFunc("/create/variant", controller.CreateVariant)
 	r.GetFunc("/get/variant/:id", controller.GetVariantDetailsById)
-	r.GetFunc("/get/session", controller.CheckSession)
 	r.PostFunc("/update/variant/:id", controller.UpdateVariant)
 	r.PostFunc("/update/variant/:id/broadcastUser", controller.UpdateVariantBroadcast)
 	r.PostFunc("/update/variant/:id/tenant", controller.UpdateVariantTenant)
@@ -37,10 +36,14 @@ func setRoutes() http.Handler {
 	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)
 
 	//user
-	r.PostFunc("/user/createUser/", controller.RegisterUser)
-	r.PostFunc("/user/getUserByRole/", controller.FindUserByRole)
-	r.PostFunc("/user/getUser/", controller.GetUser)
+	r.GetFunc("/get/session", controller.CheckSession)
+	r.PostFunc("/create/user", controller.RegisterUser)
+	r.GetFunc("/get/userByRole", controller.FindUserByRole)
+	r.GetFunc("/get/user", controller.GetUser)
 	r.PostFunc("/login", controller.DoLogin)
+
+	//account
+	r.GetFunc("/get/accountId", controller.GetAccountId)
 
 	//Voucher
 	r.GetFunc("/voucher/:id/get", controller.GetVoucherDetail)

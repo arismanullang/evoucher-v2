@@ -80,4 +80,4 @@ $RECYCLE.BIN/
 *.lnk
 
 #binary file
-evoucher*
+files/etc/voucher/config*

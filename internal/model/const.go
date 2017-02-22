@@ -4,6 +4,14 @@ import (
 	"errors"
 )
 
+type (
+	Response struct {
+		Status  string
+		Message string
+		Data    interface{}
+	}
+)
+
 var (
 	ErrResourceNotFound = errors.New("resource not found.")
 	ErrValidationError  = errors.New("validation error.")

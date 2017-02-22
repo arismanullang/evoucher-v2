@@ -1,3 +1,16 @@
+$( window ).load(function() {
+   getAccount();
+});
+function getAccount(){
+  $.ajax({
+    url: 'http://evoucher.elys.id:8889/get/accountId',
+    type: 'get',
+    success: function (data) {
+      alert(data.data[0].Id);
+    }
+  });
+}
+
 function login(){
   var request = {
       username: $("#username").val(),
@@ -16,3 +29,14 @@ function login(){
       }
   });
 }
+
+(function() {
+    'use strict';
+
+    $(formAdvanced);
+
+    function formAdvanced() {
+        $('.select2').select2();
+    }
+
+})();
