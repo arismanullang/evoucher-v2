@@ -9,13 +9,25 @@
 			"revisionTime": "2017-01-04T21:11:26Z"
 		},
 		{
-			"checksumSHA1": "MBKkp4M0T/T39STzQmnLkg1GrwM=",
-			"path": "github.com/go-zoo/bone",
-			"revision": "964b25230a16a70e93973d6d46886b26113ab654",
-			"revisionTime": "2016-12-13T20:33:40Z"
+			"checksumSHA1": "IkPM2QLv9urri7S49wzroQx9oXA=",
+			"path": "github.com/gorilla/context",
+			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
+			"revisionTime": "2016-08-17T18:46:32Z"
 		},
 		{
-			"checksumSHA1": "hmjY4MUlyj/kx/zw+R1iSu3FTlo=",
+			"checksumSHA1": "j46I4/ktI/ijMiBiry9BfDdsPys=",
+			"path": "github.com/gorilla/securecookie",
+			"revision": "fa5329f913702981df43dcb2a380bac429c810b5",
+			"revisionTime": "2016-10-03T05:16:01Z"
+		},
+		{
+			"checksumSHA1": "J1E/z9EcV3wCmzEFGr1h9F9wLvs=",
+			"path": "github.com/gorilla/sessions",
+			"revision": "83c8db3bdc9be789e57e3756ffbcffd2d7d40176",
+			"revisionTime": "2016-12-22T01:33:42Z"
+		},
+		{
+			"checksumSHA1": "kVbqqmrosOi2vjMgxv0Iks3gs9Q=",
 			"path": "github.com/jmoiron/sqlx",
 			"revision": "cac998c4f0959c19c638c523e374fa8e4e0bcfe3",
 			"revisionTime": "2016-12-09T02:45:31Z"
@@ -63,13 +75,79 @@
 			"revisionTime": "2016-11-23T06:43:35Z"
 		},
 		{
-			"checksumSHA1": "ezZyPBDiKHM5y+YmlIhrWIzgbfw=",
-			"path": "github.com/urfave/negroni",
-			"revision": "61dbefc515b4dede6eb2de7df1e54d49edce892d",
-			"revisionTime": "2017-01-27T05:19:55Z"
+			"checksumSHA1": "lzxr2rdWylya6Z5Ft4oA0Fvr4TU=",
+			"path": "gopkg.in/bsm/ratelimit.v1",
+			"revision": "db14e161995a5177acef654cb0dd785e8ee8bc22",
+			"revisionTime": "2016-02-20T15:49:07Z"
 		},
 		{
-			"checksumSHA1": "12GqsW8PiRPnezDDy0v4brZrndM=",
+			"checksumSHA1": "c90H50M5KL1pnQHLciystvJy/kA=",
+			"path": "gopkg.in/redis.v3",
+			"revision": "b5e368500d0a508ef8f16e9c2d4025a8a46bcc29",
+			"revisionTime": "2016-06-27T09:56:34Z"
+		},
+		{
+			"checksumSHA1": "0prkBFC4Lp0sdCfgwLB+bJ0DaEk=",
+			"path": "gopkg.in/redis.v3/internal",
+			"revision": "b5e368500d0a508ef8f16e9c2d4025a8a46bcc29",
+			"revisionTime": "2016-06-27T09:56:34Z"
+		},
+		{
+			"checksumSHA1": "ATGOOqBwHYpCi2uFNg2gphF3R0A=",
+			"path": "gopkg.in/redis.v3/internal/consistenthash",
+			"revision": "b5e368500d0a508ef8f16e9c2d4025a8a46bcc29",
+			"revisionTime": "2016-06-27T09:56:34Z"
+		},
+		{
+			"checksumSHA1": "fInEs5ZvfrgfiTwzDkZqg5/YpWQ=",
+			"path": "gopkg.in/redis.v3/internal/hashtag",
+			"revision": "b5e368500d0a508ef8f16e9c2d4025a8a46bcc29",
+			"revisionTime": "2016-06-27T09:56:34Z"
+		},
+		{
+			"checksumSHA1": "eqnpt/FuuzmtK5gEWpsAMQPGIsY=",
+			"path": "gopkg.in/redis.v3/internal/pool",
+			"revision": "b5e368500d0a508ef8f16e9c2d4025a8a46bcc29",
+			"revisionTime": "2016-06-27T09:56:34Z"
+		},
+		{
+			"checksumSHA1": "JPeGdqsOmD8xb9Xq6YsqHpNg15I=",
+			"path": "gopkg.in/redis.v5",
+			"revision": "2fe9c5cc0a8da9faeba3a45511a4ece8f7e37dc2",
+			"revisionTime": "2017-02-08T12:28:34Z"
+		},
+		{
+			"checksumSHA1": "ONaj18kDCVc3pGWv06lG2KL4wCA=",
+			"path": "gopkg.in/redis.v5/internal",
+			"revision": "2fe9c5cc0a8da9faeba3a45511a4ece8f7e37dc2",
+			"revisionTime": "2017-02-08T12:28:34Z"
+		},
+		{
+			"checksumSHA1": "9DDcWtzDkAGPKplEPcf0iyIn0aA=",
+			"path": "gopkg.in/redis.v5/internal/consistenthash",
+			"revision": "2fe9c5cc0a8da9faeba3a45511a4ece8f7e37dc2",
+			"revisionTime": "2017-02-08T12:28:34Z"
+		},
+		{
+			"checksumSHA1": "zXEc7u1ExA2urrGa1lFiDaElsuE=",
+			"path": "gopkg.in/redis.v5/internal/hashtag",
+			"revision": "2fe9c5cc0a8da9faeba3a45511a4ece8f7e37dc2",
+			"revisionTime": "2017-02-08T12:28:34Z"
+		},
+		{
+			"checksumSHA1": "1wfqrnHxSrun4TmrTt1e7K20b10=",
+			"path": "gopkg.in/redis.v5/internal/pool",
+			"revision": "2fe9c5cc0a8da9faeba3a45511a4ece8f7e37dc2",
+			"revisionTime": "2017-02-08T12:28:34Z"
+		},
+		{
+			"checksumSHA1": "7gPForgOFdjLm2+mOvLy7HFLNBI=",
+			"path": "gopkg.in/redis.v5/internal/proto",
+			"revision": "2fe9c5cc0a8da9faeba3a45511a4ece8f7e37dc2",
+			"revisionTime": "2017-02-08T12:28:34Z"
+		},
+		{
+			"checksumSHA1": "21kDrz4DnDppRHgK7vVmOFwgcSQ=",
 			"path": "gopkg.in/yaml.v2",
 			"revision": "a5b47d31c556af34a302ce5d659e6fea44d90de0",
 			"revisionTime": "2016-09-28T15:37:09Z"

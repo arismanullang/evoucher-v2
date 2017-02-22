@@ -2,44 +2,34 @@ package controller
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	//"github.com/go-zoo/bone"
+	"github.com/gorilla/sessions"
 	"github.com/ruizu/render"
 
 	"github.com/gilkor/evoucher/internal/model"
 )
 
-type (
-	UserReq struct {
-		AccountRole string `json:"account_role"`
-		AssignBy    string `json:"assign_by"`
-		CreatedBy   string `json:"created_by"`
-		UserValue   User   `json:"user"`
-	}
+var store = sessions.NewCookieStore([]byte("lalala"))
 
+type (
 	User struct {
-		Username          string `json:"username"`
-		Password          string `json:"password"`
-		Gender            string `json:"gender"`
-		MaritalStatus     string `json:"marital_status"`
-		IssuedAt          string `json:"issued_at"`
-		Name              string `json:"name"`
-		BirthDate         string `json:"birthdate"`
-		BirthPlace        string `json:"birthplace"`
-		MobileCallingCode string `json:"mobile_calling_code"`
-		MobileNo          string `json:"mobile_no"`
-		Address           string `json:"address"`
-		CountryCode       string `json:"country_code"`
-		StateId           string `json:"state_id"`
-		IdentityType      string `json:"identity_type"`
-		IdentityNumber    string `json:"identity_no"`
-		CityId            string `json:"city_id"`
+		AccountId string   `json:"account_id"`
+		Username  string   `json:"username"`
+		Password  string   `json:"password"`
+		Email     string   `json:"email"`
+		Phone     string   `json:"phone"`
+		RoleId    []string `json:"role_id"`
+		CreatedBy string   `json:"created_by"`
 	}
 
 	UserLogin struct {
@@ -48,76 +38,166 @@ type (
 	}
 
 	RoleReq struct {
-		Role string `json:"role"`
+		AccountId string `json:"account_id"`
+		Role      string `json:"role"`
+	}
+
+	AccountReq struct {
+		AccountId string `json:"account_id"`
 	}
 )
 
-func GetUserByRole(w http.ResponseWriter, r *http.Request) {
-	param := getUrlParam(r.URL.String())
-
-	user, err := model.FindAccount(param)
-	if err != nil && err != model.ErrResourceNotFound {
-		log.Panic(err)
-	}
-
-	res := NewResponse(user)
-	render.JSON(w, res)
-}
-
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
-	token := r.FormValue(`token`)
-
-	var rd UserReq
+	var rd User
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
 		log.Panic(err)
 	}
 
-	url := "http://juno-staging.elys.id/v1/api/accounts?token=" + token
-	json, err := json.Marshal(rd.UserValue)
-	if err != nil {
-		log.Panic(err)
-	}
-	responseId := sendPost(url, string(json))
-	id := getResponseData(responseId)
-	fmt.Println(id)
+	fmt.Println(len(hash(rd.Password)))
 
-	user := getProfile(token, id["id"].(string))
-
-	d := model.AccountDetail{
-		CompanyID:   user["company_id"].(string),
-		UserID:      user["id"].(string),
-		AccountRole: rd.AccountRole,
-		AssignBy:    rd.AssignBy,
-		CreatedBy:   rd.CreatedBy,
+	param := model.User{
+		AccountId: rd.AccountId,
+		Username:  rd.Username,
+		Password:  hash(rd.Password),
+		Email:     rd.Email,
+		Phone:     rd.Phone,
+		RoleId:    rd.RoleId,
+		CreatedBy: rd.CreatedBy,
 	}
 
-	if err := model.AddAccount(d); err != nil {
+	if err := model.AddUser(param); err != nil {
 		log.Panic(err)
 	}
 
-	res := NewResponse(user)
+	res := NewResponse(nil)
 	render.JSON(w, res, http.StatusCreated)
 }
 
-func GetToken(w http.ResponseWriter, r *http.Request) {
+func CheckSession(w http.ResponseWriter, r *http.Request) {
+	token := r.FormValue("token")
+
+	var valid bool = false
+	if token != "" {
+		decoded, err := base64.StdEncoding.DecodeString(token)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		session := strings.Split(string(decoded), ";")
+		sessionValue, err := store.Get(r, session[0])
+		if err != nil {
+			log.Panic(err)
+		}
+
+		user := sessionValue.Values
+		exp, err := time.Parse("2006-01-02 15:04:05", user["expired"].(string))
+		if err != nil {
+			log.Panic(err)
+		}
+
+		if exp.After(time.Now()) {
+			valid = true
+		}
+	}
+
+	res := NewResponse(valid)
+	render.JSON(w, res, http.StatusOK)
+}
+
+func DoLogin(w http.ResponseWriter, r *http.Request) {
 	var rd UserLogin
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
 		log.Panic(err)
 	}
 
-	client := &http.Client{}
-	req, err := http.NewRequest("POST", "http://juno-staging.elys.id/v1/api/token", nil)
-	req.SetBasicAuth(rd.Username, rd.Password)
-	resp, err := client.Do(req)
+	user, err := model.Login(rd.Username, hash(rd.Password))
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
+	}
+
+	times := time.Now()
+	times = times.AddDate(0, 0, 1)
+	encoded := base64.StdEncoding.EncodeToString([]byte(user + ";" + times.String()))
+
+	session, err := store.Get(r, user)
 	if err != nil {
 		log.Panic(err)
 	}
-	bodyText, err := ioutil.ReadAll(resp.Body)
 
-	res := NewResponse(bodyText)
+	session.Options = &sessions.Options{
+		MaxAge: 86400,
+	}
+
+	session.Values["expired"] = times.Format("2006-01-02 15:04:05")
+	session.Save(r, w)
+
+	res := NewResponse(encoded)
+	render.JSON(w, res, http.StatusOK)
+}
+
+func FindUserByRole(w http.ResponseWriter, r *http.Request) {
+	var rd RoleReq
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	var user = model.UserResponse{}
+	var err error
+	if basicAuth(w, r) {
+		user, err = model.FindUserByRole(rd.Role, rd.AccountId)
+		if err != nil && err != model.ErrResourceNotFound {
+			log.Panic(err)
+		}
+	} else {
+		user = model.UserResponse{}
+	}
+
+	res := NewResponse(user)
 	render.JSON(w, res, http.StatusCreated)
+}
+
+func GetUser(w http.ResponseWriter, r *http.Request) {
+	//param := getUrlParam(r.URL.String())
+	var rd AccountReq
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	var user = model.UserResponse{}
+	var err error
+	if basicAuth(w, r) {
+		user, err = model.FindAllUser(rd.AccountId)
+		if err != nil && err != model.ErrResourceNotFound {
+			log.Panic(err)
+		}
+	} else {
+		user = model.UserResponse{}
+	}
+
+	res := NewResponse(user)
+	render.JSON(w, res)
+}
+
+func GetUserCustomParam(w http.ResponseWriter, r *http.Request) {
+	param := getUrlParam(r.URL.String())
+
+	var user = model.UserResponse{}
+	var err error
+	if basicAuth(w, r) {
+		user, err = model.FindUser(param)
+		if err != nil && err != model.ErrResourceNotFound {
+			log.Panic(err)
+		}
+	} else {
+		user = model.UserResponse{}
+	}
+
+	res := NewResponse(user)
+	render.JSON(w, res)
 }
 
 func getUrlParam(url string) map[string]string {
@@ -152,20 +232,6 @@ func sendPost(url string, param string) []byte {
 	return body
 }
 
-func getProfile(token string, id string) map[string]interface{} {
-	url := "http://juno-staging.elys.id/v1/api/accounts/" + id + "?token=" + token
-	res, err := http.Get(url)
-	if err != nil {
-		log.Fatal(err)
-	}
-	robots, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return getResponseData(robots)
-}
-
 func getResponseData(param []byte) map[string]interface{} {
 	var dat map[string]interface{}
 	dat = make(map[string]interface{})
@@ -179,4 +245,35 @@ func getResponseData(param []byte) map[string]interface{} {
 	} else {
 		return nil
 	}
+}
+
+func hash(param string) string {
+	password := []byte(param)
+	hash := sha256.Sum256(password)
+	return base64.StdEncoding.EncodeToString(hash[:])
+}
+
+func basicAuth(w http.ResponseWriter, r *http.Request) bool {
+	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+	if len(s) != 2 {
+		return false
+	}
+
+	b, err := base64.StdEncoding.DecodeString(s[1])
+	if err != nil {
+		return false
+	}
+
+	pair := strings.SplitN(string(b), ":", 2)
+	if len(pair) != 2 {
+		return false
+	}
+
+	login, err := model.Login(pair[0], hash(pair[1]))
+
+	if login == "" || err != nil {
+		return false
+	}
+
+	return true
 }

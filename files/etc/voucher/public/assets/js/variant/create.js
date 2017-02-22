@@ -96,7 +96,6 @@ function addData(elem) {
   var tr=$("<span class='label label-success name-op' onclick='remove(this)'></span>");
   $(tr).html(elem.value);
   tr.appendTo('#listOp');
-
 }
 
 function remove(elem){

@@ -9,6 +9,7 @@ var (
 	ErrValidationError  = errors.New("validation error.")
 	ErrInvalidPassword  = errors.New("invalid password.")
 	ErrNotModified      = errors.New("data not modified.")
+	ErrDuplicateEntry   = errors.New("duplicate entry.")
 )
 
 const (
@@ -49,4 +50,11 @@ const (
 
 	VariantTypeBulk     string = "bulk"
 	VariantTypeOnDemand string = "on-demand"
+
+	ALPHABET     string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	NUMERALS     string = "1234567890"
+	ALPHANUMERIC string = ALPHABET + NUMERALS
+
+	DEFAULT_CODE   string = NUMERALS
+	DEFAULT_LENGTH int    = 8
 )

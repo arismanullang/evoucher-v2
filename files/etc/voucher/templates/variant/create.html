@@ -3,101 +3,246 @@
 {{ define "title" }}Create Variant{{ end }}
 
 {{ define "content" }}
-<form>
-  <div class="row">
-    <div class="form-group left-panel">
-      <div class="form-group">
-        <div class="row">
-          <label class="panel-content_left" for="variantName">Name</label>
-          <input type="text" class="form-control panel-content_right" id="variantName" name="variantName" placeholder="Variant Name" value="a" required>
-        </div>
+<!-- Page content-->
+<section>
+<div class="container-overlap bg-blue-grey-100 m0">
+</div>
+<div class="container container-md">
+  <div class="card">
+      <div class="card-heading bg-amber-500">
+          <div class="card-title text-center">Variant</div>
       </div>
-      <div class="form-group">
+      <div class="card-body">
         <div class="row">
-          <label class="panel-content_left" for="variantType">Type</label>
-          <input type="text" class="form-control panel-content_right" id="variantType" name="variantType" placeholder="Variant Type" value="a" required>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="row">
-          <label class="panel-content_left" for="discountValue">Disccount Value</label>
-          <input type="number" class="form-control panel-content_right" id="discountValue" name="discountValue" placeholder="Discount" value="100000" required>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="row">
-          <label class="panel-content_left" for="maxVoucher">Max Voucher</label>
-          <input type="number" class="form-control panel-content_right" id="maxVoucher" name="maxVoucher" placeholder="Max Voucher" value="100" required>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="row">
-          <label class="panel-content_left" for="startDate">Start</label>
-          <input type="text" class="form-control panel-content_right datepicker" name="startDate" id="startDate" placeholder="Start Date" required>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="row">
-          <label class="panel-content_left" for="endDate">End</label>
-          <input type="text" class="form-control panel-content_right datepicker" name="endDate" id="endDate" placeholder="End Date" required>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="row">
-          <label class="panel-content_left" for="pointNeeded">Point</label>
-          <input type="number" class="form-control panel-content_right" id="pointNeeded" name="pointNeeded" value="10" placeholder="Point">
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="row">
-          <label class="panel-content_left" for="imgUrl">Image URL</label>
-          <input type="text" class="form-control panel-content_right" id="imgUrl" name="imgUrl" value="a" placeholder="Image URL">
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="row">
-          <label class="panel-content_left" for="exampleInputPassword1">T&C</label>
-          <textarea id="variantTnc" name="variantTnc" class="form-control panel-content_right" form="usrform" value="a" placeholder="Enter text here..."></textarea>
-        </div>
-      </div>
-
-      <input type="button" class="btn btn-default" value="Submit" onclick="send()"></input>
-    </div>
-    <div class="form-group right-panel">
-      <div class="form-group">
-        <div class="row">
-          <div class="panel-content_row">
-            <input type="checkbox" id="allowAccumulative" name="allowAccumulative">
-            <label>Allow Accumulative</label>
+          <div class="col-sm-6">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Variant Name</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <select id="select2-1" class="form-control" tabindex="0">
+                  <option value="AL">Bulk</option>
+                  <option value="AR">On-demand</option>
+                </select>
+                <div class="mda-form-control-line"></div>
+                <label>Variant Type</label>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div class="btn-group">
-        <button type="button" class="btn btn-info">Pilih Operator</button>
-        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <span class="caret"></span>
-          <span class="sr-only">Toggle Dropdown</span>
-        </button>
-        <ul id="listOperator" name="listOperator" class="dropdown-menu">
-          <li><button type="button" class="btn">Op 1</button></li>
-          <li><button type="button" class="btn">Op 1</button></li>
-          <li><button type="button" class="btn">Op 1</button></li>
-          <li><button type="button" class="btn">Op 1</button></li>
-        </ul>
-      </div>
-      <div class="form-group">
         <div class="row">
-          <label >Valid User</label>
-          <div name="listOp" id="listOp" class="panel-content_row">
+          <div class="col-sm-6">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Start Date</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>End Date</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Image URL</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <textarea rows="3" aria-multiline="true" tabindex="0" aria-invalid="false" class="form-control"></textarea>
+                <div class="mda-form-control-line"></div>
+                <label>T&C</label><span class="mda-form-msg right">Any message here</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <textarea rows="3" aria-multiline="true" tabindex="0" aria-invalid="false" class="form-control"></textarea>
+                <div class="mda-form-control-line"></div>
+                <label>Description</label><span class="mda-form-msg right">Any message here</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</form>
+    <div class="card">
+      <div class="card-heading bg-amber-500">
+        <div class="card-title text-center">Voucher</div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Voucher Price</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <select id="select2-2" class="form-control" tabindex="0">
+                  <option value="AL">Cash Back</option>
+                  <option value="AR">Discount</option>
+                  <option value="AR">Promo</option>
+                </select>
+                <div class="mda-form-control-line"></div>
+                <label>Voucher Type</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Max Quantity</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Max Usage</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Voucher Price</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Voucher Value</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <select id="select2-3" class="form-control select2-1" tabindex="0">
+                  <option value="AL">QR</option>
+                  <option value="AR">Token</option>
+                </select>
+                <div class="mda-form-control-line"></div>
+                <label>Redeemtion Method</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <select id="select2-4" class="form-control" tabindex="0">
+                  <option value="AL">Default</option>
+                  <option value="AR">Alphanumeric</option>
+                  <option value="AR">Alphabetic</option>
+                </select>
+                <div class="mda-form-control-line"></div>
+                <label>Voucher Format</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Length</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-4">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Prefix</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Body</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Postfix</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class=" pull-right pr">
+            <button type="button" class="btn btn-raised btn-primary ripple">Create</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+</section>
 {{ end }}
 
 {{ define "scripts" }}
 <script type="text/javascript" src="/assets/js/variant/create.js"></script>
+<script type="text/javascript" src="/assets/js/onload.js"></script>
 {{ end }}

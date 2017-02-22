@@ -6,14 +6,18 @@ import (
 	"log"
 	"net/http"
 	"os"
+	//"time"
 	//"path/filepath"
 
 	"github.com/pkg/profile"
 	"github.com/ruizu/render"
 	"github.com/urfave/negroni"
+	//"gopkg.in/redis.v5"
 
 	"github.com/gilkor/evoucher/internal/model"
 )
+
+//var Session *redis.Client
 
 var (
 	name    = "voucher"
@@ -28,11 +32,25 @@ var (
 )
 
 func init() {
+
 	flag.Parse()
 
 	if *fversion {
 		printVersion()
 	}
+
+	/*
+		// init redist
+		Session = redis.NewClient(&redis.Options{
+			Addr:         ":8889",
+			DialTimeout:  10 * time.Second,
+			ReadTimeout:  30 * time.Second,
+			WriteTimeout: 30 * time.Second,
+			PoolSize:     10,
+			PoolTimeout:  30 * time.Second,
+		})
+		Session.FlushDb()
+	*/
 }
 
 func main() {
