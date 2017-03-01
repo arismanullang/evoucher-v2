@@ -1,5 +1,6 @@
 $( window ).load(function() {
   var token = findGetParameter("token");
+  console.log("token : "+token)
   getSession(token);
 });
 
@@ -8,7 +9,7 @@ function getSession(token) {
       url: 'http://evoucher.elys.id:8889/get/session?token='+token,
       type: 'get',
       success: function (data) {
-        alert(data.data);
+        console.log(data.data);
         if(data.data == false){
           window.location = "http://evoucher.elys.id:8889/user/login";
         }
