@@ -58,11 +58,6 @@ type (
 		Id   string `db:"id"`
 		User string `db:"deleted_by"`
 	}
-	VariantResponse struct {
-		Status  string
-		Message string
-		Data    interface{}
-	}
 	SearchVariant struct {
 		Id           string   `db:"id"`
 		AccountId    string   `db:"account_id"`
@@ -81,7 +76,7 @@ type (
 	}
 )
 
-func Insert(vr VariantReq, fr FormatReq, user string) error {
+func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		return err
@@ -132,8 +127,8 @@ func Insert(vr VariantReq, fr FormatReq, user string) error {
 		RETURNING
 			id
 	`
-	var res1 []string
-	if err := tx.Select(&res1, tx.Rebind(q2), vr.AccountId, vr.VariantName, vr.VariantType, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.DiscountValue, vr.MaxQuantityVoucher, vr.MaxUsageVoucher, vr.RedeemtionMethod, vr.ImgUrl, vr.VariantTnc, vr.VariantDescription, user, StatusCreated); err != nil {
+	var res2 []string
+	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.VariantName, vr.VariantType, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.DiscountValue, vr.MaxQuantityVoucher, vr.MaxUsageVoucher, vr.RedeemtionMethod, vr.ImgUrl, vr.VariantTnc, vr.VariantDescription, user, StatusCreated); err != nil {
 		return err
 	}
 
@@ -149,7 +144,7 @@ func Insert(vr VariantReq, fr FormatReq, user string) error {
 				VALUES (?, ?, ?, ?)
 			`
 
-			_, err := tx.Exec(tx.Rebind(q), res1[0], v, user, StatusCreated)
+			_, err := tx.Exec(tx.Rebind(q), res2[0], v, user, StatusCreated)
 			if err != nil {
 				return err
 			}
@@ -162,7 +157,7 @@ func Insert(vr VariantReq, fr FormatReq, user string) error {
 	return nil
 }
 
-func (d *Variant) Update() error {
+func UpdateVariant(d Variant) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		return err
@@ -364,7 +359,7 @@ func (d *DeleteVariantRequest) Delete() error {
 	return nil
 }
 
-func FindVariantByDate(start, end string) (VariantResponse, error) {
+func FindVariantByDate(start, end string) (Response, error) {
 	fmt.Println("Select By Date " + start)
 	q := `
 		SELECT
@@ -386,10 +381,10 @@ func FindVariantByDate(start, end string) (VariantResponse, error) {
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), start, end, start, end, StatusCreated); err != nil {
-		return VariantResponse{Status: "500", Message: "Error at select variant", Data: nil}, err
+		return Response{Status: "500", Message: "Error at select variant", Data: nil}, err
 	}
 	if len(resv) < 1 {
-		return VariantResponse{Status: "404", Message: "Error at select variant", Data: nil}, ErrResourceNotFound
+		return Response{Status: "404", Message: "Error at select variant", Data: nil}, ErrResourceNotFound
 	}
 
 	for i, v := range resv {
@@ -404,12 +399,12 @@ func FindVariantByDate(start, end string) (VariantResponse, error) {
 		`
 		var resd []string
 		if err := db.Select(&resd, db.Rebind(q), v.Id, StatusCreated); err != nil {
-			return VariantResponse{Status: "500", Message: "Error at select user", Data: nil}, err
+			return Response{Status: "500", Message: "Error at select user", Data: nil}, err
 		}
 		resv[i].ValidUsers = resd
 	}
 
-	res := VariantResponse{
+	res := Response{
 		Status:  "200",
 		Message: "Ok",
 		Data:    resv,
@@ -418,7 +413,7 @@ func FindVariantByDate(start, end string) (VariantResponse, error) {
 	return res, nil
 }
 
-func FindAllVariants(accountId string) (VariantResponse, error) {
+func FindAllVariants(accountId string) (Response, error) {
 	q := `
 		SELECT
 			id
@@ -438,10 +433,10 @@ func FindAllVariants(accountId string) (VariantResponse, error) {
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
-		return VariantResponse{Status: "500", Message: "Error at select variant", Data: nil}, err
+		return Response{Status: "500", Message: "Error at select variant", Data: nil}, err
 	}
 	if len(resv) < 1 {
-		return VariantResponse{Status: "404", Message: "Error at select variant", Data: nil}, ErrResourceNotFound
+		return Response{Status: "404", Message: "Error at select variant", Data: nil}, ErrResourceNotFound
 	}
 
 	for i, v := range resv {
@@ -456,12 +451,12 @@ func FindAllVariants(accountId string) (VariantResponse, error) {
 		`
 		var resd []string
 		if err := db.Select(&resd, db.Rebind(q), v.Id, StatusCreated); err != nil {
-			return VariantResponse{Status: "500", Message: "Error at select user", Data: nil}, err
+			return Response{Status: "500", Message: "Error at select user", Data: nil}, err
 		}
 		resv[i].ValidUsers = resd
 	}
 
-	res := VariantResponse{
+	res := Response{
 		Status:  "200",
 		Message: "Ok",
 		Data:    resv,
@@ -470,7 +465,7 @@ func FindAllVariants(accountId string) (VariantResponse, error) {
 	return res, nil
 }
 
-func FindVariantMultipleParam(param map[string]string) (VariantResponse, error) {
+func FindVariantMultipleParam(param map[string]string) (Response, error) {
 	fmt.Println("Query start")
 	q := `
 		SELECT
@@ -502,10 +497,10 @@ func FindVariantMultipleParam(param map[string]string) (VariantResponse, error) 
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
-		return VariantResponse{Status: "Error", Message: q, Data: nil}, err
+		return Response{Status: "Error", Message: q, Data: nil}, err
 	}
 	if len(resv) < 1 {
-		return VariantResponse{Status: "404", Message: q, Data: nil}, ErrResourceNotFound
+		return Response{Status: "404", Message: q, Data: nil}, ErrResourceNotFound
 	}
 
 	for i, v := range resv {
@@ -520,12 +515,12 @@ func FindVariantMultipleParam(param map[string]string) (VariantResponse, error) 
 		`
 		var resd []string
 		if err := db.Select(&resd, db.Rebind(q), v.Id, StatusCreated); err != nil {
-			return VariantResponse{Status: "500", Message: "Error at select user", Data: nil}, err
+			return Response{Status: "500", Message: "Error at select user", Data: nil}, err
 		}
 		resv[i].ValidUsers = resd
 	}
 
-	res := VariantResponse{
+	res := Response{
 		Status:  "200",
 		Message: "Ok",
 		Data:    resv,
@@ -534,7 +529,7 @@ func FindVariantMultipleParam(param map[string]string) (VariantResponse, error) 
 	return res, nil
 }
 
-func FindVariantById(id string) (VariantResponse, error) {
+func FindVariantById(id string) (Response, error) {
 	q := `
 		SELECT
 			account_id
@@ -564,10 +559,10 @@ func FindVariantById(id string) (VariantResponse, error) {
 
 	var resv []Variant
 	if err := db.Select(&resv, db.Rebind(q), id, StatusCreated); err != nil {
-		return VariantResponse{Status: "Error", Message: q, Data: Variant{}}, err
+		return Response{Status: "Error", Message: q, Data: Variant{}}, err
 	}
 	if len(resv) < 1 {
-		return VariantResponse{Status: "404", Message: q, Data: Variant{}}, ErrResourceNotFound
+		return Response{Status: "404", Message: q, Data: Variant{}}, ErrResourceNotFound
 	}
 
 	q = `
@@ -581,11 +576,11 @@ func FindVariantById(id string) (VariantResponse, error) {
 	`
 	var resd []string
 	if err := db.Select(&resd, db.Rebind(q), id, StatusCreated); err != nil {
-		return VariantResponse{Status: "Error", Message: q, Data: Variant{}}, err
+		return Response{Status: "Error", Message: q, Data: Variant{}}, err
 	}
 	resv[0].ValidPartners = resd
 
-	res := VariantResponse{
+	res := Response{
 		Status:  "200",
 		Message: "Ok",
 		Data:    resv[0],
