@@ -261,3 +261,27 @@ func GetVoucherCodeFormat(id int) (VoucherCodeFormat, error) {
 	}
 	return resd[0], nil
 }
+
+func CountVoucher(varID string) int {
+	vc, err := db.Beginx()
+	if err != nil {
+		return 0
+	}
+	defer vc.Rollback()
+
+	q := `
+		SELECT
+			count(1) qty
+		FROM
+			vouchers
+		WHERE
+			variant_id = ?
+			AND status = ?
+	`
+	var resd int
+	if err := db.Select(&resd, db.Rebind(q), varID, StatusCreated); err != nil {
+		log.Panic(err)
+		return 0
+	}
+	return resd
+}
