@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="/assets/vendor/ionicons/css/ionicons.css">
     <!-- Material Colors-->
     <link rel="stylesheet" href="/assets/vendor/material-colors/dist/colors.css">
+    <link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
     <!-- endbuild-->
     <!-- Application styles-->
     <link rel="stylesheet" href="/assets/css/style.css">
@@ -25,7 +26,7 @@
       <div class="page-container bg-white-grey">
         <div class="container-full">
           <div class="container container-xs"><img src="/assets/img/elys.png" class="mv-lg block-center img-responsive thumb">
-            <form id="user-login" action="" name="loginForm" novalidate="" class="card b0 form-validate">
+            <form id="user-login" name="loginForm" novalidate="" class="card b0 form-validate">
               <div class="card-offset pb0">
                 <div class="card-offset-item text-right"><a href="signup.html" class="btn-raised btn btn-info btn-circle btn-lg"><em class="ion-person-add"></em></a></div>
                 <div class="card-offset-item text-right hidden">
@@ -38,10 +39,18 @@
               <div class="card-body">
                 <div class="mda-form-group float-label mda-input-group">
                   <div class="mda-form-control">
+                    <select id="account" name="account" class="form-control select2" tabindex="0">
+                    </select>
+                    <div class="mda-form-control-line"></div>
+                    <label>Account</label>
+                  </div><span class="mda-input-group-addon"><em class="ion-ios-people-outline icon-lg"></em></span>
+                </div>
+                <div class="mda-form-group float-label mda-input-group">
+                  <div class="mda-form-control">
                     <input type="text" id="username" name="username" required="" class="form-control">
                     <div class="mda-form-control-line"></div>
                     <label>Username</label>
-                  </div><span class="mda-input-group-addon"><em class="ion-ios-person icon-lg"></em></span>
+                  </div><span class="mda-input-group-addon"><em class="ion-ios-person-outline icon-lg"></em></span>
                 </div>
                 <div class="mda-form-group float-label mda-input-group">
                   <div class="mda-form-control">
@@ -51,7 +60,7 @@
                   </div><span class="mda-input-group-addon"><em class="ion-ios-locked-outline icon-lg"></em></span>
                 </div>
               </div>
-              <button type="submit" onclick="login()" class="btn btn-primary btn-flat">LOGIN</button>
+              <button type="submit" class="btn btn-primary btn-flat">LOGIN</button>
             </form>
             <div class="text-center text-sm"><a href="recover.html" class="text-inherit">Forgot password?</a></div>
           </div>
@@ -63,8 +72,9 @@
     <script src="/assets/vendor/modernizr/modernizr.custom.js"></script>
     <!-- jQuery-->
     <script src="/assets/vendor/jquery/dist/jquery.js"></script>
+    <script src="/assets/vendor/select2/dist/js/select2.js"></script>
     <!-- Bootstrap-->
-    <script src="/assets/vendor/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="/assets/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- jQuery Browser-->
     <script src="/assets/vendor/jquery.browser/dist/jquery.browser.js"></script>
     <!-- Material Colors-->
@@ -74,7 +84,6 @@
     <script src="/assets/vendor/jquery-validation/dist/additional-methods.js"></script>
     <!-- endbuild-->
     <!-- App script-->
-    <script src="/assets/js/app.js"></script>
     <script src="/assets/js/user/index.js"></script>
   </body>
 </html>

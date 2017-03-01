@@ -20,28 +20,36 @@ func setRoutes() http.Handler {
 	r.GetFunc("/", login)
 
 	//variant
-	r.GetFunc("/get/allVariant", controller.GetAllVariant)
-	r.GetFunc("/get/variant", controller.GetVariantDetails)
-	r.GetFunc("/get/variantByDate", controller.GetVariantDetailsByDate)
 	r.PostFunc("/create/variant", controller.CreateVariant)
-	r.GetFunc("/get/variant/:id", controller.GetVariantDetailsById)
-	r.GetFunc("/get/session", controller.CheckSession)
-	r.PostFunc("/update/variant/:id", controller.UpdateVariant)
+	r.GetFunc("/api/get/allVariant", controller.GetAllVariants)
+	r.GetFunc("/api/get/variant", controller.GetVariants)
+	r.GetFunc("/api/get/variantByDate", controller.GetVariantDetailsByDate)
+	r.GetFunc("/api/get/variant/:id", controller.GetVariantDetailsById)
+	r.PostFunc("/api/update/variant/:id", controller.UpdateVariant)
 	r.PostFunc("/update/variant/:id/broadcastUser", controller.UpdateVariantBroadcast)
 	r.PostFunc("/update/variant/:id/tenant", controller.UpdateVariantTenant)
 	r.PostFunc("/delete/variant/:id", controller.DeleteVariant)
 
 	//transaction
-	r.PostFunc("/transaction/createTransaction", controller.CreateTransaction)
+	r.PostFunc("/api/create/transaction", controller.CreateTransaction)
 	r.GetFunc("/transaction/:id/", controller.GetTransactionDetails)
 	r.PostFunc("/transaction/:id/update", controller.UpdateTransaction)
 	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)
 
 	//user
-	r.PostFunc("/user/createUser/", controller.RegisterUser)
-	r.PostFunc("/user/getUserByRole/", controller.FindUserByRole)
-	r.PostFunc("/user/getUser/", controller.GetUser)
+	r.GetFunc("/get/session", controller.CheckSession)
+	r.PostFunc("/create/user", controller.RegisterUser)
+	r.GetFunc("/get/userByRole", controller.FindUserByRole)
+	r.GetFunc("/get/user", controller.GetUser)
 	r.PostFunc("/login", controller.DoLogin)
+
+	//partner
+	r.GetFunc("/api/get/partner", controller.GetAllPartner)
+	r.PostFunc("/create/partner", controller.AddPartner)
+	r.GetFunc("/get/partner", controller.DashboardGetAllPartner)
+
+	//account
+	r.GetFunc("/get/accountId", controller.GetAccountId)
 
 	//Voucher
 	r.GetFunc("/voucher/:id/get", controller.GetVoucherDetail)

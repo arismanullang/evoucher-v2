@@ -8,7 +8,8 @@
 <div class="container-overlap bg-blue-grey-100 m0">
 </div>
 <div class="container container-md">
-  <div class="card">
+  <form id="create-variant" name="create-variant" novalidate="" class="card b0 form-validate">
+    <div class="card">
       <div class="card-heading bg-amber-500">
           <div class="card-title text-center">Variant</div>
       </div>
@@ -17,7 +18,7 @@
           <div class="col-sm-6">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input tabindex="0" aria-invalid="false" class="form-control">
+                <input id="variantName" name="variantName" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Variant Name</label>
               </div>
@@ -26,9 +27,9 @@
           <div class="col-sm-6">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <select id="select2-1" class="form-control" tabindex="0">
-                  <option value="AL">Bulk</option>
-                  <option value="AR">On-demand</option>
+                <select id="variantType" name="variantType" class="form-control select2" tabindex="0">
+                  <option value="bulk">Bulk</option>
+                  <option value="ondemand">On-demand</option>
                 </select>
                 <div class="mda-form-control-line"></div>
                 <label>Variant Type</label>
@@ -36,11 +37,11 @@
             </div>
           </div>
         </div>
-        <div class="row">
+        <div class="row ">
           <div class="col-sm-6">
-            <div class="mda-form-group">
-              <div class="mda-form-control">
-                <input tabindex="0" aria-invalid="false" class="form-control">
+            <div class="mda-form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
+              <div id="example-datepicker-container-4" class="mda-form-control">
+                <input id="startDate" name="startDate" tabindex="0" aria-invalid="false" class="form-control datepicker4">
                 <div class="mda-form-control-line"></div>
                 <label>Start Date</label>
               </div>
@@ -49,7 +50,7 @@
           <div class="col-sm-6">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input tabindex="0" aria-invalid="false" class="form-control">
+                <input id="endDate" name="endDate" tabindex="0" aria-invalid="false" class="form-control datepicker4">
                 <div class="mda-form-control-line"></div>
                 <label>End Date</label>
               </div>
@@ -60,7 +61,7 @@
           <div class="col-sm-12">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input tabindex="0" aria-invalid="false" class="form-control">
+                <input id="imageUrl" name="imageUrl" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Image URL</label>
               </div>
@@ -71,7 +72,7 @@
           <div class="col-sm-12">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <textarea rows="3" aria-multiline="true" tabindex="0" aria-invalid="false" class="form-control"></textarea>
+                <textarea id="variantTnc" name="variantTnc" rows="3" aria-multiline="true" tabindex="0" aria-invalid="false" class="form-control"></textarea>
                 <div class="mda-form-control-line"></div>
                 <label>T&C</label><span class="mda-form-msg right">Any message here</span>
               </div>
@@ -82,16 +83,26 @@
           <div class="col-sm-12">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <textarea rows="3" aria-multiline="true" tabindex="0" aria-invalid="false" class="form-control"></textarea>
+                <textarea id="variantDescription" name="variantDescription" rows="3" aria-multiline="true" tabindex="0" aria-invalid="false" class="form-control"></textarea>
                 <div class="mda-form-control-line"></div>
                 <label>Description</label><span class="mda-form-msg right">Any message here</span>
               </div>
             </div>
           </div>
         </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <select id="variantPartners" name="variantPartners" multiple="multiple" class="form-control select2" tabindex="0">
+                </select>
+                <div class="mda-form-control-line"></div>
+                <label>Partner</label>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="card">
       <div class="card-heading bg-amber-500">
         <div class="card-title text-center">Voucher</div>
       </div>
@@ -100,21 +111,10 @@
           <div class="col-sm-12">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input tabindex="0" aria-invalid="false" class="form-control">
-                <div class="mda-form-control-line"></div>
-                <label>Voucher Price</label>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="mda-form-group">
-              <div class="mda-form-control">
-                <select id="select2-2" class="form-control" tabindex="0">
-                  <option value="AL">Cash Back</option>
-                  <option value="AR">Discount</option>
-                  <option value="AR">Promo</option>
+                <select id="voucherType" name="voucherType" class="form-control select2" tabindex="0">
+                  <option value="cash">Cash Back</option>
+                  <option value="discount">Discount</option>
+                  <option value="promo">Promo</option>
                 </select>
                 <div class="mda-form-control-line"></div>
                 <label>Voucher Type</label>
@@ -126,7 +126,7 @@
           <div class="col-sm-6">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input tabindex="0" aria-invalid="false" class="form-control">
+                <input id="maxQuantityVoucher" name="maxQuantityVoucher" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Max Quantity</label>
               </div>
@@ -135,7 +135,7 @@
           <div class="col-sm-6">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input tabindex="0" aria-invalid="false" class="form-control">
+                <input id="maxUsageVoucher" name="maxUsageVoucher" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Max Usage</label>
               </div>
@@ -146,7 +146,7 @@
           <div class="col-sm-12">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input tabindex="0" aria-invalid="false" class="form-control">
+                <input id="voucherPrice" name="voucherPrice" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Voucher Price</label>
               </div>
@@ -157,7 +157,7 @@
           <div class="col-sm-12">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input tabindex="0" aria-invalid="false" class="form-control">
+                <input id="voucherValue" name="voucherValue" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Voucher Value</label>
               </div>
@@ -168,9 +168,9 @@
           <div class="col-sm-12">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <select id="select2-3" class="form-control select2-1" tabindex="0">
-                  <option value="AL">QR</option>
-                  <option value="AR">Token</option>
+                <select id="redeemtionMethod" name="redeemtionMethod" class="form-control select2" tabindex="0">
+                  <option value="qr">QR</option>
+                  <option value="token">Token</option>
                 </select>
                 <div class="mda-form-control-line"></div>
                 <label>Redeemtion Method</label>
@@ -182,10 +182,10 @@
           <div class="col-sm-8">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <select id="select2-4" class="form-control" tabindex="0">
-                  <option value="AL">Default</option>
-                  <option value="AR">Alphanumeric</option>
-                  <option value="AR">Alphabetic</option>
+                <select id="voucherFormat" name="voucherFormat" class="form-control select2" tabindex="0">
+                  <option value="default">Default</option>
+                  <option value="alphanumeric">Alphanumeric</option>
+                  <option value="alphabetic">Alphabetic</option>
                 </select>
                 <div class="mda-form-control-line"></div>
                 <label>Voucher Format</label>
@@ -195,7 +195,7 @@
           <div class="col-sm-4">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input tabindex="0" aria-invalid="false" class="form-control">
+                <input id="length" name="length" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Length</label>
               </div>
@@ -206,7 +206,7 @@
           <div class="col-sm-4">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input tabindex="0" aria-invalid="false" class="form-control">
+                <input id="prefix" name="prefix" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Prefix</label>
               </div>
@@ -215,7 +215,7 @@
           <div class="col-sm-4">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input tabindex="0" aria-invalid="false" class="form-control">
+                <input id="body" name="body" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Body</label>
               </div>
@@ -224,7 +224,7 @@
           <div class="col-sm-4">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input tabindex="0" aria-invalid="false" class="form-control">
+                <input id="postfix" name="postfix" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Postfix</label>
               </div>
@@ -233,11 +233,12 @@
         </div>
         <div class="row">
           <div class=" pull-right pr">
-            <button type="button" class="btn btn-raised btn-primary ripple">Create</button>
+            <button type="button" onclick="send()" class="btn btn-raised btn-primary ripple">Create</button>
           </div>
         </div>
       </div>
     </div>
+  </form>
 </div>
 </section>
 {{ end }}
@@ -245,4 +246,12 @@
 {{ define "scripts" }}
 <script type="text/javascript" src="/assets/js/variant/create.js"></script>
 <script type="text/javascript" src="/assets/js/onload.js"></script>
+<script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
+<script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+
+{{ end }}
+
+{{ define "stylesheets" }}
+<link rel="stylesheet" href="/assets/vendor/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css">
+<link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
 {{ end }}

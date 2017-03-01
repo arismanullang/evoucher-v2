@@ -14,18 +14,13 @@ type (
 		RoleId    []string `db:"-"`
 		CreatedBy string   `db:"created_by"`
 	}
-	UserSession struct {
-		Id      string `db:"id"`
-		Expired string `db:"session_expired"`
+	UserRes struct {
+		Id       string `db:"id"`
+		Username string `db:"username"`
 	}
 	Role struct {
 		Id         string `db:"id"`
 		RoleDetail string `db:"role_detail"`
-	}
-	UserResponse struct {
-		Status  string
-		Message string
-		Data    interface{}
 	}
 )
 
@@ -114,7 +109,7 @@ func checkUsername(username string) (int, error) {
 	return len(res), nil
 }
 
-func FindAllUser(accountId string) (UserResponse, error) {
+func FindAllUser(accountId string) (Response, error) {
 	fmt.Println("Select User " + accountId)
 	q := `
 		SELECT DISTINCT u.id, u.username FROM users as u
@@ -124,15 +119,15 @@ func FindAllUser(accountId string) (UserResponse, error) {
 		AND u.status = ?
 	`
 
-	var resv []string
+	var resv []UserRes
 	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
-		return UserResponse{Status: "Error", Message: q, Data: []string{}}, err
+		return Response{Status: "Error", Message: q, Data: []UserRes{}}, err
 	}
 	if len(resv) < 1 {
-		return UserResponse{Status: "404", Message: q, Data: []string{}}, ErrResourceNotFound
+		return Response{Status: "404", Message: q, Data: []UserRes{}}, ErrResourceNotFound
 	}
 
-	res := UserResponse{
+	res := Response{
 		Status:  "200",
 		Message: "Ok",
 		Data:    resv,
@@ -141,7 +136,7 @@ func FindAllUser(accountId string) (UserResponse, error) {
 	return res, nil
 }
 
-func FindUserByRole(role, accountId string) (UserResponse, error) {
+func FindUserByRole(role, accountId string) (Response, error) {
 	q := `
 		SELECT u.id, u.username FROM users AS u
 		JOIN user_accounts AS ua ON u.id = ua.user_id
@@ -151,15 +146,15 @@ func FindUserByRole(role, accountId string) (UserResponse, error) {
 		AND u.status = ?
 	`
 
-	var resv []string
+	var resv []UserRes
 	if err := db.Select(&resv, db.Rebind(q), accountId, role, StatusCreated); err != nil {
-		return UserResponse{Status: "Error", Message: q, Data: []string{}}, err
+		return Response{Status: "Error", Message: q, Data: []UserRes{}}, err
 	}
 	if len(resv) < 1 {
-		return UserResponse{Status: "404", Message: q, Data: []string{}}, ErrResourceNotFound
+		return Response{Status: "404", Message: q, Data: []UserRes{}}, ErrResourceNotFound
 	}
 
-	res := UserResponse{
+	res := Response{
 		Status:  "200",
 		Message: "Ok",
 		Data:    resv,
@@ -168,7 +163,7 @@ func FindUserByRole(role, accountId string) (UserResponse, error) {
 	return res, nil
 }
 
-func FindUser(usr map[string]string) (UserResponse, error) {
+func FindUser(usr map[string]string) (Response, error) {
 	q := `
 		SELECT u.id, u.username FROM users AS u
 		JOIN user_accounts AS ua ON u.id = ua.user_id
@@ -187,13 +182,13 @@ func FindUser(usr map[string]string) (UserResponse, error) {
 
 	var resv []User
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
-		return UserResponse{Status: "Error", Message: q, Data: []User{}}, err
+		return Response{Status: "Error", Message: q, Data: []User{}}, err
 	}
 	if len(resv) < 1 {
-		return UserResponse{Status: "404", Message: q, Data: []User{}}, ErrResourceNotFound
+		return Response{Status: "404", Message: q, Data: []User{}}, ErrResourceNotFound
 	}
 
-	res := UserResponse{
+	res := Response{
 		Status:  "200",
 		Message: "Ok",
 		Data:    resv,

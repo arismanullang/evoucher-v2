@@ -1,12 +1,9 @@
 package controller
 
 import (
-	"bytes"
-	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -33,77 +30,11 @@ type (
 	}
 
 	UserLogin struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
-
-	RoleReq struct {
-		AccountId string `json:"account_id"`
-		Role      string `json:"role"`
-	}
-
-	AccountReq struct {
+		Username  string `json:"username"`
+		Password  string `json:"password"`
 		AccountId string `json:"account_id"`
 	}
 )
-
-func RegisterUser(w http.ResponseWriter, r *http.Request) {
-	var rd User
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
-	}
-
-	fmt.Println(len(hash(rd.Password)))
-
-	param := model.User{
-		AccountId: rd.AccountId,
-		Username:  rd.Username,
-		Password:  hash(rd.Password),
-		Email:     rd.Email,
-		Phone:     rd.Phone,
-		RoleId:    rd.RoleId,
-		CreatedBy: rd.CreatedBy,
-	}
-
-	if err := model.AddUser(param); err != nil {
-		log.Panic(err)
-	}
-
-	res := NewResponse(nil)
-	render.JSON(w, res, http.StatusCreated)
-}
-
-func CheckSession(w http.ResponseWriter, r *http.Request) {
-	token := r.FormValue("token")
-
-	var valid bool = false
-	if token != "" {
-		decoded, err := base64.StdEncoding.DecodeString(token)
-		if err != nil {
-			log.Panic(err)
-		}
-
-		session := strings.Split(string(decoded), ";")
-		sessionValue, err := store.Get(r, session[0])
-		if err != nil {
-			log.Panic(err)
-		}
-
-		user := sessionValue.Values
-		exp, err := time.Parse("2006-01-02 15:04:05", user["expired"].(string))
-		if err != nil {
-			log.Panic(err)
-		}
-
-		if exp.After(time.Now()) {
-			valid = true
-		}
-	}
-
-	res := NewResponse(valid)
-	render.JSON(w, res, http.StatusOK)
-}
 
 func DoLogin(w http.ResponseWriter, r *http.Request) {
 	var rd UserLogin
@@ -119,7 +50,7 @@ func DoLogin(w http.ResponseWriter, r *http.Request) {
 
 	times := time.Now()
 	times = times.AddDate(0, 0, 1)
-	encoded := base64.StdEncoding.EncodeToString([]byte(user + ";" + times.String()))
+	encoded := base64.StdEncoding.EncodeToString([]byte(user + ";" + rd.AccountId + ";" + times.String()))
 
 	session, err := store.Get(r, user)
 	if err != nil {
@@ -138,142 +69,146 @@ func DoLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func FindUserByRole(w http.ResponseWriter, r *http.Request) {
-	var rd RoleReq
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
-	}
+	accountId := r.FormValue("account_id")
+	role := r.FormValue("role")
 
-	var user = model.UserResponse{}
+	var user = model.Response{}
 	var err error
+	var status int
 	if basicAuth(w, r) {
-		user, err = model.FindUserByRole(rd.Role, rd.AccountId)
+		user, err = model.FindUserByRole(role, accountId)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
 		}
+		status = http.StatusOK
 	} else {
-		user = model.UserResponse{}
+		status = http.StatusUnauthorized
 	}
 
 	res := NewResponse(user)
-	render.JSON(w, res, http.StatusCreated)
+	render.JSON(w, res, status)
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	//param := getUrlParam(r.URL.String())
-	var rd AccountReq
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
-	}
+	accountId := r.FormValue("account_id")
 
-	var user = model.UserResponse{}
+	var user = model.Response{}
 	var err error
+	var status int
 	if basicAuth(w, r) {
-		user, err = model.FindAllUser(rd.AccountId)
+		user, err = model.FindAllUser(accountId)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
 		}
+		status = http.StatusOK
 	} else {
-		user = model.UserResponse{}
+		status = http.StatusUnauthorized
 	}
 
 	res := NewResponse(user)
-	render.JSON(w, res)
+	render.JSON(w, res, status)
 }
 
 func GetUserCustomParam(w http.ResponseWriter, r *http.Request) {
 	param := getUrlParam(r.URL.String())
 
-	var user = model.UserResponse{}
+	var user = model.Response{}
 	var err error
+	var status int
 	if basicAuth(w, r) {
 		user, err = model.FindUser(param)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
 		}
+		status = http.StatusOK
 	} else {
-		user = model.UserResponse{}
+		status = http.StatusUnauthorized
 	}
 
 	res := NewResponse(user)
-	render.JSON(w, res)
+	render.JSON(w, res, status)
 }
 
-func getUrlParam(url string) map[string]string {
-	s := strings.Split(url, "?")
-	param := strings.Split(s[1], "&")
+// only dashboard api
+func CheckSession(w http.ResponseWriter, r *http.Request) {
+	token := r.FormValue("token")
+	valid := false
+	if token != "" && token != "null" {
 
-	m := make(map[string]string)
+		_, _, exp := checkExpired(r, token)
 
-	for _, v := range param {
-		tempStr := strings.Split(v, "=")
-		m[tempStr[0]] = tempStr[1]
+		if exp.After(time.Now()) {
+			valid = true
+		}
 	}
 
-	return m
+	res := NewResponse(valid)
+	render.JSON(w, res, http.StatusOK)
 }
 
-func sendPost(url string, param string) []byte {
-	fmt.Println(param)
-	var jsonStr = []byte(param)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-	req.Header.Set("Content-Type", "application/json")
+func RegisterUser(w http.ResponseWriter, r *http.Request) {
+	token := r.FormValue("token")
+	valid := false
+	if token != "" && token != "null" {
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
+		_, _, exp := checkExpired(r, token)
+
+		if exp.After(time.Now()) {
+			valid = true
+		}
 	}
-	defer resp.Body.Close()
 
-	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(body))
-	return body
-}
-
-func getResponseData(param []byte) map[string]interface{} {
-	var dat map[string]interface{}
-	dat = make(map[string]interface{})
-	if err := json.Unmarshal(param, &dat); err != nil {
-		panic(err)
+	var rd User
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
 	}
-	//fmt.Println(string(robots))
 
-	if str, ok := dat["data"].(map[string]interface{}); ok {
-		return str
+	fmt.Println(len(hash(rd.Password)))
+
+	var status int
+	if valid {
+		param := model.User{
+			AccountId: rd.AccountId,
+			Username:  rd.Username,
+			Password:  hash(rd.Password),
+			Email:     rd.Email,
+			Phone:     rd.Phone,
+			RoleId:    rd.RoleId,
+			CreatedBy: rd.CreatedBy,
+		}
+
+		if err := model.AddUser(param); err != nil {
+			log.Panic(err)
+		}
+		status = http.StatusOK
 	} else {
-		return nil
-	}
-}
-
-func hash(param string) string {
-	password := []byte(param)
-	hash := sha256.Sum256(password)
-	return base64.StdEncoding.EncodeToString(hash[:])
-}
-
-func basicAuth(w http.ResponseWriter, r *http.Request) bool {
-	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
-	if len(s) != 2 {
-		return false
+		status = http.StatusUnauthorized
 	}
 
-	b, err := base64.StdEncoding.DecodeString(s[1])
+	res := NewResponse(nil)
+	render.JSON(w, res, status)
+}
+
+// local function
+func checkExpired(r *http.Request, token string) (string, string, time.Time) {
+	decoded, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
-		return false
+		log.Panic(err)
 	}
 
-	pair := strings.SplitN(string(b), ":", 2)
-	if len(pair) != 2 {
-		return false
+	fmt.Println(string(decoded))
+	session := strings.Split(string(decoded), ";")
+	sessionValue, err := store.Get(r, session[0])
+	if err != nil {
+		log.Panic(err)
 	}
 
-	login, err := model.Login(pair[0], hash(pair[1]))
-
-	if login == "" || err != nil {
-		return false
+	user := sessionValue.Values
+	exp, err := time.Parse("2006-01-02 15:04:05", user["expired"].(string))
+	if err != nil {
+		log.Panic(err)
 	}
 
-	return true
+	return session[0], session[1], exp
 }
