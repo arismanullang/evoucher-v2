@@ -52,8 +52,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/get/accountId", controller.GetAccountId)
 
 	//Voucher
-	r.GetFunc("/voucher/:id/get", controller.GetVoucherDetail)
-	//r.GetFunc("/voucher/:id/getbyvariant", controller.GetVoucherDetailByVariant)
+	r.GetFunc("/voucher/get", controller.GetVoucherDetail)
 	r.PostFunc("/voucher/redeem", controller.RedeemVoucher)
 	r.PostFunc("/voucher/delete", controller.DeleteVoucher)
 	r.PostFunc("/voucher/pay", controller.PayVoucher)

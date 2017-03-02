@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/gilkor/evoucher/internal/model"
-	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
 )
 
@@ -36,7 +35,7 @@ type (
 		Quantity    int    `json:"quantity"`
 		ReferenceNo string `json:"reference_no"`
 	}
-	//#####################################################//r
+	//#####################################################//
 
 	//###################RESPONSE FORMAT###################//
 	// VoucherResponse represent a Response of GenerateVouche
@@ -51,7 +50,8 @@ type (
 		VoucherNo string `json:"voucher_code"`
 	}
 	// DetailVoucherResponse represent list of voucher data
-	DetailVoucherResponse struct {
+	DetailListVoucherResponse []DetailVoucherResponse
+	DetailVoucherResponse     struct {
 		ID            string    `json:"id"`
 		VoucherCode   string    `json:"voucher_code"`
 		ReferenceNo   string    `json:"reference_no"`
@@ -77,12 +77,23 @@ func GetVoucherDetail(w http.ResponseWriter, r *http.Request) {
 	var voucher model.VoucherResponse
 	var err error
 	var vr VoucherResponse
+	status := http.StatusOK
 
-	id := bone.GetValue(r, "id")
+	id := r.FormValue("id")
+	code := r.FormValue("code")
+	variantid := r.FormValue("variant_id")
 
-	voucher, err = model.FindVoucherByID(id)
-	dv := voucher.VoucherData
-	voucher.Status = model.ResponseStateOk
+	if id != "" {
+		voucher, err = model.FindVoucherByID(id)
+	} else if code != "" {
+		voucher, err = model.FindVoucherByCode(code)
+	} else if variantid != "" {
+		voucher, err = model.FindVoucherByVariant(variantid)
+	} else {
+		vr.State = model.ErrCodeMissingOrderItem
+		vr.Description = model.ErrMessageMissingOrderItem
+		status = http.StatusBadRequest
+	}
 
 	if err == model.ErrResourceNotFound {
 		vr.State = model.ErrCodeResourceNotFound
@@ -90,30 +101,33 @@ func GetVoucherDetail(w http.ResponseWriter, r *http.Request) {
 	} else if err != nil {
 		vr.State = model.ResponseStateNok
 		vr.Description = err.Error()
-	} else {
-		dvr := DetailVoucherResponse{
-			ID:            dv.ID,
-			VoucherCode:   dv.VoucherCode,
-			ReferenceNo:   dv.ReferenceNo,
-			Holder:        dv.Holder,
-			VariantID:     dv.VariantID,
-			ValidAt:       dv.ValidAt,
-			ExpiredAt:     dv.ExpiredAt,
-			DiscountValue: dv.DiscountValue,
-			State:         dv.State,
-			CreatedBy:     dv.CreatedBy,
-			CreatedAt:     dv.CreatedAt,
-			UpdatedBy:     dv.UpdatedBy.String,
-			UpdatedAt:     dv.UpdatedAt.Time,
-			DeletedBy:     dv.DeletedBy.String,
-			DeletedAt:     dv.DeletedAt.Time,
-			Status:        dv.Status,
+		status = http.StatusInternalServerError
+	} else if voucher.Message != "" {
+
+		dvr := make(DetailListVoucherResponse, len(voucher.VoucherData))
+		for i, v := range voucher.VoucherData {
+			dvr[i].ID = v.ID
+			dvr[i].VoucherCode = v.VoucherCode
+			dvr[i].ReferenceNo = v.ReferenceNo
+			dvr[i].Holder = v.Holder
+			dvr[i].VariantID = v.VariantID
+			dvr[i].ValidAt = v.ValidAt
+			dvr[i].ExpiredAt = v.ExpiredAt
+			dvr[i].DiscountValue = v.DiscountValue
+			dvr[i].State = v.State
+			dvr[i].CreatedBy = v.CreatedBy
+			dvr[i].CreatedAt = v.CreatedAt
+			dvr[i].UpdatedBy = v.UpdatedBy.String
+			dvr[i].UpdatedAt = v.UpdatedAt.Time
+			dvr[i].DeletedBy = v.DeletedBy.String
+			dvr[i].DeletedAt = v.DeletedAt.Time
+			dvr[i].Status = v.Status
 		}
 		vr = VoucherResponse{State: model.ResponseStateOk, Description: "", VoucherData: dvr}
 	}
 
 	res := NewResponse(vr)
-	render.JSON(w, res)
+	render.JSON(w, res, status)
 }
 
 //RedeemVoucher redeem
@@ -121,9 +135,11 @@ func RedeemVoucher(w http.ResponseWriter, r *http.Request) {
 	var d model.UpdateDeleteRequest
 	var vrr RedeemVoucherRequest
 	var vr VoucherResponse
+	status := http.StatusOK
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&vrr); err != nil {
+		status = http.StatusInternalServerError
 		log.Panic(err)
 	}
 
@@ -135,12 +151,13 @@ func RedeemVoucher(w http.ResponseWriter, r *http.Request) {
 		} else if err != nil {
 			vr.State = model.ResponseStateNok
 			vr.Description = err.Error()
+			status = http.StatusInternalServerError
 		} else if fv.Status != model.ResponseStateOk {
 			vr.State = fv.Status
 			vr.Description = fv.Message
 		} else {
 
-			d.ID = fv.VoucherData.ID
+			d.ID = fv.VoucherData[0].ID
 			d.State = model.VoucherStateUsed
 			d.User = vrr.AccountID
 
@@ -148,6 +165,7 @@ func RedeemVoucher(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				vr.State = model.ResponseStateNok
 				vr.Description = err.Error()
+				status = http.StatusInternalServerError
 			} else {
 				vr.State = model.ResponseStateOk
 				vr.Description = ""
@@ -175,21 +193,24 @@ func RedeemVoucher(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		vr = VoucherResponse{}
+		status = http.StatusUnauthorized
 	}
 
 	res := NewResponse(vr)
-	render.JSON(w, res)
+	render.JSON(w, res, status)
 }
 
 // DeleteVoucher delete Voucher data from DB by ID
 func DeleteVoucher(w http.ResponseWriter, r *http.Request) {
 	var d model.UpdateDeleteRequest
 	var rd DeleteVoucherRequest
+	status := http.StatusOK
 	vr := VoucherResponse{State: model.ResponseStateOk, Description: ""}
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
 		log.Panic(err)
+		status = http.StatusInternalServerError
 	}
 
 	if basicAuth(w, r) {
@@ -201,10 +222,11 @@ func DeleteVoucher(w http.ResponseWriter, r *http.Request) {
 		} else if err != nil {
 			vr.State = model.ResponseStateNok
 			vr.Description = err.Error()
+			status = http.StatusInternalServerError
 		} else {
-			d.ID = fv.VoucherData.ID
+			d.ID = fv.VoucherData[0].ID
 			d.State = model.VoucherStateDeleted
-			d.User = fv.VoucherData.CreatedBy
+			d.User = fv.VoucherData[0].CreatedBy
 
 			err := d.DeleteVc()
 			if err != nil {
@@ -213,26 +235,31 @@ func DeleteVoucher(w http.ResponseWriter, r *http.Request) {
 			} else {
 				vr.State = model.ResponseStateOk
 				vr.Description = ""
-				vr.VoucherData = fv.VoucherData.ID
+				vr.VoucherData = fv.VoucherData[0].ID
 			}
 		}
 
 	} else {
 		vr = VoucherResponse{}
+		status = http.StatusUnauthorized
 	}
 
 	res := NewResponse(vr)
-	render.JSON(w, res)
+	render.JSON(w, res, status)
 }
 
 func PayVoucher(w http.ResponseWriter, r *http.Request) {
 	var d model.UpdateDeleteRequest
 	var pvr PayVoucherRequest
+	status := http.StatusOK
 	vr := VoucherResponse{State: model.ResponseStateOk, Description: ""}
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&pvr); err != nil {
-		log.Panic(err)
+		vr.State = model.ResponseStateNok
+		vr.Description = err.Error()
+		status = http.StatusInternalServerError
+		// log.Panic(err)
 	}
 
 	if basicAuth(w, r) {
@@ -244,13 +271,14 @@ func PayVoucher(w http.ResponseWriter, r *http.Request) {
 		} else if err != nil {
 			vr.State = model.ResponseStateNok
 			vr.Description = err.Error()
-		} else if fv.VoucherData.State == model.VoucherStatePaid {
+			status = http.StatusInternalServerError
+		} else if fv.VoucherData[0].State == model.VoucherStatePaid {
 			vr.State = model.ErrCodeVoucherAlreadyPaid
 			vr.Description = model.ErrMessageVoucherAlreadyPaid
 		} else {
-			d.ID = fv.VoucherData.ID
+			d.ID = fv.VoucherData[0].ID
 			d.State = model.VoucherStatePaid
-			d.User = fv.VoucherData.CreatedBy
+			d.User = fv.VoucherData[0].CreatedBy
 
 			uv, err := d.UpdateVc()
 			if err != nil {
@@ -283,19 +311,22 @@ func PayVoucher(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 		vr = VoucherResponse{}
+		status = http.StatusUnauthorized
 	}
 
 	res := NewResponse(vr)
-	render.JSON(w, res)
+	render.JSON(w, res, status)
 }
 
 //GenerateVoucherOnDemand Generate singgle voucher request
 func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	var gvd GenerateVoucherRequest
+	status := http.StatusOK
 	vr := VoucherResponse{State: model.ResponseStateOk, Description: ""}
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&gvd); err != nil {
+		status = http.StatusInternalServerError
 		log.Panic(err)
 	}
 
@@ -308,6 +339,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		} else if err != nil {
 			vr.State = model.ResponseStateNok
 			vr.Description = err.Error()
+			status = http.StatusInternalServerError
 		} else {
 
 			if dt, ok := variant.Data.(model.Variant); ok {
@@ -330,6 +362,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 					if err != nil {
 						vr.State = model.ResponseStateNok
 						vr.Description = err.Error()
+						status = http.StatusInternalServerError
 					} else {
 						gvr := make([]GenerateVoucerResponse, len(voucher))
 						for i, v := range voucher {
@@ -350,19 +383,22 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 		vr = VoucherResponse{}
+		status = http.StatusUnauthorized
 	}
 
 	res := NewResponse(vr)
-	render.JSON(w, res)
+	render.JSON(w, res, status)
 }
 
 //GenerateVoucher Generate bulk voucher request
 func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 	var gvd GenerateVoucherRequest
+	status := http.StatusOK
 	vr := VoucherResponse{State: model.ResponseStateOk, Description: ""}
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&gvd); err != nil {
+		status = http.StatusInternalServerError
 		log.Panic(err)
 	}
 
@@ -419,10 +455,11 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 		vr = VoucherResponse{}
+		status = http.StatusUnauthorized
 	}
 
 	res := NewResponse(vr)
-	render.JSON(w, res)
+	render.JSON(w, res, status)
 }
 
 // GenerateVoucher Genera te voucher and strore to DB
@@ -465,7 +502,7 @@ func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model
 			VoucherCode:   rt[i],
 			ReferenceNo:   vr.ReferenceNo,
 			Holder:        vr.AccountID,
-			VariantID:     v.Id,
+			VariantID:     vr.VariantID,
 			ValidAt:       tsd,
 			ExpiredAt:     ted,
 			DiscountValue: v.DiscountValue,
