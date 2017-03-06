@@ -6,9 +6,9 @@ import (
 
 type (
 	Transaction struct {
-		ID               string    `db:"id"`
-		CompanyID        string    `db:"company_id"`
-		MerchantID       string    `db:"pic_merchant"`
+		Id               string    `db:"id"`
+		AccountId        string    `db:"account_id"`
+		PartnerId        string    `db:"partner_id"`
 		TransactionCode  string    `db:"transaction_code"`
 		TotalTransaction float64   `db:"total_transaction"`
 		DiscountValue    float64   `db:"discount_value"`
@@ -17,18 +17,13 @@ type (
 		User             string    `db:"created_by"`
 		Vouchers         []string  `db:"-"`
 	}
-	TransactionsResponse struct {
-		Status           string
-		Message          string
-		TransactionValue []Transaction
-	}
 	DeleteTransactionRequest struct {
-		ID   string `db:"id"`
+		Id   string `db:"id"`
 		User string `db:"deleted_by"`
 	}
 )
 
-func (d *Transaction) Insert() error {
+func InsertTransaction(d Transaction) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		return err
@@ -37,37 +32,37 @@ func (d *Transaction) Insert() error {
 
 	q := `
 		INSERT INTO transactions(
-			company_id
-			, pic_merchant
+			account_id
+			, partner_id
 			, transaction_code
 			, total_transaction
 			, discount_value
 			, payment_type
 			, created_by
+			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING
 			id
 	`
 	var res []string
-	if err := tx.Select(&res, tx.Rebind(q), d.CompanyID, d.MerchantID, d.TransactionCode, d.TotalTransaction, d.DiscountValue, d.PaymentType, d.User); err != nil {
+	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.PartnerId, d.TransactionCode, d.TotalTransaction, d.DiscountValue, d.PaymentType, d.User, StatusCreated); err != nil {
 		return err
 	}
-	d.ID = res[0]
+	d.Id = res[0]
 
 	for _, v := range d.Vouchers {
 		q := `
 			INSERT INTO transaction_details(
-				company_id
-				, transaction_id
+				transaction_id
 				, voucher_id
 				, created_by
 				, status
 			)
-			VALUES (?, ?, ?, ?, ?)
+			VALUES (?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q), d.CompanyID, d.ID, v, d.User, StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q), d.Id, v, d.User, StatusCreated)
 		if err != nil {
 			return err
 		}
@@ -99,10 +94,10 @@ func (d *Transaction) Update() error {
 			, updated_at = ?
 		WHERE
 			id = ?
-			AND stauts = ?;
+			AND status = ?;
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), d.CompanyID, d.MerchantID, d.TransactionCode, d.TotalTransaction, d.DiscountValue, d.PaymentType, d.User, time.Now(), d.ID, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), d.AccountId, d.PartnerId, d.TransactionCode, d.TotalTransaction, d.DiscountValue, d.PaymentType, d.User, time.Now(), d.Id, StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -117,7 +112,7 @@ func (d *Transaction) Update() error {
 			transaction_id = ?
 			AND status = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, d.User, time.Now(), d.ID, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, d.User, time.Now(), d.Id, StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -125,15 +120,15 @@ func (d *Transaction) Update() error {
 	for _, v := range d.Vouchers {
 		q := `
 			INSERT INTO transaction_details(
-				company_id
-				, transaction_id
+				transaction_id
 				, voucher_id
 				, created_by
+				, status
 			)
 			VALUES (?, ?, ?, ?)
 			`
 
-		_, err := tx.Exec(tx.Rebind(q), d.CompanyID, d.ID, v, d.User)
+		_, err := tx.Exec(tx.Rebind(q), d.Id, v, d.User, StatusCreated)
 		if err != nil {
 			return err
 		}
@@ -163,7 +158,7 @@ func (d *DeleteTransactionRequest) Delete() error {
 			AND status = ?;
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.Id, StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -178,7 +173,7 @@ func (d *DeleteTransactionRequest) Delete() error {
 			variant_id = ?
 			AND status = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.ID, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.Id, StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -189,7 +184,7 @@ func (d *DeleteTransactionRequest) Delete() error {
 	return nil
 }
 
-func FindTransactionByID(id string) (TransactionsResponse, error) {
+func FindTransactionByID(id string) (Response, error) {
 	q := `
 		SELECT
 			id
@@ -210,10 +205,10 @@ func FindTransactionByID(id string) (TransactionsResponse, error) {
 
 	var resv []Transaction
 	if err := db.Select(&resv, db.Rebind(q), id, StatusCreated); err != nil {
-		return TransactionsResponse{Status: "500", Message: "Error at select variant", TransactionValue: []Transaction{}}, err
+		return Response{Status: "500", Message: "Error at select variant", Data: []Transaction{}}, err
 	}
 	if len(resv) < 1 {
-		return TransactionsResponse{Status: "404", Message: "Error at select variant", TransactionValue: []Transaction{}}, ErrResourceNotFound
+		return Response{Status: "404", Message: "Error at select variant", Data: []Transaction{}}, ErrResourceNotFound
 	}
 
 	q = `
@@ -227,23 +222,23 @@ func FindTransactionByID(id string) (TransactionsResponse, error) {
 	`
 	var resd []string
 	if err := db.Select(&resd, db.Rebind(q), id, StatusCreated); err != nil {
-		return TransactionsResponse{Status: "500", Message: "Error at select user", TransactionValue: []Transaction{}}, err
+		return Response{Status: "500", Message: "Error at select user", Data: []Transaction{}}, err
 	}
 	if len(resd) < 1 {
-		return TransactionsResponse{Status: "404", Message: "Error at select user", TransactionValue: []Transaction{}}, ErrResourceNotFound
+		return Response{Status: "404", Message: "Error at select user", Data: []Transaction{}}, ErrResourceNotFound
 	}
 	resv[0].Vouchers = resd
 
-	res := TransactionsResponse{
-		Status:           "200",
-		Message:          "Ok",
-		TransactionValue: resv,
+	res := Response{
+		Status:  "200",
+		Message: "Ok",
+		Data:    resv,
 	}
 
 	return res, nil
 }
 
-func FindTransactionByDate(start, end string) (TransactionsResponse, error) {
+func FindTransactionByDate(start, end string) (Response, error) {
 	q := `
 		SELECT
 			transaction_code
@@ -264,16 +259,16 @@ func FindTransactionByDate(start, end string) (TransactionsResponse, error) {
 
 	var resv []Transaction
 	if err := db.Select(&resv, db.Rebind(q), start, end, start, end, StatusCreated); err != nil {
-		return TransactionsResponse{Status: "500", Message: "Error at select variant", TransactionValue: []Transaction{}}, err
+		return Response{Status: "500", Message: "Error at select variant", Data: []Transaction{}}, err
 	}
 	if len(resv) < 1 {
-		return TransactionsResponse{Status: "404", Message: "Error at select variant", TransactionValue: []Transaction{}}, ErrResourceNotFound
+		return Response{Status: "404", Message: "Error at select variant", Data: []Transaction{}}, ErrResourceNotFound
 	}
 
-	res := TransactionsResponse{
-		Status:           "200",
-		Message:          "Ok",
-		TransactionValue: resv,
+	res := Response{
+		Status:  "200",
+		Message: "Ok",
+		Data:    resv,
 	}
 
 	return res, nil

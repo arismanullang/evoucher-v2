@@ -2,10 +2,10 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
-	//"fmt"
 
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
@@ -14,8 +14,11 @@ import (
 )
 
 type (
-	VariantRequest struct {
-		AccountId          string    `json:"account_id"`
+	VariantReq struct {
+		ReqData Variant `json:"variant"`
+		User    string  `json:"created_by"`
+	}
+	Variant struct {
 		VariantName        string    `json:"variant_name"`
 		VariantType        string    `json:"variant_type"`
 		VoucherFormat      FormatReq `json:"voucher_format"`
@@ -27,11 +30,10 @@ type (
 		DiscountValue      float64   `json:"discount_value"`
 		MaxQuantityVoucher float64   `json:"max_quantity_voucher"`
 		MaxUsageVoucher    float64   `json:"max_usage_voucher"`
-		RedeemtionMethod   string    `json:"redeem_method"`
-		ImgUrl             string    `json:"img_url"`
+		RedeemtionMethod   string    `json:"redeemtion_method"`
+		ImgUrl             string    `json:"image_url"`
 		VariantTnc         string    `json:"variant_tnc"`
 		VariantDescription string    `json:"variant_description"`
-		User               string    `json:"created_by"`
 		ValidPartners      []string  `json:"valid_partners"`
 	}
 	FormatReq struct {
@@ -44,162 +46,213 @@ type (
 	UserVariantRequest struct {
 		User string `json:"user"`
 	}
-	DateVariantRequest struct {
-		Start string `json:"start"`
-		End   string `json:"end"`
-	}
 	MultiUserVariantRequest struct {
 		User string   `json:"user"`
 		Data []string `json:"data"`
 	}
-	SearchVariantRequests struct {
-		Fields []string `json:"fields"`
-		Values []string `json:"values"`
-	}
 )
 
-func CreateVariant(w http.ResponseWriter, r *http.Request) {
-	var rd VariantRequest
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
-	}
-
-	ts, err := time.Parse("01/02/2006", rd.StartDate)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	te, err := time.Parse("01/02/2006", rd.EndDate)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	vr := model.VariantReq{
-		AccountId:          rd.AccountId,
-		VariantName:        rd.VariantName,
-		VariantType:        rd.VariantType,
-		VoucherType:        rd.VoucherType,
-		VoucherPrice:       rd.VoucherPrice,
-		MaxQuantityVoucher: rd.MaxQuantityVoucher,
-		MaxUsageVoucher:    rd.MaxUsageVoucher,
-		AllowAccumulative:  rd.AllowAccumulative,
-		RedeemtionMethod:   rd.RedeemtionMethod,
-		DiscountValue:      rd.DiscountValue,
-		StartDate:          ts.Format("2006-01-02 15:04:05.000"),
-		EndDate:            te.Format("2006-01-02 15:04:05.000"),
-		ImgUrl:             rd.ImgUrl,
-		VariantTnc:         rd.VariantTnc,
-		VariantDescription: rd.VariantDescription,
-		ValidPartners:      rd.ValidPartners,
-	}
-	fr := model.FormatReq{
-		Prefix:     rd.VoucherFormat.Prefix,
-		Postfix:    rd.VoucherFormat.Postfix,
-		Body:       rd.VoucherFormat.Body,
-		FormatType: rd.VoucherFormat.FormatType,
-		Length:     rd.VoucherFormat.Length,
-	}
-
-	if err := model.Insert(vr, fr, rd.User); err != nil {
-		log.Panic(err)
-	}
-
-	res := NewResponse(nil)
-	render.JSON(w, res, http.StatusCreated)
-}
-
-func GetAllVariant(w http.ResponseWriter, r *http.Request) {
+func GetAllVariants(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Get Variant")
 	accountId := r.FormValue("account_id")
-	variant, err := model.FindAllVariants(accountId)
-	if err != nil && err != model.ErrResourceNotFound {
-		log.Panic(err)
+	var variant model.Response
+	var err error
+	var status int
+	if basicAuth(w, r) {
+		variant, err = model.FindAllVariants(accountId)
+		if err != nil && err != model.ErrResourceNotFound {
+			log.Panic(err)
+		}
+		status = http.StatusOK
+	} else {
+		status = http.StatusUnauthorized
 	}
 
 	res := NewResponse(variant)
-	render.JSON(w, res)
+	render.JSON(w, res, status)
 }
 
-func GetVariantDetails(w http.ResponseWriter, r *http.Request) {
+func GetVariants(w http.ResponseWriter, r *http.Request) {
 	param := getUrlParam(r.URL.String())
-
-	variant, err := model.FindVariantMultipleParam(param)
-	if err != nil && err != model.ErrResourceNotFound {
-		log.Panic(err)
+	var variant model.Response
+	var err error
+	var status int
+	if basicAuth(w, r) {
+		variant, err = model.FindVariantMultipleParam(param)
+		if err != nil && err != model.ErrResourceNotFound {
+			log.Panic(err)
+		}
+		status = http.StatusOK
+	} else {
+		status = http.StatusUnauthorized
 	}
 
 	res := NewResponse(variant)
-	render.JSON(w, res)
+	render.JSON(w, res, status)
 }
 
 func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
-	variant, err := model.FindVariantById(id)
-	if err != nil && err != model.ErrResourceNotFound {
-		log.Panic(err)
+	var variant model.Response
+	var err error
+	var status int
+	if basicAuth(w, r) {
+		variant, err = model.FindVariantById(id)
+		if err != nil && err != model.ErrResourceNotFound {
+			log.Panic(err)
+		}
+		status = http.StatusOK
+	} else {
+		status = http.StatusUnauthorized
 	}
 
 	res := NewResponse(variant)
-	render.JSON(w, res)
+	render.JSON(w, res, status)
 }
 
 func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
 	start := r.FormValue("start")
 	end := r.FormValue("end")
-
-	variant, err := model.FindVariantByDate(start, end)
-	if err != nil && err != model.ErrResourceNotFound {
-		log.Panic(err)
+	var variant model.Response
+	var err error
+	var status int
+	if basicAuth(w, r) {
+		variant, err = model.FindVariantByDate(start, end)
+		if err != nil && err != model.ErrResourceNotFound {
+			log.Panic(err)
+		}
+		status = http.StatusOK
+	} else {
+		status = http.StatusUnauthorized
 	}
 
 	res := NewResponse(variant)
-	render.JSON(w, res)
+	render.JSON(w, res, status)
+}
+
+// dashboard
+func CreateVariant(w http.ResponseWriter, r *http.Request) {
+	token := r.FormValue("token")
+	valid := false
+	res := NewResponse(nil)
+	var user, account string
+	var exp time.Time
+	if token != "" && token != "null" {
+		user, account, exp = checkExpired(r, token)
+		if exp.After(time.Now()) {
+			valid = true
+		}
+	}
+
+	if valid {
+		var rd Variant
+		decoder := json.NewDecoder(r.Body)
+		if err := decoder.Decode(&rd); err != nil {
+			log.Panic(err)
+		}
+
+		ts, err := time.Parse("01/02/2006", rd.StartDate)
+		if err != nil {
+			log.Panic(err)
+		}
+		te, err := time.Parse("01/02/2006", rd.EndDate)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		vr := model.VariantReq{
+			AccountId:          account,
+			VariantName:        rd.VariantName,
+			VariantType:        rd.VariantType,
+			VoucherType:        rd.VoucherType,
+			VoucherPrice:       rd.VoucherPrice,
+			MaxQuantityVoucher: rd.MaxQuantityVoucher,
+			MaxUsageVoucher:    rd.MaxUsageVoucher,
+			AllowAccumulative:  rd.AllowAccumulative,
+			RedeemtionMethod:   rd.RedeemtionMethod,
+			DiscountValue:      rd.DiscountValue,
+			StartDate:          ts.Format("2006-01-02 15:04:05.000"),
+			EndDate:            te.Format("2006-01-02 15:04:05.000"),
+			ImgUrl:             rd.ImgUrl,
+			VariantTnc:         rd.VariantTnc,
+			VariantDescription: rd.VariantDescription,
+			ValidPartners:      rd.ValidPartners,
+		}
+		fr := model.FormatReq{
+			Prefix:     rd.VoucherFormat.Prefix,
+			Postfix:    rd.VoucherFormat.Postfix,
+			Body:       rd.VoucherFormat.Body,
+			FormatType: rd.VoucherFormat.FormatType,
+			Length:     rd.VoucherFormat.Length,
+		}
+
+		if err := model.InsertVariant(vr, fr, user); err != nil {
+			log.Panic(err)
+		}
+
+		render.JSON(w, res, http.StatusCreated)
+	} else {
+		render.JSON(w, res, http.StatusUnauthorized)
+	}
+
 }
 
 func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
-	var rd VariantRequest
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
-	}
-
-	ts, err := time.Parse("01/02/2006", rd.StartDate)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	te, err := time.Parse("01/02/2006", rd.EndDate)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	d := &model.Variant{
-		Id:                 id,
-		AccountId:          rd.AccountId,
-		VariantName:        rd.VariantName,
-		VariantType:        rd.VariantType,
-		VoucherType:        rd.VoucherType,
-		VoucherPrice:       rd.VoucherPrice,
-		MaxQuantityVoucher: rd.MaxQuantityVoucher,
-		MaxUsageVoucher:    rd.MaxUsageVoucher,
-		AllowAccumulative:  rd.AllowAccumulative,
-		RedeemtionMethod:   rd.RedeemtionMethod,
-		DiscountValue:      rd.DiscountValue,
-		StartDate:          ts.Format("2006-01-02 15:04:05.000"),
-		EndDate:            te.Format("2006-01-02 15:04:05.000"),
-		ImgUrl:             rd.ImgUrl,
-		VariantTnc:         rd.VariantTnc,
-		VariantDescription: rd.VariantDescription,
-		CreatedBy:          rd.User,
-		ValidPartners:      rd.ValidPartners,
-	}
-	if err := d.Update(); err != nil {
-		log.Panic(err)
-	}
-
+	token := r.FormValue("token")
+	valid := false
 	res := NewResponse(nil)
-	render.JSON(w, res, http.StatusOK)
+	var user string
+	var exp time.Time
+	if token != "" && token != "null" {
+		user, _, exp = checkExpired(r, token)
+		if exp.After(time.Now()) {
+			valid = true
+		}
+	}
+
+	if valid {
+		var rd Variant
+		decoder := json.NewDecoder(r.Body)
+		if err := decoder.Decode(&rd); err != nil {
+			log.Panic(err)
+		}
+
+		ts, err := time.Parse("01/02/2006", rd.StartDate)
+		if err != nil {
+			log.Panic(err)
+		}
+		te, err := time.Parse("01/02/2006", rd.EndDate)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		vr := model.Variant{
+			Id:                 id,
+			VariantName:        rd.VariantName,
+			VariantType:        rd.VariantType,
+			VoucherType:        rd.VoucherType,
+			VoucherPrice:       rd.VoucherPrice,
+			MaxQuantityVoucher: rd.MaxQuantityVoucher,
+			MaxUsageVoucher:    rd.MaxUsageVoucher,
+			AllowAccumulative:  rd.AllowAccumulative,
+			RedeemtionMethod:   rd.RedeemtionMethod,
+			DiscountValue:      rd.DiscountValue,
+			StartDate:          ts.Format("2006-01-02 15:04:05.000"),
+			EndDate:            te.Format("2006-01-02 15:04:05.000"),
+			ImgUrl:             rd.ImgUrl,
+			VariantTnc:         rd.VariantTnc,
+			VariantDescription: rd.VariantDescription,
+			CreatedBy:          user,
+			ValidPartners:      rd.ValidPartners,
+		}
+		if err := model.UpdateVariant(vr); err != nil {
+			log.Panic(err)
+		}
+		render.JSON(w, res, http.StatusCreated)
+	} else {
+		render.JSON(w, res, http.StatusUnauthorized)
+	}
 }
 
 func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {

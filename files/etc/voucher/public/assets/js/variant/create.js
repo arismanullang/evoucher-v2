@@ -1,5 +1,5 @@
 $( window ).load(function() {
-  searchByRole();
+  getPartner();
 });
 
 function toTwoDigit(val){
@@ -12,53 +12,68 @@ function toTwoDigit(val){
 }
 
 function send() {
+  var token = findGetParameter("token");
+
   var i;
-  var listName = [];
-  for (i = 0; i < $(".name-op").length; i++){
-    listName[i] = $(".name-op").eq(i).text();
+  var listPartner = [];
+  var li = $( "ul.select2-selection__rendered" ).find( "li" );
+
+  for (i = 0; i < li.length-1; i++) {
+      var text = li[i].getAttribute("title");
+      var value = $("option").filter(function() {
+        return $(this).text() === text;
+      }).first().attr("value");
+
+      listPartner[i] = value;
+  }
+
+  var voucherFormat = {
+    prefix: $("#prefix").val(),
+    postfix: $("#postfix").val(),
+    body: $("#body").val(),
+    format_type: $("#voucherFormat").find(":selected").val(),
+    length: parseInt($("#length").val())
   }
 
   var variant = {
-      companyId: $("#companyId").val(),
-      variantName: $("#variantName").val(),
-      variantType: $("#variantType").val(),
-      pointNeeded: parseInt($("#pointNeeded").val()),
-      maxVoucher: parseInt($("#maxVoucher").val()),
+      variant_name: $("#variantName").val(),
+      variant_type: $("#variantType").find(":selected").val(),
+      voucher_format: voucherFormat,
+      voucher_type: $("#voucherType").find(":selected").val(),
+      voucher_price: parseInt($("#voucherPrice").val()),
+      max_quantity_voucher: parseInt($("#maxQuantityVoucher").val()),
+      max_usage_voucher: parseInt($("#maxUsageVoucher").val()),
       allowAccumulative: $("#allowAccumulative").is(":checked"),
-      startDate: $("#startDate").val(),
-      finishDate: $("#endDate").val(),
-      discountValue: parseInt($("#discountValue").val()),
-      imgUrl: $("#imgUrl").val(),
-      variantTnc: $("variantTnc").val(),
-      createdBy: "nZ9Xmo-2",
-      validUsers: listName
+      redeem_method: $("#redeemtionMethod").find(":selected").val(),
+      start_date: $("#startDate").val(),
+      end_date: $("#endDate").val(),
+      discount_value: parseInt($("#voucherValue").val()),
+      image_url: $("#imageUrl").val(),
+      variant_tnc: $("#variantTnc").val(),
+      variant_description: $("#variantDescription").val(),
+      validUsers: listPartner
     };
 
-  $.ajax({
-      url: 'http://127.0.0.1:8080/variant/createVariant',
-      type: 'post',
-      dataType: 'json',
-      contentType: "application/json",
-      data: JSON.stringify(variant),
-      success: function () {
-          alert("Variant created.");
-      }
-  });
+    console.log(variant);
+    $.ajax({
+       url: 'http://evoucher.elys.id:8889/create/variant?token='+token,
+       type: 'post',
+       dataType: 'json',
+       contentType: "application/json",
+       data: JSON.stringify(variant),
+       success: function () {
+           alert("Variant created.");
+       }
+   });
 }
 
-function searchByRole() {
-
-    var arrData = [];
-    var request = {
-        role: "operator"
-      };
+function getPartner() {
+    console.log("Get Partner Data");
+    var token = findGetParameter("token");
 
     $.ajax({
-      url: 'http://127.0.0.1:8080/user/getUserByRole',
-      type: 'post',
-      dataType: 'json',
-      contentType: "application/json",
-      data: JSON.stringify(request),
+      url: 'http://evoucher.elys.id:8889/get/partner?token='+token,
+      type: 'get',
       success: function (data) {
         renderData(data);
       }
@@ -66,38 +81,49 @@ function searchByRole() {
 }
 
 function renderData(data) {
+  console.log("Render Data");
   var arrData = [];
+  arrData = data.data.Data;
 
-  $('#listOperator').html("");
-  $.each(data, function(key, val) {
-    $.each(val, function(k, v){
-      if (k == "Data"){
-        var length= v.length;
+  var i;
+  for (i = 0; i < arrData.length; i++){
+    var li = $("<option value='"+arrData[i].Id+"'>"+arrData[i].PartnerName+"</option>");
+    li.appendTo('#variantPartners');
+  }
+}
 
-        $.each(v, function(x, y){
-          var i = 0;
-          var str = "";
-          $.each(y, function(field, data){
-            arrData[i] = data;
-            i++;
-          });
-          var tr=$("<li></li>");
-          var li = "";
-          li = li + "<button type='button' class='btn btn-list' value="+arrData[0]+" onclick='addData(this)'>"+arrData[1]+"</button>";
-          $(tr).html(li);
-          tr.appendTo('#listOperator');
-        });
-      }
+function setDefaultValue() {
+  $("#voucherFormat").find("option")[0].attr("selected","selected");
+  $("#voucherType").find("option")[0].attr("selected","selected");
+  $("#variantType").find("option")[0].attr("selected","selected");
+  $("#redeemMethod").find("option")[0].attr("selected","selected");
+}
+
+function findGetParameter(parameterName) {
+    var result = null,
+        tmp = [];
+    location.search
+    .substr(1)
+        .split("&")
+        .forEach(function (item) {
+        tmp = item.split("=");
+        if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
     });
-  });
+    return result;
 }
 
-function addData(elem) {
-  var tr=$("<span class='label label-success name-op' onclick='remove(this)'></span>");
-  $(tr).html(elem.value);
-  tr.appendTo('#listOp');
-}
+(function() {
+    'use strict';
 
-function remove(elem){
-  $(elem).remove();
-}
+    $(formAdvanced);
+
+    function formAdvanced() {
+        $('.select2').select2();
+
+        $('.datepicker4')
+            .datepicker({
+                container:'#example-datepicker-container-4'
+            });
+    }
+
+})();

@@ -1465,7 +1465,6 @@
         //      !$.fn.colorpicker ) return;
 
         // Select 2
-        console.log('test');
         $('.select2').select2();
         // Datepicker
         //
