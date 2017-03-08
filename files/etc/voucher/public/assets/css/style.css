@@ -11,3 +11,11 @@
 #select2-account-container {
   padding-left: 35px;
 }
+
+footer{
+  background: #3F3F3F;
+}
+
+.center-text{
+  text-align: center;
+}
