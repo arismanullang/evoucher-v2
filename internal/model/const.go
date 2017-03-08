@@ -33,6 +33,7 @@ const (
 	ErrCodeInvalidVoucher       string = "invalid_voucher"
 	ErrCodeVoucherRulesViolated string = "invalid_rules_violated"
 	ErrCodeVoucherQtyExceeded   string = "voucher_quantity_exceeded"
+	ErrCodeMissingOrderItem     string = "missing_order_items"
 
 	ErrMessageInternalError        string = "internal error , failed when open the variant objects"
 	ErrMessageVoucherNotActive     string = "voucher is not active yet (before start date)"
@@ -42,6 +43,7 @@ const (
 	ErrMessageInvalidVoucher       string = "invalid voucher , VariantID not found"
 	ErrMessageVoucherQtyExceeded   string = "voucher's quantities limit has been exceeded"
 	ErrMessageVoucherRulesViolated string = "order did not match validation rules"
+	ErrMessageMissingOrderItem     string = "order items was not specified"
 
 	StatusCreated string = "created"
 	StatusDeleted string = "deleted"

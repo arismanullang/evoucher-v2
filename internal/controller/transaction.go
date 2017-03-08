@@ -50,6 +50,17 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 			User:             rd.User,
 			Vouchers:         rd.Vouchers,
 		}
+
+		for i, _ := range rd.Vouchers {
+
+			r := RedeemVoucherRequest{VoucherCode: rd.Vouchers[i], AccountID: rd.AccountId}
+
+			if vr := r.RedeemVoucherValidation(); vr.State != model.ResponseStateOk {
+				status = http.StatusInternalServerError
+			}
+
+		}
+
 		if err := model.InsertTransaction(d); err != nil {
 			log.Panic(err)
 		}
