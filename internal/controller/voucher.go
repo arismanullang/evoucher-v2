@@ -2,8 +2,8 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"time"
 
@@ -12,7 +12,6 @@ import (
 )
 
 type (
-	//###################REQUEST FORMAT###################//
 	// RedeemVoucherRequest represent a Request of GenerateVoucher
 	RedeemVoucherRequest struct {
 		VoucherCode string `json:"voucher_code"`
@@ -35,9 +34,7 @@ type (
 		Quantity    int    `json:"quantity"`
 		ReferenceNo string `json:"reference_no"`
 	}
-	//#####################################################//
 
-	//###################RESPONSE FORMAT###################//
 	// VoucherResponse represent a Response of GenerateVouche
 	VoucherResponse struct {
 		State       string      `json:"state"`
@@ -49,7 +46,7 @@ type (
 		VoucherID string `json:"voucher_id"`
 		VoucherNo string `json:"voucher_code"`
 	}
-	// DetailVoucherResponse represent list of voucher data
+	// DetailListVoucherResponse represent list of voucher data
 	DetailListVoucherResponse []DetailVoucherResponse
 	DetailVoucherResponse     struct {
 		ID            string    `json:"id"`
@@ -69,7 +66,6 @@ type (
 		DeletedAt     time.Time `json:"deleted_at"`
 		Status        string    `json:"status"`
 	}
-	//#####################################################//r
 )
 
 // GetVoucherDetail get Voucher detail from DB
@@ -130,74 +126,57 @@ func GetVoucherDetail(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
-//RedeemVoucher redeem
-func RedeemVoucher(w http.ResponseWriter, r *http.Request) {
+//RedeemVoucherValidation redeem
+func (r *RedeemVoucherRequest) RedeemVoucherValidation() VoucherResponse {
 	var d model.UpdateDeleteRequest
-	var vrr RedeemVoucherRequest
 	var vr VoucherResponse
-	status := http.StatusOK
 
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&vrr); err != nil {
-		status = http.StatusInternalServerError
-		log.Panic(err)
-	}
+	fv, err := model.FindVoucherByCode(r.VoucherCode)
+	if err == model.ErrResourceNotFound {
+		vr.State = model.ErrCodeResourceNotFound
+		vr.Description = model.ErrResourceNotFound.Error()
+	} else if err != nil {
+		vr.State = model.ResponseStateNok
+		vr.Description = err.Error()
+	} else if fv.Status != model.ResponseStateOk {
+		vr.State = fv.Status
+		vr.Description = fv.Message
+	} else {
 
-	if basicAuth(w, r) {
-		fv, err := model.FindVoucherByCode(vrr.VoucherCode)
-		if err == model.ErrResourceNotFound {
-			vr.State = model.ErrCodeResourceNotFound
-			vr.Description = model.ErrResourceNotFound.Error()
-		} else if err != nil {
+		d.ID = fv.VoucherData[0].ID
+		d.State = model.VoucherStateUsed
+		d.User = r.AccountID
+
+		uv, err := d.UpdateVc()
+		if err != nil {
 			vr.State = model.ResponseStateNok
 			vr.Description = err.Error()
-			status = http.StatusInternalServerError
-		} else if fv.Status != model.ResponseStateOk {
-			vr.State = fv.Status
-			vr.Description = fv.Message
 		} else {
+			vr.State = model.ResponseStateOk
+			vr.Description = ""
 
-			d.ID = fv.VoucherData[0].ID
-			d.State = model.VoucherStateUsed
-			d.User = vrr.AccountID
-
-			uv, err := d.UpdateVc()
-			if err != nil {
-				vr.State = model.ResponseStateNok
-				vr.Description = err.Error()
-				status = http.StatusInternalServerError
-			} else {
-				vr.State = model.ResponseStateOk
-				vr.Description = ""
-
-				dvr := DetailVoucherResponse{
-					ID:            uv.ID,
-					VoucherCode:   uv.VoucherCode,
-					ReferenceNo:   uv.ReferenceNo,
-					Holder:        uv.Holder,
-					VariantID:     uv.VariantID,
-					ValidAt:       uv.ValidAt,
-					ExpiredAt:     uv.ExpiredAt,
-					DiscountValue: uv.DiscountValue,
-					State:         uv.State,
-					CreatedBy:     uv.CreatedBy,
-					CreatedAt:     uv.CreatedAt,
-					UpdatedBy:     uv.UpdatedBy.String,
-					UpdatedAt:     uv.UpdatedAt.Time,
-					DeletedBy:     uv.DeletedBy.String,
-					DeletedAt:     uv.DeletedAt.Time,
-					Status:        uv.Status,
-				}
-				vr.VoucherData = dvr
+			dvr := DetailVoucherResponse{
+				ID:            uv.ID,
+				VoucherCode:   uv.VoucherCode,
+				ReferenceNo:   uv.ReferenceNo,
+				Holder:        uv.Holder,
+				VariantID:     uv.VariantID,
+				ValidAt:       uv.ValidAt,
+				ExpiredAt:     uv.ExpiredAt,
+				DiscountValue: uv.DiscountValue,
+				State:         uv.State,
+				CreatedBy:     uv.CreatedBy,
+				CreatedAt:     uv.CreatedAt,
+				UpdatedBy:     uv.UpdatedBy.String,
+				UpdatedAt:     uv.UpdatedAt.Time,
+				DeletedBy:     uv.DeletedBy.String,
+				DeletedAt:     uv.DeletedAt.Time,
+				Status:        uv.Status,
 			}
+			vr.VoucherData = dvr
 		}
-	} else {
-		vr = VoucherResponse{}
-		status = http.StatusUnauthorized
 	}
-
-	res := NewResponse(vr)
-	render.JSON(w, res, status)
+	return vr
 }
 
 // DeleteVoucher delete Voucher data from DB by ID
@@ -487,7 +466,6 @@ func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model
 			code = vcf.Prefix.String + randStr(vcf.Length-(len(vcf.Prefix.String)+len(vcf.Postfix.String)), vcf.FormatType) + vcf.Postfix.String
 			// fmt.Println("3 :", code)
 		}
-
 		rt = append(rt, code)
 
 		tsd, err := time.Parse(time.RFC3339Nano, v.StartDate)
@@ -520,22 +498,7 @@ func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model
 	return ret, nil
 }
 
-func randStr(ln int, fm string) string {
-	CharsType := map[string]string{
-		"Alphabet":     model.ALPHABET,
-		"Numerals":     model.NUMERALS,
-		"Alphanumeric": model.ALPHANUMERIC,
-	}
-
-	rand.Seed(time.Now().UTC().UnixNano())
-	chars := CharsType[fm]
-	result := make([]byte, ln)
-	for i := 0; i < ln; i++ {
-		result[i] = chars[rand.Intn(len(chars))]
-	}
-	return string(result)
-}
-
 func getCountVoucher(variantID string) int {
+	fmt.Println(model.CountVoucher(variantID))
 	return model.CountVoucher(variantID)
 }

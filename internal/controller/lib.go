@@ -7,8 +7,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gilkor/evoucher/internal/model"
 )
@@ -81,7 +83,7 @@ func basicAuth(w http.ResponseWriter, r *http.Request) bool {
 	if len(pair) != 2 {
 		return false
 	}
-
+	fmt.Println(pair[0], hash(pair[1]))
 	login, err := model.Login(pair[0], hash(pair[1]))
 
 	if login == "" || err != nil {
@@ -89,4 +91,20 @@ func basicAuth(w http.ResponseWriter, r *http.Request) bool {
 	}
 
 	return true
+}
+
+func randStr(ln int, fm string) string {
+	CharsType := map[string]string{
+		"Alphabet":     model.ALPHABET,
+		"Numerals":     model.NUMERALS,
+		"Alphanumeric": model.ALPHANUMERIC,
+	}
+
+	rand.Seed(time.Now().UTC().UnixNano())
+	chars := CharsType[fm]
+	result := make([]byte, ln)
+	for i := 0; i < ln; i++ {
+		result[i] = chars[rand.Intn(len(chars))]
+	}
+	return string(result)
 }

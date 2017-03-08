@@ -532,7 +532,8 @@ func FindVariantMultipleParam(param map[string]string) (Response, error) {
 func FindVariantById(id string) (Response, error) {
 	q := `
 		SELECT
-			account_id
+			id
+			, account_id
 			, variant_name
 			, variant_type
 			, voucher_format_id

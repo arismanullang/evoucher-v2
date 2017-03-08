@@ -275,17 +275,17 @@ func CountVoucher(varID string) int {
 
 	q := `
 		SELECT
-			count(1) qty
+			count(1)
 		FROM
 			vouchers
 		WHERE
 			variant_id = ?
 			AND status = ?
 	`
-	var resd int
+	var resd []int
 	if err := db.Select(&resd, db.Rebind(q), varID, StatusCreated); err != nil {
 		log.Panic(err)
 		return 0
 	}
-	return resd
+	return resd[0]
 }
