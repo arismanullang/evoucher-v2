@@ -1,6 +1,7 @@
 {{ template "layout" . }}
 
 {{ define "title" }}Create Variant{{ end }}
+{{ define "header-title" }}Create Variant{{ end }}
 
 {{ define "content" }}
 <!-- Page content-->
@@ -29,7 +30,7 @@
               <div class="mda-form-control">
                 <select id="variantType" name="variantType" class="form-control select2" tabindex="0">
                   <option value="bulk">Bulk</option>
-                  <option value="ondemand">On-demand</option>
+                  <option value="on-demand">On-demand</option>
                 </select>
                 <div class="mda-form-control-line"></div>
                 <label>Variant Type</label>

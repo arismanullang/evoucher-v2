@@ -1,26 +1,45 @@
 {{ template "layout" . }}
 
 {{ define "title" }}Check Variant{{ end }}
+{{ define "header-title" }}Check Variant{{ end }}
 
 {{ define "content" }}
-<div class="row content-table">
-  <form class="form-inline">
-    <div class="form-group">
-      <label for="variantName">Variant Name</label>
-      <input type="text" class="form-control" id="variantName" name="variantName" placeholder="Variant">
-    </div>
-    <div class="form-group">
-      <input type="button" class="btn btn-default" value="Search" onclick="search()"></input>
-    </div>
-  </form>
+<section>
+<div class="container-overlap bg-blue-grey-100 m0">
 </div>
-<div class="row content-table">
-  <table class="table" id="searchTable" name="searchTable">
-
-  </table>
+<div class="container container-md">
+  <div class="card">
+    <div class="card-heading bg-amber-500">
+        <div class="card-title text-center">Variant</div>
+    </div>
+    <div class="card-body">
+      <table id="datatable1" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
+        <thead>
+          <tr role="row">
+            <th>Id</th>
+            <th>Variant Name</th>
+            <th>Voucher Price</th>
+            <th>Voucher Value</th>
+            <th>Voucher Remains</th>
+            <th class="center-text"></th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+  </div>
 </div>
+</section>
 {{ end }}
 
 {{ define "scripts" }}
-<script type="text/javascript" src="/assets/js/variant/variant.js"></script>
+<script type="text/javascript" src="/assets/vendor/sweetalert/dist/sweetalert-dev.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/jquery.dataTables.js"></script>
+<script type="text/javascript" src="/assets/js/onload.js"></script>
+<script type="text/javascript" src="/assets/js/variant/check.js"></script>
+{{ end }}
+
+
+{{ define "stylesheets" }}
+<link rel="stylesheet" href="/assets/vendor/sweetalert/dist/sweetalert.css">
+<link rel="stylesheet" href="/assets/vendor/datatables/media/css/jquery.dataTables.css">
 {{ end }}

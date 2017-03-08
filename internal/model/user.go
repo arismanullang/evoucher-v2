@@ -215,3 +215,28 @@ func Login(username, password string) (string, error) {
 	}
 	return res[0], nil
 }
+
+func FindAllRole() (Response, error) {
+	fmt.Println("Select All Role")
+	q := `
+		SELECT id, role_detail
+		FROM roles
+		WHERE status = ?
+	`
+
+	var resv []Role
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+		return Response{Status: "Error", Message: q, Data: []AccountRes{}}, err
+	}
+	if len(resv) < 1 {
+		return Response{Status: "404", Message: q, Data: []AccountRes{}}, ErrResourceNotFound
+	}
+
+	res := Response{
+		Status:  "200",
+		Message: "Ok",
+		Data:    resv,
+	}
+
+	return res, nil
+}

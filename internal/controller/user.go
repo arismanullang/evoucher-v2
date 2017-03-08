@@ -34,6 +34,11 @@ type (
 		Password  string `json:"password"`
 		AccountId string `json:"account_id"`
 	}
+
+	UserResponse struct {
+		Id    string
+		Token string
+	}
 )
 
 func DoLogin(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +69,11 @@ func DoLogin(w http.ResponseWriter, r *http.Request) {
 	session.Values["expired"] = times.Format("2006-01-02 15:04:05")
 	session.Save(r, w)
 
-	res := NewResponse(encoded)
+	resp := UserResponse{
+		Id:    user,
+		Token: encoded,
+	}
+	res := NewResponse(resp)
 	render.JSON(w, res, http.StatusOK)
 }
 
@@ -132,14 +141,12 @@ func GetUserCustomParam(w http.ResponseWriter, r *http.Request) {
 // only dashboard api
 func CheckSession(w http.ResponseWriter, r *http.Request) {
 	token := r.FormValue("token")
+	user := r.FormValue("user")
 	valid := false
+	fmt.Println(token)
+	fmt.Println(user)
 	if token != "" && token != "null" {
-
-		_, _, exp := checkExpired(r, token)
-
-		if exp.After(time.Now()) {
-			valid = true
-		}
+		_, _, valid = getValiditySession(r, user, token)
 	}
 
 	res := NewResponse(valid)
@@ -148,14 +155,11 @@ func CheckSession(w http.ResponseWriter, r *http.Request) {
 
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	token := r.FormValue("token")
+	user := r.FormValue("user")
 	valid := false
+	var accountId string
 	if token != "" && token != "null" {
-
-		_, _, exp := checkExpired(r, token)
-
-		if exp.After(time.Now()) {
-			valid = true
-		}
+		accountId, _, valid = getValiditySession(r, user, token)
 	}
 
 	var rd User
@@ -169,13 +173,13 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var status int
 	if valid {
 		param := model.User{
-			AccountId: rd.AccountId,
+			AccountId: accountId,
 			Username:  rd.Username,
 			Password:  hash(rd.Password),
 			Email:     rd.Email,
 			Phone:     rd.Phone,
 			RoleId:    rd.RoleId,
-			CreatedBy: rd.CreatedBy,
+			CreatedBy: user,
 		}
 
 		if err := model.AddUser(param); err != nil {
@@ -190,8 +194,19 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
+func GetAllAccountRoles(w http.ResponseWriter, r *http.Request) {
+	role, err := model.FindAllRole()
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
+	}
+
+	res := NewResponse(role)
+	render.JSON(w, res)
+}
+
 // local function
-func checkExpired(r *http.Request, token string) (string, string, time.Time) {
+func getValiditySession(r *http.Request, user string, token string) (string, time.Time, bool) {
+	valid := false
 	decoded, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
 		log.Panic(err)
@@ -199,16 +214,25 @@ func checkExpired(r *http.Request, token string) (string, string, time.Time) {
 
 	fmt.Println(string(decoded))
 	session := strings.Split(string(decoded), ";")
-	sessionValue, err := store.Get(r, session[0])
-	if err != nil {
-		log.Panic(err)
+	if session[0] == user {
+		sessionValue, err := store.Get(r, session[0])
+		if err != nil {
+			log.Panic(err)
+		}
+		fmt.Println(session[0])
+		ds := sessionValue.Values
+		exp, err := time.Parse("2006-01-02 15:04:05", ds["expired"].(string))
+		if err != nil {
+			log.Panic(err)
+		}
+		fmt.Println(session[0])
+
+		if exp.After(time.Now()) {
+			valid = true
+		}
+
+		return session[1], exp, valid
 	}
 
-	user := sessionValue.Values
-	exp, err := time.Parse("2006-01-02 15:04:05", user["expired"].(string))
-	if err != nil {
-		log.Panic(err)
-	}
-
-	return session[0], session[1], exp
+	return "", time.Now(), false
 }

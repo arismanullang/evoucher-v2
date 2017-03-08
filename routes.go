@@ -25,10 +25,14 @@ func setRoutes() http.Handler {
 	r.GetFunc("/api/get/variant", controller.GetVariants)
 	r.GetFunc("/api/get/variantByDate", controller.GetVariantDetailsByDate)
 	r.GetFunc("/api/get/variant/:id", controller.GetVariantDetailsById)
-	r.PostFunc("/api/update/variant/:id", controller.UpdateVariant)
+	r.PostFunc("/update/variant/:id", controller.UpdateVariant)
 	r.PostFunc("/update/variant/:id/broadcastUser", controller.UpdateVariantBroadcast)
 	r.PostFunc("/update/variant/:id/tenant", controller.UpdateVariantTenant)
-	r.PostFunc("/delete/variant/:id", controller.DeleteVariant)
+
+	r.GetFunc("/get/allVariant", controller.DashboardGetAllVariants)
+	r.GetFunc("/get/variant/:id", controller.DashboardGetVariantDetailsById)
+	r.GetFunc("/get/role", controller.GetAllAccountRoles)
+	r.GetFunc("/delete/variant/:id", controller.DeleteVariant)
 
 	//transaction
 	r.PostFunc("/transaction/redeem", controller.CreateTransaction)
@@ -37,10 +41,10 @@ func setRoutes() http.Handler {
 	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)
 
 	//user
-	r.GetFunc("/get/session", controller.CheckSession)
 	r.PostFunc("/create/user", controller.RegisterUser)
-	r.GetFunc("/get/userByRole", controller.FindUserByRole)
-	r.GetFunc("/get/user", controller.GetUser)
+	r.GetFunc("/get/session", controller.CheckSession)
+	r.GetFunc("/api/get/userByRole", controller.FindUserByRole)
+	r.GetFunc("/api/get/user", controller.GetUser)
 	r.PostFunc("/login", controller.DoLogin)
 
 	//partner
@@ -100,8 +104,6 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "user/check.html", nil)
 	} else if page == "update" {
 		render.FileInLayout(w, "layout.html", "user/update.html", nil)
-	} else if page == "login" {
-		render.FileInLayout(w, "layout.html", "user/login.html", nil)
 	} else if page == "" || page == "index.html" {
 		render.FileInLayout(w, "layout.html", "user/index.html", nil)
 	}

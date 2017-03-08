@@ -8,14 +8,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>{{ template "title" }}</title>
 
+
 <!-- css-->
 <link rel="stylesheet" href="/assets/vendor/animate.css/animate.css">
 <link rel="stylesheet" href="/assets/vendor/bootstrap/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="/assets/vendor/ionicons/css/ionicons.css">
+<link rel="stylesheet" href="/assets/vendor/material-colors/dist/colors.css">
+
+
 {{ block "stylesheets" . }}{{ end }}
 <link rel="stylesheet" href="/assets/css/app.css">
 <link rel="stylesheet" href="/assets/css/style.css">
 
 <!-- js-->
+<script src="/assets/vendor/modernizr/modernizr.custom.js"></script>
 <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/jquery.browser/dist/jquery.browser.js"></script>
 <script type="text/javascript" src="/assets/js/bootstrap.min.js"></script>
@@ -35,10 +41,9 @@
             <ul class="hidden-xs">
                 <li><a id="offcanvas-toggler" href="#" class="menu-link menu-link-slide"><span><em></em></span></a></li>
             </ul>
-            <h2 class="header-title">Program</h2>
+            <h2 class="header-title">{{ template "header-title" }}</h2>
             <ul class="pull-right">
-                <li><a id="header-search" href="#" class="ripple"><em class="ion-ios-search-strong"></em></a></li>
-                <li class="dropdown"><a href="#" data-toggle="dropdown" class="dropdown-toggle has-badge ripple"><em class="ion-person"></em><sup class="badge bg-danger">3</sup></a>
+                <li class="dropdown"><a href="#" data-toggle="dropdown" class="dropdown-toggle has-badge ripple"><em class="ion-person"></em></a>
                     <ul class="dropdown-menu dropdown-menu-right md-dropdown-menu">
                         <li><a href="profile.html"><em class="ion-home icon-fw"></em>Profile</a></li>
                         <li><a href="messages.html"><em class="ion-gear-a icon-fw"></em>Messages</a></li>
@@ -46,7 +51,6 @@
                         <li><a href="user.login.html"><em class="ion-log-out icon-fw"></em>Logout</a></li>
                     </ul>
                 </li>
-                <li><a id="header-settings" href="#" class="ripple"><em class="ion-gear-b"></em></a></li>
             </ul>
         </nav>
     </header>
@@ -58,24 +62,30 @@
         <div class="sidebar-content">
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="dashboard.html" class="ripple"><span class="pull-right nav-label"><span class="badge bg-success">2</span></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/aperture.svg" alt="MenuItem" class="hidden"></span><span>Dashboard</span></a></li>
+                    <li><a href="dashboard.html" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="img/icons/aperture.svg" alt="MenuItem" class="hidden"></span><span>Dashboard</span></a></li>
                     <li><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/connection-bars.svg" alt="MenuItem" class="hidden"></span><span>Variant</span></a>
                         <ul class="sidebar-subnav">
-                            <li><a href="create-program.html" class="ripple"><span class="pull-right nav-label"></span><span>Create Variant</span></a></li>
-                            <li><a href="check-program.html" class="ripple"><span class="pull-right nav-label"></span><span>Check Variant</span></a></li>
+                          <li><a href="/variant/search" class="ripple"><span class="pull-right nav-label"></span><span>Check Variant</span></a></li>
+                          <li><a href="/variant/create" class="ripple"><span class="pull-right nav-label"></span><span>Create Variant</span></a></li>
                         </ul>
                     </li>
                     <li><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Voucher</span></a>
                         <ul class="sidebar-subnav">
-                            <li><a href="create-voucher.html" class="ripple"><span class="pull-right nav-label"></span><span>CreateVoucher</span></a></li>
-                            <li><a href="voucher.html" class="ripple"><span class="pull-right nav-label"></span><span>Voucher</span></a></li>
+                          <li><a href="voucher.html" class="ripple"><span class="pull-right nav-label"></span><span>Check Voucher</span></a></li>
+                          <li><a href="create-voucher.html" class="ripple"><span class="pull-right nav-label"></span><span>Create Voucher</span></a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Report</span></a>
+                        <ul class="sidebar-subnav">
+                          <li><a href="voucher.html" class="ripple"><span class="pull-right nav-label"></span><span>Variant</span></a></li>
+                          <li><a href="voucher.html" class="ripple"><span class="pull-right nav-label"></span><span>Voucher</span></a></li>
+                          <li><a href="create-voucher.html" class="ripple"><span class="pull-right nav-label"></span><span>Transaction</span></a></li>
                         </ul>
                     </li>
                     <li><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/planet.svg" alt="MenuItem" class="hidden"></span><span>Setting</span></a>
-                        <ul id="maps" class="sidebar-subnav">
-                            <li><a href="google-map-full.html" class="ripple"><span class="pull-right nav-label"></span><span>Google Maps Full</span></a></li>
-                            <li><a href="google-map.html" class="ripple"><span class="pull-right nav-label"></span><span>Google Maps</span></a></li>
-                            <li><a href="vector-map.html" class="ripple"><span class="pull-right nav-label"></span><span>Vector Maps</span></a></li>
+                        <ul class="sidebar-subnav">
+                            <li><a href="/user/register" class="ripple"><span class="pull-right nav-label"></span><span>User</span></a></li>
+                            <li><a href="google-map.html" class="ripple"><span class="pull-right nav-label"></span><span>Partner</span></a></li>
                         </ul>
                     </li>
                 </ul>
