@@ -31,7 +31,7 @@ func setRoutes() http.Handler {
 	r.PostFunc("/delete/variant/:id", controller.DeleteVariant)
 
 	//transaction
-	r.PostFunc("/api/create/transaction", controller.CreateTransaction)
+	r.PostFunc("/transaction/redeem", controller.CreateTransaction)
 	r.GetFunc("/transaction/:id/", controller.GetTransactionDetails)
 	r.PostFunc("/transaction/:id/update", controller.UpdateTransaction)
 	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)
@@ -52,12 +52,11 @@ func setRoutes() http.Handler {
 	r.GetFunc("/get/accountId", controller.GetAccountId)
 
 	//Voucher
-	r.GetFunc("/voucher/:id/get", controller.GetVoucherDetail)
-	r.PostFunc("/voucher/redeem", controller.RedeemVoucher)
+	r.GetFunc("/voucher/get", controller.GetVoucherDetail)
 	r.PostFunc("/voucher/delete", controller.DeleteVoucher)
 	r.PostFunc("/voucher/pay", controller.PayVoucher)
-	r.PostFunc("/voucher/generateondemand", controller.GenerateVoucherOnDemand)
-	r.PostFunc("/voucher/generate", controller.GenerateVoucher)
+	r.PostFunc("/voucher/generate/single", controller.GenerateVoucherOnDemand)
+	r.PostFunc("/voucher/generate/bulk", controller.GenerateVoucher)
 
 	//custom
 	r.GetFunc("/view/", viewHandler)

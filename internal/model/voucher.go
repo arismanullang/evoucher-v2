@@ -31,7 +31,7 @@ type (
 	VoucherResponse struct {
 		Status      string
 		Message     string
-		VoucherData Voucher
+		VoucherData []Voucher
 	}
 	UpdateDeleteRequest struct {
 		ID    string `db:"id"`
@@ -53,6 +53,10 @@ func FindVoucherByID(id string) (VoucherResponse, error) {
 
 func FindVoucherByCode(code string) (VoucherResponse, error) {
 	return findVoucher("voucher_code", code)
+}
+
+func FindVoucherByVariant(code string) (VoucherResponse, error) {
+	return findVoucher("variant_id", code)
 }
 
 func findVoucher(field, value string) (VoucherResponse, error) {
@@ -82,19 +86,19 @@ func findVoucher(field, value string) (VoucherResponse, error) {
 	`
 	var resd []Voucher
 	if err := db.Select(&resd, db.Rebind(q), value, StatusCreated); err != nil {
-		return VoucherResponse{Status: ResponseStateNok, Message: err.Error(), VoucherData: Voucher{}}, err
+		return VoucherResponse{Status: ResponseStateNok, Message: err.Error(), VoucherData: resd}, err
 	}
 	if len(resd) < 1 {
-		return VoucherResponse{Status: ResponseStateNok, Message: ErrResourceNotFound.Error(), VoucherData: Voucher{}}, ErrResourceNotFound
+		return VoucherResponse{Status: ResponseStateNok, Message: ErrResourceNotFound.Error(), VoucherData: resd}, ErrResourceNotFound
 	} else if resd[0].State != VoucherStateActived && resd[0].State != VoucherStateCreated {
-		return VoucherResponse{Status: ErrCodeVoucherDisabled, Message: ErrMessageVoucherDisabled, VoucherData: resd[0]}, nil
+		return VoucherResponse{Status: ErrCodeVoucherDisabled, Message: ErrMessageVoucherDisabled, VoucherData: resd}, nil
 	} else if resd[0].ValidAt.After(time.Now()) {
-		return VoucherResponse{Status: ErrCodeVoucherNotActive, Message: ErrMessageVoucherNotActive, VoucherData: resd[0]}, nil
+		return VoucherResponse{Status: ErrCodeVoucherNotActive, Message: ErrMessageVoucherNotActive, VoucherData: resd}, nil
 	} else if resd[0].ExpiredAt.Before(time.Now()) {
-		return VoucherResponse{Status: ErrCodeVoucherExpired, Message: ErrMessageVoucherExpired, VoucherData: resd[0]}, nil
+		return VoucherResponse{Status: ErrCodeVoucherExpired, Message: ErrMessageVoucherExpired, VoucherData: resd}, nil
 	}
 
-	res := VoucherResponse{Status: ResponseStateOk, Message: "success", VoucherData: resd[0]}
+	res := VoucherResponse{Status: ResponseStateOk, Message: "success", VoucherData: resd}
 	return res, nil
 }
 
@@ -260,4 +264,28 @@ func GetVoucherCodeFormat(id int) (VoucherCodeFormat, error) {
 		return VoucherCodeFormat{}, err
 	}
 	return resd[0], nil
+}
+
+func CountVoucher(varID string) int {
+	vc, err := db.Beginx()
+	if err != nil {
+		return 0
+	}
+	defer vc.Rollback()
+
+	q := `
+		SELECT
+			count(1)
+		FROM
+			vouchers
+		WHERE
+			variant_id = ?
+			AND status = ?
+	`
+	var resd []int
+	if err := db.Select(&resd, db.Rebind(q), varID, StatusCreated); err != nil {
+		log.Panic(err)
+		return 0
+	}
+	return resd[0]
 }
