@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
+	//"time"
 
 	//"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
@@ -74,14 +74,10 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := r.FormValue("token")
+	user := r.FormValue("user")
 	valid := false
-	var id string
-	var exp time.Time
 	if token != "" && token != "null" {
-		id, _, exp = checkExpired(r, token)
-		if exp.After(time.Now()) {
-			valid = true
-		}
+		_, _, valid = getValiditySession(r, user, token)
 	}
 
 	var status int
@@ -89,7 +85,7 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 		param := model.Partner{
 			PartnerName:  rd.PartnerName,
 			SerialNumber: rd.SerialNumber,
-			CreatedBy:    id,
+			CreatedBy:    user,
 		}
 
 		if err := model.InsertPartner(param); err != nil {
@@ -105,30 +101,11 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 }
 
 func DashboardGetAllPartner(w http.ResponseWriter, r *http.Request) {
-	token := r.FormValue("token")
-	valid := false
-	var exp time.Time
-	if token != "" && token != "null" {
-		_, _, exp = checkExpired(r, token)
-		if exp.After(time.Now()) {
-			valid = true
-		}
-	}
-
-	var partner = model.Response{}
-	var err error
-	var status int
-	if valid {
-		partner, err = model.FindAllPartner()
-		if err != nil && err != model.ErrResourceNotFound {
-			log.Panic(err)
-		}
-		status = http.StatusOK
-	} else {
-		partner = model.Response{}
-		status = http.StatusUnauthorized
+	partner, err := model.FindAllPartner()
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
 	}
 
 	res := NewResponse(partner)
-	render.JSON(w, res, status)
+	render.JSON(w, res, http.StatusOK)
 }

@@ -1,6 +1,9 @@
-$( window ).load(function() {
+$( window ).ready(function() {
   getPartner();
 });
+
+var user = localStorage.getItem("user");
+var token = localStorage.getItem(user);
 
 function toTwoDigit(val){
   if (val < 10){
@@ -12,8 +15,6 @@ function toTwoDigit(val){
 }
 
 function send() {
-  var token = findGetParameter("token");
-
   var i;
   var listPartner = [];
   var li = $( "ul.select2-selection__rendered" ).find( "li" );
@@ -44,7 +45,7 @@ function send() {
       max_quantity_voucher: parseInt($("#maxQuantityVoucher").val()),
       max_usage_voucher: parseInt($("#maxUsageVoucher").val()),
       allowAccumulative: $("#allowAccumulative").is(":checked"),
-      redeem_method: $("#redeemtionMethod").find(":selected").val(),
+      redeemtion_method: $("#redeemtionMethod").find(":selected").val(),
       start_date: $("#startDate").val(),
       end_date: $("#endDate").val(),
       discount_value: parseInt($("#voucherValue").val()),
@@ -56,7 +57,7 @@ function send() {
 
     console.log(variant);
     $.ajax({
-       url: 'http://evoucher.elys.id:8889/create/variant?token='+token,
+       url: 'http://evoucher.elys.id:8889/create/variant?token='+token+'&user='+user,
        type: 'post',
        dataType: 'json',
        contentType: "application/json",
@@ -69,27 +70,22 @@ function send() {
 
 function getPartner() {
     console.log("Get Partner Data");
-    var token = findGetParameter("token");
 
     $.ajax({
-      url: 'http://evoucher.elys.id:8889/get/partner?token='+token,
+      url: 'http://evoucher.elys.id:8889/get/partner',
       type: 'get',
       success: function (data) {
-        renderData(data);
+        console.log("Render Data");
+        var arrData = [];
+        arrData = data.data.Data;
+
+        var i;
+        for (i = 0; i < arrData.length; i++){
+          var li = $("<option value='"+arrData[i].Id+"'>"+arrData[i].PartnerName+"</option>");
+          li.appendTo('#variantPartners');
+        }
       }
   });
-}
-
-function renderData(data) {
-  console.log("Render Data");
-  var arrData = [];
-  arrData = data.data.Data;
-
-  var i;
-  for (i = 0; i < arrData.length; i++){
-    var li = $("<option value='"+arrData[i].Id+"'>"+arrData[i].PartnerName+"</option>");
-    li.appendTo('#variantPartners');
-  }
 }
 
 function setDefaultValue() {
