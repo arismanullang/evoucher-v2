@@ -1,5 +1,10 @@
-$( window ).load(function() {
-  findGetParameter("id");
+var id = findGetParameter("id");
+var user = localStorage.getItem("user");
+var token = localStorage.getItem(user);
+
+$( window ).ready(function() {
+  searchById(id);
+  getPartner();
 });
 
 function findGetParameter(parameterName) {
@@ -12,7 +17,7 @@ function findGetParameter(parameterName) {
         tmp = item.split("=");
         if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
     });
-    searchById(result);
+    return result;
 }
 
 function searchById(id) {
@@ -20,81 +25,54 @@ function searchById(id) {
     var arrData = [];
 
     $.ajax({
-        url: 'http://127.0.0.1:8080/variant/'+id,
-        type: 'post',
-        dataType: 'json',
-        contentType: "application/json",
+        url: 'http://evoucher.elys.id:8889/get/variant/'+id+'?token='+token+'&user='+user,
+        type: 'get',
         success: function (data) {
-          $.each(data, function(key, val) {
-            $.each(val, function(k, v){
-                if (k == "Data"){
-                  $.each(v, function(x, y){
-                    switch(x){
-                      case "ID":
-                        $("#variantId").val(y);
-                        break;
-                      case "VariantName":
-                        $("#variantName").val(y);
-                        break;
-                      case "VoucherType":
-                        $("#voucherType").val(y);
-                        break;
-                      case "VariantType":
-                        $("#variantType").val(y);
-                        break;
-                      case "DiscountValue":
-                        $("#discountValue").val(y);
-                        break;
-                      case "MaxVoucher":
-                        $("#maxVoucher").val(y);
-                        break;
-                      case "StartDate":
-                        $("#startDate").val(y);
-                        break;
-                      case "EndDate":
-                        $("#endDate").val(y);
-                        break;
-                      case "AllowAccumulative":
-                        $("#allowAccumulative").prop('checked', y);
-                        break;
-                      case "PointNeeded":
-                        $("#pointNeeded").val(y);
-                        break;
-                      case "ImgUrl":
-                        $("#imgUrl").val(y);
-                        break;
-                      case "VariantTnc":
-                        $("#variantTnc").val(y);
-                        break;
+          console.log(data);
+          var variant = data.data.Data;
 
-                    }
-                  });
-                }
-            });
-          });
+          $("#variantName").val(variant.VariantName);
+          $("#variantType").val(variant.VariantType);
+          $("#select2-variantType-container").html(convcertToUpperCase(variant.VariantType));
+          $("#voucherType").val(variant.VoucherType);
+          $("#select2-voucherType-container").html(convcertToUpperCase(variant.VoucherType));
+          $("#voucherPrice").val(variant.VoucherPrice);
+          $("#maxQuantityVoucher").val(variant.MaxQuantityVoucher);
+          $("#maxUsageVoucher").val(variant.MaxUsageVoucher);
+          $("#redeemtionMethod").val(variant.RedeemtionMethod);
+          $("#select2-redeemtionMethod-container").html(convcertToUpperCase(variant.RedeemtionMethod));
+          $("#startDate").val(convertToDate(variant.StartDate));
+          $("#endDate").val(convertToDate(variant.EndDate));
+          $("#voucherValue").val(variant.DiscountValue);
+          $("#imageUrl").val(variant.ImgUrl);
+          $("#variantTnc").val(variant.VariantTnc);
+          $("#variantDescription").val(variant.VariantDescription);
+
         }
     });
 }
 
 function send() {
     var variant = {
-        companyId: $("#companyId").val(),
-        variantName: $("#variantName").val(),
-        variantType: $("#variantType").val(),
-        pointNeeded: parseInt($("#pointNeeded").val()),
-        maxVoucher: parseInt($("#maxVoucher").val()),
-        allowAccumulative: $("#allowAccumulative").is(":checked"),
-        startDate: $("#startDate").val(),
-        finishDate: $("#endDate").val(),
-        discountValue: parseInt($("#discountValue").val()),
-        imgUrl: $("#imgUrl").val(),
-        variantTnc: $("variantTnc").val(),
-        createdBy: "nZ9Xmo-2",
-        validUsers: ["nZ9Xmo-2", "nZ9Xmo-2"]
-      };
+      variant_name: $("#variantName").val(),
+      variant_type: $("#variantType").val(),
+      voucher_type: $("#voucherType").val(),
+      voucher_price: parseInt($("#voucherPrice").val()),
+      max_quantity_voucher: parseInt($("#maxQuantityVoucher").val()),
+      max_usage_voucher: parseInt($("#maxUsageVoucher").val()),
+      redeemtion_method: $("#redeemtionMethod").val(),
+      start_date: $("#startDate").val(),
+      end_date: $("#endDate").val(),
+      discount_value: parseInt($("#voucherValue").val()),
+      image_url: $("#imageUrl").val(),
+      variant_tnc: $("#variantTnc").val(),
+      variant_description: $("#variantDescription").val()
+    };
+
+    console.log(variant);
 
     $.ajax({
-        url: 'http://127.0.0.1:8080/variant/'+$("#variantId").val()+'/update',
+        url: 'http://evoucher.elys.id:8889/update/variant/'+id+'?token='+token+'&user='+user,
         type: 'post',
         dataType: 'json',
         contentType: "application/json",
@@ -104,3 +82,56 @@ function send() {
         }
     });
 }
+
+function getPartner() {
+    console.log("Get Partner Data");
+
+    $.ajax({
+      url: 'http://evoucher.elys.id:8889/get/partner',
+      type: 'get',
+      success: function (data) {
+        console.log("Render Data");
+        var arrData = [];
+        arrData = data.data.Data;
+
+        var i;
+        for (i = 0; i < arrData.length; i++){
+          var li = $("<option value='"+arrData[i].Id+"'>"+arrData[i].PartnerName+"</option>");
+          li.appendTo('#variantPartners');
+        }
+      }
+  });
+}
+
+function convertToDate(date){
+  var string1 = date.split("T")[0];
+  var string2 = string1.split("-");
+  var result = string2[1] + "/" + string2[2] + "/" + string2[0];
+
+  return result;
+}
+
+function convcertToUpperCase(upperCase){
+  var result = "";
+  var firstChar = upperCase.charAt(0);
+  upperCase = upperCase.replace(firstChar, firstChar.toUpperCase());
+  result = upperCase;
+
+  return result;
+}
+
+(function() {
+    'use strict';
+
+    $(formAdvanced);
+
+    function formAdvanced() {
+        $('.select2').select2();
+
+        $('.datepicker4')
+            .datepicker({
+                container:'#example-datepicker-container-4'
+            });
+    }
+
+})();

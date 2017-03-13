@@ -141,15 +141,19 @@ func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
 // dashboard
 func CreateVariant(w http.ResponseWriter, r *http.Request) {
 	token := r.FormValue("token")
+	user := r.FormValue("user")
 	valid := false
 	res := NewResponse(nil)
-	var user, account string
-	var exp time.Time
+	var account string
 	if token != "" && token != "null" {
+<<<<<<< HEAD
 		user, account, exp, _ = checkExpired(r, token)
 		if exp.After(time.Now()) {
 			valid = true
 		}
+=======
+		account, _, valid = getValiditySession(r, user, token)
+>>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
 	}
 
 	if valid {
@@ -202,21 +206,23 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 	} else {
 		render.JSON(w, res, http.StatusUnauthorized)
 	}
-
 }
 
 func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
 	token := r.FormValue("token")
+	user := r.FormValue("user")
 	valid := false
 	res := NewResponse(nil)
-	var user string
-	var exp time.Time
 	if token != "" && token != "null" {
+<<<<<<< HEAD
 		user, _, exp, _ = checkExpired(r, token)
 		if exp.After(time.Now()) {
 			valid = true
 		}
+=======
+		_, _, valid = getValiditySession(r, user, token)
+>>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
 	}
 
 	if valid {
@@ -243,7 +249,6 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 			VoucherPrice:       rd.VoucherPrice,
 			MaxQuantityVoucher: rd.MaxQuantityVoucher,
 			MaxUsageVoucher:    rd.MaxUsageVoucher,
-			AllowAccumulative:  rd.AllowAccumulative,
 			RedeemtionMethod:   rd.RedeemtionMethod,
 			DiscountValue:      rd.DiscountValue,
 			StartDate:          ts.Format("2006-01-02 15:04:05.000"),
@@ -252,12 +257,11 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 			VariantTnc:         rd.VariantTnc,
 			VariantDescription: rd.VariantDescription,
 			CreatedBy:          user,
-			ValidPartners:      rd.ValidPartners,
 		}
 		if err := model.UpdateVariant(vr); err != nil {
 			log.Panic(err)
 		}
-		render.JSON(w, res, http.StatusCreated)
+		render.JSON(w, res, http.StatusOK)
 	} else {
 		render.JSON(w, res, http.StatusUnauthorized)
 	}
@@ -308,21 +312,82 @@ func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteVariant(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Get Variant")
+	token := r.FormValue("token")
+	user := r.FormValue("user")
 	id := bone.GetValue(r, "id")
-	var rd UserVariantRequest
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
+	valid := false
+	var status int
+	if token != "" && token != "null" {
+		_, _, valid = getValiditySession(r, user, token)
 	}
 
-	d := &model.DeleteVariantRequest{
-		Id:   id,
-		User: rd.User,
+	if valid {
+		d := &model.DeleteVariantRequest{
+			Id:   id,
+			User: user,
+		}
+		if err := d.Delete(); err != nil {
+			status = http.StatusInternalServerError
+		} else {
+			status = http.StatusOK
+		}
+	} else {
+		status = http.StatusUnauthorized
 	}
-	if err := d.Delete(); err != nil {
-		log.Panic(err)
-	}
-
 	res := NewResponse(nil)
-	render.JSON(w, res, http.StatusOK)
+	render.JSON(w, res, status)
+}
+
+func DashboardGetAllVariants(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Get Variant")
+	token := r.FormValue("token")
+	user := r.FormValue("user")
+	valid := false
+	var variant model.Response
+	var accountId string
+	var err error
+	var status int
+	if token != "" && token != "null" {
+		accountId, _, valid = getValiditySession(r, user, token)
+	}
+
+	if valid {
+		variant, err = model.FindAllVariants(accountId)
+		if err != nil && err != model.ErrResourceNotFound {
+			log.Panic(err)
+		}
+		status = http.StatusOK
+	} else {
+		status = http.StatusUnauthorized
+	}
+
+	res := NewResponse(variant)
+	render.JSON(w, res, status)
+}
+
+func DashboardGetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
+	token := r.FormValue("token")
+	user := r.FormValue("user")
+	id := bone.GetValue(r, "id")
+	valid := false
+	var variant model.Response
+	var err error
+	var status int
+	if token != "" && token != "null" {
+		_, _, valid = getValiditySession(r, user, token)
+	}
+
+	if valid {
+		variant, err = model.FindVariantById(id)
+		if err != nil && err != model.ErrResourceNotFound {
+			log.Panic(err)
+		}
+		status = http.StatusOK
+	} else {
+		status = http.StatusUnauthorized
+	}
+
+	res := NewResponse(variant)
+	render.JSON(w, res, status)
 }

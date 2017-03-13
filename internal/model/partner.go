@@ -52,7 +52,10 @@ func InsertPartner(p Partner) error {
 func FindAllPartner() (Response, error) {
 	fmt.Println("Select partner")
 	q := `
-		SELECT id, partner_name, serial_number
+		SELECT
+			id
+			, partner_name
+			, serial_number
 		FROM partners
 		WHERE status = ?
 	`

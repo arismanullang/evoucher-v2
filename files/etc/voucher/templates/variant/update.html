@@ -1,94 +1,193 @@
 {{ template "layout" . }}
 
 {{ define "title" }}Edit Variant{{ end }}
+{{ define "header-title" }}Edit Variant{{ end }}
 
 {{ define "content" }}
-<form>
-  <div class="row">
-    <div class="form-group left-panel">
-      <div class="form-group">
-        <div class="row">
-          <label class="panel-content_left" for="variantName">Name</label>
-          <input type="text" class="form-control panel-content_right" id="variantName" name="variantName" placeholder="Variant Name" value="..." required>
-        </div>
+<!-- Page content-->
+<section>
+<div class="container-overlap bg-blue-grey-100 m0">
+</div>
+<div class="container container-md">
+  <form id="create-variant" name="create-variant" novalidate="" class="card b0 form-validate">
+    <div class="card">
+      <div class="card-heading bg-amber-500">
+          <div class="card-title text-center">Variant</div>
       </div>
-      <div class="form-group">
+      <div class="card-body">
         <div class="row">
-          <label class="panel-content_left" for="variantType">Type</label>
-          <input type="text" class="form-control panel-content_right" id="variantType" name="variantType" placeholder="Variant Type" value="..." required>
+          <div class="col-sm-6">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input id="variantName" name="variantName" tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Variant Name</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <select id="variantType" name="variantType" class="form-control select2" tabindex="0">
+                  <option value="bulk">Bulk</option>
+                  <option value="on-demand">On-demand</option>
+                </select>
+                <div class="mda-form-control-line"></div>
+                <label>Variant Type</label>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="form-group">
-        <div class="row">
-          <label class="panel-content_left" for="discountValue">Disccount Value</label>
-          <input type="number" class="form-control panel-content_right" id="discountValue" name="discountValue" placeholder="Discount" value="100000" required>
+        <div class="row ">
+          <div class="col-sm-6">
+            <div class="mda-form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
+              <div id="example-datepicker-container-4" class="mda-form-control">
+                <input id="startDate" name="startDate" tabindex="0" aria-invalid="false" class="form-control datepicker4">
+                <div class="mda-form-control-line"></div>
+                <label>Start Date</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input id="endDate" name="endDate" tabindex="0" aria-invalid="false" class="form-control datepicker4">
+                <div class="mda-form-control-line"></div>
+                <label>End Date</label>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="form-group">
         <div class="row">
-          <label class="panel-content_left" for="maxVoucher">Max Voucher</label>
-          <input type="number" class="form-control panel-content_right" id="maxVoucher" name="maxVoucher" placeholder="Max Voucher" value="100" required>
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input id="imageUrl" name="imageUrl" tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Image URL</label>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="form-group">
         <div class="row">
-          <label class="panel-content_left" for="startDate">Start</label>
-          <input type="text" class="form-control panel-content_right datepicker" name="startDate" id="startDate" placeholder="Start Date" required>
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <textarea id="variantTnc" name="variantTnc" rows="3" aria-multiline="true" tabindex="0" aria-invalid="false" class="form-control"></textarea>
+                <div class="mda-form-control-line"></div>
+                <label>T&C</label><span class="mda-form-msg right">Any message here</span>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="form-group">
         <div class="row">
-          <label class="panel-content_left" for="endDate">End</label>
-          <input type="text" class="form-control panel-content_right datepicker" name="endDate" id="endDate" placeholder="End Date" required>
-        </div>
-      </div>
-      <input type="hidden" id="variantId" name="variantId">
-      <input type="button" class="btn btn-default" value="Submit" onclick="send()"></input>
-    </div>
-    <div class="form-group right-panel">
-      <div class="form-group">
-        <div class="row">
-          <div class="panel-content_row">
-            <input type="checkbox" id="allowAccumulative" name="allowAccumulative">
-            <label>Allow Accumulative</label>
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <textarea id="variantDescription" name="variantDescription" rows="3" aria-multiline="true" tabindex="0" aria-invalid="false" class="form-control"></textarea>
+                <div class="mda-form-control-line"></div>
+                <label>Description</label><span class="mda-form-msg right">Any message here</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="form-group">
-        <div class="row">
-          <label class="panel-content_left" for="pointNeeded">Voucher Type</label>
-          <input type="text" class="form-control panel-content_right" id="voucherType" name="voucherType" value="..." placeholder="Type">
-        </div>
+      <div class="card-heading bg-amber-500">
+        <div class="card-title text-center">Voucher</div>
       </div>
-      <div class="form-group">
+      <div class="card-body">
         <div class="row">
-          <label class="panel-content_left" for="pointNeeded">Max Usage</label>
-          <input type="number" class="form-control panel-content_right" id="maxUsage" name="maxUsage" value="1" placeholder="Usage">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <select id="voucherType" name="voucherType" class="form-control select2" tabindex="0">
+                  <option value="cash">Cash</option>
+                  <option value="discount">Discount</option>
+                  <option value="promo">Promo</option>
+                </select>
+                <div class="mda-form-control-line"></div>
+                <label>Voucher Type</label>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="form-group">
         <div class="row">
-          <label class="panel-content_left" for="pointNeeded">Point</label>
-          <input type="number" class="form-control panel-content_right" id="pointNeeded" name="pointNeeded" value="10" placeholder="Point">
+          <div class="col-sm-6">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input id="maxQuantityVoucher" name="maxQuantityVoucher" tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Max Quantity</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input id="maxUsageVoucher" name="maxUsageVoucher" tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Max Usage</label>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="form-group">
         <div class="row">
-          <label class="panel-content_left" for="imgUrl">Image URL</label>
-          <input type="text" class="form-control panel-content_right" id="imgUrl" name="imgUrl" value="..." placeholder="Image URL">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input id="voucherPrice" name="voucherPrice" tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Voucher Price</label>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="form-group">
         <div class="row">
-          <label class="panel-content_left" for="exampleInputPassword1">T&C</label>
-          <textarea id="variantTnc" name="variantTnc" class="form-control panel-content_right" form="usrform" value="..." placeholder="Enter text here..."></textarea>
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input id="voucherValue" name="voucherValue" tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Voucher Value</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <select id="redeemtionMethod" name="redeemtionMethod" class="form-control select2" tabindex="0">
+                  <option value="qr">QR</option>
+                  <option value="token">Token</option>
+                </select>
+                <div class="mda-form-control-line"></div>
+                <label>Redeemtion Method</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class=" pull-right pr">
+            <button type="button" onclick="send()" class="btn btn-raised btn-primary ripple">Create</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</form>
+  </form>
+</div>
+</section>
 {{ end }}
 
 {{ define "scripts" }}
 <script type="text/javascript" src="/assets/js/variant/update.js"></script>
+<script type="text/javascript" src="/assets/js/onload.js"></script>
+<script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
+<script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+
+{{ end }}
+
+{{ define "stylesheets" }}
+<link rel="stylesheet" href="/assets/vendor/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css">
+<link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
 {{ end }}

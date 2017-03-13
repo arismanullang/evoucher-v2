@@ -1,4 +1,4 @@
-$( window ).load(function() {
+$( window ).ready(function() {
    getAccount();
 });
 
@@ -25,12 +25,8 @@ function getAccount(){
 }
 
 $('#user-login').submit(function(e) {
-
-     // this code prevents form from actually being submitted
      e.preventDefault();
      e.returnValue = false;
-
-     login();
 });
 
 function login(){
@@ -47,7 +43,19 @@ function login(){
       contentType: "application/json",
       data: JSON.stringify(request),
       success: function (data){
+<<<<<<< HEAD
         window.location = "http://voucher.apps.id/variant/create?token="+data.data;
+=======
+        var token = data.data.Token;
+        var user = data.data.Id;
+
+        if (typeof(Storage) !== "undefined") {
+          localStorage.setItem("user", user);
+          localStorage.setItem(user, token);
+        }
+
+        window.location = "http://evoucher.elys.id:8889/variant/create";
+>>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
       }
   });
 }

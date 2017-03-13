@@ -217,6 +217,7 @@ func Login(username, password string) (string, error) {
 	return res[0], nil
 }
 
+<<<<<<< HEAD
 func GetAccountByUser(userID string) string {
 	vc, err := db.Beginx()
 	if err != nil {
@@ -242,4 +243,29 @@ func GetAccountByUser(userID string) string {
 		return ""
 	}
 	return resd[0]
+=======
+func FindAllRole() (Response, error) {
+	fmt.Println("Select All Role")
+	q := `
+		SELECT id, role_detail
+		FROM roles
+		WHERE status = ?
+	`
+
+	var resv []Role
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+		return Response{Status: "Error", Message: q, Data: []AccountRes{}}, err
+	}
+	if len(resv) < 1 {
+		return Response{Status: "404", Message: q, Data: []AccountRes{}}, ErrResourceNotFound
+	}
+
+	res := Response{
+		Status:  "200",
+		Message: "Ok",
+		Data:    resv,
+	}
+
+	return res, nil
+>>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
 }
