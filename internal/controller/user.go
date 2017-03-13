@@ -237,5 +237,5 @@ func getValiditySession(r *http.Request, user string, token string) (string, tim
 		return session[1], exp, valid, nil
 	}
 
-	return "", time.Now(), false, nil
+	return "", time.Now(), true, nil
 }

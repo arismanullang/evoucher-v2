@@ -22,7 +22,7 @@ func CheckToken(w http.ResponseWriter, r *http.Request) (ResponseData, bool) {
 		rs.Error = http.StatusText(http.StatusUnauthorized)
 		rs.Message = model.ErrMessageTokenNotFound + "(" + err.Error() + ")"
 		return rs, false
-	} else if valid {
+	} else if !valid {
 		rs.State = its(http.StatusUnauthorized)
 		rs.Error = http.StatusText(http.StatusUnauthorized)
 		rs.Message = model.ErrMessageTokenExpired
