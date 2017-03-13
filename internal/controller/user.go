@@ -84,7 +84,7 @@ func FindUserByRole(w http.ResponseWriter, r *http.Request) {
 	var user = model.Response{}
 	var err error
 	var status int
-	if basicAuth(w, r) {
+	if _, ok := basicAuth(w, r); ok {
 		user, err = model.FindUserByRole(role, accountId)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
@@ -104,7 +104,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	var user = model.Response{}
 	var err error
 	var status int
-	if basicAuth(w, r) {
+	if _, ok := basicAuth(w, r); ok {
 		user, err = model.FindAllUser(accountId)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
@@ -124,7 +124,7 @@ func GetUserCustomParam(w http.ResponseWriter, r *http.Request) {
 	var user = model.Response{}
 	var err error
 	var status int
-	if basicAuth(w, r) {
+	if _, ok := basicAuth(w, r); ok {
 		user, err = model.FindUser(param)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
@@ -146,7 +146,16 @@ func CheckSession(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(token)
 	fmt.Println(user)
 	if token != "" && token != "null" {
+<<<<<<< HEAD
+
+		_, _, exp, _ := checkExpired(r, token)
+
+		if exp.After(time.Now()) {
+			valid = true
+		}
+=======
 		_, _, valid = getValiditySession(r, user, token)
+>>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
 	}
 
 	res := NewResponse(valid)
@@ -159,7 +168,16 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	valid := false
 	var accountId string
 	if token != "" && token != "null" {
+<<<<<<< HEAD
+
+		_, _, exp, _ := checkExpired(r, token)
+
+		if exp.After(time.Now()) {
+			valid = true
+		}
+=======
 		accountId, _, valid = getValiditySession(r, user, token)
+>>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
 	}
 
 	var rd User
@@ -205,15 +223,40 @@ func GetAllAccountRoles(w http.ResponseWriter, r *http.Request) {
 }
 
 // local function
+<<<<<<< HEAD
+func checkExpired(r *http.Request, token string) (string, string, time.Time, error) {
+=======
 func getValiditySession(r *http.Request, user string, token string) (string, time.Time, bool) {
 	valid := false
+>>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
 	decoded, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
-		log.Panic(err)
+		return "", "", time.Now(), err
+		// log.Panic(err)
 	}
 
 	fmt.Println(string(decoded))
 	session := strings.Split(string(decoded), ";")
+<<<<<<< HEAD
+	sessionValue, err := store.Get(r, session[0])
+	if err != nil {
+		return "", "", time.Now(), err
+		// log.Panic(err)
+	}
+
+	user := sessionValue.Values
+	exp, err := time.Parse("2006-01-02 15:04:05", user["expired"].(string))
+	if err != nil {
+		return "", "", time.Now(), err
+		// log.Panic(err)
+	}
+
+	return session[0], session[1], exp, nil
+}
+
+func getAccountID(userID string) string {
+	return model.GetAccountByUser(userID)
+=======
 	if session[0] == user {
 		sessionValue, err := store.Get(r, session[0])
 		if err != nil {
@@ -235,4 +278,5 @@ func getValiditySession(r *http.Request, user string, token string) (string, tim
 	}
 
 	return "", time.Now(), false
+>>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
 }

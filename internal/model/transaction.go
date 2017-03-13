@@ -45,7 +45,7 @@ func InsertTransaction(d Transaction) error {
 		RETURNING
 			id
 	`
-	var res []string
+	var res []string //[]Transaction
 	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.PartnerId, d.TransactionCode, d.TotalTransaction, d.DiscountValue, d.PaymentType, d.User, StatusCreated); err != nil {
 		return err
 	}
