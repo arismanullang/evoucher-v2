@@ -35,6 +35,7 @@ const (
 	ErrCodeVoucherQtyExceeded   string = "voucher_quantity_exceeded"
 	ErrCodeMissingOrderItem     string = "missing_order_items"
 
+	ErrMessageResourceNotFound     string = "resource not found"
 	ErrMessageInternalError        string = "internal error , failed when open the variant objects"
 	ErrMessageVoucherNotActive     string = "voucher is not active yet (before start date)"
 	ErrMessageVoucherDisabled      string = "voucher has been disabled (has already been used or paid)"
@@ -44,6 +45,8 @@ const (
 	ErrMessageVoucherQtyExceeded   string = "voucher's quantities limit has been exceeded"
 	ErrMessageVoucherRulesViolated string = "order did not match validation rules"
 	ErrMessageMissingOrderItem     string = "order items was not specified"
+	ErrMessageTokenNotFound        string = "Token not found"
+	ErrMessageTokenExpired         string = "Token has been expired"
 
 	StatusCreated string = "created"
 	StatusDeleted string = "deleted"

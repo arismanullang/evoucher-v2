@@ -28,7 +28,7 @@ func GetAllPartner(w http.ResponseWriter, r *http.Request) {
 	var partner = model.Response{}
 	var err error
 	var status int
-	if basicAuth(w, r) {
+	if _, ok := basicAuth(w, r); ok {
 		partner, err = model.FindAllPartner()
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
@@ -49,7 +49,7 @@ func GetPartnerSerialName(w http.ResponseWriter, r *http.Request) {
 	var partner = model.Response{}
 	var err error
 	var status int
-	if basicAuth(w, r) {
+	if _, ok := basicAuth(w, r); ok {
 		partner, err = model.FindPartnerSerialNumber(param)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
@@ -78,7 +78,7 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 	var id string
 	var exp time.Time
 	if token != "" && token != "null" {
-		id, _, exp = checkExpired(r, token)
+		id, _, exp, _ = checkExpired(r, token)
 		if exp.After(time.Now()) {
 			valid = true
 		}
@@ -109,7 +109,7 @@ func DashboardGetAllPartner(w http.ResponseWriter, r *http.Request) {
 	valid := false
 	var exp time.Time
 	if token != "" && token != "null" {
-		_, _, exp = checkExpired(r, token)
+		_, _, exp, _ = checkExpired(r, token)
 		if exp.After(time.Now()) {
 			valid = true
 		}

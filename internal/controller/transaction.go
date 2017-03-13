@@ -29,48 +29,52 @@ type (
 		Start string `json:"start"`
 		End   string `json:"end"`
 	}
+	TransactionResponse struct {
+		TransactionCode string `json:"transaction_code"`
+	}
 )
 
 func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	var rd TransactionRequest
+	var tr VoucherResponse
+
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
 		log.Panic(err)
 	}
 
-	var status int
-	if basicAuth(w, r) {
+	status := http.StatusCreated
+	if _, ok := basicAuth(w, r); ok {
+
 		d := model.Transaction{
 			AccountId:        rd.AccountId,
 			PartnerId:        rd.PartnerId,
-			TransactionCode:  rd.TransactionCode,
+			TransactionCode:  randStr(12, model.NUMERALS),
 			TotalTransaction: rd.TotalTransaction,
 			DiscountValue:    rd.DiscountValue,
 			PaymentType:      rd.PaymentType,
 			User:             rd.User,
-			Vouchers:         rd.Vouchers,
 		}
-
 		for i, _ := range rd.Vouchers {
-
-			r := RedeemVoucherRequest{VoucherCode: rd.Vouchers[i], AccountID: rd.AccountId}
-
-			if vr := r.RedeemVoucherValidation(); vr.State != model.ResponseStateOk {
-				status = http.StatusInternalServerError
+			rd := RedeemVoucherRequest{
+				VoucherCode: rd.Vouchers[i],
+				AccountID:   rd.AccountId,
 			}
-
+			if vr := rd.RedeemVoucherValidation(); vr.State != model.ResponseStateOk {
+				break
+			}
+			//append(d.Vouchers,vr.)
 		}
 
 		if err := model.InsertTransaction(d); err != nil {
 			log.Panic(err)
 		}
 
-		status = http.StatusCreated
 	} else {
 		status = http.StatusUnauthorized
 	}
 
-	res := NewResponse(nil)
+	res := NewResponse(tr)
 	render.JSON(w, res, status)
 }
 

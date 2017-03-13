@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"log"
 )
 
 type (
@@ -214,4 +215,31 @@ func Login(username, password string) (string, error) {
 		return "", ErrResourceNotFound
 	}
 	return res[0], nil
+}
+
+func GetAccountByUser(userID string) string {
+	vc, err := db.Beginx()
+	if err != nil {
+		return ""
+	}
+	defer vc.Rollback()
+
+	q := `
+		SELECT
+			account_id
+		FROM
+			user_accounts
+		WHERE
+			user_id = ?
+			AND status = ?
+	`
+	var resd []string
+	if err := db.Select(&resd, db.Rebind(q), userID, StatusCreated); err != nil {
+		log.Panic(err)
+		return ""
+	}
+	if len(resd) == 0 {
+		return ""
+	}
+	return resd[0]
 }

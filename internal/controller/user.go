@@ -75,7 +75,7 @@ func FindUserByRole(w http.ResponseWriter, r *http.Request) {
 	var user = model.Response{}
 	var err error
 	var status int
-	if basicAuth(w, r) {
+	if _, ok := basicAuth(w, r); ok {
 		user, err = model.FindUserByRole(role, accountId)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
@@ -95,7 +95,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	var user = model.Response{}
 	var err error
 	var status int
-	if basicAuth(w, r) {
+	if _, ok := basicAuth(w, r); ok {
 		user, err = model.FindAllUser(accountId)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
@@ -115,7 +115,7 @@ func GetUserCustomParam(w http.ResponseWriter, r *http.Request) {
 	var user = model.Response{}
 	var err error
 	var status int
-	if basicAuth(w, r) {
+	if _, ok := basicAuth(w, r); ok {
 		user, err = model.FindUser(param)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
@@ -135,7 +135,7 @@ func CheckSession(w http.ResponseWriter, r *http.Request) {
 	valid := false
 	if token != "" && token != "null" {
 
-		_, _, exp := checkExpired(r, token)
+		_, _, exp, _ := checkExpired(r, token)
 
 		if exp.After(time.Now()) {
 			valid = true
@@ -151,7 +151,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	valid := false
 	if token != "" && token != "null" {
 
-		_, _, exp := checkExpired(r, token)
+		_, _, exp, _ := checkExpired(r, token)
 
 		if exp.After(time.Now()) {
 			valid = true
@@ -191,24 +191,31 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // local function
-func checkExpired(r *http.Request, token string) (string, string, time.Time) {
+func checkExpired(r *http.Request, token string) (string, string, time.Time, error) {
 	decoded, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
-		log.Panic(err)
+		return "", "", time.Now(), err
+		// log.Panic(err)
 	}
 
 	fmt.Println(string(decoded))
 	session := strings.Split(string(decoded), ";")
 	sessionValue, err := store.Get(r, session[0])
 	if err != nil {
-		log.Panic(err)
+		return "", "", time.Now(), err
+		// log.Panic(err)
 	}
 
 	user := sessionValue.Values
 	exp, err := time.Parse("2006-01-02 15:04:05", user["expired"].(string))
 	if err != nil {
-		log.Panic(err)
+		return "", "", time.Now(), err
+		// log.Panic(err)
 	}
 
-	return session[0], session[1], exp
+	return session[0], session[1], exp, nil
+}
+
+func getAccountID(userID string) string {
+	return model.GetAccountByUser(userID)
 }
