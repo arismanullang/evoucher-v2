@@ -47,8 +47,9 @@ func DoLogin(w http.ResponseWriter, r *http.Request) {
 	if err := decoder.Decode(&rd); err != nil {
 		log.Panic(err)
 	}
-
+	fmt.Println("rd :", rd)
 	user, err := model.Login(rd.Username, hash(rd.Password))
+	fmt.Println("user :", user)
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}
