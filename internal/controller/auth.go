@@ -25,7 +25,7 @@ func CheckToken(w http.ResponseWriter, r *http.Request) (ResponseData, bool) {
 	} else if !valid {
 		rs.State = its(http.StatusUnauthorized)
 		rs.Error = http.StatusText(http.StatusUnauthorized)
-		rs.Message = model.ErrMessageTokenExpired
+		rs.Message = model.ErrMessageTokenNotFound
 		return rs, false
 	}
 	return rs, true
