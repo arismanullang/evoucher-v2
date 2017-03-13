@@ -43,9 +43,7 @@ function login(){
       contentType: "application/json",
       data: JSON.stringify(request),
       success: function (data){
-<<<<<<< HEAD
-        window.location = "http://voucher.apps.id/variant/create?token="+data.data;
-=======
+
         var token = data.data.Token;
         var user = data.data.Id;
 
@@ -54,8 +52,7 @@ function login(){
           localStorage.setItem(user, token);
         }
 
-        window.location = "http://evoucher.elys.id:8889/variant/create";
->>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
+        window.location = "http://voucher.apps.id/variant/create";
       }
   });
 }
