@@ -13,13 +13,12 @@ import (
 
 type (
 	TransactionRequest struct {
-		AccountId        string   `json:"account_id"`
-		PartnerId        string   `json:"partner_id"`
-		TransactionCode  string   `json:"transaction_code"`
+		VariantID        string   `json:"variant_id"`
+		PartnerID        string   `json:"partner_id"`
+		RedeemMethod     string   `json:"Redeem_method"`
+		RedeemCode       string   `json:"Redeem_code"`
 		TotalTransaction float64  `json:"total_transaction"`
-		DiscountValue    float64  `json:"discount_value"`
 		PaymentType      string   `json:"payment_type"`
-		User             string   `json:"created_by"`
 		Vouchers         []string `json:"vouchers"`
 	}
 	DeleteTransactionRequest struct {
@@ -36,7 +35,7 @@ type (
 
 func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	var rd TransactionRequest
-	var tr VoucherResponse
+	var tr ResponseData
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
@@ -44,34 +43,29 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	status := http.StatusCreated
-	if _, ok := basicAuth(w, r); ok {
 
-		d := model.Transaction{
-			AccountId:        rd.AccountId,
-			PartnerId:        rd.PartnerId,
-			TransactionCode:  randStr(12, model.NUMERALS),
-			TotalTransaction: rd.TotalTransaction,
-			DiscountValue:    rd.DiscountValue,
-			PaymentType:      rd.PaymentType,
-			User:             rd.User,
+	d := model.Transaction{
+		AccountId:        "",
+		PartnerId:        rd.PartnerID,
+		TransactionCode:  randStr(12, model.NUMERALS),
+		TotalTransaction: rd.TotalTransaction,
+		DiscountValue:    0,
+		PaymentType:      rd.PaymentType,
+		User:             "",
+	}
+	for i, _ := range rd.Vouchers {
+		rd := RedeemVoucherRequest{
+			VoucherCode: rd.Vouchers[i],
+			AccountID:   "",
 		}
-		for i, _ := range rd.Vouchers {
-			rd := RedeemVoucherRequest{
-				VoucherCode: rd.Vouchers[i],
-				AccountID:   rd.AccountId,
-			}
-			if vr := rd.RedeemVoucherValidation(); vr.State != model.ResponseStateOk {
-				break
-			}
-			//append(d.Vouchers,vr.)
+		if vr := rd.RedeemVoucherValidation(); vr.State != model.ResponseStateOk {
+			break
 		}
+		//append(d.Vouchers,vr.)
+	}
 
-		if err := model.InsertTransaction(d); err != nil {
-			log.Panic(err)
-		}
-
-	} else {
-		status = http.StatusUnauthorized
+	if err := model.InsertTransaction(d); err != nil {
+		log.Panic(err)
 	}
 
 	res := NewResponse(tr)
@@ -115,13 +109,13 @@ func UpdateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	d := &model.Transaction{
 		Id:               id,
-		AccountId:        rd.AccountId,
-		PartnerId:        rd.PartnerId,
-		TransactionCode:  rd.TransactionCode,
+		AccountId:        "",
+		PartnerId:        rd.PartnerID,
+		TransactionCode:  "",
 		TotalTransaction: rd.TotalTransaction,
-		DiscountValue:    rd.DiscountValue,
+		DiscountValue:    0,
 		PaymentType:      rd.PaymentType,
-		User:             rd.User,
+		User:             "",
 		Vouchers:         rd.Vouchers,
 	}
 	if err := d.Update(); err != nil {

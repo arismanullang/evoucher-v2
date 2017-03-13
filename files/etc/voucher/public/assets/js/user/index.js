@@ -4,7 +4,7 @@ $( window ).load(function() {
 
 function getAccount(){
   $.ajax({
-    url: 'http://evoucher.elys.id:8889/get/accountId',
+    url: 'http://evoucher.apps.id:8889/get/accountId',
     type: 'get',
     success: function (data) {
       var i = 0;
@@ -41,13 +41,13 @@ function login(){
   };
 
   $.ajax({
-      url: 'http://evoucher.elys.id:8889/login',
+      url: 'http://evoucher.apps.id:8889/login',
       type: 'post',
       dataType: 'json',
       contentType: "application/json",
       data: JSON.stringify(request),
       success: function (data){
-        window.location = "http://evoucher.elys.id:8889/variant/create?token="+data.data;
+        window.location = "http://evoucher.apps.id:8889/variant/create?token="+data.data;
       }
   });
 }

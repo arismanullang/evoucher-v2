@@ -77,11 +77,15 @@ func FindAllPartner() (Response, error) {
 func FindPartnerSerialNumber(param string) (Response, error) {
 	fmt.Println("Select partner")
 	q := `
-		SELECT serial_number
-		FROM partners
-		WHERE (id ILIKE '%?%'
-		OR partner_name ILIKE '%?%' )
-		AND status = ?
+		SELECT
+			serial_number
+		FROM
+			partners
+		WHERE
+			(id ILIKE '%?%'
+				OR
+			partner_name ILIKE '%?%' )
+		AND 	status = ?
 	`
 
 	var resv []Partner

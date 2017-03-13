@@ -436,7 +436,7 @@ func FindAllVariants(accountId string) (Response, error) {
 		return Response{Status: "500", Message: "Error at select variant", Data: nil}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: "Error at select variant", Data: nil}, ErrResourceNotFound
+		return Response{Status: "404", Message: ErrMessageResourceNotFound, Data: nil}, ErrResourceNotFound
 	}
 
 	for i, v := range resv {
