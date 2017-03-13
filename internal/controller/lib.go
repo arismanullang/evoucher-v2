@@ -91,7 +91,7 @@ func basicAuth(w http.ResponseWriter, r *http.Request) (string, bool) {
 		return "", false
 	}
 
-	return getAccountID(login), true
+	return /*getAccountID(login)*/ "", true
 }
 
 func randStr(ln int, fm string) string {

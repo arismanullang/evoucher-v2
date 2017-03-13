@@ -146,16 +146,7 @@ func CheckSession(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(token)
 	fmt.Println(user)
 	if token != "" && token != "null" {
-<<<<<<< HEAD
-
-		_, _, exp, _ := checkExpired(r, token)
-
-		if exp.After(time.Now()) {
-			valid = true
-		}
-=======
-		_, _, valid = getValiditySession(r, user, token)
->>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
+		_, _, valid, _ = getValiditySession(r, user, token)
 	}
 
 	res := NewResponse(valid)
@@ -168,16 +159,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	valid := false
 	var accountId string
 	if token != "" && token != "null" {
-<<<<<<< HEAD
-
-		_, _, exp, _ := checkExpired(r, token)
-
-		if exp.After(time.Now()) {
-			valid = true
-		}
-=======
-		accountId, _, valid = getValiditySession(r, user, token)
->>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
+		accountId, _, valid, _ = getValiditySession(r, user, token)
 	}
 
 	var rd User
@@ -223,50 +205,28 @@ func GetAllAccountRoles(w http.ResponseWriter, r *http.Request) {
 }
 
 // local function
-<<<<<<< HEAD
-func checkExpired(r *http.Request, token string) (string, string, time.Time, error) {
-=======
-func getValiditySession(r *http.Request, user string, token string) (string, time.Time, bool) {
+func getValiditySession(r *http.Request, user string, token string) (string, time.Time, bool, error) {
 	valid := false
->>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
 	decoded, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
-		return "", "", time.Now(), err
-		// log.Panic(err)
+		return "", time.Now(), false, err
 	}
 
 	fmt.Println(string(decoded))
 	session := strings.Split(string(decoded), ";")
-<<<<<<< HEAD
-	sessionValue, err := store.Get(r, session[0])
-	if err != nil {
-		return "", "", time.Now(), err
-		// log.Panic(err)
-	}
 
-	user := sessionValue.Values
-	exp, err := time.Parse("2006-01-02 15:04:05", user["expired"].(string))
-	if err != nil {
-		return "", "", time.Now(), err
-		// log.Panic(err)
-	}
-
-	return session[0], session[1], exp, nil
-}
-
-func getAccountID(userID string) string {
-	return model.GetAccountByUser(userID)
-=======
 	if session[0] == user {
 		sessionValue, err := store.Get(r, session[0])
 		if err != nil {
-			log.Panic(err)
+			return "", time.Now(), false, err
+			// log.Panic(err)
 		}
 		fmt.Println(session[0])
 		ds := sessionValue.Values
 		exp, err := time.Parse("2006-01-02 15:04:05", ds["expired"].(string))
 		if err != nil {
-			log.Panic(err)
+			return "", time.Now(), false, err
+			// log.Panic(err)
 		}
 		fmt.Println(session[0])
 
@@ -274,9 +234,8 @@ func getAccountID(userID string) string {
 			valid = true
 		}
 
-		return session[1], exp, valid
+		return session[1], exp, valid, nil
 	}
 
-	return "", time.Now(), false
->>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
+	return "", time.Now(), false, nil
 }

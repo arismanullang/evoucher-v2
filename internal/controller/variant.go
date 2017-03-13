@@ -146,14 +146,7 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	var account string
 	if token != "" && token != "null" {
-<<<<<<< HEAD
-		user, account, exp, _ = checkExpired(r, token)
-		if exp.After(time.Now()) {
-			valid = true
-		}
-=======
-		account, _, valid = getValiditySession(r, user, token)
->>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
+		account, _, valid, _ = getValiditySession(r, user, token)
 	}
 
 	if valid {
@@ -215,14 +208,7 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	valid := false
 	res := NewResponse(nil)
 	if token != "" && token != "null" {
-<<<<<<< HEAD
-		user, _, exp, _ = checkExpired(r, token)
-		if exp.After(time.Now()) {
-			valid = true
-		}
-=======
-		_, _, valid = getValiditySession(r, user, token)
->>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
+		_, _, valid, _ = getValiditySession(r, user, token)
 	}
 
 	if valid {
@@ -319,7 +305,7 @@ func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 	valid := false
 	var status int
 	if token != "" && token != "null" {
-		_, _, valid = getValiditySession(r, user, token)
+		_, _, valid, _ = getValiditySession(r, user, token)
 	}
 
 	if valid {
@@ -349,7 +335,7 @@ func DashboardGetAllVariants(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var status int
 	if token != "" && token != "null" {
-		accountId, _, valid = getValiditySession(r, user, token)
+		accountId, _, valid, _ = getValiditySession(r, user, token)
 	}
 
 	if valid {
@@ -375,7 +361,7 @@ func DashboardGetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var status int
 	if token != "" && token != "null" {
-		_, _, valid = getValiditySession(r, user, token)
+		_, _, valid, _ = getValiditySession(r, user, token)
 	}
 
 	if valid {

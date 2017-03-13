@@ -77,14 +77,7 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 	user := r.FormValue("user")
 	valid := false
 	if token != "" && token != "null" {
-<<<<<<< HEAD
-		id, _, exp, _ = checkExpired(r, token)
-		if exp.After(time.Now()) {
-			valid = true
-		}
-=======
-		_, _, valid = getValiditySession(r, user, token)
->>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
+		_, _, valid, _ = getValiditySession(r, user, token)
 	}
 
 	var status int
@@ -108,34 +101,9 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 }
 
 func DashboardGetAllPartner(w http.ResponseWriter, r *http.Request) {
-<<<<<<< HEAD
-	token := r.FormValue("token")
-	valid := false
-	var exp time.Time
-	if token != "" && token != "null" {
-		_, _, exp, _ = checkExpired(r, token)
-		if exp.After(time.Now()) {
-			valid = true
-		}
-	}
-
-	var partner = model.Response{}
-	var err error
-	var status int
-	if valid {
-		partner, err = model.FindAllPartner()
-		if err != nil && err != model.ErrResourceNotFound {
-			log.Panic(err)
-		}
-		status = http.StatusOK
-	} else {
-		partner = model.Response{}
-		status = http.StatusUnauthorized
-=======
 	partner, err := model.FindAllPartner()
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
->>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
 	}
 
 	res := NewResponse(partner)
