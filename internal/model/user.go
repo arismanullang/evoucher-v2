@@ -217,7 +217,6 @@ func Login(username, password string) (string, error) {
 	return res[0], nil
 }
 
-<<<<<<< HEAD
 func GetAccountByUser(userID string) string {
 	vc, err := db.Beginx()
 	if err != nil {
@@ -243,7 +242,8 @@ func GetAccountByUser(userID string) string {
 		return ""
 	}
 	return resd[0]
-=======
+}
+
 func FindAllRole() (Response, error) {
 	fmt.Println("Select All Role")
 	q := `
@@ -267,5 +267,4 @@ func FindAllRole() (Response, error) {
 	}
 
 	return res, nil
->>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
 }

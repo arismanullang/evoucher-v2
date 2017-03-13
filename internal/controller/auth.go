@@ -2,7 +2,6 @@ package controller
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gilkor/evoucher/internal/model"
 	"github.com/ruizu/render"
@@ -11,18 +10,19 @@ import (
 func CheckToken(w http.ResponseWriter, r *http.Request) (ResponseData, bool) {
 	var rs ResponseData
 	token := r.FormValue("token")
+	user := r.FormValue("user")
 	if len(token) < 1 {
 		rs.State = its(http.StatusUnauthorized)
 		rs.Error = http.StatusText(http.StatusUnauthorized)
 		rs.Message = model.ErrMessageTokenNotFound
 		return rs, false
 	}
-	if _, _, exp, err := checkExpired(r, token); err != nil {
+	if _, _, valid, err := getValiditySession(r, user, token); err != nil {
 		rs.State = its(http.StatusUnauthorized)
 		rs.Error = http.StatusText(http.StatusUnauthorized)
 		rs.Message = model.ErrMessageTokenNotFound + "(" + err.Error() + ")"
 		return rs, false
-	} else if exp.Before(time.Now()) {
+	} else if valid {
 		rs.State = its(http.StatusUnauthorized)
 		rs.Error = http.StatusText(http.StatusUnauthorized)
 		rs.Message = model.ErrMessageTokenExpired
