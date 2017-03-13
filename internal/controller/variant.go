@@ -57,17 +57,16 @@ func GetAllVariants(w http.ResponseWriter, r *http.Request) {
 	accountId := r.FormValue("account_id")
 	var variant model.Response
 	var err error
-	var status int
-	if basicAuth(w, r) {
-		variant, err = model.FindAllVariants(accountId)
-		if err != nil && err != model.ErrResourceNotFound {
-			log.Panic(err)
-		}
-		status = http.StatusOK
-	} else {
-		status = http.StatusUnauthorized
+	status := http.StatusOK
+
+	variant, err = model.FindAllVariants(accountId)
+
+	if err != nil && err != model.ErrResourceNotFound {
+		//log.Panic(err)
+		variant.Message = err.Error()
 	}
 
+	variant.Status = its(status)
 	res := NewResponse(variant)
 	render.JSON(w, res, status)
 }
@@ -77,16 +76,19 @@ func GetVariants(w http.ResponseWriter, r *http.Request) {
 	var variant model.Response
 	var err error
 	var status int
-	if basicAuth(w, r) {
+	if _, ok := basicAuth(w, r); ok {
 		variant, err = model.FindVariantMultipleParam(param)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
 		}
 		status = http.StatusOK
+		variant.Message = http.StatusText(status)
 	} else {
 		status = http.StatusUnauthorized
+		variant.Message = http.StatusText(status)
 	}
 
+	variant.Status = its(status)
 	res := NewResponse(variant)
 	render.JSON(w, res, status)
 }
@@ -96,16 +98,19 @@ func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 	var variant model.Response
 	var err error
 	var status int
-	if basicAuth(w, r) {
+	if _, ok := basicAuth(w, r); ok {
 		variant, err = model.FindVariantById(id)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
 		}
 		status = http.StatusOK
+		variant.Message = http.StatusText(status)
 	} else {
 		status = http.StatusUnauthorized
+		variant.Message = http.StatusText(status)
 	}
 
+	variant.Status = its(status)
 	res := NewResponse(variant)
 	render.JSON(w, res, status)
 }
@@ -116,16 +121,19 @@ func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
 	var variant model.Response
 	var err error
 	var status int
-	if basicAuth(w, r) {
+	if _, ok := basicAuth(w, r); ok {
 		variant, err = model.FindVariantByDate(start, end)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
 		}
 		status = http.StatusOK
+		variant.Message = http.StatusText(status)
 	} else {
 		status = http.StatusUnauthorized
+		variant.Message = http.StatusText(status)
 	}
 
+	variant.Status = its(status)
 	res := NewResponse(variant)
 	render.JSON(w, res, status)
 }
@@ -138,7 +146,14 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	var account string
 	if token != "" && token != "null" {
+<<<<<<< HEAD
+		user, account, exp, _ = checkExpired(r, token)
+		if exp.After(time.Now()) {
+			valid = true
+		}
+=======
 		account, _, valid = getValiditySession(r, user, token)
+>>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
 	}
 
 	if valid {
@@ -200,7 +215,14 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	valid := false
 	res := NewResponse(nil)
 	if token != "" && token != "null" {
+<<<<<<< HEAD
+		user, _, exp, _ = checkExpired(r, token)
+		if exp.After(time.Now()) {
+			valid = true
+		}
+=======
 		_, _, valid = getValiditySession(r, user, token)
+>>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
 	}
 
 	if valid {

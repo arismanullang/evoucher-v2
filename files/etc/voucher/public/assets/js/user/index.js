@@ -4,7 +4,7 @@ $( window ).ready(function() {
 
 function getAccount(){
   $.ajax({
-    url: 'http://evoucher.elys.id:8889/get/accountId',
+    url: 'http://voucher.apps.id/get/accountId',
     type: 'get',
     success: function (data) {
       var i = 0;
@@ -37,12 +37,15 @@ function login(){
   };
 
   $.ajax({
-      url: 'http://evoucher.elys.id:8889/login',
+      url: 'http://voucher.apps.id/login',
       type: 'post',
       dataType: 'json',
       contentType: "application/json",
       data: JSON.stringify(request),
       success: function (data){
+<<<<<<< HEAD
+        window.location = "http://voucher.apps.id/variant/create?token="+data.data;
+=======
         var token = data.data.Token;
         var user = data.data.Id;
 
@@ -52,6 +55,7 @@ function login(){
         }
 
         window.location = "http://evoucher.elys.id:8889/variant/create";
+>>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
       }
   });
 }

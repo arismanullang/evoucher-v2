@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"log"
 )
 
 type (
@@ -216,6 +217,33 @@ func Login(username, password string) (string, error) {
 	return res[0], nil
 }
 
+<<<<<<< HEAD
+func GetAccountByUser(userID string) string {
+	vc, err := db.Beginx()
+	if err != nil {
+		return ""
+	}
+	defer vc.Rollback()
+
+	q := `
+		SELECT
+			account_id
+		FROM
+			user_accounts
+		WHERE
+			user_id = ?
+			AND status = ?
+	`
+	var resd []string
+	if err := db.Select(&resd, db.Rebind(q), userID, StatusCreated); err != nil {
+		log.Panic(err)
+		return ""
+	}
+	if len(resd) == 0 {
+		return ""
+	}
+	return resd[0]
+=======
 func FindAllRole() (Response, error) {
 	fmt.Println("Select All Role")
 	q := `
@@ -239,4 +267,5 @@ func FindAllRole() (Response, error) {
 	}
 
 	return res, nil
+>>>>>>> ed60a86f315f4521641200631c93d01b0c9c855e
 }
