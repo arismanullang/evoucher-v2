@@ -32,8 +32,7 @@ func setRoutes() http.Handler {
 	r.PostFunc("/delete/variant/:id", controller.DeleteVariant)
 
 	//transaction
-	r.PostFunc("/transaction/redeem", controller.CreateTransaction)
-	r.PostFunc("/transaction/redeem", controller.CreateTransaction)
+	// r.PostFunc("/transaction/redeem", controller.CreateTransaction)
 	r.Post("/v1/transaction/redeem", controller.CheckTokenAuth(controller.CreateTransaction))
 	r.GetFunc("/transaction/:id/", controller.GetTransactionDetails)
 	r.PostFunc("/transaction/:id/update", controller.UpdateTransaction)
@@ -55,11 +54,11 @@ func setRoutes() http.Handler {
 	r.GetFunc("/get/accountId", controller.GetAccountId)
 
 	//Voucher
-	r.GetFunc("/voucher", controller.GetVoucherDetail)
-	r.PostFunc("/voucher/delete", controller.DeleteVoucher)
-	r.PostFunc("/voucher/pay", controller.PayVoucher)
-	r.PostFunc("/voucher/generate/bulk", controller.GenerateVoucher)
-	r.PostFunc("/voucher/generate/single", controller.GenerateVoucherOnDemand)
+	// r.GetFunc("/voucher", controller.GetVoucherDetail)
+	// r.PostFunc("/voucher/delete", controller.DeleteVoucher)
+	// r.PostFunc("/voucher/pay", controller.PayVoucher)
+	// r.PostFunc("/voucher/generate/bulk", controller.GenerateVoucher)
+	// r.PostFunc("/voucher/generate/single", controller.GenerateVoucherOnDemand)
 
 	r.Get("/v1/voucher", controller.CheckTokenAuth(controller.GetVoucherDetail))
 	r.Post("/v1/voucher/delete", controller.CheckTokenAuth(controller.DeleteVoucher))
