@@ -47,19 +47,7 @@ type (
 	}
 )
 
-func FindVoucherByID(id string) (VoucherResponse, error) {
-	return findVoucher("id", id)
-}
-
-func FindVoucherByCode(code string) (VoucherResponse, error) {
-	return findVoucher("voucher_code", code)
-}
-
-func FindVoucherByVariant(code string) (VoucherResponse, error) {
-	return findVoucher("variant_id", code)
-}
-
-func findVoucher(field, value string) (VoucherResponse, error) {
+func FindVoucher(param map[string]string) (VoucherResponse, error) {
 	q := `
 		SELECT
 			id
@@ -80,12 +68,14 @@ func findVoucher(field, value string) (VoucherResponse, error) {
 			, status
 		FROM
 			vouchers
-		WHERE
-			` + field + ` = ?
-			AND status = ?
+		WHERE	status = ?
 	`
+	for key, value := range param {
+		q += ` AND ` + key + ` = '` + value + `'`
+	}
+
 	var resd []Voucher
-	if err := db.Select(&resd, db.Rebind(q), value, StatusCreated); err != nil {
+	if err := db.Select(&resd, db.Rebind(q), StatusCreated); err != nil {
 		return VoucherResponse{Status: ResponseStateNok, Message: err.Error(), VoucherData: resd}, err
 	}
 	if len(resd) < 1 {
