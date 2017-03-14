@@ -17,7 +17,7 @@ type errorData struct {
 
 type ResponseData struct {
 	State   string      `json:"state"`
-	Error   string      `json:"Error"`
+	Error   string      `json:"error"`
 	Message string      `json:"messange"`
 	Data    interface{} `json:"data"`
 }
