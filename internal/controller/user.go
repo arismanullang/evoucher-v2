@@ -48,7 +48,7 @@ func DoLogin(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	user, err := model.Login(rd.Username, hash(rd.Password))
+	user, err := model.Login(rd.Username, hash(rd.Password), rd.AccountId)
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}

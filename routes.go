@@ -104,6 +104,8 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "user/check.html", nil)
 	} else if page == "update" {
 		render.FileInLayout(w, "layout.html", "user/update.html", nil)
+	} else if page == "login" {
+		render.FileInLayout(w, "layout.html", "user/login.html", nil)
 	} else if page == "" || page == "index.html" {
 		render.FileInLayout(w, "layout.html", "user/index.html", nil)
 	}

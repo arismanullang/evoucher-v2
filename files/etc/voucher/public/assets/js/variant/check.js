@@ -19,11 +19,12 @@ function getVariant() {
           var dataSet = [];
           for ( i = 0; i < arrData.length; i++){
             dataSet[i] = [
-              arrData[i].Id
-              , arrData[i].VariantName
+              arrData[i].VariantName
               , arrData[i].VoucherPrice
               , arrData[i].DiscountValue
-              , arrData[i].MaxVoucher
+              , (arrData[i].MaxVoucher - arrData[i].Voucher)
+              , "<div data-start="+(arrData[i].MaxVoucher - arrData[i].Voucher)+" class='ui-slider-values mb-lg'></div>"
+              + "<strong class='text-muted ui-slider-value-upper'></strong>"
               , "<button type='button' onclick='goTo(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>"+
               "<button type='button' value=\""+arrData[i].Id+"\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>"
             ];
@@ -37,11 +38,11 @@ function getVariant() {
           $('#datatable1').dataTable({
               data: dataSet,
               columns: [
-                  { title: "Id" },
                   { title: "Variant Name" },
                   { title: "Voucher Price" },
-                  { title: "Discount Value" },
-                  { title: "Max Voucher" },
+                  { title: "Voucher Value" },
+                  { title: "Remaining Voucher" },
+                  { title: "Period" },
                   { title: "Action"}
               ],
               oLanguage: {
@@ -55,6 +56,30 @@ function getVariant() {
                       sNext: '<em class="ion-ios-arrow-right"></em>',
                       sPrevious: '<em class="ion-ios-arrow-left"></em>'
                   }
+              }
+          });
+
+          $('.ui-slider-values').each(function() {
+              var slider = this;
+
+              noUiSlider.create(slider, {
+                  start: [0, 40],
+                  connect: true,
+                  // direction: 'rtl',
+                  behaviour: 'tap-drag',
+                  range: {
+                      'min': 0,
+                      'max': 100
+                  }
+              });
+
+              slider.noUiSlider.on('slide', updateValues);
+              updateValues();
+
+              function updateValues() {
+                  var values = slider.noUiSlider.get();
+                  // Connecto to live values
+                  $('.ui-slider-value-upper').html(values[1]);
               }
           });
         }
@@ -132,6 +157,67 @@ function deleteVariant(id) {
                     swal('Deleted!', 'Delete success.', deleteVariant(e.target.value));
                 });
 
+        });
+    }
+
+})();
+
+(function() {
+    'use strict';
+
+    $(formAdvanced);
+
+    function formAdvanced() {
+        // UI SLider (noUiSlider)
+        $('.ui-slider').each(function() {
+
+            noUiSlider.create(this, {
+                start: $(this).data('start'),
+                connect: 'lower',
+                range: {
+                    'min': 0,
+                    'max': 100,
+                }
+            });
+        });
+
+        // Range selectable
+        $('.ui-slider-range').each(function() {
+            noUiSlider.create(this, {
+                start: [25, 75],
+                range: {
+                    'min': 0,
+                    'max': 100
+                },
+                connect: true
+            });
+
+        });
+
+        // Live Values
+        $('.ui-slider-values').each(function() {
+            var slider = this;
+
+            noUiSlider.create(slider, {
+                start: [0, 40],
+                connect: true,
+                // direction: 'rtl',
+                behaviour: 'tap-drag',
+                range: {
+                    'min': 0,
+                    'max': 100
+                }
+            });
+
+            slider.noUiSlider.on('slide', updateValues);
+            updateValues();
+
+            function updateValues() {
+                var values = slider.noUiSlider.get();
+                // Connecto to live values
+                $('#ui-slider-value-lower').html(values[0]);
+                $('#ui-slider-value-upper').html(values[1]);
+            }
         });
     }
 

@@ -66,8 +66,9 @@ type (
 		VoucherPrice  float64 `db:"voucher_price"`
 		DiscountValue float64 `db:"discount_value"`
 		MaxVoucher    float64 `db:"max_quantity_voucher"`
-		// StartDate     string   `db:"start_date"`
-		// EndDate       string   `db:"end_date"`
+		StartDate     string  `db:"start_date"`
+		EndDate       string  `db:"end_date"`
+		Voucher       string  `db:"voucher"`
 		// ValidUsers    []string `db:"-"`
 	}
 	UpdateVariantUsersRequest struct {
@@ -405,16 +406,25 @@ func FindVariantByDate(start, end string) (Response, error) {
 func FindAllVariants(accountId string) (Response, error) {
 	q := `
 		SELECT
-			id
-			, variant_name
-			, voucher_price
-			, discount_value
-			, max_quantity_voucher
+			va.id
+			, va.variant_name
+			, va.voucher_price
+			, va.discount_value
+			, va.max_quantity_voucher
+			, va.start_date
+			, va.end_date
+			, count (vo.id) as voucher
 		FROM
-			variants
+			variants as va
+		JOIN
+			vouchers as vo
+		ON
+			va.id = vo.variant_id
 		WHERE
-			account_id = ?
-			AND status = ?
+			va.account_id = ?
+			AND va.status = ?
+		GROUP BY
+			va.id
 	`
 
 	var resv []SearchVariant

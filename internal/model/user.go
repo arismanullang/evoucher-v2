@@ -197,17 +197,23 @@ func FindUser(usr map[string]string) (Response, error) {
 	return res, nil
 }
 
-func Login(username, password string) (string, error) {
+func Login(username, password, accountId string) (string, error) {
 	fmt.Println("Login")
 	q := `
-		SELECT id FROM users
+		SELECT
+			u.id
+		FROM
+			users as u
+		JOIN
+			user_accounts as ua
 		WHERE
-			username = ?
-			AND password = ?
-			AND status = ?
+			u.username = ?
+			AND u.password = ?
+			AND ua.account_id = ?
+			AND u.status = ?
 	`
 	var res []string
-	if err := db.Select(&res, db.Rebind(q), username, password, StatusCreated); err != nil {
+	if err := db.Select(&res, db.Rebind(q), username, password, accountId, StatusCreated); err != nil {
 		return "", err
 	}
 	if len(res) == 0 {
