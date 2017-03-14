@@ -7,35 +7,30 @@ import (
 	"github.com/ruizu/render"
 )
 
-func CheckToken(w http.ResponseWriter, r *http.Request) (ResponseData, bool) {
-	var rs ResponseData
+func CheckToken(w http.ResponseWriter, r *http.Request) bool {
+	res := NewResponse(nil)
 	token := r.FormValue("token")
 	user := r.FormValue("user")
 	if len(token) < 1 {
-		rs.State = its(http.StatusUnauthorized)
-		rs.Error = http.StatusText(http.StatusUnauthorized)
-		rs.Message = model.ErrMessageTokenNotFound
-		return rs, false
+		res.AddError("401001", model.ErrCodeMissingToken, model.ErrMessageTokenNotFound, "token")
+		render.JSON(w, res, http.StatusUnauthorized)
+		return false
 	}
 	if _, _, valid, err := getValiditySession(r, user, token); err != nil {
-		rs.State = its(http.StatusUnauthorized)
-		rs.Error = http.StatusText(http.StatusUnauthorized)
-		rs.Message = model.ErrMessageTokenNotFound + "(" + err.Error() + ")"
-		return rs, false
+		res.AddError("401002", model.ErrCodeMissingToken, model.ErrMessageTokenNotFound+"("+err.Error()+")", "token")
+		render.JSON(w, res, http.StatusUnauthorized)
+		return false
 	} else if !valid {
-		rs.State = its(http.StatusUnauthorized)
-		rs.Error = http.StatusText(http.StatusUnauthorized)
-		rs.Message = model.ErrMessageTokenNotFound
-		return rs, false
+		res.AddError("401003", model.ErrCodeMissingToken, model.ErrMessageTokenNotFound, "token")
+		render.JSON(w, res, http.StatusUnauthorized)
+		return false
 	}
-	return rs, true
+	return true
 }
 
 func check(f http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if rs, ok := CheckToken(w, r); !ok {
-			res := NewResponse(rs)
-			render.JSON(w, res, sti(rs.State))
+		if !CheckToken(w, r) {
 			return
 		}
 		f.ServeHTTP(w, r)

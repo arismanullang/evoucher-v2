@@ -55,6 +55,7 @@ type (
 func GetAllVariants(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Get Variant")
 	accountId := r.FormValue("account_id")
+	res := NewResponse(nil)
 	var variant model.Response
 	var err error
 	status := http.StatusOK
@@ -62,13 +63,16 @@ func GetAllVariants(w http.ResponseWriter, r *http.Request) {
 	variant, err = model.FindAllVariants(accountId)
 
 	if err != nil && err != model.ErrResourceNotFound {
-		//log.Panic(err)
-		variant.Message = err.Error()
+		status = http.StatusInternalServerError
+		res.AddError("500006", its(status), http.StatusText(status)+"("+err.Error()+")", "variant")
+		render.JSON(w, res, status)
+		return
 	}
 
-	variant.Status = its(status)
-	res := NewResponse(variant)
+	rs := variant.Data.([]model.SearchVariant)
+	res = NewResponse(rs)
 	render.JSON(w, res, status)
+
 }
 
 func GetVariants(w http.ResponseWriter, r *http.Request) {
