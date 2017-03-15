@@ -10,13 +10,12 @@ import (
 func CheckToken(w http.ResponseWriter, r *http.Request) bool {
 	res := NewResponse(nil)
 	token := r.FormValue("token")
-	user := r.FormValue("user")
 	if len(token) < 1 {
 		res.AddError("401001", model.ErrCodeMissingToken, model.ErrMessageTokenNotFound, "token")
 		render.JSON(w, res, http.StatusUnauthorized)
 		return false
 	}
-	if _, _, valid, err := getValiditySession(r, user, token); err != nil {
+	if _, _, _, valid, err := getValiditySession(r, token); err != nil {
 		res.AddError("401002", model.ErrCodeMissingToken, model.ErrMessageTokenNotFound+"("+err.Error()+")", "token")
 		render.JSON(w, res, http.StatusUnauthorized)
 		return false

@@ -13,11 +13,15 @@ type (
 )
 
 var (
-	ErrResourceNotFound = errors.New("resource not found.")
-	ErrValidationError  = errors.New("validation error.")
-	ErrInvalidPassword  = errors.New("invalid password.")
-	ErrNotModified      = errors.New("data not modified.")
-	ErrDuplicateEntry   = errors.New("duplicate entry.")
+	ErrValidationError = errors.New("validation error.")
+	ErrInvalidPassword = errors.New("invalid password.")
+	ErrNotModified     = errors.New("data not modified.")
+
+	ErrResourceNotFound = errors.New("Resource Not Found.")
+	ErrDuplicateEntry   = errors.New("Duplicate Entry.")
+	ErrTokenExpired     = errors.New("Token Expired.")
+	ErrTokenNotFound    = errors.New("Token Not Found.")
+	ErrServerInternal   = errors.New("Server Internal Error.")
 )
 
 const (
@@ -37,12 +41,12 @@ const (
 	ErrCodeMissingToken         string = "missing_token"
 
 	ErrMessageResourceNotFound     string = "resource not found"
-	ErrMessageInternalError        string = "internal error "
+	ErrMessageInternalError        string = "internal error"
 	ErrMessageVoucherNotActive     string = "voucher is not active yet (before start date)"
 	ErrMessageVoucherDisabled      string = "voucher has been disabled (has already been used or paid)"
 	ErrMessageVoucherExpired       string = "voucher has already expired (after expiration date)"
 	ErrMessageVoucherAlreadyPaid   string = "voucher has already Paid"
-	ErrMessageInvalidVoucher       string = "invalid voucher , VariantID not found"
+	ErrMessageInvalidVoucher       string = "invalid voucher, VariantID not found"
 	ErrMessageVoucherQtyExceeded   string = "voucher's quantities limit has been exceeded"
 	ErrMessageVoucherRulesViolated string = "order did not match validation rules"
 	ErrMessageMissingOrderItem     string = "order items was not specified"

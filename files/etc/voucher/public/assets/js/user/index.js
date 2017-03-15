@@ -4,7 +4,7 @@ $( window ).ready(function() {
 
 function getAccount(){
   $.ajax({
-    url: 'http://voucher.apps.id/get/accountId',
+    url: 'http://voucher.apps.id:8889/v1/api/get/accountId',
     type: 'get',
     success: function (data) {
       var i = 0;
@@ -37,7 +37,7 @@ function login(){
   };
 
   $.ajax({
-      url: 'http://voucher.apps.id/login',
+      url: 'http://voucher.apps.id:8889/v1/api/login',
       type: 'post',
       dataType: 'json',
       contentType: "application/json",
@@ -45,14 +45,12 @@ function login(){
       success: function (data){
 
         var token = data.data.Token;
-        var user = data.data.Id;
 
         if (typeof(Storage) !== "undefined") {
-          localStorage.setItem("user", user);
-          localStorage.setItem(user, token);
+          localStorage.setItem("token", token);
         }
 
-        window.location = "http://voucher.apps.id/variant/create";
+        window.location = "http://voucher.apps.id:8889/variant/create";
       }
   });
 }

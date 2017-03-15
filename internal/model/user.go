@@ -33,9 +33,9 @@ func AddUser(u User) error {
 	}
 	defer tx.Rollback()
 
-	username, err := checkUsername(u.Username)
+	username, err := CheckUsername(u.Username)
 
-	if username == 0 {
+	if username != "" {
 		q := `
 			INSERT INTO users(
 				username
@@ -90,12 +90,12 @@ func AddUser(u User) error {
 			return err
 		}
 		return nil
-	} else {
-		return ErrDuplicateEntry
 	}
+
+	return ErrDuplicateEntry
 }
 
-func checkUsername(username string) (int, error) {
+func CheckUsername(username string) (string, error) {
 	q := `
 		SELECT id FROM users
 		WHERE
@@ -104,13 +104,13 @@ func checkUsername(username string) (int, error) {
 	`
 	var res []string
 	if err := db.Select(&res, db.Rebind(q), username, StatusCreated); err != nil {
-		return 0, err
+		return "", err
 	}
 
-	return len(res), nil
+	return res[0], nil
 }
 
-func FindAllUser(accountId string) (Response, error) {
+func FindAllUser(accountId string) ([]UserRes, error) {
 	fmt.Println("Select User " + accountId)
 	q := `
 		SELECT DISTINCT u.id, u.username FROM users as u
@@ -122,22 +122,16 @@ func FindAllUser(accountId string) (Response, error) {
 
 	var resv []UserRes
 	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
-		return Response{Status: "Error", Message: q, Data: []UserRes{}}, err
+		return []UserRes{}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: q, Data: []UserRes{}}, ErrResourceNotFound
+		return []UserRes{}, ErrResourceNotFound
 	}
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv,
-	}
-
-	return res, nil
+	return resv, nil
 }
 
-func FindUserByRole(role, accountId string) (Response, error) {
+func FindUserByRole(role, accountId string) ([]UserRes, error) {
 	q := `
 		SELECT u.id, u.username FROM users AS u
 		JOIN user_accounts AS ua ON u.id = ua.user_id
@@ -149,22 +143,16 @@ func FindUserByRole(role, accountId string) (Response, error) {
 
 	var resv []UserRes
 	if err := db.Select(&resv, db.Rebind(q), accountId, role, StatusCreated); err != nil {
-		return Response{Status: "Error", Message: q, Data: []UserRes{}}, err
+		return []UserRes{}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: q, Data: []UserRes{}}, ErrResourceNotFound
+		return []UserRes{}, ErrResourceNotFound
 	}
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv,
-	}
-
-	return res, nil
+	return resv, nil
 }
 
-func FindUser(usr map[string]string) (Response, error) {
+func FindUser(usr map[string]string) ([]User, error) {
 	q := `
 		SELECT u.id, u.username FROM users AS u
 		JOIN user_accounts AS ua ON u.id = ua.user_id
@@ -183,32 +171,34 @@ func FindUser(usr map[string]string) (Response, error) {
 
 	var resv []User
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
-		return Response{Status: "Error", Message: q, Data: []User{}}, err
+		return []User{}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: q, Data: []User{}}, ErrResourceNotFound
+		return []User{}, ErrResourceNotFound
 	}
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv,
-	}
-
-	return res, nil
+	return resv, nil
 }
 
-func Login(username, password string) (string, error) {
+func Login(username, password, accountId string) (string, error) {
 	fmt.Println("Login")
 	q := `
-		SELECT id FROM users
+		SELECT
+			u.id
+		FROM
+			users as u
+		JOIN
+			user_accounts as ua
+		ON
+			u.id = ua.user_id
 		WHERE
-			username = ?
-			AND password = ?
-			AND status = ?
+			u.username = ?
+			AND u.password = ?
+			AND ua.account_id = ?
+			AND u.status = ?
 	`
 	var res []string
-	if err := db.Select(&res, db.Rebind(q), username, password, StatusCreated); err != nil {
+	if err := db.Select(&res, db.Rebind(q), username, password, accountId, StatusCreated); err != nil {
 		return "", err
 	}
 	if len(res) == 0 {
