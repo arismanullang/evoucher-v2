@@ -64,11 +64,11 @@ func DoLogin(w http.ResponseWriter, r *http.Request) {
 
 	session.Options = &sessions.Options{
 		MaxAge: 86400,
+		Path:   "/",
 	}
 
 	session.Values["expired"] = times.Format("2006-01-02 15:04:05")
 	session.Save(r, w)
-
 	resp := UserResponse{
 		Id:    user,
 		Token: encoded,
@@ -78,20 +78,30 @@ func DoLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func FindUserByRole(w http.ResponseWriter, r *http.Request) {
-	accountId := r.FormValue("account_id")
 	role := r.FormValue("role")
 
+	var accountId string
 	var user = model.Response{}
 	var err error
-	var status int
-	if basicAuth(w, r) {
-		user, err = model.FindUserByRole(role, accountId)
-		if err != nil && err != model.ErrResourceNotFound {
-			log.Panic(err)
-		}
+	status := http.StatusUnauthorized
+	token := r.FormValue("token")
+	userId := r.FormValue("user")
+	valid := false
+
+	if token != "" && token != "null" {
+		accountId, _, valid, _ = getValiditySession(r, userId, token)
+	}
+
+	if valid {
 		status = http.StatusOK
-	} else {
-		status = http.StatusUnauthorized
+		user, err = model.FindUserByRole(role, accountId)
+		if err != nil {
+			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				//log.Panic(err)
+				status = http.StatusNotFound
+			}
+		}
 	}
 
 	res := NewResponse(user)
@@ -103,15 +113,25 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	var user = model.Response{}
 	var err error
-	var status int
-	if basicAuth(w, r) {
-		user, err = model.FindAllUser(accountId)
-		if err != nil && err != model.ErrResourceNotFound {
-			log.Panic(err)
-		}
+	status := http.StatusUnauthorized
+	token := r.FormValue("token")
+	userId := r.FormValue("user")
+	valid := false
+
+	if token != "" && token != "null" {
+		_, _, valid, _ = getValiditySession(r, userId, token)
+	}
+
+	if valid {
 		status = http.StatusOK
-	} else {
-		status = http.StatusUnauthorized
+		user, err = model.FindAllUser(accountId)
+		if err != nil {
+			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				//log.Panic(err)
+				status = http.StatusNotFound
+			}
+		}
 	}
 
 	res := NewResponse(user)
@@ -123,30 +143,38 @@ func GetUserCustomParam(w http.ResponseWriter, r *http.Request) {
 
 	var user = model.Response{}
 	var err error
-	var status int
-	if basicAuth(w, r) {
-		user, err = model.FindUser(param)
-		if err != nil && err != model.ErrResourceNotFound {
-			log.Panic(err)
-		}
+	status := http.StatusUnauthorized
+	token := r.FormValue("token")
+	userId := r.FormValue("user")
+	valid := false
+
+	if token != "" && token != "null" {
+		_, _, valid, _ = getValiditySession(r, userId, token)
+	}
+
+	if valid {
 		status = http.StatusOK
-	} else {
-		status = http.StatusUnauthorized
+		user, err = model.FindUser(param)
+		if err != nil {
+			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				//log.Panic(err)
+				status = http.StatusNotFound
+			}
+		}
 	}
 
 	res := NewResponse(user)
 	render.JSON(w, res, status)
 }
 
-// only dashboard api
 func CheckSession(w http.ResponseWriter, r *http.Request) {
 	token := r.FormValue("token")
 	user := r.FormValue("user")
 	valid := false
-	fmt.Println(token)
-	fmt.Println(user)
+
 	if token != "" && token != "null" {
-		_, _, valid = getValiditySession(r, user, token)
+		_, _, valid, _ = getValiditySession(r, user, token)
 	}
 
 	res := NewResponse(valid)
@@ -159,7 +187,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	valid := false
 	var accountId string
 	if token != "" && token != "null" {
-		accountId, _, valid = getValiditySession(r, user, token)
+		accountId, _, valid, _ = getValiditySession(r, user, token)
 	}
 
 	var rd User
@@ -168,10 +196,9 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	fmt.Println(len(hash(rd.Password)))
-
-	var status int
+	status := http.StatusUnauthorized
 	if valid {
+		status = http.StatusOK
 		param := model.User{
 			AccountId: accountId,
 			Username:  rd.Username,
@@ -183,56 +210,46 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err := model.AddUser(param); err != nil {
-			log.Panic(err)
+			//log.Panic(err)
+			status = http.StatusInternalServerError
 		}
-		status = http.StatusOK
-	} else {
-		status = http.StatusUnauthorized
 	}
 
 	res := NewResponse(nil)
 	render.JSON(w, res, status)
 }
 
-func GetAllAccountRoles(w http.ResponseWriter, r *http.Request) {
-	role, err := model.FindAllRole()
-	if err != nil && err != model.ErrResourceNotFound {
-		log.Panic(err)
-	}
-
-	res := NewResponse(role)
-	render.JSON(w, res)
-}
-
 // local function
-func getValiditySession(r *http.Request, user string, token string) (string, time.Time, bool) {
+func getValiditySession(r *http.Request, user string, token string) (string, time.Time, bool, error) {
 	valid := false
 	decoded, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
-		log.Panic(err)
+		return "", time.Now(), false, err
 	}
 
 	fmt.Println(string(decoded))
 	session := strings.Split(string(decoded), ";")
+
 	if session[0] == user {
 		sessionValue, err := store.Get(r, session[0])
 		if err != nil {
-			log.Panic(err)
+			return "", time.Now(), false, err
+			// log.Panic(err)
 		}
 		fmt.Println(session[0])
 		ds := sessionValue.Values
 		exp, err := time.Parse("2006-01-02 15:04:05", ds["expired"].(string))
 		if err != nil {
-			log.Panic(err)
+			return "", time.Now(), false, err
+			// log.Panic(err)
 		}
 		fmt.Println(session[0])
 
 		if exp.After(time.Now()) {
 			valid = true
 		}
-
-		return session[1], exp, valid
+		return session[1], exp, valid, nil
 	}
 
-	return "", time.Now(), false
+	return "", time.Now(), false, nil
 }

@@ -20,47 +20,51 @@ func setRoutes() http.Handler {
 	r.GetFunc("/", login)
 
 	//variant
-	r.PostFunc("/create/variant", controller.CreateVariant)
-	r.GetFunc("/api/get/allVariant", controller.GetAllVariants)
-	r.GetFunc("/api/get/variant", controller.GetVariants)
-	r.GetFunc("/api/get/variantByDate", controller.GetVariantDetailsByDate)
-	r.GetFunc("/api/get/variant/:id", controller.GetVariantDetailsById)
-	r.PostFunc("/update/variant/:id", controller.UpdateVariant)
-	r.PostFunc("/update/variant/:id/broadcastUser", controller.UpdateVariantBroadcast)
-	r.PostFunc("/update/variant/:id/tenant", controller.UpdateVariantTenant)
+	r.PostFunc("/v1/create/variant", controller.CreateVariant)
+	r.GetFunc("/v1/api/get/allVariant", controller.GetAllVariants)
+	r.GetFunc("/v1/api/get/variant", controller.GetVariants)
+	r.GetFunc("/v1/api/get/variantByDate", controller.GetVariantDetailsByDate)
 
-	r.GetFunc("/get/allVariant", controller.DashboardGetAllVariants)
-	r.GetFunc("/get/variant/:id", controller.DashboardGetVariantDetailsById)
-	r.GetFunc("/get/role", controller.GetAllAccountRoles)
-	r.GetFunc("/delete/variant/:id", controller.DeleteVariant)
+	r.GetFunc("/v1/api/get/variant/:id", controller.GetVariantDetailsById)
+	r.PostFunc("/v1/update/variant/:id", controller.UpdateVariant)
+	r.PostFunc("/v1/update/variant/:id/broadcastUser", controller.UpdateVariantBroadcast)
+	r.PostFunc("/v1/update/variant/:id/tenant", controller.UpdateVariantTenant)
+	r.GetFunc("/v1/delete/variant/:id", controller.DeleteVariant)
 
 	//transaction
-	r.PostFunc("/transaction/redeem", controller.CreateTransaction)
+	r.PostFunc("/api/create/transaction", controller.CreateTransaction)
+	//r.Post("/v1/transaction/redeem", controller.CheckTokenAuth(controller.CreateTransaction))
 	r.GetFunc("/transaction/:id/", controller.GetTransactionDetails)
 	r.PostFunc("/transaction/:id/update", controller.UpdateTransaction)
 	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)
 
 	//user
-	r.PostFunc("/create/user", controller.RegisterUser)
-	r.GetFunc("/get/session", controller.CheckSession)
-	r.GetFunc("/api/get/userByRole", controller.FindUserByRole)
-	r.GetFunc("/api/get/user", controller.GetUser)
-	r.PostFunc("/login", controller.DoLogin)
+	r.PostFunc("/v1/create/user", controller.RegisterUser)
+	r.GetFunc("/v1/api/get/session", controller.CheckSession)
+	r.GetFunc("/v1/api/get/userByRole", controller.FindUserByRole)
+	r.GetFunc("/v1/api/get/user", controller.GetUser)
+	r.PostFunc("/v1/api/login", controller.DoLogin)
 
 	//partner
-	r.GetFunc("/api/get/partner", controller.GetAllPartner)
+	r.GetFunc("/v1/api/get/partner", controller.GetAllPartner)
 	r.PostFunc("/create/partner", controller.AddPartner)
-	r.GetFunc("/get/partner", controller.DashboardGetAllPartner)
 
 	//account
-	r.GetFunc("/get/accountId", controller.GetAccountId)
+	r.GetFunc("/v1/api/get/accountId", controller.GetAccountId)
+	r.GetFunc("/v1/api/get/role", controller.GetAllAccountRoles)
 
 	//Voucher
-	r.GetFunc("/voucher/get", controller.GetVoucherDetail)
-	r.PostFunc("/voucher/delete", controller.DeleteVoucher)
-	r.PostFunc("/voucher/pay", controller.PayVoucher)
-	r.PostFunc("/voucher/generate/single", controller.GenerateVoucherOnDemand)
-	r.PostFunc("/voucher/generate/bulk", controller.GenerateVoucher)
+	// r.GetFunc("/voucher", controller.GetVoucherDetail)
+	// r.PostFunc("/voucher/delete", controller.DeleteVoucher)
+	// r.PostFunc("/voucher/pay", controller.PayVoucher)
+	// r.PostFunc("/voucher/generate/bulk", controller.GenerateVoucher)
+	// r.PostFunc("/voucher/generate/single", controller.GenerateVoucherOnDemand)
+
+	r.Get("/v1/voucher", controller.CheckTokenAuth(controller.GetVoucherDetail))
+	r.Post("/v1/voucher/delete", controller.CheckTokenAuth(controller.DeleteVoucher))
+	r.Post("/v1/voucher/pay", controller.CheckTokenAuth(controller.PayVoucher))
+	r.Post("/v1/voucher/generate/bulk", controller.CheckTokenAuth(controller.GenerateVoucher))
+	r.Post("/v1/voucher/generate/single", controller.CheckTokenAuth(controller.GenerateVoucherOnDemand))
 
 	//custom
 	r.GetFunc("/view/", viewHandler)
@@ -90,7 +94,7 @@ func viewVariant(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "variant/check.html", nil)
 	} else if page == "update" {
 		render.FileInLayout(w, "layout.html", "variant/update.html", nil)
-	} else if page == "" || page == "index.html" {
+	} else if page == "" || page == "index" {
 		render.FileInLayout(w, "layout.html", "variant/index.html", nil)
 	}
 }

@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"log"
 )
 
 type (
@@ -32,9 +33,9 @@ func AddUser(u User) error {
 	}
 	defer tx.Rollback()
 
-	username, err := checkUsername(u.Username)
+	username, err := CheckUsername(u.Username)
 
-	if username == 0 {
+	if username != "" {
 		q := `
 			INSERT INTO users(
 				username
@@ -89,12 +90,12 @@ func AddUser(u User) error {
 			return err
 		}
 		return nil
-	} else {
-		return ErrDuplicateEntry
 	}
+
+	return ErrDuplicateEntry
 }
 
-func checkUsername(username string) (int, error) {
+func CheckUsername(username string) (string, error) {
 	q := `
 		SELECT id FROM users
 		WHERE
@@ -103,10 +104,10 @@ func checkUsername(username string) (int, error) {
 	`
 	var res []string
 	if err := db.Select(&res, db.Rebind(q), username, StatusCreated); err != nil {
-		return 0, err
+		return "", err
 	}
 
-	return len(res), nil
+	return res[0], nil
 }
 
 func FindAllUser(accountId string) (Response, error) {
@@ -206,6 +207,8 @@ func Login(username, password, accountId string) (string, error) {
 			users as u
 		JOIN
 			user_accounts as ua
+		ON
+			u.id = ua.user_id
 		WHERE
 			u.username = ?
 			AND u.password = ?
@@ -220,6 +223,33 @@ func Login(username, password, accountId string) (string, error) {
 		return "", ErrResourceNotFound
 	}
 	return res[0], nil
+}
+
+func GetAccountByUser(userID string) string {
+	vc, err := db.Beginx()
+	if err != nil {
+		return ""
+	}
+	defer vc.Rollback()
+
+	q := `
+		SELECT
+			account_id
+		FROM
+			user_accounts
+		WHERE
+			user_id = ?
+			AND status = ?
+	`
+	var resd []string
+	if err := db.Select(&resd, db.Rebind(q), userID, StatusCreated); err != nil {
+		log.Panic(err)
+		return ""
+	}
+	if len(resd) == 0 {
+		return ""
+	}
+	return resd[0]
 }
 
 func FindAllRole() (Response, error) {

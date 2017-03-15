@@ -1,4 +1,4 @@
-$( window ).ready(function() {
+$( document ).ready(function() {
   getVariant();
 });
 
@@ -10,7 +10,7 @@ function getVariant() {
 
     var arrData = [];
     $.ajax({
-        url: 'http://evoucher.elys.id:8889/get/allVariant?token='+token+'&user='+user,
+        url: 'http://voucher.apps.id:8889/v1/api/get/allVariant?token='+token+'&user='+user,
         type: 'get',
         success: function (data) {
           console.log(data.data.Data);
@@ -18,13 +18,29 @@ function getVariant() {
           var i;
           var dataSet = [];
           for ( i = 0; i < arrData.length; i++){
+            var date1 = arrData[i].StartDate.substring(0, 10).split("-");
+            var date2 = arrData[i].EndDate.substring(0, 10).split("-");
+
+            var dateStart  = new Date(date1[0], date1[1]-1, date1[2]);
+            var dateEnd  = new Date(date2[0], date2[1]-1, date2[2]);
+
+            var one_day = 1000*60*60*24;
+            var dateStart_ms = dateStart.getTime();
+            var dateEnd_ms = dateEnd.getTime();
+
+            var diff = Math.round((dateEnd_ms-dateStart_ms)/one_day);
+            var persen = diff*100;
+            console.log(dateStart + " " + dateEnd);
+            console.log(diff)
+
             dataSet[i] = [
               arrData[i].VariantName
               , arrData[i].VoucherPrice
               , arrData[i].DiscountValue
               , (arrData[i].MaxVoucher - arrData[i].Voucher)
-              , "<div data-start="+(arrData[i].MaxVoucher - arrData[i].Voucher)+" class='ui-slider-values mb-lg'></div>"
-              + "<strong class='text-muted ui-slider-value-upper'></strong>"
+              , "<div class='progress'>"
+                + "<div role='progressbar' aria-valuenow='"+diff+"' aria-valuemin='0' aria-valuemax='"+diff+"' style='width: "+persen+"%;' class='progress-bar'>"+diff+" hari</div>"
+                + "</div>"
               , "<button type='button' onclick='goTo(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>"+
               "<button type='button' value=\""+arrData[i].Id+"\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>"
             ];
@@ -118,14 +134,14 @@ function findGetParameter(parameterName) {
 }
 
 function goTo(url){
-  window.location = "http://evoucher.elys.id:8889/variant/update?id="+url;
+  window.location = "http://voucher.apps.id:8889/variant/update?id="+url;
 }
 
 function deleteVariant(id) {
     console.log("Delete Variant");
 
     $.ajax({
-        url: 'http://evoucher.elys.id:8889/delete/variant/'+id+'?token='+token+'&user='+user,
+        url: 'http://voucher.apps.id:8889/delete/variant/'+id+'?token='+token+'&user='+user,
         type: 'get',
         success: function (data) {
           getVariant();

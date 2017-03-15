@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -68,30 +69,30 @@ func hash(param string) string {
 	return base64.StdEncoding.EncodeToString(hash[:])
 }
 
-func basicAuth(w http.ResponseWriter, r *http.Request) bool {
-	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
-	if len(s) != 2 {
-		return false
-	}
-
-	b, err := base64.StdEncoding.DecodeString(s[1])
-	if err != nil {
-		return false
-	}
-
-	pair := strings.SplitN(string(b), ":", 2)
-	if len(pair) != 2 {
-		return false
-	}
-	fmt.Println(pair[0], hash(pair[1]))
-	login, err := model.Login(pair[0], hash(pair[1]))
-
-	if login == "" || err != nil {
-		return false
-	}
-
-	return true
-}
+// func basicAuth(w http.ResponseWriter, r *http.Request) (string, bool) {
+// 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+// 	if len(s) != 2 {
+// 		return "", false
+// 	}
+//
+// 	b, err := base64.StdEncoding.DecodeString(s[1])
+// 	if err != nil {
+// 		return "", false
+// 	}
+//
+// 	pair := strings.SplitN(string(b), ":", 2)
+// 	if len(pair) != 2 {
+// 		return "", false
+// 	}
+// 	fmt.Println(pair[0], hash(pair[1]))
+// 	login, err := model.Login(pair[0], hash(pair[1]))
+//
+// 	if login == "" || err != nil {
+// 		return "", false
+// 	}
+//
+// 	return /*getAccountID(login)*/ "", true
+// }
 
 func randStr(ln int, fm string) string {
 	CharsType := map[string]string{
@@ -107,4 +108,12 @@ func randStr(ln int, fm string) string {
 		result[i] = chars[rand.Intn(len(chars))]
 	}
 	return string(result)
+}
+func its(i int) string {
+	return strconv.Itoa(i)
+}
+
+func sti(s string) int {
+	i, _ := strconv.Atoi(s)
+	return i
 }

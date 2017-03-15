@@ -349,7 +349,7 @@ func (d *DeleteVariantRequest) Delete() error {
 	return nil
 }
 
-func FindVariantByDate(start, end string) (Response, error) {
+func FindVariantByDate(start, end, accountId string) (Response, error) {
 	fmt.Println("Select By Date " + start)
 	q := `
 		SELECT
@@ -366,15 +366,16 @@ func FindVariantByDate(start, end string) (Response, error) {
 		WHERE
 			(start_date > ? AND start_date < ?)
 			OR (end_date > ? AND end_date < ?)
+			AND account_id = ?
 			AND status = ?
 	`
 
 	var resv []SearchVariant
-	if err := db.Select(&resv, db.Rebind(q), start, end, start, end, StatusCreated); err != nil {
-		return Response{Status: "500", Message: "Error at select variant", Data: nil}, err
+	if err := db.Select(&resv, db.Rebind(q), start, end, start, end, accountId, StatusCreated); err != nil {
+		return Response{Status: "500", Message: ErrMessageInternalError, Data: nil}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: "Error at select variant", Data: nil}, ErrResourceNotFound
+		return Response{Status: "404", Message: ErrMessageResourceNotFound, Data: nil}, ErrResourceNotFound
 	}
 
 	// for i, v := range resv {
@@ -416,7 +417,7 @@ func FindAllVariants(accountId string) (Response, error) {
 			, count (vo.id) as voucher
 		FROM
 			variants as va
-		JOIN
+		LEFT JOIN
 			vouchers as vo
 		ON
 			va.id = vo.variant_id
@@ -429,10 +430,10 @@ func FindAllVariants(accountId string) (Response, error) {
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
-		return Response{Status: "500", Message: "Error at select variant", Data: nil}, err
+		return Response{Status: "500", Message: ErrMessageInternalError, Data: nil}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: "Error at select variant", Data: nil}, ErrResourceNotFound
+		return Response{Status: "404", Message: ErrMessageResourceNotFound, Data: nil}, ErrResourceNotFound
 	}
 
 	// for i, v := range resv {
@@ -493,10 +494,10 @@ func FindVariantMultipleParam(param map[string]string) (Response, error) {
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
-		return Response{Status: "Error", Message: q, Data: nil}, err
+		return Response{Status: "500", Message: ErrMessageInternalError, Data: nil}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: q, Data: nil}, ErrResourceNotFound
+		return Response{Status: "404", Message: ErrMessageResourceNotFound, Data: nil}, ErrResourceNotFound
 	}
 
 	// for i, v := range resv {
@@ -556,10 +557,10 @@ func FindVariantById(id string) (Response, error) {
 
 	var resv []Variant
 	if err := db.Select(&resv, db.Rebind(q), id, StatusCreated); err != nil {
-		return Response{Status: "Error", Message: q, Data: Variant{}}, err
+		return Response{Status: "500", Message: ErrMessageInternalError, Data: Variant{}}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: q, Data: Variant{}}, ErrResourceNotFound
+		return Response{Status: "404", Message: ErrMessageResourceNotFound, Data: Variant{}}, ErrResourceNotFound
 	}
 
 	q = `
