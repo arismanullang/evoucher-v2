@@ -110,7 +110,7 @@ func CheckUsername(username string) (string, error) {
 	return res[0], nil
 }
 
-func FindAllUser(accountId string) (Response, error) {
+func FindAllUser(accountId string) ([]UserRes, error) {
 	fmt.Println("Select User " + accountId)
 	q := `
 		SELECT DISTINCT u.id, u.username FROM users as u
@@ -122,22 +122,16 @@ func FindAllUser(accountId string) (Response, error) {
 
 	var resv []UserRes
 	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
-		return Response{Status: "Error", Message: q, Data: []UserRes{}}, err
+		return []UserRes{}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: q, Data: []UserRes{}}, ErrResourceNotFound
+		return []UserRes{}, ErrResourceNotFound
 	}
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv,
-	}
-
-	return res, nil
+	return resv, nil
 }
 
-func FindUserByRole(role, accountId string) (Response, error) {
+func FindUserByRole(role, accountId string) ([]UserRes, error) {
 	q := `
 		SELECT u.id, u.username FROM users AS u
 		JOIN user_accounts AS ua ON u.id = ua.user_id
@@ -149,22 +143,16 @@ func FindUserByRole(role, accountId string) (Response, error) {
 
 	var resv []UserRes
 	if err := db.Select(&resv, db.Rebind(q), accountId, role, StatusCreated); err != nil {
-		return Response{Status: "Error", Message: q, Data: []UserRes{}}, err
+		return []UserRes{}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: q, Data: []UserRes{}}, ErrResourceNotFound
+		return []UserRes{}, ErrResourceNotFound
 	}
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv,
-	}
-
-	return res, nil
+	return resv, nil
 }
 
-func FindUser(usr map[string]string) (Response, error) {
+func FindUser(usr map[string]string) ([]User, error) {
 	q := `
 		SELECT u.id, u.username FROM users AS u
 		JOIN user_accounts AS ua ON u.id = ua.user_id
@@ -183,19 +171,13 @@ func FindUser(usr map[string]string) (Response, error) {
 
 	var resv []User
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
-		return Response{Status: "Error", Message: q, Data: []User{}}, err
+		return []User{}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: q, Data: []User{}}, ErrResourceNotFound
+		return []User{}, ErrResourceNotFound
 	}
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv,
-	}
-
-	return res, nil
+	return resv, nil
 }
 
 func Login(username, password, accountId string) (string, error) {

@@ -2,9 +2,6 @@ $( window ).ready(function() {
   getPartner();
 });
 
-var user = localStorage.getItem("user");
-var token = localStorage.getItem(user);
-
 function toTwoDigit(val){
   if (val < 10){
     return '0'+val;
@@ -57,7 +54,7 @@ function send() {
 
     console.log(variant);
     $.ajax({
-       url: 'http://voucher.apps.id:8889/v1/create/variant?token='+token+'&user='+user,
+       url: 'http://voucher.apps.id:8889/v1/create/variant?token='+token,
        type: 'post',
        dataType: 'json',
        contentType: "application/json",
@@ -77,7 +74,7 @@ function getPartner() {
       success: function (data) {
         console.log("Render Data");
         var arrData = [];
-        arrData = data.data.Data;
+        arrData = data.data;
 
         var i;
         for (i = 0; i < arrData.length; i++){

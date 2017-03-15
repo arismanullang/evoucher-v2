@@ -24,6 +24,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/api/get/allVariant", controller.GetAllVariants)
 	r.GetFunc("/v1/api/get/variant", controller.GetVariants)
 	r.GetFunc("/v1/api/get/variantByDate", controller.GetVariantDetailsByDate)
+	r.GetFunc("/v1/api/get/variantDetails/custom", controller.GetVariantDetailsCustom)
 
 	r.GetFunc("/v1/api/get/variant/:id", controller.GetVariantDetailsById)
 	r.PostFunc("/v1/update/variant/:id", controller.UpdateVariant)

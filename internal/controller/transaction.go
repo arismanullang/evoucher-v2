@@ -47,7 +47,7 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	d := model.Transaction{
 		AccountId:        "",
 		PartnerId:        rd.PartnerID,
-		TransactionCode:  rd,
+		TransactionCode:  "",
 		TotalTransaction: rd.TotalTransaction,
 		DiscountValue:    0,
 		PaymentType:      rd.PaymentType,

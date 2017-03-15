@@ -45,11 +45,9 @@ function login(){
       success: function (data){
 
         var token = data.data.Token;
-        var user = data.data.Id;
 
         if (typeof(Storage) !== "undefined") {
-          localStorage.setItem("user", user);
-          localStorage.setItem(user, token);
+          localStorage.setItem("token", token);
         }
 
         window.location = "http://voucher.apps.id:8889/variant/create";

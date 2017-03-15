@@ -13,8 +13,8 @@ function getVariant() {
         url: 'http://voucher.apps.id:8889/v1/api/get/allVariant?token='+token+'&user='+user,
         type: 'get',
         success: function (data) {
-          console.log(data.data.Data);
-          arrData = data.data.Data;
+          console.log(data.data);
+          arrData = data.data;
           var i;
           var dataSet = [];
           for ( i = 0; i < arrData.length; i++){
@@ -23,15 +23,24 @@ function getVariant() {
 
             var dateStart  = new Date(date1[0], date1[1]-1, date1[2]);
             var dateEnd  = new Date(date2[0], date2[1]-1, date2[2]);
+            var dateNow  = new Date("2017", "02", "02");
 
             var one_day = 1000*60*60*24;
             var dateStart_ms = dateStart.getTime();
             var dateEnd_ms = dateEnd.getTime();
+            var dateNow_ms = dateNow.getTime();
 
-            var diff = Math.round((dateEnd_ms-dateStart_ms)/one_day);
-            var persen = diff*100;
-            console.log(dateStart + " " + dateEnd);
-            console.log(diff)
+            var diffNow = Math.round((dateEnd_ms-dateNow_ms)/one_day);
+            var diffTotal = Math.round((dateEnd_ms-dateStart_ms)/one_day);
+            var persen = diffNow / diffTotal * 100;
+            console.log(dateStart + " " + dateEnd + " " + dateNow);
+            console.log(diffNow + " " + diffTotal + " " + persen);
+
+            diffNow = diffNow + " hari";
+
+            if( persen < 0){
+              diffNow = "Expired";
+            }
 
             dataSet[i] = [
               arrData[i].VariantName
@@ -39,7 +48,7 @@ function getVariant() {
               , arrData[i].DiscountValue
               , (arrData[i].MaxVoucher - arrData[i].Voucher)
               , "<div class='progress'>"
-                + "<div role='progressbar' aria-valuenow='"+diff+"' aria-valuemin='0' aria-valuemax='"+diff+"' style='width: "+persen+"%;' class='progress-bar'>"+diff+" hari</div>"
+                + "<div role='progressbar' aria-valuenow='"+diffNow+"' aria-valuemin='0' aria-valuemax='"+diffTotal+"' style='width: "+persen+"%;' class='progress-bar'>"+diffNow+"</div>"
                 + "</div>"
               , "<button type='button' onclick='goTo(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>"+
               "<button type='button' value=\""+arrData[i].Id+"\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>"

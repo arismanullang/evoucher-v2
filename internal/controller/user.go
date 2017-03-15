@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
+	//"strings"
 	"time"
 
 	//"github.com/go-zoo/bone"
@@ -15,8 +15,6 @@ import (
 
 	"github.com/gilkor/evoucher/internal/model"
 )
-
-var store = sessions.NewCookieStore([]byte("lalala"))
 
 type (
 	User struct {
@@ -39,7 +37,15 @@ type (
 		Id    string
 		Token string
 	}
+
+	Session struct {
+		AccountId string
+		UserId    string
+		Expired   time.Time
+	}
 )
+
+var store = sessions.NewCookieStore([]byte("lalala"))
 
 func DoLogin(w http.ResponseWriter, r *http.Request) {
 	var rd UserLogin
@@ -56,8 +62,7 @@ func DoLogin(w http.ResponseWriter, r *http.Request) {
 	times := time.Now()
 	times = times.AddDate(0, 0, 1)
 	encoded := base64.StdEncoding.EncodeToString([]byte(user + ";" + rd.AccountId + ";" + times.String()))
-
-	session, err := store.Get(r, user)
+	session, err := store.Get(r, encoded)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -67,114 +72,123 @@ func DoLogin(w http.ResponseWriter, r *http.Request) {
 		Path:   "/",
 	}
 
+	session.Values["user"] = user
+	session.Values["account"] = rd.AccountId
 	session.Values["expired"] = times.Format("2006-01-02 15:04:05")
 	session.Save(r, w)
 	resp := UserResponse{
 		Id:    user,
 		Token: encoded,
 	}
+
 	res := NewResponse(resp)
 	render.JSON(w, res, http.StatusOK)
 }
 
 func FindUserByRole(w http.ResponseWriter, r *http.Request) {
 	role := r.FormValue("role")
-
-	var accountId string
-	var user = model.Response{}
-	var err error
-	status := http.StatusUnauthorized
+	accountId := ""
 	token := r.FormValue("token")
-	userId := r.FormValue("user")
-	valid := false
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
 
+	res.AddError(its(status), its(status), err.Error(), "user")
+
+	valid := false
 	if token != "" && token != "null" {
-		accountId, _, valid, _ = getValiditySession(r, userId, token)
+		_, accountId, _, valid, _ = getValiditySession(r, token)
 	}
 
 	if valid {
 		status = http.StatusOK
-		user, err = model.FindUserByRole(role, accountId)
+		user, err := model.FindUserByRole(role, accountId)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
-				//log.Panic(err)
 				status = http.StatusNotFound
 			}
+
+			res.AddError(its(status), its(status), err.Error(), "user")
+		} else {
+			res = NewResponse(user)
 		}
 	}
 
-	res := NewResponse(user)
 	render.JSON(w, res, status)
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	accountId := r.FormValue("account_id")
-
-	var user = model.Response{}
-	var err error
-	status := http.StatusUnauthorized
+	accountId := ""
 	token := r.FormValue("token")
-	userId := r.FormValue("user")
-	valid := false
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
 
+	res.AddError(its(status), its(status), err.Error(), "user")
+
+	valid := false
 	if token != "" && token != "null" {
-		_, _, valid, _ = getValiditySession(r, userId, token)
+		_, accountId, _, valid, _ = getValiditySession(r, token)
 	}
 
 	if valid {
 		status = http.StatusOK
-		user, err = model.FindAllUser(accountId)
+		user, err := model.FindAllUser(accountId)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
-				//log.Panic(err)
 				status = http.StatusNotFound
 			}
+
+			res.AddError(its(status), its(status), err.Error(), "user")
+		} else {
+			res = NewResponse(user)
 		}
 	}
 
-	res := NewResponse(user)
 	render.JSON(w, res, status)
 }
 
 func GetUserCustomParam(w http.ResponseWriter, r *http.Request) {
 	param := getUrlParam(r.URL.String())
 
-	var user = model.Response{}
-	var err error
-	status := http.StatusUnauthorized
 	token := r.FormValue("token")
-	userId := r.FormValue("user")
-	valid := false
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
 
+	res.AddError(its(status), its(status), err.Error(), "user")
+
+	valid := false
 	if token != "" && token != "null" {
-		_, _, valid, _ = getValiditySession(r, userId, token)
+		_, _, _, valid, _ = getValiditySession(r, token)
 	}
 
 	if valid {
 		status = http.StatusOK
-		user, err = model.FindUser(param)
+		user, err := model.FindUser(param)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
-				//log.Panic(err)
 				status = http.StatusNotFound
 			}
+
+			res.AddError(its(status), its(status), err.Error(), "user")
+		} else {
+			res = NewResponse(user)
 		}
 	}
 
-	res := NewResponse(user)
 	render.JSON(w, res, status)
 }
 
 func CheckSession(w http.ResponseWriter, r *http.Request) {
 	token := r.FormValue("token")
-	user := r.FormValue("user")
 	valid := false
 
 	if token != "" && token != "null" {
-		_, _, valid, _ = getValiditySession(r, user, token)
+		_, _, _, valid, _ = getValiditySession(r, token)
 	}
 
 	res := NewResponse(valid)
@@ -182,12 +196,18 @@ func CheckSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
+	user := ""
+	accountId := ""
 	token := r.FormValue("token")
-	user := r.FormValue("user")
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
+
+	res.AddError(its(status), its(status), err.Error(), "user")
+
 	valid := false
-	var accountId string
 	if token != "" && token != "null" {
-		accountId, _, valid, _ = getValiditySession(r, user, token)
+		user, accountId, _, valid, _ = getValiditySession(r, token)
 	}
 
 	var rd User
@@ -196,7 +216,6 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	status := http.StatusUnauthorized
 	if valid {
 		status = http.StatusOK
 		param := model.User{
@@ -210,46 +229,41 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err := model.AddUser(param); err != nil {
-			//log.Panic(err)
 			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				status = http.StatusNotFound
+			}
+
+			res.AddError(its(status), its(status), err.Error(), "user")
+		} else {
+			res = NewResponse(user)
 		}
 	}
 
-	res := NewResponse(nil)
 	render.JSON(w, res, status)
 }
 
-// local function
-func getValiditySession(r *http.Request, user string, token string) (string, time.Time, bool, error) {
-	valid := false
-	decoded, err := base64.StdEncoding.DecodeString(token)
+// Return : user_id, account_id, expired, boolean, error
+func getValiditySession(r *http.Request, token string) (string, string, time.Time, bool, error) {
+	fmt.Println("Check Session")
+	sessionValue, err := store.Get(r, token)
 	if err != nil {
-		return "", time.Now(), false, err
+		return "", "", time.Now(), false, model.ErrTokenNotFound
+	}
+	ds := sessionValue.Values
+	if len(ds) == 0 {
+		return "", "", time.Now(), false, model.ErrTokenNotFound
 	}
 
-	fmt.Println(string(decoded))
-	session := strings.Split(string(decoded), ";")
-
-	if session[0] == user {
-		sessionValue, err := store.Get(r, session[0])
-		if err != nil {
-			return "", time.Now(), false, err
-			// log.Panic(err)
-		}
-		fmt.Println(session[0])
-		ds := sessionValue.Values
-		exp, err := time.Parse("2006-01-02 15:04:05", ds["expired"].(string))
-		if err != nil {
-			return "", time.Now(), false, err
-			// log.Panic(err)
-		}
-		fmt.Println(session[0])
-
-		if exp.After(time.Now()) {
-			valid = true
-		}
-		return session[1], exp, valid, nil
+	exp, err := time.Parse("2006-01-02 15:04:05", ds["expired"].(string))
+	if err != nil {
+		//log.Panic(err)
+		return "", "", time.Now(), false, model.ErrTokenExpired
 	}
 
-	return "", time.Now(), false, nil
+	if exp.Before(time.Now()) {
+		return "", "", time.Now(), false, model.ErrTokenExpired
+	}
+
+	return ds["user"].(string), ds["account"].(string), exp, true, nil
 }

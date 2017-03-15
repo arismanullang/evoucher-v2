@@ -24,7 +24,9 @@ func getUrlParam(url string) map[string]string {
 
 	for _, v := range param {
 		tempStr := strings.Split(v, "=")
-		m[tempStr[0]] = tempStr[1]
+		if tempStr[0] != "token" {
+			m[tempStr[0]] = tempStr[1]
+		}
 	}
 
 	return m

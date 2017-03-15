@@ -404,7 +404,7 @@ func FindVariantByDate(start, end, accountId string) (Response, error) {
 	return res, nil
 }
 
-func FindAllVariants(accountId string) (Response, error) {
+func FindAllVariants(accountId string) ([]SearchVariant, error) {
 	q := `
 		SELECT
 			va.id
@@ -430,10 +430,10 @@ func FindAllVariants(accountId string) (Response, error) {
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
-		return Response{Status: "500", Message: ErrMessageInternalError, Data: nil}, err
+		return resv, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: ErrMessageResourceNotFound, Data: nil}, ErrResourceNotFound
+		return resv, ErrResourceNotFound
 	}
 
 	// for i, v := range resv {
@@ -453,13 +453,7 @@ func FindAllVariants(accountId string) (Response, error) {
 	// 	resv[i].ValidUsers = resd
 	// }
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv,
-	}
-
-	return res, nil
+	return resv, nil
 }
 
 func FindVariantMultipleParam(param map[string]string) (Response, error) {
@@ -585,4 +579,72 @@ func FindVariantById(id string) (Response, error) {
 	}
 
 	return res, nil
+}
+
+func FindVariantDetailsCustomParam(param map[string]string) ([]Variant, error) {
+	q := `
+		SELECT
+			id
+			, account_id
+			, variant_name
+			, variant_type
+			, voucher_format_id
+			, voucher_type
+			, voucher_price
+			, allow_accumulative
+			, start_date
+			, end_date
+			, discount_value
+			, max_quantity_voucher
+			, max_usage_voucher
+			, redeemtion_method
+			, img_url
+			, variant_tnc
+			, variant_description
+			, created_by
+			, created_at
+		FROM
+			variants
+		WHERE
+			AND status = ?
+	`
+	for key, value := range param {
+		if key == "q" {
+			q += `AND (variant_name ILIKE '%` + value + `%' OR account_id ILIKE '%` + value + `%' OR voucher_type ILIKE '%` + value + `%')`
+		} else {
+			if _, err := strconv.Atoi(value); err == nil {
+				q += ` AND ` + key + ` = '` + value + `'`
+			} else {
+				q += ` AND ` + key + ` LIKE '%` + value + `%'`
+
+			}
+		}
+	}
+
+	var resv []Variant
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+		return []Variant{}, ErrServerInternal
+	}
+	if len(resv) < 1 {
+		return []Variant{}, ErrResourceNotFound
+	}
+
+	for i, v := range resv {
+		q = `
+			SELECT
+				partner_id
+			FROM
+				variant_partners
+			WHERE
+				variant_id = ?
+				AND status = ?
+		`
+		var resd []string
+		if err := db.Select(&resd, db.Rebind(q), v.Id, StatusCreated); err != nil {
+			return Response{Status: "500", Message: "Error at select user", Data: nil}, err
+		}
+		resv[i].ValidPartners = resd
+	}
+
+	return resv, nil
 }

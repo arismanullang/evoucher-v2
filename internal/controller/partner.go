@@ -43,11 +43,10 @@ func GetPartnerSerialName(w http.ResponseWriter, r *http.Request) {
 	var err error
 	status := http.StatusUnauthorized
 	token := r.FormValue("token")
-	user := r.FormValue("user")
 	valid := false
 
 	if token != "" && token != "null" {
-		_, _, valid, _ = getValiditySession(r, user, token)
+		_, _, _, valid, _ = getValiditySession(r, token)
 	}
 
 	if valid {
@@ -76,7 +75,7 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 	valid := false
 	status := http.StatusUnauthorized
 	if token != "" && token != "null" {
-		_, _, valid, _ = getValiditySession(r, user, token)
+		_, _, _, valid, _ = getValiditySession(r, token)
 	}
 
 	if valid {

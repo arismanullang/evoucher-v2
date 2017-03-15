@@ -13,11 +13,15 @@ type (
 )
 
 var (
-	ErrResourceNotFound = errors.New("resource not found.")
-	ErrValidationError  = errors.New("validation error.")
-	ErrInvalidPassword  = errors.New("invalid password.")
-	ErrNotModified      = errors.New("data not modified.")
-	ErrDuplicateEntry   = errors.New("duplicate entry.")
+	ErrValidationError = errors.New("validation error.")
+	ErrInvalidPassword = errors.New("invalid password.")
+	ErrNotModified     = errors.New("data not modified.")
+
+	ErrResourceNotFound = errors.New("Resource Not Found.")
+	ErrDuplicateEntry   = errors.New("Duplicate Entry.")
+	ErrTokenExpired     = errors.New("Token Expired.")
+	ErrTokenNotFound    = errors.New("Token Not Found.")
+	ErrServerInternal   = errors.New("Server Internal Error.")
 )
 
 const (
@@ -34,9 +38,10 @@ const (
 	ErrCodeVoucherRulesViolated string = "invalid_rules_violated"
 	ErrCodeVoucherQtyExceeded   string = "voucher_quantity_exceeded"
 	ErrCodeMissingOrderItem     string = "missing_order_items"
+	ErrCodeMissingToken         string = "missing_token"
 
 	ErrMessageResourceNotFound     string = "resource not found"
-	ErrMessageInternalError        string = "internal error, failed when open the objects"
+	ErrMessageInternalError        string = "internal error"
 	ErrMessageVoucherNotActive     string = "voucher is not active yet (before start date)"
 	ErrMessageVoucherDisabled      string = "voucher has been disabled (has already been used or paid)"
 	ErrMessageVoucherExpired       string = "voucher has already expired (after expiration date)"
