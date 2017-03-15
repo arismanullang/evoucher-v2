@@ -2,7 +2,7 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
+	//"fmt"
 	"log"
 	"net/http"
 
@@ -21,30 +21,26 @@ type (
 )
 
 func RegisterAccount(w http.ResponseWriter, r *http.Request) {
-	var rd User
+	status := http.StatusCreated
+	var rd Account
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
 		log.Panic(err)
 	}
 
-	fmt.Println(len(hash(rd.Password)))
-
-	param := model.User{
-		AccountId: rd.AccountId,
-		Username:  rd.Username,
-		Password:  hash(rd.Password),
-		Email:     rd.Email,
-		Phone:     rd.Phone,
-		RoleId:    rd.RoleId,
-		CreatedBy: rd.CreatedBy,
+	param := model.Account{
+		AccountName: rd.AccountName,
+		Billing:     rd.Billing,
+		CreatedBy:   rd.CreatedBy,
 	}
 
-	if err := model.AddUser(param); err != nil {
-		log.Panic(err)
+	if err := model.AddAccount(param); err != nil {
+		//log.Panic(err)
+		status = http.StatusInternalServerError
 	}
 
 	res := NewResponse(nil)
-	render.JSON(w, res, http.StatusCreated)
+	render.JSON(w, res, status)
 }
 
 func GetAccountId(w http.ResponseWriter, r *http.Request) {
@@ -54,5 +50,15 @@ func GetAccountId(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := NewResponse(account)
+	render.JSON(w, res)
+}
+
+func GetAllAccountRoles(w http.ResponseWriter, r *http.Request) {
+	role, err := model.FindAllRole()
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
+	}
+
+	res := NewResponse(role)
 	render.JSON(w, res)
 }

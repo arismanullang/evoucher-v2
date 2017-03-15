@@ -21,11 +21,13 @@
 <link rel="stylesheet" href="/assets/css/style.css">
 
 <!-- js-->
-<script src="/assets/vendor/modernizr/modernizr.custom.js"></script>
+<script type="text/javascript" src="/assets/vendor/modernizr/modernizr.custom.js"></script>
 <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/jquery.browser/dist/jquery.browser.js"></script>
 <script type="text/javascript" src="/assets/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/material-colors/dist/colors.js"></script>
+<script type="text/javascript" src="/assets/master/components/colors/colors.constant.js"></script>
+<script type="text/javascript" src="/assets/master/components/colors/colors.js"></script>
 {{ block "scripts" . }}{{ end }}
 
 </head>
@@ -71,21 +73,27 @@
                     </li>
                     <li><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Voucher</span></a>
                         <ul class="sidebar-subnav">
-                          <li><a href="voucher.html" class="ripple"><span class="pull-right nav-label"></span><span>Check Voucher</span></a></li>
-                          <li><a href="create-voucher.html" class="ripple"><span class="pull-right nav-label"></span><span>Create Voucher</span></a></li>
+                          <li><a href="#" class="ripple"><span class="pull-right nav-label"></span><span>Check Voucher</span></a></li>
+                          <li><a href="#" class="ripple"><span class="pull-right nav-label"></span><span>Create Voucher</span></a></li>
                         </ul>
                     </li>
                     <li><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Report</span></a>
                         <ul class="sidebar-subnav">
-                          <li><a href="voucher.html" class="ripple"><span class="pull-right nav-label"></span><span>Variant</span></a></li>
-                          <li><a href="voucher.html" class="ripple"><span class="pull-right nav-label"></span><span>Voucher</span></a></li>
-                          <li><a href="create-voucher.html" class="ripple"><span class="pull-right nav-label"></span><span>Transaction</span></a></li>
+                          <li><a href="#" class="ripple"><span class="pull-right nav-label"></span><span>Variant</span></a></li>
+                          <li><a href="#" class="ripple"><span class="pull-right nav-label"></span><span>Voucher</span></a></li>
+                          <li><a href="#" class="ripple"><span class="pull-right nav-label"></span><span>Transaction</span></a></li>
                         </ul>
                     </li>
                     <li><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/planet.svg" alt="MenuItem" class="hidden"></span><span>Setting</span></a>
                         <ul class="sidebar-subnav">
                             <li><a href="/user/register" class="ripple"><span class="pull-right nav-label"></span><span>User</span></a></li>
                             <li><a href="google-map.html" class="ripple"><span class="pull-right nav-label"></span><span>Partner</span></a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Admin</span></a>
+                        <ul class="sidebar-subnav">
+                          <li><a href="#" class="ripple"><span class="pull-right nav-label"></span><span>Account</span></a></li>
+                          <li><a href="#" class="ripple"><span class="pull-right nav-label"></span><span>User Setting</span></a></li>
                         </ul>
                     </li>
                 </ul>

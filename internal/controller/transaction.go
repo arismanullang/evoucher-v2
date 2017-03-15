@@ -14,6 +14,7 @@ import (
 
 type (
 	TransactionRequest struct {
+<<<<<<< HEAD
 		PartnerID         string   `json:"partner_id"`
 		RedeemMethod      string   `json:"redeem_method"`
 		RedeemKey         string   `json:"redeem_key"`
@@ -22,6 +23,15 @@ type (
 		PaymentType       string   `json:"payment_type"`
 		AllowAccumulative bool     `json:"allow_accumulative"`
 		Vouchers          []string `json:"vouchers"`
+=======
+		VariantID        string   `json:"variant_id"`
+		PartnerID        string   `json:"partner_id"`
+		RedeemMethod     string   `json:"redeem_method"`
+		RedeemCode       string   `json:"redeem_code"`
+		TotalTransaction float64  `json:"total_transaction"`
+		PaymentType      string   `json:"payment_type"`
+		Vouchers         []string `json:"vouchers"`
+>>>>>>> 51aa9b843f00fdf42197190b0c9affc4be794ec6
 	}
 	DeleteTransactionRequest struct {
 		User string `json:"requested_by"`
@@ -99,7 +109,11 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	d := model.Transaction{
 		AccountId:        accountID,
 		PartnerId:        rd.PartnerID,
+<<<<<<< HEAD
 		TransactionCode:  txCode,
+=======
+		TransactionCode:  "",
+>>>>>>> 51aa9b843f00fdf42197190b0c9affc4be794ec6
 		TotalTransaction: rd.TotalTransaction,
 		DiscountValue:    rd.DiscountValue,
 		PaymentType:      rd.PaymentType,

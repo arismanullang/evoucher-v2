@@ -40,7 +40,7 @@ function send() {
 
     console.log(userReq);
     $.ajax({
-       url: 'http://voucher.apps.id/create/user?token='+token+'&user='+user,
+       url: 'http://voucher.apps.id:8889/v1/create/user?token='+token+'&user='+user,
        type: 'post',
        dataType: 'json',
        contentType: "application/json",
@@ -55,7 +55,7 @@ function getRole() {
     console.log("Get Role");
 
     $.ajax({
-      url: 'http://voucher.apps.id/get/role',
+      url: 'http://voucher.apps.id:8889/v1/get/role',
       type: 'get',
       success: function (data) {
         console.log("Render Data");

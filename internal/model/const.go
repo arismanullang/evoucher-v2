@@ -13,11 +13,15 @@ type (
 )
 
 var (
-	ErrResourceNotFound = errors.New("resource not found.")
-	ErrValidationError  = errors.New("validation error.")
-	ErrInvalidPassword  = errors.New("invalid password.")
-	ErrNotModified      = errors.New("data not modified.")
-	ErrDuplicateEntry   = errors.New("duplicate entry.")
+	ErrValidationError = errors.New("validation error.")
+	ErrInvalidPassword = errors.New("invalid password.")
+	ErrNotModified     = errors.New("data not modified.")
+
+	ErrResourceNotFound = errors.New("Resource Not Found.")
+	ErrDuplicateEntry   = errors.New("Duplicate Entry.")
+	ErrTokenExpired     = errors.New("Token Expired.")
+	ErrTokenNotFound    = errors.New("Token Not Found.")
+	ErrServerInternal   = errors.New("Server Internal Error.")
 )
 
 const (
@@ -39,6 +43,7 @@ const (
 	ErrCodeMissingToken             string = "missing_token"
 	ErrCodeInvalidToken             string = "invalid_token"
 
+<<<<<<< HEAD
 	ErrMessageAllowAccumulativeDisable string = "didn't allow multiple voucher code"
 	ErrMessageResourceNotFound         string = "resource not found"
 	ErrMessageInternalError            string = "internal error "
@@ -52,6 +57,20 @@ const (
 	ErrMessageMissingOrderItem         string = "order items was not specified"
 	ErrMessageTokenNotFound            string = "Token not found"
 	ErrMessageTokenExpired             string = "Token has been expired"
+=======
+	ErrMessageResourceNotFound     string = "resource not found"
+	ErrMessageInternalError        string = "internal error"
+	ErrMessageVoucherNotActive     string = "voucher is not active yet (before start date)"
+	ErrMessageVoucherDisabled      string = "voucher has been disabled (has already been used or paid)"
+	ErrMessageVoucherExpired       string = "voucher has already expired (after expiration date)"
+	ErrMessageVoucherAlreadyPaid   string = "voucher has already Paid"
+	ErrMessageInvalidVoucher       string = "invalid voucher, VariantID not found"
+	ErrMessageVoucherQtyExceeded   string = "voucher's quantities limit has been exceeded"
+	ErrMessageVoucherRulesViolated string = "order did not match validation rules"
+	ErrMessageMissingOrderItem     string = "order items was not specified"
+	ErrMessageTokenNotFound        string = "Token not found"
+	ErrMessageTokenExpired         string = "Token has been expired"
+>>>>>>> 51aa9b843f00fdf42197190b0c9affc4be794ec6
 
 	StatusCreated string = "created"
 	StatusDeleted string = "deleted"

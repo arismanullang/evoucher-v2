@@ -25,7 +25,7 @@ function searchById(id) {
     var arrData = [];
 
     $.ajax({
-        url: 'http://evoucher.elys.id:8889/get/variant/'+id+'?token='+token+'&user='+user,
+        url: 'http://voucher.apps.id:8889/get/variant/'+id+'?token='+token+'&user='+user,
         type: 'get',
         success: function (data) {
           console.log(data);
@@ -72,7 +72,7 @@ function send() {
     console.log(variant);
 
     $.ajax({
-        url: 'http://evoucher.elys.id:8889/update/variant/'+id+'?token='+token+'&user='+user,
+        url: 'http://voucher.apps.id:8889/update/variant/'+id+'?token='+token+'&user='+user,
         type: 'post',
         dataType: 'json',
         contentType: "application/json",
@@ -87,7 +87,7 @@ function getPartner() {
     console.log("Get Partner Data");
 
     $.ajax({
-      url: 'http://evoucher.elys.id:8889/get/partner',
+      url: 'http://voucher.apps.id:8889/get/partner',
       type: 'get',
       success: function (data) {
         console.log("Render Data");

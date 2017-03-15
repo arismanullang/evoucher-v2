@@ -1,4 +1,4 @@
-$( window ).ready(function() {
+$( document ).ready(function() {
   getVariant();
 });
 
@@ -10,20 +10,46 @@ function getVariant() {
 
     var arrData = [];
     $.ajax({
-        url: 'http://evoucher.elys.id:8889/get/allVariant?token='+token+'&user='+user,
+        url: 'http://voucher.apps.id:8889/v1/api/get/allVariant?token='+token+'&user='+user,
         type: 'get',
         success: function (data) {
-          console.log(data.data.Data);
-          arrData = data.data.Data;
+          console.log(data.data);
+          arrData = data.data;
           var i;
           var dataSet = [];
           for ( i = 0; i < arrData.length; i++){
+            var date1 = arrData[i].StartDate.substring(0, 10).split("-");
+            var date2 = arrData[i].EndDate.substring(0, 10).split("-");
+
+            var dateStart  = new Date(date1[0], date1[1]-1, date1[2]);
+            var dateEnd  = new Date(date2[0], date2[1]-1, date2[2]);
+            var dateNow  = new Date("2017", "02", "02");
+
+            var one_day = 1000*60*60*24;
+            var dateStart_ms = dateStart.getTime();
+            var dateEnd_ms = dateEnd.getTime();
+            var dateNow_ms = dateNow.getTime();
+
+            var diffNow = Math.round((dateEnd_ms-dateNow_ms)/one_day);
+            var diffTotal = Math.round((dateEnd_ms-dateStart_ms)/one_day);
+            var persen = diffNow / diffTotal * 100;
+            console.log(dateStart + " " + dateEnd + " " + dateNow);
+            console.log(diffNow + " " + diffTotal + " " + persen);
+
+            diffNow = diffNow + " hari";
+
+            if( persen < 0){
+              diffNow = "Expired";
+            }
+
             dataSet[i] = [
-              arrData[i].Id
-              , arrData[i].VariantName
+              arrData[i].VariantName
               , arrData[i].VoucherPrice
               , arrData[i].DiscountValue
-              , arrData[i].MaxVoucher
+              , (arrData[i].MaxVoucher - arrData[i].Voucher)
+              , "<div class='progress'>"
+                + "<div role='progressbar' aria-valuenow='"+diffNow+"' aria-valuemin='0' aria-valuemax='"+diffTotal+"' style='width: "+persen+"%;' class='progress-bar'>"+diffNow+"</div>"
+                + "</div>"
               , "<button type='button' onclick='goTo(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>"+
               "<button type='button' value=\""+arrData[i].Id+"\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>"
             ];
@@ -37,11 +63,11 @@ function getVariant() {
           $('#datatable1').dataTable({
               data: dataSet,
               columns: [
-                  { title: "Id" },
                   { title: "Variant Name" },
                   { title: "Voucher Price" },
-                  { title: "Discount Value" },
-                  { title: "Max Voucher" },
+                  { title: "Voucher Value" },
+                  { title: "Remaining Voucher" },
+                  { title: "Period" },
                   { title: "Action"}
               ],
               oLanguage: {
@@ -55,6 +81,30 @@ function getVariant() {
                       sNext: '<em class="ion-ios-arrow-right"></em>',
                       sPrevious: '<em class="ion-ios-arrow-left"></em>'
                   }
+              }
+          });
+
+          $('.ui-slider-values').each(function() {
+              var slider = this;
+
+              noUiSlider.create(slider, {
+                  start: [0, 40],
+                  connect: true,
+                  // direction: 'rtl',
+                  behaviour: 'tap-drag',
+                  range: {
+                      'min': 0,
+                      'max': 100
+                  }
+              });
+
+              slider.noUiSlider.on('slide', updateValues);
+              updateValues();
+
+              function updateValues() {
+                  var values = slider.noUiSlider.get();
+                  // Connecto to live values
+                  $('.ui-slider-value-upper').html(values[1]);
               }
           });
         }
@@ -93,14 +143,14 @@ function findGetParameter(parameterName) {
 }
 
 function goTo(url){
-  window.location = "http://evoucher.elys.id:8889/variant/update?id="+url;
+  window.location = "http://voucher.apps.id:8889/variant/update?id="+url;
 }
 
 function deleteVariant(id) {
     console.log("Delete Variant");
 
     $.ajax({
-        url: 'http://evoucher.elys.id:8889/delete/variant/'+id+'?token='+token+'&user='+user,
+        url: 'http://voucher.apps.id:8889/delete/variant/'+id+'?token='+token+'&user='+user,
         type: 'get',
         success: function (data) {
           getVariant();
@@ -132,6 +182,67 @@ function deleteVariant(id) {
                     swal('Deleted!', 'Delete success.', deleteVariant(e.target.value));
                 });
 
+        });
+    }
+
+})();
+
+(function() {
+    'use strict';
+
+    $(formAdvanced);
+
+    function formAdvanced() {
+        // UI SLider (noUiSlider)
+        $('.ui-slider').each(function() {
+
+            noUiSlider.create(this, {
+                start: $(this).data('start'),
+                connect: 'lower',
+                range: {
+                    'min': 0,
+                    'max': 100,
+                }
+            });
+        });
+
+        // Range selectable
+        $('.ui-slider-range').each(function() {
+            noUiSlider.create(this, {
+                start: [25, 75],
+                range: {
+                    'min': 0,
+                    'max': 100
+                },
+                connect: true
+            });
+
+        });
+
+        // Live Values
+        $('.ui-slider-values').each(function() {
+            var slider = this;
+
+            noUiSlider.create(slider, {
+                start: [0, 40],
+                connect: true,
+                // direction: 'rtl',
+                behaviour: 'tap-drag',
+                range: {
+                    'min': 0,
+                    'max': 100
+                }
+            });
+
+            slider.noUiSlider.on('slide', updateValues);
+            updateValues();
+
+            function updateValues() {
+                var values = slider.noUiSlider.get();
+                // Connecto to live values
+                $('#ui-slider-value-lower').html(values[0]);
+                $('#ui-slider-value-upper').html(values[1]);
+            }
         });
     }
 
