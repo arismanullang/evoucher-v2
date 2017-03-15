@@ -15,13 +15,6 @@ type errorData struct {
 	Name   string `json:"name"`
 }
 
-type ResponseData struct {
-	State   string      `json:"state"`
-	Error   string      `json:"error"`
-	Message string      `json:"messange"`
-	Data    interface{} `json:"data"`
-}
-
 type paginationData struct {
 	Next     string `json:"next,omitempty"`
 	Previous string `json:"previous,omitempty"`

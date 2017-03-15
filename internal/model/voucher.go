@@ -34,9 +34,10 @@ type (
 		VoucherData []Voucher
 	}
 	UpdateDeleteRequest struct {
-		ID    string `db:"id"`
-		State string `db:"state"`
-		User  string `db:"created_by"`
+		ID          string `db:"id"`
+		VoucherCode string `db:"voucher_code"`
+		State       string `db:"state"`
+		User        string `db:"created_by"`
 	}
 	VoucherCodeFormat struct {
 		Prefix     sql.NullString `db:"prefix"`
@@ -192,7 +193,7 @@ func (d *UpdateDeleteRequest) UpdateVc() (Voucher, error) {
 			, updated_by = ?
 			, updated_at = ?
 		WHERE
-			id = ?
+			voucher_code = ?
 			AND status = ?
 		RETURNING
 			id
@@ -214,7 +215,7 @@ func (d *UpdateDeleteRequest) UpdateVc() (Voucher, error) {
 	`
 
 	var result []Voucher
-	if err := vc.Select(&result, vc.Rebind(q), d.State, d.User, time.Now(), d.ID, StatusCreated); err != nil {
+	if err := vc.Select(&result, vc.Rebind(q), d.State, d.User, time.Now(), d.VoucherCode, StatusCreated); err != nil {
 		return Voucher{}, err
 	}
 

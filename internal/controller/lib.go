@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/gilkor/evoucher/internal/model"
+	"github.com/ruizu/render"
 )
 
 func getUrlParam(url string) map[string]string {
@@ -94,6 +95,31 @@ func basicAuth(w http.ResponseWriter, r *http.Request) (string, bool) {
 	return /*getAccountID(login)*/ "", true
 }
 
+func CheckToken(w http.ResponseWriter, r *http.Request) (string, string, time.Time, bool) {
+	res := NewResponse(nil)
+	token := r.FormValue("token")
+	user := r.FormValue("user")
+	var exp time.Time
+	var valid bool
+	var err error
+
+	if len(token) < 1 {
+		res.AddError("401001", model.ErrCodeMissingToken, model.ErrMessageTokenNotFound, "token")
+		render.JSON(w, res, http.StatusUnauthorized)
+		return "", "", time.Now(), false
+	}
+	if _, exp, valid, err = getValiditySession(r, user, token); err != nil {
+		res.AddError("401002", model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound+"("+err.Error()+")", "token")
+		render.JSON(w, res, http.StatusUnauthorized)
+		return "", "", time.Now(), false
+	} else if !valid {
+		res.AddError("401003", model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound, "token")
+		render.JSON(w, res, http.StatusUnauthorized)
+		return "", "", time.Now(), false
+	}
+	return "", "", exp, true
+}
+
 func randStr(ln int, fm string) string {
 	CharsType := map[string]string{
 		"Alphabet":     model.ALPHABET,
@@ -116,4 +142,7 @@ func its(i int) string {
 func sti(s string) int {
 	i, _ := strconv.Atoi(s)
 	return i
+}
+func bts(b bool) string {
+	return strconv.FormatBool(b)
 }

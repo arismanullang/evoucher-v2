@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -13,13 +14,14 @@ import (
 
 type (
 	TransactionRequest struct {
-		VariantID        string   `json:"variant_id"`
-		PartnerID        string   `json:"partner_id"`
-		RedeemMethod     string   `json:"Redeem_method"`
-		RedeemCode       string   `json:"Redeem_code"`
-		TotalTransaction float64  `json:"total_transaction"`
-		PaymentType      string   `json:"payment_type"`
-		Vouchers         []string `json:"vouchers"`
+		PartnerID         string   `json:"partner_id"`
+		RedeemMethod      string   `json:"redeem_method"`
+		RedeemKey         string   `json:"redeem_key"`
+		TotalTransaction  float64  `json:"total_transaction"`
+		DiscountValue     float64  `json:"discount_value"`
+		PaymentType       string   `json:"payment_type"`
+		AllowAccumulative bool     `json:"allow_accumulative"`
+		Vouchers          []string `json:"vouchers"`
 	}
 	DeleteTransactionRequest struct {
 		User string `json:"requested_by"`
@@ -35,40 +37,82 @@ type (
 
 func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	var rd TransactionRequest
-	var tr ResponseData
+	var status int
+	var rv RedeemVoucherRequest
+	res := NewResponse(nil)
+
+	//Token Authentocation
+	accountID, userID, _, ok := CheckToken(w, r)
+	if !ok {
+		return
+	}
+	fmt.Println(accountID, userID)
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
+		status = http.StatusBadRequest
+		res.AddError(its(status), http.StatusText(status), http.StatusText(status)+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
 	}
 
-	status := http.StatusCreated
+	// chek validation all voucher
+	for k, v := range rd.Vouchers {
+		if ok, err := rd.CheckVoucherRedeemtion(v); !ok {
+			switch err.Error() {
+			case model.ErrCodeAllowAccumulativeDisable:
+				status = http.StatusBadRequest
+				res.AddError(its(status), err.Error(), model.ErrMessageAllowAccumulativeDisable, "voucher")
+				render.JSON(w, res, status)
+			case model.ErrCodeInvalidRedeemMethod:
+				status = http.StatusBadRequest
+				res.AddError(its(status), err.Error(), model.ErrMessageAllowAccumulativeDisable, "voucher")
+				render.JSON(w, res, status)
+			case model.ErrCodeVoucherNotActive:
+				status = http.StatusBadRequest
+				res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, "voucher")
+				render.JSON(w, res, status)
+			case model.ErrResourceNotFound.Error():
+				status = http.StatusBadRequest
+				res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
+				render.JSON(w, res, status)
+			default:
+				status = http.StatusInternalServerError
+				res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+				render.JSON(w, res, status)
+			}
+			return
+		}
+		rv.VoucherCode[k] = v
+	}
 
+	// update voucher state "Used"
+	rv.AccountID = accountID
+	if ok, err := rv.RedeemVoucherValidation(); !ok {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+
+	txCode := randStr(12, model.NUMERALS)
 	d := model.Transaction{
-		AccountId:        "",
+		AccountId:        accountID,
 		PartnerId:        rd.PartnerID,
-		TransactionCode:  randStr(12, model.NUMERALS),
+		TransactionCode:  txCode,
 		TotalTransaction: rd.TotalTransaction,
-		DiscountValue:    0,
+		DiscountValue:    rd.DiscountValue,
 		PaymentType:      rd.PaymentType,
-		User:             "",
+		Vouchers:         rd.Vouchers,
 	}
-	for i, _ := range rd.Vouchers {
-		rd := RedeemVoucherRequest{
-			VoucherCode: rd.Vouchers[i],
-			AccountID:   "",
-		}
-		if vr := rd.RedeemVoucherValidation(); vr.State != model.ResponseStateOk {
-			break
-		}
-		//append(d.Vouchers,vr.)
-	}
-
 	if err := model.InsertTransaction(d); err != nil {
-		log.Panic(err)
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
 	}
 
-	res := NewResponse(tr)
+	res = NewResponse(TransactionResponse{TransactionCode: txCode})
 	render.JSON(w, res, status)
 }
 
