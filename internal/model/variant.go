@@ -349,7 +349,7 @@ func (d *DeleteVariantRequest) Delete() error {
 	return nil
 }
 
-func FindVariantByDate(start, end, accountId string) (Response, error) {
+func FindVariantByDate(start, end, accountId string) ([]SearchVariant, error) {
 	fmt.Println("Select By Date " + start)
 	q := `
 		SELECT
@@ -372,10 +372,10 @@ func FindVariantByDate(start, end, accountId string) (Response, error) {
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), start, end, start, end, accountId, StatusCreated); err != nil {
-		return Response{Status: "500", Message: ErrMessageInternalError, Data: nil}, err
+		return []SearchVariant{}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: ErrMessageResourceNotFound, Data: nil}, ErrResourceNotFound
+		return []SearchVariant{}, ErrResourceNotFound
 	}
 
 	// for i, v := range resv {
@@ -395,13 +395,7 @@ func FindVariantByDate(start, end, accountId string) (Response, error) {
 	// 	resv[i].ValidUsers = resd
 	// }
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv,
-	}
-
-	return res, nil
+	return resv, nil
 }
 
 func FindAllVariants(accountId string) ([]SearchVariant, error) {
@@ -456,7 +450,7 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 	return resv, nil
 }
 
-func FindVariantMultipleParam(param map[string]string) (Response, error) {
+func FindVariantMultipleParam(param map[string]string) ([]SearchVariant, error) {
 	fmt.Println("Query start")
 	q := `
 		SELECT
@@ -488,10 +482,10 @@ func FindVariantMultipleParam(param map[string]string) (Response, error) {
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
-		return Response{Status: "500", Message: ErrMessageInternalError, Data: nil}, err
+		return []SearchVariant{}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: ErrMessageResourceNotFound, Data: nil}, ErrResourceNotFound
+		return []SearchVariant{}, ErrResourceNotFound
 	}
 
 	// for i, v := range resv {
@@ -511,16 +505,10 @@ func FindVariantMultipleParam(param map[string]string) (Response, error) {
 	// 	resv[i].ValidUsers = resd
 	// }
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv,
-	}
-
-	return res, nil
+	return resv, nil
 }
 
-func FindVariantById(id string) (Response, error) {
+func FindVariantById(id string) ([]Variant, error) {
 	q := `
 		SELECT
 			id
@@ -551,10 +539,10 @@ func FindVariantById(id string) (Response, error) {
 
 	var resv []Variant
 	if err := db.Select(&resv, db.Rebind(q), id, StatusCreated); err != nil {
-		return Response{Status: "500", Message: ErrMessageInternalError, Data: Variant{}}, err
+		return []Variant{}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: ErrMessageResourceNotFound, Data: Variant{}}, ErrResourceNotFound
+		return []Variant{}, ErrResourceNotFound
 	}
 
 	q = `
@@ -568,17 +556,11 @@ func FindVariantById(id string) (Response, error) {
 	`
 	var resd []string
 	if err := db.Select(&resd, db.Rebind(q), id, StatusCreated); err != nil {
-		return Response{Status: "Error", Message: q, Data: Variant{}}, err
+		return []Variant{}, err
 	}
 	resv[0].ValidPartners = resd
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv[0],
-	}
-
-	return res, nil
+	return resv, nil
 }
 
 func FindVariantDetailsCustomParam(param map[string]string) ([]Variant, error) {
