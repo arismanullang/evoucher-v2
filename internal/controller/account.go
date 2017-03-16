@@ -44,7 +44,7 @@ func RegisterAccount(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAccountId(w http.ResponseWriter, r *http.Request) {
-	account, err := model.FindAllAccount()
+	account, err := model.FindAllAccounts()
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}

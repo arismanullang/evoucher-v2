@@ -4,14 +4,6 @@ import (
 	"errors"
 )
 
-type (
-	Response struct {
-		Status  string
-		Message string
-		Data    interface{}
-	}
-)
-
 var (
 	ErrValidationError = errors.New("validation error.")
 	ErrInvalidPassword = errors.New("invalid password.")

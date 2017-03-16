@@ -298,7 +298,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	variant, err := model.FindVariantById(gvd.VariantID)
+	variant, err := model.FindVariantDetailsById(gvd.VariantID)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusBadRequest
 		res.AddError("400002", model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
@@ -311,52 +311,47 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if dt, ok := variant.Data.(model.Variant); !ok {
+	dt := variant
+	if (int(dt.MaxQuantityVoucher) - getCountVoucher(gvd.VariantID) - 1) <= 0 {
 		status = http.StatusInternalServerError
-		res.AddError("500001", model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError("500003", model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, "voucher")
 		render.JSON(w, res, status)
 		return
-	} else {
-		if (int(dt.MaxQuantityVoucher) - getCountVoucher(gvd.VariantID) - 1) <= 0 {
-			status = http.StatusInternalServerError
-			res.AddError("500003", model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, "voucher")
-			render.JSON(w, res, status)
-			return
-		} else if dt.VariantType != model.VariantTypeOnDemand {
-			status = http.StatusInternalServerError
-			res.AddError("500004", model.ErrCodeVoucherRulesViolated, model.ErrMessageVoucherRulesViolated, "voucher")
-			render.JSON(w, res, status)
-			return
-		}
-
-		d := GenerateVoucherRequest{
-			AccountID:   dt.AccountId,
-			VariantID:   dt.Id,
-			Quantity:    1,
-			Holder:      gvd.Holder,
-			ReferenceNo: gvd.ReferenceNo,
-		}
-
-		var voucher []model.Voucher
-		voucher, err = d.generateVoucherBulk(&dt)
-		if err != nil {
-			status = http.StatusInternalServerError
-			res.AddError("500005", its(status), http.StatusText(status)+"("+err.Error()+")", "voucher")
-			render.JSON(w, res, status)
-			return
-		}
-
-		gvr := make([]GenerateVoucerResponse, len(voucher))
-		for i, v := range voucher {
-			gvr[i].VoucherID = v.ID
-			gvr[i].VoucherNo = v.VoucherCode
-		}
-
-		status = http.StatusCreated
-		res = NewResponse(gvr)
+	} else if dt.VariantType != model.VariantTypeOnDemand {
+		status = http.StatusInternalServerError
+		res.AddError("500004", model.ErrCodeVoucherRulesViolated, model.ErrMessageVoucherRulesViolated, "voucher")
 		render.JSON(w, res, status)
 		return
 	}
+
+	d := GenerateVoucherRequest{
+		AccountID:   dt.AccountId,
+		VariantID:   dt.Id,
+		Quantity:    1,
+		Holder:      gvd.Holder,
+		ReferenceNo: gvd.ReferenceNo,
+	}
+
+	var voucher []model.Voucher
+	voucher, err = d.generateVoucherBulk(&dt)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError("500005", its(status), http.StatusText(status)+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+
+	gvr := make([]GenerateVoucerResponse, len(voucher))
+	for i, v := range voucher {
+		gvr[i].VoucherID = v.ID
+		gvr[i].VoucherNo = v.VoucherCode
+	}
+
+	status = http.StatusCreated
+	res = NewResponse(gvr)
+	render.JSON(w, res, status)
+	return
+
 }
 
 //GenerateVoucher Generate bulk voucher request
@@ -373,7 +368,7 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	variant, err := model.FindVariantById(gvd.VariantID)
+	variant, err := model.FindVariantDetailsById(gvd.VariantID)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusBadRequest
 		res.AddError("400002", model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
@@ -386,52 +381,47 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if dt, ok := variant.Data.(model.Variant); !ok {
+	dt := variant
+	if (int(dt.MaxQuantityVoucher) - getCountVoucher(gvd.VariantID) - 1) <= 0 {
 		status = http.StatusInternalServerError
-		res.AddError("500001", model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError("500003", model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, "voucher")
 		render.JSON(w, res, status)
 		return
-	} else {
-		if (int(dt.MaxQuantityVoucher) - getCountVoucher(gvd.VariantID) - 1) <= 0 {
-			status = http.StatusInternalServerError
-			res.AddError("500003", model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, "voucher")
-			render.JSON(w, res, status)
-			return
-		} else if dt.VariantType != model.VariantTypeBulk {
-			status = http.StatusInternalServerError
-			res.AddError("500004", model.ErrCodeVoucherRulesViolated, model.ErrMessageVoucherRulesViolated, "voucher")
-			render.JSON(w, res, status)
-			return
-		}
-
-		d := GenerateVoucherRequest{
-			AccountID:   dt.AccountId,
-			VariantID:   dt.Id,
-			Quantity:    1,
-			Holder:      gvd.Holder,
-			ReferenceNo: gvd.ReferenceNo,
-		}
-
-		var voucher []model.Voucher
-		voucher, err = d.generateVoucherBulk(&dt)
-		if err != nil {
-			status = http.StatusInternalServerError
-			res.AddError("500005", its(status), http.StatusText(status)+"("+err.Error()+")", "voucher")
-			render.JSON(w, res, status)
-			return
-		}
-
-		gvr := make([]GenerateVoucerResponse, len(voucher))
-		for i, v := range voucher {
-			gvr[i].VoucherID = v.ID
-			gvr[i].VoucherNo = v.VoucherCode
-		}
-
-		status = http.StatusCreated
-		res = NewResponse(gvr)
+	} else if dt.VariantType != model.VariantTypeBulk {
+		status = http.StatusInternalServerError
+		res.AddError("500004", model.ErrCodeVoucherRulesViolated, model.ErrMessageVoucherRulesViolated, "voucher")
 		render.JSON(w, res, status)
 		return
 	}
+
+	d := GenerateVoucherRequest{
+		AccountID:   dt.AccountId,
+		VariantID:   dt.Id,
+		Quantity:    1,
+		Holder:      gvd.Holder,
+		ReferenceNo: gvd.ReferenceNo,
+	}
+
+	var voucher []model.Voucher
+	voucher, err = d.generateVoucherBulk(&dt)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError("500005", its(status), http.StatusText(status)+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+
+	gvr := make([]GenerateVoucerResponse, len(voucher))
+	for i, v := range voucher {
+		gvr[i].VoucherID = v.ID
+		gvr[i].VoucherNo = v.VoucherCode
+	}
+
+	status = http.StatusCreated
+	res = NewResponse(gvr)
+	render.JSON(w, res, status)
+	return
+
 }
 
 // GenerateVoucher Genera te voucher and strore to DB

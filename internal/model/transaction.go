@@ -184,7 +184,7 @@ func (d *DeleteTransactionRequest) Delete() error {
 	return nil
 }
 
-func FindTransactionByID(id string) (Response, error) {
+func FindTransactionByID(id string) ([]Transaction, error) {
 	q := `
 		SELECT
 			id
@@ -205,10 +205,10 @@ func FindTransactionByID(id string) (Response, error) {
 
 	var resv []Transaction
 	if err := db.Select(&resv, db.Rebind(q), id, StatusCreated); err != nil {
-		return Response{Status: "500", Message: "Error at select variant", Data: []Transaction{}}, err
+		return []Transaction{}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: "Error at select variant", Data: []Transaction{}}, ErrResourceNotFound
+		return []Transaction{}, ErrResourceNotFound
 	}
 
 	q = `
@@ -222,23 +222,17 @@ func FindTransactionByID(id string) (Response, error) {
 	`
 	var resd []string
 	if err := db.Select(&resd, db.Rebind(q), id, StatusCreated); err != nil {
-		return Response{Status: "500", Message: "Error at select user", Data: []Transaction{}}, err
+		return []Transaction{}, err
 	}
 	if len(resd) < 1 {
-		return Response{Status: "404", Message: "Error at select user", Data: []Transaction{}}, ErrResourceNotFound
+		return []Transaction{}, ErrResourceNotFound
 	}
 	resv[0].Vouchers = resd
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv,
-	}
-
-	return res, nil
+	return resv, nil
 }
 
-func FindTransactionByDate(start, end string) (Response, error) {
+func FindTransactionByDate(start, end string) ([]Transaction, error) {
 	q := `
 		SELECT
 			transaction_code
@@ -259,17 +253,11 @@ func FindTransactionByDate(start, end string) (Response, error) {
 
 	var resv []Transaction
 	if err := db.Select(&resv, db.Rebind(q), start, end, start, end, StatusCreated); err != nil {
-		return Response{Status: "500", Message: "Error at select variant", Data: []Transaction{}}, err
+		return []Transaction{}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: "Error at select variant", Data: []Transaction{}}, ErrResourceNotFound
+		return []Transaction{}, ErrResourceNotFound
 	}
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv,
-	}
-
-	return res, nil
+	return resv, nil
 }

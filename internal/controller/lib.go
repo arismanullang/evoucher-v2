@@ -7,8 +7,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -95,6 +97,17 @@ func hash(param string) string {
 //
 // 	return /*getAccountID(login)*/ "", true
 // }
+
+func replaceSpecialCharacter(param string) string {
+	reg, err := regexp.Compile("[^A-Za-z0-9]")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	safe := reg.ReplaceAllString(param, "x")
+	safe = strings.Trim(safe, "-")
+	return safe
+}
 
 func randStr(ln int, fm string) string {
 	CharsType := map[string]string{

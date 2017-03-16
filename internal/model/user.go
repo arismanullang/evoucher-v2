@@ -1,9 +1,6 @@
 package model
 
-import (
-	"fmt"
-	"log"
-)
+import "fmt"
 
 type (
 	User struct {
@@ -29,7 +26,8 @@ func AddUser(u User) error {
 	fmt.Println("Add")
 	tx, err := db.Beginx()
 	if err != nil {
-		return err
+		fmt.Println(err)
+		return ErrServerInternal
 	}
 	defer tx.Rollback()
 
@@ -51,7 +49,8 @@ func AddUser(u User) error {
 		`
 		var res []string
 		if err := tx.Select(&res, tx.Rebind(q), u.Username, u.Password, u.Email, u.Phone, u.CreatedBy, StatusCreated); err != nil {
-			return err
+			fmt.Println(err)
+			return ErrServerInternal
 		}
 
 		for _, v := range u.RoleId {
@@ -67,7 +66,8 @@ func AddUser(u User) error {
 
 			_, err := tx.Exec(tx.Rebind(q), res[0], v, u.CreatedBy, StatusCreated)
 			if err != nil {
-				return err
+				fmt.Println(err)
+				return ErrServerInternal
 			}
 		}
 
@@ -83,11 +83,13 @@ func AddUser(u User) error {
 
 		_, err := tx.Exec(tx.Rebind(q2), res[0], u.AccountId, u.CreatedBy, StatusCreated)
 		if err != nil {
-			return err
+			fmt.Println(err)
+			return ErrServerInternal
 		}
 
 		if err := tx.Commit(); err != nil {
-			return err
+			fmt.Println(err)
+			return ErrServerInternal
 		}
 		return nil
 	}
@@ -104,13 +106,14 @@ func CheckUsername(username string) (string, error) {
 	`
 	var res []string
 	if err := db.Select(&res, db.Rebind(q), username, StatusCreated); err != nil {
-		return "", err
+		fmt.Println(err)
+		return "", ErrServerInternal
 	}
 
 	return res[0], nil
 }
 
-func FindAllUser(accountId string) ([]UserRes, error) {
+func FindAllUsers(accountId string) ([]UserRes, error) {
 	fmt.Println("Select User " + accountId)
 	q := `
 		SELECT DISTINCT u.id, u.username FROM users as u
@@ -122,7 +125,8 @@ func FindAllUser(accountId string) ([]UserRes, error) {
 
 	var resv []UserRes
 	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
-		return []UserRes{}, err
+		fmt.Println(err)
+		return []UserRes{}, ErrServerInternal
 	}
 	if len(resv) < 1 {
 		return []UserRes{}, ErrResourceNotFound
@@ -131,7 +135,7 @@ func FindAllUser(accountId string) ([]UserRes, error) {
 	return resv, nil
 }
 
-func FindUserByRole(role, accountId string) ([]UserRes, error) {
+func FindUsersByRole(role, accountId string) ([]UserRes, error) {
 	q := `
 		SELECT u.id, u.username FROM users AS u
 		JOIN user_accounts AS ua ON u.id = ua.user_id
@@ -143,7 +147,8 @@ func FindUserByRole(role, accountId string) ([]UserRes, error) {
 
 	var resv []UserRes
 	if err := db.Select(&resv, db.Rebind(q), accountId, role, StatusCreated); err != nil {
-		return []UserRes{}, err
+		fmt.Println(err)
+		return []UserRes{}, ErrServerInternal
 	}
 	if len(resv) < 1 {
 		return []UserRes{}, ErrResourceNotFound
@@ -152,7 +157,7 @@ func FindUserByRole(role, accountId string) ([]UserRes, error) {
 	return resv, nil
 }
 
-func FindUser(usr map[string]string) ([]User, error) {
+func FindUsersCustomParam(usr map[string]string) ([]UserRes, error) {
 	q := `
 		SELECT u.id, u.username FROM users AS u
 		JOIN user_accounts AS ua ON u.id = ua.user_id
@@ -169,15 +174,61 @@ func FindUser(usr map[string]string) ([]User, error) {
 		}
 	}
 
-	var resv []User
+	var resv []UserRes
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
-		return []User{}, err
+		fmt.Println(err)
+		return []UserRes{}, ErrServerInternal
 	}
 	if len(resv) < 1 {
-		return []User{}, ErrResourceNotFound
+		return []UserRes{}, ErrResourceNotFound
 	}
 
 	return resv, nil
+}
+
+func FindUserDetail(userId string) (User, error) {
+	q := `
+		SELECT
+			username
+			, email
+			, phone
+		FROM
+			users
+		WHERE
+			id = ?
+			AND status = ?
+	`
+	var res []User
+	if err := db.Select(&res, db.Rebind(q), userId, StatusCreated); err != nil {
+		fmt.Println(err)
+		return User{}, ErrServerInternal
+	}
+
+	q1 := `
+		SELECT
+			roles.role_detail
+		FROM
+			users
+		JOIN
+			user_roles
+		ON
+			users.id = user_roles.user_id
+		JOIN
+			roles
+		ON
+			user_roles.role_id = roles.id
+		WHERE
+			users.id = ?
+			AND users.status = ?
+	`
+	var role []string
+	if err := db.Select(&role, db.Rebind(q1), userId, StatusCreated); err != nil {
+		fmt.Println(err)
+		return User{}, ErrServerInternal
+	}
+	res[0].RoleId = role
+
+	return res[0], nil
 }
 
 func Login(username, password, accountId string) (string, error) {
@@ -199,7 +250,8 @@ func Login(username, password, accountId string) (string, error) {
 	`
 	var res []string
 	if err := db.Select(&res, db.Rebind(q), username, password, accountId, StatusCreated); err != nil {
-		return "", err
+		fmt.Println(err)
+		return "", ErrServerInternal
 	}
 	if len(res) == 0 {
 		return "", ErrResourceNotFound
@@ -207,34 +259,9 @@ func Login(username, password, accountId string) (string, error) {
 	return res[0], nil
 }
 
-func GetAccountByUser(userID string) string {
-	vc, err := db.Beginx()
-	if err != nil {
-		return ""
-	}
-	defer vc.Rollback()
+// Role -----------------------------------------------------------------------------------------------
 
-	q := `
-		SELECT
-			account_id
-		FROM
-			user_accounts
-		WHERE
-			user_id = ?
-			AND status = ?
-	`
-	var resd []string
-	if err := db.Select(&resd, db.Rebind(q), userID, StatusCreated); err != nil {
-		log.Panic(err)
-		return ""
-	}
-	if len(resd) == 0 {
-		return ""
-	}
-	return resd[0]
-}
-
-func FindAllRole() (Response, error) {
+func FindAllRole() ([]Role, error) {
 	fmt.Println("Select All Role")
 	q := `
 		SELECT id, role_detail
@@ -244,17 +271,12 @@ func FindAllRole() (Response, error) {
 
 	var resv []Role
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
-		return Response{Status: "Error", Message: q, Data: []AccountRes{}}, err
+		fmt.Println(err)
+		return []Role{}, ErrServerInternal
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: q, Data: []AccountRes{}}, ErrResourceNotFound
+		return []Role{}, ErrResourceNotFound
 	}
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv,
-	}
-
-	return res, nil
+	return resv, nil
 }

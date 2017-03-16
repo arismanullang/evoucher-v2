@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	//"strings"
 	"time"
 
 	//"github.com/go-zoo/bone"
@@ -54,35 +53,48 @@ func DoLogin(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
+	status := http.StatusOK
+	res := NewResponse(nil)
+
 	user, err := model.Login(rd.Username, hash(rd.Password), rd.AccountId)
-	if err != nil && err != model.ErrResourceNotFound {
-		log.Panic(err)
-	}
-
-	times := time.Now()
-	times = times.AddDate(0, 0, 1)
-	encoded := base64.StdEncoding.EncodeToString([]byte(user + ";" + rd.AccountId + ";" + times.String()))
-	session, err := store.Get(r, encoded)
 	if err != nil {
-		log.Panic(err)
+		status = http.StatusUnauthorized
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+		}
+		res.AddError(its(status), its(status), err.Error(), "variant")
+	} else {
+		times := time.Now()
+		times = times.AddDate(0, 0, 1)
+		encoded := base64.StdEncoding.EncodeToString([]byte(user + ";" + rd.AccountId + ";" + times.String()))
+		fmt.Println(user)
+		encoded = replaceSpecialCharacter(encoded)
+		session, err := store.Get(r, encoded)
+
+		if err != nil {
+			status = http.StatusInternalServerError
+			res.AddError(its(status), its(status), err.Error(), "user")
+		} else {
+			session.Options = &sessions.Options{
+				MaxAge: 86400,
+				Path:   "/",
+			}
+			fmt.Println(user)
+			session.Values["user"] = user
+			session.Values["account"] = rd.AccountId
+			session.Values["expired"] = times.Format("2006-01-02 15:04:05")
+			session.Save(r, w)
+			resp := UserResponse{
+				Id:    user,
+				Token: encoded,
+			}
+
+			res = NewResponse(resp)
+		}
+
 	}
 
-	session.Options = &sessions.Options{
-		MaxAge: 86400,
-		Path:   "/",
-	}
-
-	session.Values["user"] = user
-	session.Values["account"] = rd.AccountId
-	session.Values["expired"] = times.Format("2006-01-02 15:04:05")
-	session.Save(r, w)
-	resp := UserResponse{
-		Id:    user,
-		Token: encoded,
-	}
-
-	res := NewResponse(resp)
-	render.JSON(w, res, http.StatusOK)
+	render.JSON(w, res, status)
 }
 
 func FindUserByRole(w http.ResponseWriter, r *http.Request) {
@@ -102,7 +114,7 @@ func FindUserByRole(w http.ResponseWriter, r *http.Request) {
 
 	if valid {
 		status = http.StatusOK
-		user, err := model.FindUserByRole(role, accountId)
+		user, err := model.FindUsersByRole(role, accountId)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
@@ -134,7 +146,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	if valid {
 		status = http.StatusOK
-		user, err := model.FindAllUser(accountId)
+		user, err := model.FindAllUsers(accountId)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
@@ -167,7 +179,7 @@ func GetUserCustomParam(w http.ResponseWriter, r *http.Request) {
 
 	if valid {
 		status = http.StatusOK
-		user, err := model.FindUser(param)
+		user, err := model.FindUsersCustomParam(param)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
