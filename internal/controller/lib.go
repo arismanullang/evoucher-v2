@@ -100,26 +100,33 @@ func hash(param string) string {
 func CheckToken(w http.ResponseWriter, r *http.Request) (string, string, time.Time, bool) {
 	res := NewResponse(nil)
 	token := r.FormValue("token")
-	user := r.FormValue("user")
 	var exp time.Time
 	var valid bool
 	var err error
+	var a, u string
 
 	if len(token) < 1 {
 		res.AddError("401001", model.ErrCodeMissingToken, model.ErrMessageTokenNotFound, "token")
 		render.JSON(w, res, http.StatusUnauthorized)
 		return "", "", time.Now(), false
 	}
-	if _, exp, valid, err = getValiditySession(r, user, token); err != nil {
-		res.AddError("401002", model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound+"("+err.Error()+")", "token")
-		render.JSON(w, res, http.StatusUnauthorized)
+	// Return : user_id, account_id, expired, boolean, error
+	if u, a, exp, valid, err = getValiditySession(r, token); err != nil {
+		switch err {
+		case model.ErrTokenNotFound:
+			res.AddError("401002", model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound, "token")
+			render.JSON(w, res, http.StatusUnauthorized)
+		case model.ErrTokenExpired:
+			res.AddError("401002", model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, "token")
+			render.JSON(w, res, http.StatusUnauthorized)
+		}
 		return "", "", time.Now(), false
 	} else if !valid {
 		res.AddError("401003", model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound, "token")
 		render.JSON(w, res, http.StatusUnauthorized)
 		return "", "", time.Now(), false
 	}
-	return "", "", exp, true
+	return a, u, exp, true
 }
 
 func randStr(ln int, fm string) string {
@@ -137,6 +144,7 @@ func randStr(ln int, fm string) string {
 	}
 	return string(result)
 }
+
 func its(i int) string {
 	return strconv.Itoa(i)
 }

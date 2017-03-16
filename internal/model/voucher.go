@@ -193,8 +193,7 @@ func (d *UpdateDeleteRequest) UpdateVc() (Voucher, error) {
 			, updated_by = ?
 			, updated_at = ?
 		WHERE
-			voucher_code = ?
-			AND status = ?
+			id = ?
 		RETURNING
 			id
 			, voucher_code
@@ -215,13 +214,10 @@ func (d *UpdateDeleteRequest) UpdateVc() (Voucher, error) {
 	`
 
 	var result []Voucher
-	if err := vc.Select(&result, vc.Rebind(q), d.State, d.User, time.Now(), d.VoucherCode, StatusCreated); err != nil {
+	if err := vc.Select(&result, vc.Rebind(q), d.State, d.User, time.Now(), d.ID); err != nil {
 		return Voucher{}, err
 	}
 
-	if len(result) < 1 {
-		return Voucher{}, ErrNotModified
-	}
 	if err := vc.Commit(); err != nil {
 		return Voucher{}, err
 	}

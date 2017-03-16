@@ -90,8 +90,7 @@ func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
 	param := getUrlParam(r.URL.String())
 	token := r.FormValue("token")
 
-	var variant model.Response
-	var err error
+	res := NewResponse(nil)
 	status := http.StatusUnauthorized
 	valid := false
 	if token != "" && token != "null" {
@@ -100,17 +99,18 @@ func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
 
 	if valid {
 		status = http.StatusOK
-		variant, err = model.FindVariantDetailsCustomParam(param)
+		variant, err := model.FindVariantDetailsCustomParam(param)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
 				//log.Panic(err)
 				status = http.StatusNotFound
 			}
+		} else {
+			res = NewResponse(variant)
 		}
 	}
 
-	res := NewResponse(variant)
 	render.JSON(w, res, status)
 }
 
@@ -118,27 +118,28 @@ func GetVariants(w http.ResponseWriter, r *http.Request) {
 	param := getUrlParam(r.URL.String())
 	token := r.FormValue("token")
 
-	var variant model.Response
-	var err error
+	res := NewResponse(nil)
 	status := http.StatusUnauthorized
 	valid := false
+
 	if token != "" && token != "null" {
 		_, _, _, valid, _ = getValiditySession(r, token)
 	}
 
 	if valid {
 		status = http.StatusOK
-		variant, err = model.FindVariantMultipleParam(param)
+		variant, err := model.FindVariantMultipleParam(param)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
 				//log.Panic(err)
 				status = http.StatusNotFound
 			}
+		} else {
+			res = NewResponse(variant)
 		}
 	}
 
-	res := NewResponse(variant)
 	render.JSON(w, res, status)
 }
 
@@ -146,8 +147,7 @@ func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
 	token := r.FormValue("token")
 
-	var variant model.Response
-	var err error
+	res := NewResponse(nil)
 	status := http.StatusUnauthorized
 	valid := false
 	if token != "" && token != "null" {
@@ -156,17 +156,17 @@ func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 
 	if valid {
 		status = http.StatusOK
-		variant, err = model.FindVariantById(id)
+		variant, err := model.FindVariantById(id)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
 				//log.Panic(err)
 				status = http.StatusNotFound
 			}
+		} else {
+			res = NewResponse(variant)
 		}
 	}
-
-	res := NewResponse(variant)
 	render.JSON(w, res, status)
 }
 
@@ -174,9 +174,6 @@ func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
 	start := r.FormValue("start")
 	end := r.FormValue("end")
 	token := r.FormValue("token")
-
-	var variant model.Response
-	var err error
 	accountId := ""
 	status := http.StatusUnauthorized
 	valid := false
@@ -187,17 +184,17 @@ func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
 
 	if valid {
 		status = http.StatusOK
-		variant, err = model.FindVariantByDate(start, end, accountId)
+		variant, err := model.FindVariantByDate(start, end, accountId)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
 				//log.Panic(err)
 				status = http.StatusNotFound
+			} else {
+				res = NewResponse(variant)
 			}
 		}
 	}
-
-	res = NewResponse(variant)
 	render.JSON(w, res, status)
 }
 

@@ -1,16 +1,18 @@
 package model
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 )
 
 type (
 	Partner struct {
-		Id           string `db:"id"`
-		PartnerName  string `db:"partner_name"`
-		SerialNumber string `db:"serial_number"`
-		CreatedBy    string `db:"created_by"`
+		Id           string         `db:"id"`
+		PartnerName  string         `db:"partner_name"`
+		SerialNumber sql.NullString `db:"serial_number"`
+		CreatedBy    sql.NullString `db:"created_by"`
+		VariantID    string         `db:"variant_id"`
 	}
 )
 
@@ -150,4 +152,40 @@ func checkPartner(name string) (int, error) {
 	}
 
 	return len(res), nil
+}
+
+func FindVariantPartner(param map[string]string) ([]Partner, error) {
+	q := `
+		SELECT 	b.id
+			, b.partner_name
+			, b.serial_number
+			, b.created_by
+			, a.variant_id
+	 	FROM
+			variant_partners a
+		JOIN
+		 	partners b
+		ON
+			a.partner_id = b.id
+ 		WHERE
+			b.status = ?
+	`
+	for k, v := range param {
+		switch k {
+		case "id":
+			q += ` AND b.id = '` + v + `'`
+		default:
+			q += ` AND ` + k + ` = '` + v + `'`
+		}
+
+	}
+
+	var resv []Partner
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+		return []Partner{}, err
+	}
+	if len(resv) < 1 {
+		return []Partner{}, ErrResourceNotFound
+	}
+	return resv, nil
 }

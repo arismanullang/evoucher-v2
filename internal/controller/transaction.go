@@ -14,24 +14,16 @@ import (
 
 type (
 	TransactionRequest struct {
-<<<<<<< HEAD
+		VariantID         string   `json:"variant_id"`
 		PartnerID         string   `json:"partner_id"`
 		RedeemMethod      string   `json:"redeem_method"`
+		SerialNumber      string   `json:"serial_number"`
 		RedeemKey         string   `json:"redeem_key"`
 		TotalTransaction  float64  `json:"total_transaction"`
 		DiscountValue     float64  `json:"discount_value"`
 		PaymentType       string   `json:"payment_type"`
 		AllowAccumulative bool     `json:"allow_accumulative"`
 		Vouchers          []string `json:"vouchers"`
-=======
-		VariantID        string   `json:"variant_id"`
-		PartnerID        string   `json:"partner_id"`
-		RedeemMethod     string   `json:"redeem_method"`
-		RedeemCode       string   `json:"redeem_code"`
-		TotalTransaction float64  `json:"total_transaction"`
-		PaymentType      string   `json:"payment_type"`
-		Vouchers         []string `json:"vouchers"`
->>>>>>> 51aa9b843f00fdf42197190b0c9affc4be794ec6
 	}
 	DeleteTransactionRequest struct {
 		User string `json:"requested_by"`
@@ -48,7 +40,6 @@ type (
 func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	var rd TransactionRequest
 	var status int
-	var rv RedeemVoucherRequest
 	res := NewResponse(nil)
 
 	//Token Authentocation
@@ -66,8 +57,27 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// chek validation all voucher
-	for k, v := range rd.Vouchers {
+	var param = map[string]string{"partner_id": rd.PartnerID}
+
+	if rd.RedeemMethod == `token` {
+		param["serial_number"] = rd.PartnerID
+	} else {
+		param["id"] = rd.PartnerID
+	}
+	fmt.Println(param)
+	//cherck partne
+	if p, err := model.FindVariantPartner(param); err == nil {
+		rd.VariantID = p[0].VariantID // assign variantID value for validate voucher
+		fmt.Println(p)
+	} else {
+		fmt.Println("error :", err.Error())
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeVoucherRulesViolated, model.ErrMessageInvalidMerchant, "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+	// chek validation all voucher & variant
+	for _, v := range rd.Vouchers {
 		if ok, err := rd.CheckVoucherRedeemtion(v); !ok {
 			switch err.Error() {
 			case model.ErrCodeAllowAccumulativeDisable:
@@ -93,11 +103,16 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
-		rv.VoucherCode[k] = v
 	}
 
+	rv := RedeemVoucherRequest{
+		AccountID: accountID,
+		User:      userID,
+		State:     model.VoucherStateUsed,
+		Vouchers:  rd.Vouchers,
+	}
+	fmt.Println("List valid voucher :", rv.Vouchers)
 	// update voucher state "Used"
-	rv.AccountID = accountID
 	if ok, err := rv.RedeemVoucherValidation(); !ok {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
@@ -105,27 +120,25 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	txCode := randStr(12, model.NUMERALS)
+	txCode := randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
 	d := model.Transaction{
 		AccountId:        accountID,
 		PartnerId:        rd.PartnerID,
-<<<<<<< HEAD
 		TransactionCode:  txCode,
-=======
-		TransactionCode:  "",
->>>>>>> 51aa9b843f00fdf42197190b0c9affc4be794ec6
 		TotalTransaction: rd.TotalTransaction,
 		DiscountValue:    rd.DiscountValue,
 		PaymentType:      rd.PaymentType,
+		User:             userID,
 		Vouchers:         rd.Vouchers,
 	}
+	fmt.Println(d)
 	if err := model.InsertTransaction(d); err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
 		render.JSON(w, res, status)
 		return
 	}
-
+	status = http.StatusCreated
 	res = NewResponse(TransactionResponse{TransactionCode: txCode})
 	render.JSON(w, res, status)
 }

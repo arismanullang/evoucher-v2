@@ -20,26 +20,6 @@ func setRoutes() http.Handler {
 	r.GetFunc("/", login)
 
 	//variant
-<<<<<<< HEAD
-	r.PostFunc("/create/variant", controller.CreateVariant)
-	r.GetFunc("/api/get/allVariant", controller.GetAllVariants)
-	r.GetFunc("/v1/api/get/allVariant", controller.GetAllVariants)
-	r.GetFunc("/api/get/variant", controller.GetVariants)
-	r.GetFunc("/api/get/variantByDate", controller.GetVariantDetailsByDate)
-	r.GetFunc("/api/get/variant/:id", controller.GetVariantDetailsById)
-	r.PostFunc("/update/variant/:id", controller.UpdateVariant)
-	r.PostFunc("/update/variant/:id/broadcastUser", controller.UpdateVariantBroadcast)
-	r.PostFunc("/update/variant/:id/tenant", controller.UpdateVariantTenant)
-
-	r.GetFunc("/get/allVariant", controller.DashboardGetAllVariants)
-	r.GetFunc("/get/variant/:id", controller.DashboardGetVariantDetailsById)
-	r.GetFunc("/get/role", controller.GetAllAccountRoles)
-	r.GetFunc("/delete/variant/:id", controller.DeleteVariant)
-
-	//transaction
-	// r.PostFunc("/transaction/redeem", controller.CreateTransaction)
-	r.PostFunc("/v1/transaction/redeem", controller.CreateTransaction)
-=======
 	r.PostFunc("/v1/create/variant", controller.CreateVariant)
 	r.GetFunc("/v1/api/get/allVariant", controller.GetAllVariants)
 	r.GetFunc("/v1/api/get/variant", controller.GetVariants)
@@ -53,9 +33,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/delete/variant/:id", controller.DeleteVariant)
 
 	//transaction
-	r.PostFunc("/api/create/transaction", controller.CreateTransaction)
-	//r.Post("/v1/transaction/redeem", controller.CheckTokenAuth(controller.CreateTransaction))
->>>>>>> 51aa9b843f00fdf42197190b0c9affc4be794ec6
+	r.PostFunc("/v1/transaction/redeem", controller.CreateTransaction)
 	r.GetFunc("/transaction/:id/", controller.GetTransactionDetails)
 	r.PostFunc("/transaction/:id/update", controller.UpdateTransaction)
 	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)

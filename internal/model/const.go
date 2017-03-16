@@ -43,7 +43,6 @@ const (
 	ErrCodeMissingToken             string = "missing_token"
 	ErrCodeInvalidToken             string = "invalid_token"
 
-<<<<<<< HEAD
 	ErrMessageAllowAccumulativeDisable string = "didn't allow multiple voucher code"
 	ErrMessageResourceNotFound         string = "resource not found"
 	ErrMessageInternalError            string = "internal error "
@@ -57,20 +56,7 @@ const (
 	ErrMessageMissingOrderItem         string = "order items was not specified"
 	ErrMessageTokenNotFound            string = "Token not found"
 	ErrMessageTokenExpired             string = "Token has been expired"
-=======
-	ErrMessageResourceNotFound     string = "resource not found"
-	ErrMessageInternalError        string = "internal error"
-	ErrMessageVoucherNotActive     string = "voucher is not active yet (before start date)"
-	ErrMessageVoucherDisabled      string = "voucher has been disabled (has already been used or paid)"
-	ErrMessageVoucherExpired       string = "voucher has already expired (after expiration date)"
-	ErrMessageVoucherAlreadyPaid   string = "voucher has already Paid"
-	ErrMessageInvalidVoucher       string = "invalid voucher, VariantID not found"
-	ErrMessageVoucherQtyExceeded   string = "voucher's quantities limit has been exceeded"
-	ErrMessageVoucherRulesViolated string = "order did not match validation rules"
-	ErrMessageMissingOrderItem     string = "order items was not specified"
-	ErrMessageTokenNotFound        string = "Token not found"
-	ErrMessageTokenExpired         string = "Token has been expired"
->>>>>>> 51aa9b843f00fdf42197190b0c9affc4be794ec6
+	ErrMessageInvalidMerchant          string = "vouchers can not be used in this Partner."
 
 	StatusCreated string = "created"
 	StatusDeleted string = "deleted"
@@ -88,10 +74,13 @@ const (
 	VariantTypeBulk     string = "bulk"
 	VariantTypeOnDemand string = "on-demand"
 
-	ALPHABET     string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-	NUMERALS     string = "1234567890"
-	ALPHANUMERIC string = ALPHABET + NUMERALS
+	ALPHABET     = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	NUMERALS     = "1234567890"
+	ALPHANUMERIC = ALPHABET + NUMERALS
 
-	DEFAULT_CODE   string = NUMERALS
+	DEFAULT_CODE   string = "Numerals"
 	DEFAULT_LENGTH int    = 8
+
+	DEFAULT_TXCODE   string = "Numerals"
+	DEFAULT_TXLENGTH int    = 8
 )
