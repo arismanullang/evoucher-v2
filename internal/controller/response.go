@@ -22,7 +22,7 @@ type paginationData struct {
 
 type Response struct {
 	Pagination *paginationData `json:"pagination,omitempty"`
-	Errors     []errorData     `json:"errors,omitempty"`
+	Errors     *errorData      `json:"errors,omitempty"`
 	Data       interface{}     `json:"data,omitempty"`
 }
 
@@ -56,7 +56,7 @@ func (r *Response) SetPagination(req *http.Request, page int, next bool) {
 }
 
 func (r *Response) AddError(code, title, detail, name string) {
-	r.Errors = append(r.Errors, errorData{code, title, detail, name})
+	r.Errors = &errorData{code, title, detail, name}
 }
 
 func (r *Response) AddGovalidatorErrors(errs govalidator.Errors) {

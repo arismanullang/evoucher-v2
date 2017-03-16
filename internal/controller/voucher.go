@@ -134,7 +134,6 @@ func GetVoucherDetail(w http.ResponseWriter, r *http.Request) {
 
 	param := getUrlParam(r.URL.String())
 	delete(param, "token")
-	delete(param, "user")
 
 	if len(param) > 0 {
 		voucher, err = model.FindVoucher(param)
@@ -146,7 +145,7 @@ func GetVoucherDetail(w http.ResponseWriter, r *http.Request) {
 	}
 	// fmt.Println(voucher, err)
 	if err == model.ErrResourceNotFound {
-		status = http.StatusBadRequest
+		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
 		render.JSON(w, res, status)
 		return
