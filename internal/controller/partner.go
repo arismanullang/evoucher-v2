@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -88,9 +89,15 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 	if valid {
 		status = http.StatusCreated
 		param := model.Partner{
-			PartnerName:  rd.PartnerName,
-			SerialNumber: rd.SerialNumber,
-			CreatedBy:    user,
+			PartnerName: rd.PartnerName,
+			SerialNumber: sql.NullString{
+				String: rd.SerialNumber,
+				Valid:  true,
+			},
+			CreatedBy: sql.NullString{
+				String: user,
+				Valid:  true,
+			},
 		}
 
 		if err := model.InsertPartner(param); err != nil {

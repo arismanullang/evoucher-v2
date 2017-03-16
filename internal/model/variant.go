@@ -81,7 +81,7 @@ type (
 func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 	tx, err := db.Beginx()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 	defer tx.Rollback()
@@ -102,7 +102,7 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 	`
 	var res []string
 	if err := tx.Select(&res, tx.Rebind(q), fr.Prefix, fr.Postfix, fr.Body, fr.FormatType, fr.Length, user, StatusCreated); err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 
@@ -133,7 +133,7 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 	`
 	var res2 []string
 	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.VariantName, vr.VariantType, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.DiscountValue, vr.MaxQuantityVoucher, vr.MaxUsageVoucher, vr.RedeemtionMethod, vr.ImgUrl, vr.VariantTnc, vr.VariantDescription, user, StatusCreated); err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 
@@ -151,14 +151,14 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 
 			_, err := tx.Exec(tx.Rebind(q), res2[0], v, user, StatusCreated)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Println(err.Error())
 				return ErrServerInternal
 			}
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 	return nil
@@ -167,7 +167,7 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 func UpdateVariant(d Variant) error {
 	tx, err := db.Beginx()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 	defer tx.Rollback()
@@ -197,12 +197,12 @@ func UpdateVariant(d Variant) error {
 
 	_, err = tx.Exec(tx.Rebind(q), d.VariantName, d.VariantType, d.VoucherType, d.VoucherPrice, d.StartDate, d.EndDate, d.DiscountValue, d.MaxQuantityVoucher, d.MaxUsageVoucher, d.RedeemtionMethod, d.ImgUrl, d.VariantTnc, d.VariantDescription, d.CreatedBy, time.Now(), d.Id, StatusCreated)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 
 	if err := tx.Commit(); err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 	return nil
@@ -211,7 +211,7 @@ func UpdateVariant(d Variant) error {
 func UpdateVariantBroadcasts(user UpdateVariantUsersRequest) error {
 	tx, err := db.Beginx()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 	defer tx.Rollback()
@@ -228,7 +228,7 @@ func UpdateVariantBroadcasts(user UpdateVariantUsersRequest) error {
 	`
 	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, user.User, time.Now(), user.VariantId, StatusCreated)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 
@@ -245,13 +245,13 @@ func UpdateVariantBroadcasts(user UpdateVariantUsersRequest) error {
 
 		_, err := tx.Exec(tx.Rebind(q), user.VariantId, v, user.User, StatusCreated)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(err.Error())
 			return ErrServerInternal
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 	return nil
@@ -260,7 +260,7 @@ func UpdateVariantBroadcasts(user UpdateVariantUsersRequest) error {
 func UpdateVariantPartners(param UpdateVariantUsersRequest) error {
 	tx, err := db.Beginx()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 	defer tx.Rollback()
@@ -277,7 +277,7 @@ func UpdateVariantPartners(param UpdateVariantUsersRequest) error {
 	`
 	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, param.User, time.Now(), param.VariantId, StatusCreated)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 
@@ -294,13 +294,13 @@ func UpdateVariantPartners(param UpdateVariantUsersRequest) error {
 
 		_, err := tx.Exec(tx.Rebind(q), param.VariantId, v, param.User, StatusCreated)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(err.Error())
 			return ErrServerInternal
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 	return nil
@@ -309,7 +309,7 @@ func UpdateVariantPartners(param UpdateVariantUsersRequest) error {
 func (d *DeleteVariantRequest) Delete() error {
 	tx, err := db.Beginx()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 	defer tx.Rollback()
@@ -327,7 +327,7 @@ func (d *DeleteVariantRequest) Delete() error {
 
 	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.Id, StatusCreated)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 
@@ -343,12 +343,12 @@ func (d *DeleteVariantRequest) Delete() error {
 	`
 	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.Id, StatusCreated)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 
 	if err := tx.Commit(); err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 	return nil
@@ -385,7 +385,6 @@ func FindVariantsByDate(start, end, accountId string) ([]SearchVariant, error) {
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), start, end, start, end, accountId, StatusCreated); err != nil {
-		fmt.Println(err)
 		return []SearchVariant{}, ErrServerInternal
 	}
 	if len(resv) < 1 {
@@ -423,7 +422,6 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
-		fmt.Println(err)
 		return resv, ErrServerInternal
 	}
 	if len(resv) < 1 {
@@ -475,7 +473,7 @@ func FindVariantsCustomParam(param map[string]string) ([]SearchVariant, error) {
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return []SearchVariant{}, ErrServerInternal
 	}
 	if len(resv) < 1 {
@@ -523,8 +521,8 @@ func FindVariantDetailsById(id string) (Variant, error) {
 
 	var resv []Variant
 	if err := db.Select(&resv, db.Rebind(q), id, StatusCreated); err != nil {
-		fmt.Println(err)
-		return Variant{}, err
+		fmt.Println(err.Error())
+		return Variant{}, ErrServerInternal
 	}
 	if len(resv) < 1 {
 		return Variant{}, ErrResourceNotFound
@@ -541,7 +539,7 @@ func FindVariantDetailsById(id string) (Variant, error) {
 	`
 	var resd []string
 	if err := db.Select(&resd, db.Rebind(q), id, StatusCreated); err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return Variant{}, ErrServerInternal
 	}
 	resv[0].ValidPartners = resd

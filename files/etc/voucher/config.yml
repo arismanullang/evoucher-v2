@@ -4,4 +4,4 @@ server:
   template_directory: "files/etc/voucher/templates"
 
 database:
-    endpoint: "postgres://elys:elys@127.0.0.1:5432/EVoucher2?sslmode=disable"
+    endpoint: "postgres://elys:elys@127.0.0.1:5432/evoucher?sslmode=disable"

@@ -130,6 +130,7 @@ func GetVariants(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), its(status), err.Error(), "variant")
 
 	valid := false
+
 	if token != "" && token != "null" {
 		_, _, _, valid, _ = getValiditySession(r, token)
 	}
@@ -209,6 +210,8 @@ func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
 				status = http.StatusNotFound
+			} else {
+				res = NewResponse(variant)
 			}
 
 			res.AddError(its(status), its(status), err.Error(), "variant")
