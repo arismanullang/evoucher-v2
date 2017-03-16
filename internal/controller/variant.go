@@ -54,67 +54,123 @@ type (
 
 func GetAllVariants(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Get Variant")
-	accountId := r.FormValue("account_id")
+	accountId := ""
+
+	token := r.FormValue("token")
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
 	res := NewResponse(nil)
-	var variant model.Response
-	var err error
-	status := http.StatusOK
 
-	variant, err = model.FindAllVariants(accountId)
+	res.AddError(its(status), its(status), err.Error(), "variant")
 
-	if err != nil && err != model.ErrResourceNotFound {
-		status = http.StatusInternalServerError
-		res.AddError("500006", its(status), http.StatusText(status)+"("+err.Error()+")", "variant")
-		render.JSON(w, res, status)
-		return
+	valid := false
+	if token != "" && token != "null" {
+		fmt.Println("Check Session")
+		_, accountId, _, valid, err = getValiditySession(r, token)
 	}
 
-	rs := variant.Data.([]model.SearchVariant)
-	res = NewResponse(rs)
-	render.JSON(w, res, status)
+	if valid {
+		status = http.StatusOK
+		variant, err := model.FindAllVariants(accountId)
+		if err != nil {
+			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				status = http.StatusNotFound
+			}
 
+			res.AddError(its(status), its(status), err.Error(), "variant")
+		} else {
+			res = NewResponse(variant)
+		}
+	}
+	render.JSON(w, res, status)
+}
+
+func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
+	param := getUrlParam(r.URL.String())
+	token := r.FormValue("token")
+	
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
+
+	res.AddError(its(status), its(status), err.Error(), "variant")
+
+	valid := false
+	if token != "" && token != "null" {
+		_, _, _, valid, _ = getValiditySession(r, token)
+	}
+
+	if valid {
+		status = http.StatusOK
+		variant, err := model.FindVariantDetailsCustomParam(param)
+		if err != nil {
+			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				status = http.StatusNotFound
+			}
+
+			res.AddError(its(status), its(status), err.Error(), "variant")
+		} else {
+			res = NewResponse(variant)
+		}
+	}	
+
+	render.JSON(w, res, status)
 }
 
 func GetVariants(w http.ResponseWriter, r *http.Request) {
 	param := getUrlParam(r.URL.String())
+	token := r.FormValue("token")
+
 	var variant model.Response
 	var err error
-	var status int
-	if _, ok := basicAuth(w, r); ok {
-		variant, err = model.FindVariantMultipleParam(param)
-		if err != nil && err != model.ErrResourceNotFound {
-			log.Panic(err)
-		}
-		status = http.StatusOK
-		variant.Message = http.StatusText(status)
-	} else {
-		status = http.StatusUnauthorized
-		variant.Message = http.StatusText(status)
+	status := http.StatusUnauthorized
+	valid := false
+	if token != "" && token != "null" {
+		_, _, _, valid, _ = getValiditySession(r, token)
 	}
 
-	variant.Status = its(status)
+	if valid {
+		status = http.StatusOK
+		variant, err = model.FindVariantMultipleParam(param)
+		if err != nil {
+			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				//log.Panic(err)
+				status = http.StatusNotFound
+			}
+		}
+	}
+
 	res := NewResponse(variant)
 	render.JSON(w, res, status)
 }
 
 func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
+	token := r.FormValue("token")
+
 	var variant model.Response
 	var err error
-	var status int
-	if _, ok := basicAuth(w, r); ok {
-		variant, err = model.FindVariantById(id)
-		if err != nil && err != model.ErrResourceNotFound {
-			log.Panic(err)
-		}
-		status = http.StatusOK
-		variant.Message = http.StatusText(status)
-	} else {
-		status = http.StatusUnauthorized
-		variant.Message = http.StatusText(status)
+	status := http.StatusUnauthorized
+	valid := false
+	if token != "" && token != "null" {
+		_, _, _, valid, _ = getValiditySession(r, token)
 	}
 
-	variant.Status = its(status)
+	if valid {
+		status = http.StatusOK
+		variant, err = model.FindVariantById(id)
+		if err != nil {
+			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				//log.Panic(err)
+				status = http.StatusNotFound
+			}
+		}
+	}
+
 	res := NewResponse(variant)
 	render.JSON(w, res, status)
 }
@@ -122,38 +178,49 @@ func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
 	start := r.FormValue("start")
 	end := r.FormValue("end")
+	token := r.FormValue("token")
+
 	var variant model.Response
 	var err error
-	var status int
-	if _, ok := basicAuth(w, r); ok {
-		variant, err = model.FindVariantByDate(start, end)
-		if err != nil && err != model.ErrResourceNotFound {
-			log.Panic(err)
-		}
-		status = http.StatusOK
-		variant.Message = http.StatusText(status)
-	} else {
-		status = http.StatusUnauthorized
-		variant.Message = http.StatusText(status)
-	}
-
-	variant.Status = its(status)
-	res := NewResponse(variant)
-	render.JSON(w, res, status)
-}
-
-// dashboard
-func CreateVariant(w http.ResponseWriter, r *http.Request) {
-	token := r.FormValue("token")
-	user := r.FormValue("user")
+	accountId := ""
+	status := http.StatusUnauthorized
 	valid := false
 	res := NewResponse(nil)
-	var account string
 	if token != "" && token != "null" {
-		account, _, valid, _ = getValiditySession(r, user, token)
+		_, accountId, _, valid, _ = getValiditySession(r, token)
 	}
 
 	if valid {
+		status = http.StatusOK
+		variant, err = model.FindVariantByDate(start, end, accountId)
+		if err != nil {
+			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				//log.Panic(err)
+				status = http.StatusNotFound
+			}
+		}
+	}
+
+	res = NewResponse(variant)
+	render.JSON(w, res, status)
+}
+
+func CreateVariant(w http.ResponseWriter, r *http.Request) {
+	token := r.FormValue("token")
+
+	valid := false
+	res := NewResponse(nil)
+	accountId := ""
+	user := ""
+	status := http.StatusUnauthorized
+	if token != "" && token != "null" {
+		user, accountId, _, valid, _ = getValiditySession(r, token)
+	}
+
+	if valid {
+		status = http.StatusCreated
+
 		var rd Variant
 		decoder := json.NewDecoder(r.Body)
 		if err := decoder.Decode(&rd); err != nil {
@@ -170,7 +237,7 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		}
 
 		vr := model.VariantReq{
-			AccountId:          account,
+			AccountId:          accountId,
 			VariantName:        rd.VariantName,
 			VariantType:        rd.VariantType,
 			VoucherType:        rd.VoucherType,
@@ -196,26 +263,27 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err := model.InsertVariant(vr, fr, user); err != nil {
-			log.Panic(err)
+			//log.Panic(err)
+			status = http.StatusInternalServerError
 		}
 
-		render.JSON(w, res, http.StatusCreated)
-	} else {
-		render.JSON(w, res, http.StatusUnauthorized)
 	}
+
+	render.JSON(w, res, status)
 }
 
 func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
 	token := r.FormValue("token")
-	user := r.FormValue("user")
+	user := ""
 	valid := false
-	res := NewResponse(nil)
+	status := http.StatusUnauthorized
 	if token != "" && token != "null" {
-		_, _, valid, _ = getValiditySession(r, user, token)
+		user, _, _, valid, _ = getValiditySession(r, token)
 	}
 
 	if valid {
+		status = http.StatusOK
 		var rd Variant
 		decoder := json.NewDecoder(r.Body)
 		if err := decoder.Decode(&rd); err != nil {
@@ -249,135 +317,111 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 			CreatedBy:          user,
 		}
 		if err := model.UpdateVariant(vr); err != nil {
-			log.Panic(err)
+			//log.Panic(err)
+			status = http.StatusInternalServerError
 		}
-		render.JSON(w, res, http.StatusOK)
-	} else {
-		render.JSON(w, res, http.StatusUnauthorized)
 	}
+
+	res := NewResponse(nil)
+	render.JSON(w, res, status)
 }
 
 func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
+	token := r.FormValue("token")
+	user := ""
+
 	var rd MultiUserVariantRequest
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
 		log.Panic(err)
 	}
 
-	d := model.UpdateVariantUsersRequest{
-		VariantId: id,
-		User:      rd.User,
-		Data:      rd.Data,
-	}
-
-	if err := model.UpdateBroadcast(d); err != nil {
-		log.Panic(err)
-	}
-
+	valid := false
 	res := NewResponse(nil)
-	render.JSON(w, res)
+	status := http.StatusUnauthorized
+	if token != "" && token != "null" {
+		user, _, _, valid, _ = getValiditySession(r, token)
+	}
+
+	if valid {
+		status = http.StatusOK
+		d := model.UpdateVariantUsersRequest{
+			VariantId: id,
+			User:      user,
+			Data:      rd.Data,
+		}
+
+		if err := model.UpdateBroadcast(d); err != nil {
+			//log.Panic(err)
+			status = http.StatusInternalServerError
+		}
+
+	}
+
+	res = NewResponse(nil)
+	render.JSON(w, res, status)
 }
 
 func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
+	token := r.FormValue("token")
+	user := ""
+
 	var rd MultiUserVariantRequest
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
 		log.Panic(err)
 	}
 
-	d := model.UpdateVariantUsersRequest{
-		VariantId: id,
-		User:      rd.User,
-		Data:      rd.Data,
-	}
-
-	if err := model.UpdatePartner(d); err != nil {
-		log.Panic(err)
-	}
-
+	valid := false
 	res := NewResponse(nil)
-	render.JSON(w, res)
+	status := http.StatusUnauthorized
+	if token != "" && token != "null" {
+		user, _, _, valid, _ = getValiditySession(r, token)
+	}
+
+	if valid {
+		status = http.StatusOK
+		d := model.UpdateVariantUsersRequest{
+			VariantId: id,
+			User:      user,
+			Data:      rd.Data,
+		}
+
+		if err := model.UpdatePartner(d); err != nil {
+			//log.Panic(err)
+			status = http.StatusInternalServerError
+		}
+	}
+
+	res = NewResponse(nil)
+	render.JSON(w, res, status)
 }
 
 func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Get Variant")
 	token := r.FormValue("token")
-	user := r.FormValue("user")
+	user := ""
 	id := bone.GetValue(r, "id")
+
 	valid := false
-	var status int
+	status := http.StatusUnauthorized
 	if token != "" && token != "null" {
-		_, _, valid, _ = getValiditySession(r, user, token)
+		user, _, _, valid, _ = getValiditySession(r, token)
 	}
 
 	if valid {
+		status = http.StatusOK
 		d := &model.DeleteVariantRequest{
 			Id:   id,
 			User: user,
 		}
 		if err := d.Delete(); err != nil {
 			status = http.StatusInternalServerError
-		} else {
-			status = http.StatusOK
 		}
-	} else {
-		status = http.StatusUnauthorized
 	}
+
 	res := NewResponse(nil)
-	render.JSON(w, res, status)
-}
-
-func DashboardGetAllVariants(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Get Variant")
-	token := r.FormValue("token")
-	user := r.FormValue("user")
-	valid := false
-	var variant model.Response
-	var accountId string
-	var err error
-	var status int
-	if token != "" && token != "null" {
-		accountId, _, valid, _ = getValiditySession(r, user, token)
-	}
-
-	if valid {
-		variant, err = model.FindAllVariants(accountId)
-		if err != nil && err != model.ErrResourceNotFound {
-			log.Panic(err)
-		}
-		status = http.StatusOK
-	} else {
-		status = http.StatusUnauthorized
-	}
-
-	res := NewResponse(variant)
-	render.JSON(w, res, status)
-}
-
-func DashboardGetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
-	token := r.FormValue("token")
-	user := r.FormValue("user")
-	id := bone.GetValue(r, "id")
-	valid := false
-	var variant model.Response
-	var err error
-	var status int
-	if token != "" && token != "null" {
-		_, _, valid, _ = getValiditySession(r, user, token)
-	}
-
-	if valid {
-		variant, err = model.FindVariantById(id)
-		if err != nil && err != model.ErrResourceNotFound {
-			log.Panic(err)
-		}
-		status = http.StatusOK
-	} else {
-		status = http.StatusUnauthorized
-	}
-
-	res := NewResponse(variant)
 	render.JSON(w, res, status)
 }

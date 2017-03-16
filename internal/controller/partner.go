@@ -25,18 +25,11 @@ type (
 )
 
 func GetAllPartner(w http.ResponseWriter, r *http.Request) {
-	var partner = model.Response{}
-	var err error
-	var status int
-	if _, ok := basicAuth(w, r); ok {
-		partner, err = model.FindAllPartner()
-		if err != nil && err != model.ErrResourceNotFound {
-			log.Panic(err)
-		}
-		status = http.StatusOK
-	} else {
-		partner = model.Response{}
-		status = http.StatusUnauthorized
+	status := http.StatusOK
+	partner, err := model.FindAllPartner()
+	if err != nil && err != model.ErrResourceNotFound {
+		//log.Panic(err)
+		status = http.StatusInternalServerError
 	}
 
 	res := NewResponse(partner)
@@ -48,16 +41,20 @@ func GetPartnerSerialName(w http.ResponseWriter, r *http.Request) {
 
 	var partner = model.Response{}
 	var err error
-	var status int
-	if _, ok := basicAuth(w, r); ok {
+	status := http.StatusUnauthorized
+	token := r.FormValue("token")
+	valid := false
+
+	if token != "" && token != "null" {
+		_, _, _, valid, _ = getValiditySession(r, token)
+	}
+
+	if valid {
+		status = http.StatusOK
 		partner, err = model.FindPartnerSerialNumber(param)
 		if err != nil && err != model.ErrResourceNotFound {
 			log.Panic(err)
 		}
-		status = http.StatusOK
-	} else {
-		partner = model.Response{}
-		status = http.StatusUnauthorized
 	}
 
 	res := NewResponse(partner)
@@ -76,12 +73,13 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 	token := r.FormValue("token")
 	user := r.FormValue("user")
 	valid := false
+	status := http.StatusUnauthorized
 	if token != "" && token != "null" {
-		_, _, valid, _ = getValiditySession(r, user, token)
+		_, _, _, valid, _ = getValiditySession(r, token)
 	}
 
-	var status int
 	if valid {
+		status = http.StatusCreated
 		param := model.Partner{
 			PartnerName:  rd.PartnerName,
 			SerialNumber: rd.SerialNumber,
@@ -89,23 +87,11 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err := model.InsertPartner(param); err != nil {
-			log.Panic(err)
+			//log.Panic(err)
+			status = http.StatusInternalServerError
 		}
-		status = http.StatusCreated
-	} else {
-		status = http.StatusUnauthorized
 	}
 
 	res := NewResponse(nil)
 	render.JSON(w, res, status)
-}
-
-func DashboardGetAllPartner(w http.ResponseWriter, r *http.Request) {
-	partner, err := model.FindAllPartner()
-	if err != nil && err != model.ErrResourceNotFound {
-		log.Panic(err)
-	}
-
-	res := NewResponse(partner)
-	render.JSON(w, res, http.StatusOK)
 }

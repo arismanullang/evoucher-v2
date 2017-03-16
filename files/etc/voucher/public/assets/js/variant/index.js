@@ -1,172 +1,388 @@
-$( window ).load(function() {
-  var token = findGetParameter("token");
-  var id = findGetParameter("id");
-  getName(id, token);
-  searchByUser();
-});
+(function() {
+    'use strict';
+    $(initDashboard);
 
-function findGetParameter(parameterName) {
-    var result = null,
-        tmp = [];
-    location.search
-    .substr(1)
-        .split("&")
-        .forEach(function (item) {
-        tmp = item.split("=");
-        if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
-    });
-    return result;
-}
+    function initDashboard() {
 
-function toTwoDigit(val){
-  if (val < 10){
-    return '0'+val;
-  }
-  else {
-    return val;
-  }
-}
+        // Main Flot chart
+        var splineData = [{
+            'label': 'Clicks',
+            'color': Colors.byName('purple-300'),
+            data: [
+                ['1', 40],
+                ['2', 50],
+                ['3', 40],
+                ['4', 50],
+                ['5', 66],
+                ['6', 66],
+                ['7', 76],
+                ['8', 96],
+                ['9', 90],
+                ['10', 105],
+                ['11', 125],
+                ['12', 135]
 
-function search() {
-    var request = {
-        fields: ["created_by", "variant_name"],
-        values: ["IzKyd9yX", $("#variantName").val()]
-      };
+            ]
+        }, {
+            'label': 'Unique',
+            'color': Colors.byName('green-400'),
+            data: [
+                ['1', 30],
+                ['2', 40],
+                ['3', 20],
+                ['4', 40],
+                ['5', 80],
+                ['6', 90],
+                ['7', 70],
+                ['8', 60],
+                ['9', 90],
+                ['10', 150],
+                ['11', 130],
+                ['12', 160]
+            ]
+        }, {
+            'label': 'Recurrent',
+            'color': Colors.byName('blue-500'),
+            data: [
+                ['1', 10],
+                ['2', 20],
+                ['3', 10],
+                ['4', 20],
+                ['5', 6],
+                ['6', 10],
+                ['7', 32],
+                ['8', 26],
+                ['9', 20],
+                ['10', 35],
+                ['11', 30],
+                ['12', 56]
 
-    $.ajax({
-        url: '/variant/getVariant',
-        type: 'post',
-        dataType: 'json',
-        contentType: "application/json",
-        data: JSON.stringify(request),
-        success: function (data){
-          renderData(data);
-        }
-    });
-}
+            ]
+        }];
+        var splineOptions = {
+            series: {
+                lines: {
+                    show: false
+                },
+                points: {
+                    show: false,
+                    radius: 3
+                },
+                splines: {
+                    show: true,
+                    tension: 0.39,
+                    lineWidth: 5,
+                    fill: 1,
+                    fillColor: Colors.byName('primary')
+                }
+            },
+            grid: {
+                borderColor: '#eee',
+                borderWidth: 0,
+                hoverable: true,
+                backgroundColor: 'transparent'
+            },
+            tooltip: true,
+            tooltipOpts: {
+                content: function(label, x, y) {
+                    return x + ' : ' + y;
+                }
+            },
+            xaxis: {
+                tickColor: 'transparent',
+                mode: 'categories',
+                font: {
+                    color: Colors.byName('blueGrey-200')
+                }
+            },
+            yaxis: {
+                show: false,
+                min: 0,
+                max: 220, // optional: use it for a clear representation
+                tickColor: 'transparent',
+                font: {
+                    color: Colors.byName('blueGrey-200')
+                },
+                //position: 'right' or 'left',
+                tickFormatter: function(v) {
+                    return v /* + ' visitors'*/ ;
+                }
+            },
+            shadowSize: 0
+        };
 
-function searchByUser() {
-    var request = {
-        user: "IzKyd9yX" //$("#variantName").val()
-      };
-
-    $.ajax({
-        url: 'http://evoucher.elys.id:8080/variant/getVariantByUser',
-        type: 'post',
-        dataType: 'json',
-        contentType: "application/json",
-        data: JSON.stringify(request),
-        success: function (data){
-          renderData(data);
-        }
-    });
-}
-
-function getName(id, token) {
-  $.get( 'http://juno-staging.elys.id:8888/v1/api/accounts/'+id+'?token='+token, function (data){
-    $(".username").html(data.data.name);
-  });
-}
-
-function login(username, password){
-  $.ajax({
-      url: 'http://juno-staging.elys.id:8888/v1/api/token',
-      type: 'post',
-      dataType: 'json',
-      contentType: "application/json",
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader ("Authorization", "Basic " + btoa(username+":"+password));
-      },
-      success: function (data){
-        $.each(data, function(key, val) {
-          $.each(val, function(k, v){
-            if(k == "token"){
-              alert(v);
-            }
-          });
+        $('#flot-main-spline').each(function() {
+            var $el = $(this);
+            if ($el.data('height')) $el.height($el.data('height'));
+            $el.plot(splineData, splineOptions);
         });
 
-      }
-  });
-}
 
-function renderData(data) {
-  var arrData = [];
+        // Bar chart stacked
+        // ------------------------
+        var stackedChartData = [{
+            data: [
+                [1, 45],
+                [2, 42],
+                [3, 45],
+                [4, 43],
+                [5, 45],
+                [6, 47],
+                [7, 45],
+                [8, 42],
+                [9, 45],
+                [10, 43]
+            ]
+        }, {
+            data: [
+                [1, 35],
+                [2, 35],
+                [3, 17],
+                [4, 29],
+                [5, 10],
+                [6, 7],
+                [7, 35],
+                [8, 35],
+                [9, 17],
+                [10, 29]
+            ]
+        }];
 
-  $('#listProgram').html("");
-  $.each(data, function(key, val) {
-    $.each(val, function(k, v){
-      if (k == "Data"){
-        var length= v.length;
-
-        $.each(v, function(x, y){
-          var i = 0;
-          var str = "";
-          $.each(y, function(field, data){
-            if(field != "CompanyID" && field != "ValidUsers"){
-              arrData[i] = data;
-              i++;
+        var stackedChartOptions = {
+            bars: {
+                show: true,
+                fill: true,
+                barWidth: 0.3,
+                lineWidth: 1,
+                align: 'center',
+                // order : 1,
+                fillColor: {
+                    colors: [{
+                        opacity: 1
+                    }, {
+                        opacity: 1
+                    }]
+                }
+            },
+            colors: [Colors.byName('blue-100'), Colors.byName('blue-500')],
+            series: {
+                shadowSize: 3
+            },
+            xaxis: {
+                show: true,
+                position: 'bottom',
+                ticks: 10,
+                font: {
+                    color: Colors.byName('blueGrey-200')
+                }
+            },
+            yaxis: {
+                show: false,
+                min: 0,
+                max: 60,
+                font: {
+                    color: Colors.byName('blueGrey-200')
+                }
+            },
+            grid: {
+                hoverable: true,
+                clickable: true,
+                borderWidth: 0,
+                color: 'rgba(120,120,120,0.5)'
+            },
+            tooltip: true,
+            tooltipOpts: {
+                content: 'Value %x.0 is %y.0',
+                defaultTheme: false,
+                shifts: {
+                    x: 0,
+                    y: -20
+                }
             }
-          });
+        };
 
-          var tr=$("<li class='li-first'></li>");
-          var li = "";
-          li = li + "<div class='row'>";
-          li = li + "<div class='col-md-6'>Nama Program : <i>"+arrData[1]+"</i></div>";
-          li = li + "<div class='col-md-6'><button type='button' class='btn btn-warning btn-xs' value="+arrData[0]+" onclick='goUpdate(this.value)'>Edit</button></div>";
-          li = li + "</div>";
-          $(tr).html(li);
-          tr.appendTo('#listProgram');
-          tr = $("<li></li>");
-
-          var ul=$("<ul class='list-unstyled'></ul>");
-          var li = "";
-          li = li + "<li class='li-second'><div class='row'>";
-          li = li + "<label class='col-md-6'>Voucher Type</label>";
-          li = li + "<label class='col-md-6'>"+arrData[2]+"</label>";
-          li = li + "</div></li>";
-          li = li + "<li class='li-second'><div class='row'>";
-          li = li + "<label class='col-md-6'>Harga Voucher</label>";
-          li = li + "<label class='col-md-6'>"+arrData[3]+" Poin</label>";
-          li = li + "</div></li>";
-          li = li + "<li class='li-second'><div class='row'>";
-          li = li + "<label class='col-md-6'>Limit Voucher</label>";
-          li = li + "<label class='col-md-6'>"+arrData[4]+"</label>";
-          li = li + "</div></li>";
-
-          var d = new Date(arrData[5]);
-          var date = toTwoDigit(d.getDate());
-          var month = toTwoDigit(d.getMonth()+1);
-          var hour = toTwoDigit(d.getHours());
-          var minute = toTwoDigit(d.getMinutes());
-          var second = toTwoDigit(d.getSeconds());
-          var date = d.getFullYear()+'-'+month+'-'+date+' '+hour+':'+minute+':'+second;
-          li = li + "<li class='li-second'><div class='row'>";
-          li = li + "<label class='col-md-6'>Program Mulai</label>";
-          li = li + "<label class='col-md-6'>"+date+"</label>";
-          li = li + "</div></li>";
-
-          d = new Date(arrData[6]);
-          date = toTwoDigit(d.getDate());
-          month = toTwoDigit(d.getMonth()+1);
-          hour = toTwoDigit(d.getHours());
-          minute = toTwoDigit(d.getMinutes());
-          second = toTwoDigit(d.getSeconds());
-          date = d.getFullYear()+'-'+month+'-'+date+' '+hour+':'+minute+':'+second;
-          li = li + "<li class='li-second'><div class='row'>";
-          li = li + "<label class='col-md-6'>Program Berakhir</label>";
-          li = li + "<label class='col-md-6'>"+date+"</label>";
-          li = li + "</div></li>";
-
-          $(ul).html(li);
-          $(tr).html(ul);
-          tr.appendTo('#listProgram');
+        $('#flot-stacked-chart').each(function() {
+            var $el = $(this);
+            if ($el.data('height')) $el.height($el.data('height'));
+            $el.plot(stackedChartData, stackedChartOptions);
         });
-      }
-    });
-  });
-}
 
-function goUpdate(data){
-  window.location = "http://127.0.0.1:8080/variant/update?id="+data;
-}
+
+        // Flot bar chart
+        // ------------------
+        var barChartOptions = {
+            series: {
+                bars: {
+                    show: true,
+                    fill: 1,
+                    barWidth: 0.2,
+                    lineWidth: 0,
+                    align: 'center'
+                },
+                highlightColor: 'rgba(255,255,255,0.2)'
+            },
+            grid: {
+                hoverable: true,
+                clickable: true,
+                borderWidth: 0,
+                color: '#8394a9'
+            },
+            tooltip: true,
+            tooltipOpts: {
+                content: function getTooltip(label, x, y) {
+                    return 'Visitors for ' + x + ' was ' + (y * 1000);
+                }
+            },
+            xaxis: {
+                tickColor: 'transparent',
+                mode: 'categories',
+                font: {
+                    color: Colors.byName('blueGrey-200')
+                }
+            },
+            yaxis: {
+                tickColor: 'transparent',
+                font: {
+                    color: Colors.byName('blueGrey-200')
+                }
+            },
+            legend: {
+                show: false
+            },
+            shadowSize: 0
+        };
+
+        var barChartData = [{
+            'label': 'New',
+            bars: {
+                order: 0,
+                fillColor: Colors.byName('primary')
+            },
+            data: [
+                ['Jan', 20],
+                ['Feb', 15],
+                ['Mar', 25],
+                ['Apr', 30],
+                ['May', 40],
+                ['Jun', 35]
+            ]
+        }, {
+            'label': 'Recurrent',
+            bars: {
+                order: 1,
+                fillColor: Colors.byName('green-400')
+            },
+            data: [
+                ['Jan', 35],
+                ['Feb', 25],
+                ['Mar', 45],
+                ['Apr', 25],
+                ['May', 30],
+                ['Jun', 15]
+            ]
+        }];
+
+        $('#flot-bar-chart').each(function() {
+            var $el = $(this);
+            if ($el.data('height')) $el.height($el.data('height'));
+            $el.plot(barChartData, barChartOptions);
+        });
+
+        // Small flot chart
+        // ---------------------
+        var chartTaskData = [{
+            'label': 'Total',
+            color: Colors.byName('primary'),
+            data: [
+                ['Jan', 14],
+                ['Feb', 14],
+                ['Mar', 12],
+                ['Apr', 16],
+                ['May', 13],
+                ['Jun', 14],
+                ['Jul', 19]
+                //4, 4, 3, 5, 3, 4, 6
+            ]
+        }];
+        var chartTaskOptions = {
+            series: {
+                lines: {
+                    show: false
+                },
+                points: {
+                    show: false
+                },
+                splines: {
+                    show: true,
+                    tension: 0.4,
+                    lineWidth: 3,
+                    fill: 1
+                },
+            },
+            legend: {
+                show: false
+            },
+            grid: {
+                show: false,
+            },
+            tooltip: true,
+            tooltipOpts: {
+                content: function(label, x, y) {
+                    return x + ' : ' + y;
+                }
+            },
+            xaxis: {
+                tickColor: '#fcfcfc',
+                mode: 'categories'
+            },
+            yaxis: {
+                min: 0,
+                max: 30, // optional: use it for a clear representation
+                tickColor: '#eee',
+                //position: 'right' or 'left',
+                tickFormatter: function(v) {
+                    return v /* + ' visitors'*/ ;
+                }
+            },
+            shadowSize: 0
+        };
+
+        $('#flot-task-chart').each(function() {
+            var $el = $(this);
+            if ($el.data('height')) $el.height($el.data('height'));
+            $el.plot(chartTaskData, chartTaskOptions);
+        });
+
+        // Sparklines
+        // -----------------
+
+        var sparkValue1 = [4, 4, 3, 5, 3, 4, 6, 5, 3, 2, 3, 4, 6];
+        var sparkValue2 = [2, 3, 4, 6, 5, 4, 3, 5, 4, 3, 4, 3, 4, 5];
+        var sparkValue3 = [4, 4, 3, 5, 3, 4, 6, 5, 3, 2, 3, 4, 6];
+        var sparkValue4 = [6, 5, 4, 3, 5, 4, 3, 4, 3, 4, 3, 2, 2];
+        var sparkOpts = {
+            type: 'line',
+            height: 20,
+            width: '70',
+            lineWidth: 2,
+            valueSpots: {
+                '0:': Colors.byName('blue-700'),
+            },
+            lineColor: Colors.byName('blue-700'),
+            spotColor: Colors.byName('blue-700'),
+            fillColor: 'transparent',
+            highlightLineColor: Colors.byName('blue-700'),
+            spotRadius: 0
+        };
+
+        initSparkline($('#sparkline1'), sparkValue1, sparkOpts);
+        initSparkline($('#sparkline2'), sparkValue2, sparkOpts);
+        initSparkline($('#sparkline3'), sparkValue3, sparkOpts);
+        initSparkline($('#sparkline4'), sparkValue4, sparkOpts);
+        // call sparkline and mix options with data attributes
+        function initSparkline(el, values, opts) {
+            el.sparkline(values, $.extend(sparkOpts, el.data()));
+        }
+
+    }
+})();

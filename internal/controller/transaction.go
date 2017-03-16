@@ -15,8 +15,8 @@ type (
 	TransactionRequest struct {
 		VariantID        string   `json:"variant_id"`
 		PartnerID        string   `json:"partner_id"`
-		RedeemMethod     string   `json:"Redeem_method"`
-		RedeemCode       string   `json:"Redeem_code"`
+		RedeemMethod     string   `json:"redeem_method"`
+		RedeemCode       string   `json:"redeem_code"`
 		TotalTransaction float64  `json:"total_transaction"`
 		PaymentType      string   `json:"payment_type"`
 		Vouchers         []string `json:"vouchers"`
@@ -47,7 +47,7 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	d := model.Transaction{
 		AccountId:        "",
 		PartnerId:        rd.PartnerID,
-		TransactionCode:  randStr(12, model.NUMERALS),
+		TransactionCode:  "",
 		TotalTransaction: rd.TotalTransaction,
 		DiscountValue:    0,
 		PaymentType:      rd.PaymentType,
