@@ -90,8 +90,12 @@ func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
 	param := getUrlParam(r.URL.String())
 	token := r.FormValue("token")
 
+  status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
 	res := NewResponse(nil)
-	status := http.StatusUnauthorized
+
+	res.AddError(its(status), its(status), err.Error(), "variant")
+
 	valid := false
 	if token != "" && token != "null" {
 		_, _, _, valid, _ = getValiditySession(r, token)
@@ -103,13 +107,13 @@ func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
-				//log.Panic(err)
 				status = http.StatusNotFound
 			}
+			res.AddError(its(status), its(status), err.Error(), "variant")
 		} else {
 			res = NewResponse(variant)
 		}
-	}
+	}	
 
 	render.JSON(w, res, status)
 }
