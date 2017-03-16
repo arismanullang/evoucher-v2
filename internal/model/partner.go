@@ -20,13 +20,18 @@ func InsertPartner(p Partner) error {
 	fmt.Println("Add")
 	tx, err := db.Beginx()
 	if err != nil {
-		return err
+		fmt.Println(err.Error())
+		return ErrServerInternal
 	}
 	defer tx.Rollback()
 
 	partner, err := checkPartner(p.PartnerName)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
 
-	if partner == 0 {
+	if partner == "" {
 		q := `
 			INSERT INTO partners(
 				partner_name
@@ -39,11 +44,13 @@ func InsertPartner(p Partner) error {
 
 		_, err := tx.Exec(tx.Rebind(q), p.PartnerName, p.SerialNumber, p.CreatedBy, StatusCreated)
 		if err != nil {
-			return err
+			fmt.Println(err.Error())
+			return ErrServerInternal
 		}
 
 		if err := tx.Commit(); err != nil {
-			return err
+			fmt.Println(err.Error())
+			return ErrServerInternal
 		}
 		return nil
 	} else {
@@ -51,7 +58,23 @@ func InsertPartner(p Partner) error {
 	}
 }
 
-func FindAllPartner() (Response, error) {
+func checkPartner(name string) (string, error) {
+	q := `
+		SELECT id
+		FROM partners
+		WHERE
+			partner_name = ?
+			AND status = ?
+	`
+	var res []string
+	if err := db.Select(&res, db.Rebind(q), name, StatusCreated); err != nil {
+		return "", ErrServerInternal
+	}
+
+	return res[0], nil
+}
+
+func FindAllPartners() ([]Partner, error) {
 	fmt.Println("Select partner")
 	q := `
 		SELECT
@@ -64,22 +87,17 @@ func FindAllPartner() (Response, error) {
 
 	var resv []Partner
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
-		return Response{Status: "Error", Message: q, Data: []Partner{}}, err
+		fmt.Println(err.Error())
+		return []Partner{}, ErrServerInternal
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: q, Data: []Partner{}}, ErrResourceNotFound
+		return []Partner{}, ErrResourceNotFound
 	}
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv,
-	}
-
-	return res, nil
+	return resv, nil
 }
 
-func FindPartnerSerialNumber(param string) (Response, error) {
+func FindPartnerSerialNumber(param string) (Partner, error) {
 	fmt.Println("Select partner")
 	q := `
 		SELECT
@@ -87,33 +105,29 @@ func FindPartnerSerialNumber(param string) (Response, error) {
 		FROM
 			partners
 		WHERE
-			(id ILIKE '%?%'
+			(id = ?
 				OR
-			partner_name ILIKE '%?%' )
+			partner_name = ? )
 		AND 	status = ?
 	`
 
 	var resv []Partner
 	if err := db.Select(&resv, db.Rebind(q), param, param, StatusCreated); err != nil {
-		return Response{Status: "Error", Message: q, Data: []Partner{}}, err
+		fmt.Println(err.Error())
+		return Partner{}, ErrServerInternal
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: q, Data: []Partner{}}, ErrResourceNotFound
+		return Partner{}, ErrResourceNotFound
 	}
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv,
-	}
-
-	return res, nil
+	return resv[0], nil
 }
 
 func DeletePartner(partnerId, userId string) error {
 	tx, err := db.Beginx()
 	if err != nil {
-		return err
+		fmt.Println(err.Error())
+		return ErrServerInternal
 	}
 	defer tx.Rollback()
 
@@ -129,29 +143,15 @@ func DeletePartner(partnerId, userId string) error {
 	`
 	_, err = tx.Exec(tx.Rebind(q), userId, time.Now(), StatusDeleted, partnerId, StatusCreated)
 	if err != nil {
-		return err
+		fmt.Println(err.Error())
+		return ErrServerInternal
 	}
 
 	if err := tx.Commit(); err != nil {
-		return err
+		fmt.Println(err.Error())
+		return ErrServerInternal
 	}
 	return nil
-}
-
-func checkPartner(name string) (int, error) {
-	q := `
-		SELECT id
-		FROM partners
-		WHERE
-			partner_name = ?
-			AND status = ?
-	`
-	var res []string
-	if err := db.Select(&res, db.Rebind(q), name, StatusCreated); err != nil {
-		return 0, err
-	}
-
-	return len(res), nil
 }
 
 func FindVariantPartner(param map[string]string) ([]Partner, error) {

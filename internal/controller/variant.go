@@ -90,7 +90,7 @@ func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
 	param := getUrlParam(r.URL.String())
 	token := r.FormValue("token")
 
-  status := http.StatusUnauthorized
+	status := http.StatusUnauthorized
 	err := model.ErrTokenNotFound
 	res := NewResponse(nil)
 
@@ -109,11 +109,12 @@ func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
 			if err != model.ErrResourceNotFound {
 				status = http.StatusNotFound
 			}
+
 			res.AddError(its(status), its(status), err.Error(), "variant")
 		} else {
 			res = NewResponse(variant)
 		}
-	}	
+	}
 
 	render.JSON(w, res, status)
 }
@@ -122,8 +123,12 @@ func GetVariants(w http.ResponseWriter, r *http.Request) {
 	param := getUrlParam(r.URL.String())
 	token := r.FormValue("token")
 
-	res := NewResponse(nil)
 	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
+
+	res.AddError(its(status), its(status), err.Error(), "variant")
+
 	valid := false
 
 	if token != "" && token != "null" {
@@ -132,13 +137,14 @@ func GetVariants(w http.ResponseWriter, r *http.Request) {
 
 	if valid {
 		status = http.StatusOK
-		variant, err := model.FindVariantMultipleParam(param)
+		variant, err := model.FindVariantsCustomParam(param)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
-				//log.Panic(err)
 				status = http.StatusNotFound
 			}
+
+			res.AddError(its(status), its(status), err.Error(), "variant")
 		} else {
 			res = NewResponse(variant)
 		}
@@ -151,8 +157,12 @@ func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
 	token := r.FormValue("token")
 
-	res := NewResponse(nil)
 	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
+
+	res.AddError(its(status), its(status), err.Error(), "variant")
+
 	valid := false
 	if token != "" && token != "null" {
 		_, _, _, valid, _ = getValiditySession(r, token)
@@ -160,17 +170,19 @@ func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 
 	if valid {
 		status = http.StatusOK
-		variant, err := model.FindVariantById(id)
+		variant, err := model.FindVariantDetailsById(id)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
-				//log.Panic(err)
 				status = http.StatusNotFound
 			}
+
+			res.AddError(its(status), its(status), err.Error(), "variant")
 		} else {
 			res = NewResponse(variant)
 		}
 	}
+
 	render.JSON(w, res, status)
 }
 
@@ -178,27 +190,36 @@ func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
 	start := r.FormValue("start")
 	end := r.FormValue("end")
 	token := r.FormValue("token")
+
 	accountId := ""
 	status := http.StatusUnauthorized
-	valid := false
+	err := model.ErrTokenNotFound
 	res := NewResponse(nil)
+
+	res.AddError(its(status), its(status), err.Error(), "variant")
+
+	valid := false
 	if token != "" && token != "null" {
 		_, accountId, _, valid, _ = getValiditySession(r, token)
 	}
 
 	if valid {
 		status = http.StatusOK
-		variant, err := model.FindVariantByDate(start, end, accountId)
+		variant, err := model.FindVariantsByDate(start, end, accountId)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
-				//log.Panic(err)
 				status = http.StatusNotFound
 			} else {
 				res = NewResponse(variant)
 			}
+
+			res.AddError(its(status), its(status), err.Error(), "variant")
+		} else {
+			res = NewResponse(variant)
 		}
 	}
+
 	render.JSON(w, res, status)
 }
 
@@ -348,7 +369,7 @@ func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {
 			Data:      rd.Data,
 		}
 
-		if err := model.UpdateBroadcast(d); err != nil {
+		if err := model.UpdateVariantBroadcasts(d); err != nil {
 			//log.Panic(err)
 			status = http.StatusInternalServerError
 		}
@@ -385,7 +406,7 @@ func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
 			Data:      rd.Data,
 		}
 
-		if err := model.UpdatePartner(d); err != nil {
+		if err := model.UpdateVariantPartners(d); err != nil {
 			//log.Panic(err)
 			status = http.StatusInternalServerError
 		}

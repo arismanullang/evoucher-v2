@@ -8,14 +8,14 @@ function getAccount(){
     type: 'get',
     success: function (data) {
       var i = 0;
-      for( i = 0; i < data.data.Data.length; i ++){
+      for( i = 0; i < data.data.length; i ++){
         var option;
         if( i == 0){
-          $('#select2-account-container').html(data.data.Data[i].AccountName);
-          option =$("<option selected='selected' value="+data.data.Data[i].Id+">"+data.data.Data[i].AccountName+"</li>")
+          $('#select2-account-container').html(data.data[i].AccountName);
+          option =$("<option selected='selected' value="+data.data[i].Id+">"+data.data[i].AccountName+"</li>")
         }
         else{
-          option =$("<option value="+data.data.Data[i].Id+">"+data.data.Data[i].AccountName+"</li>")
+          option =$("<option value="+data.data[i].Id+">"+data.data[i].AccountName+"</li>")
         }
 
         option.appendTo('#account');

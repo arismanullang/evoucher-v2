@@ -75,21 +75,21 @@ func (r *TransactionRequest) CheckVoucherRedeemtion(voucherID string) (bool, err
 		return false, err
 	}
 
-	dt, err := model.FindVariantById(voucher.VoucherData[0].VariantID)
+	dt, err := model.FindVariantDetailsById(voucher.VoucherData[0].VariantID)
 
-	sd, err := time.Parse(time.RFC3339Nano, dt[0].StartDate)
+	sd, err := time.Parse(time.RFC3339Nano, dt.StartDate)
 	if err != nil {
 		return false, err
 	}
-	ed, err := time.Parse(time.RFC3339Nano, dt[0].EndDate)
+	ed, err := time.Parse(time.RFC3339Nano, dt.EndDate)
 	if err != nil {
 		return false, err
 	}
 
-	fmt.Println(dt[0].RedeemtionMethod, " vs ", r.RedeemMethod)
-	if dt[0].AllowAccumulative != r.AllowAccumulative {
+	fmt.Println(dt.RedeemtionMethod, " vs ", r.RedeemMethod)
+	if dt.AllowAccumulative != r.AllowAccumulative {
 		return false, errors.New(model.ErrCodeAllowAccumulativeDisable)
-	} else if dt[0].RedeemtionMethod != r.RedeemMethod {
+	} else if dt.RedeemtionMethod != r.RedeemMethod {
 		return false, errors.New(model.ErrCodeInvalidRedeemMethod)
 	} else if sd.After(time.Now()) && ed.After(time.Now()) {
 		return false, errors.New(model.ErrCodeVoucherNotActive)
@@ -205,7 +205,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dt, err := model.FindVariantById(gvd.VariantID)
+	dt, err := model.FindVariantDetailsById(gvd.VariantID)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
@@ -218,12 +218,12 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if (int(dt[0].MaxQuantityVoucher) - getCountVoucher(gvd.VariantID) - 1) <= 0 {
+	if (int(dt.MaxQuantityVoucher) - getCountVoucher(gvd.VariantID) - 1) <= 0 {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, "voucher")
 		render.JSON(w, res, status)
 		return
-	} else if dt[0].VariantType != model.VariantTypeOnDemand {
+	} else if dt.VariantType != model.VariantTypeOnDemand {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeVoucherRulesViolated, model.ErrMessageVoucherRulesViolated, "voucher")
 		render.JSON(w, res, status)
@@ -231,8 +231,8 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	}
 
 	d := GenerateVoucherRequest{
-		AccountID:   dt[0].AccountId,
-		VariantID:   dt[0].Id,
+		AccountID:   dt.AccountId,
+		VariantID:   dt.Id,
 		Quantity:    1,
 		Holder:      gvd.Holder,
 		ReferenceNo: gvd.ReferenceNo,
@@ -240,7 +240,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var voucher []model.Voucher
-	voucher, err = d.generateVoucherBulk(&dt[0])
+	voucher, err = d.generateVoucherBulk(&dt)
 	if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), its(status), http.StatusText(status)+"("+err.Error()+")", "voucher")
@@ -282,7 +282,7 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dt, err := model.FindVariantById(gvd.VariantID)
+	dt, err := model.FindVariantDetailsById(gvd.VariantID)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusBadRequest
 		res.AddError("400002", model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
@@ -295,12 +295,12 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if (int(dt[0].MaxQuantityVoucher) - getCountVoucher(gvd.VariantID) - 1) <= 0 {
+	if (int(dt.MaxQuantityVoucher) - getCountVoucher(gvd.VariantID) - 1) <= 0 {
 		status = http.StatusInternalServerError
 		res.AddError("500003", model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, "voucher")
 		render.JSON(w, res, status)
 		return
-	} else if dt[0].VariantType != model.VariantTypeBulk {
+	} else if dt.VariantType != model.VariantTypeBulk {
 		status = http.StatusInternalServerError
 		res.AddError("500004", model.ErrCodeVoucherRulesViolated, model.ErrMessageVoucherRulesViolated, "voucher")
 		render.JSON(w, res, status)
@@ -308,8 +308,8 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 	}
 
 	d := GenerateVoucherRequest{
-		AccountID:   dt[0].AccountId,
-		VariantID:   dt[0].Id,
+		AccountID:   dt.AccountId,
+		VariantID:   dt.Id,
 		Quantity:    gvd.Quantity,
 		Holder:      gvd.Holder,
 		ReferenceNo: gvd.ReferenceNo,
@@ -317,7 +317,7 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var voucher []model.Voucher
-	voucher, err = d.generateVoucherBulk(&dt[0])
+	voucher, err = d.generateVoucherBulk(&dt)
 	if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError("500005", its(status), http.StatusText(status)+"("+err.Error()+")", "voucher")

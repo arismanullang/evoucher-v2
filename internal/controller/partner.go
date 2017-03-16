@@ -27,7 +27,7 @@ type (
 
 func GetAllPartner(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
-	partner, err := model.FindAllPartner()
+	partner, err := model.FindAllPartners()
 	if err != nil && err != model.ErrResourceNotFound {
 		//log.Panic(err)
 		status = http.StatusInternalServerError
@@ -40,25 +40,32 @@ func GetAllPartner(w http.ResponseWriter, r *http.Request) {
 func GetPartnerSerialName(w http.ResponseWriter, r *http.Request) {
 	param := r.FormValue("param")
 
-	var partner = model.Response{}
-	var err error
-	status := http.StatusUnauthorized
 	token := r.FormValue("token")
-	valid := false
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
 
+	res.AddError(its(status), its(status), err.Error(), "variant")
+
+	valid := false
 	if token != "" && token != "null" {
 		_, _, _, valid, _ = getValiditySession(r, token)
 	}
 
 	if valid {
 		status = http.StatusOK
-		partner, err = model.FindPartnerSerialNumber(param)
-		if err != nil && err != model.ErrResourceNotFound {
-			log.Panic(err)
+		partner, err := model.FindPartnerSerialNumber(param)
+		if err != nil {
+			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				status = http.StatusNotFound
+			}
+
+			res.AddError(its(status), its(status), err.Error(), "variant")
+		} else {
+			res = NewResponse(partner)
 		}
 	}
-
-	res := NewResponse(partner)
 	render.JSON(w, res, status)
 }
 

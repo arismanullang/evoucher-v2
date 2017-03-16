@@ -27,7 +27,7 @@ func AddAccount(a Account) error {
 
 	accountName, err := checkAccountName(a.AccountName)
 
-	if accountName == 0 {
+	if accountName == "" {
 		q := `
 			INSERT INTO accounts(
 				account_name
@@ -50,7 +50,7 @@ func AddAccount(a Account) error {
 	}
 }
 
-func checkAccountName(name string) (int, error) {
+func checkAccountName(name string) (string, error) {
 	q := `
 		SELECT id FROM users
 		WHERE
@@ -59,13 +59,13 @@ func checkAccountName(name string) (int, error) {
 	`
 	var res []string
 	if err := db.Select(&res, db.Rebind(q), name, StatusCreated); err != nil {
-		return 0, err
+		return "", err
 	}
 
-	return len(res), nil
+	return res[0], nil
 }
 
-func FindAllAccount() (Response, error) {
+func FindAllAccounts() ([]AccountRes, error) {
 	fmt.Println("Select All Account")
 	q := `
 		SELECT id, account_name
@@ -75,17 +75,39 @@ func FindAllAccount() (Response, error) {
 
 	var resv []AccountRes
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
-		return Response{Status: "Error", Message: q, Data: []AccountRes{}}, err
+		return []AccountRes{}, err
 	}
 	if len(resv) < 1 {
-		return Response{Status: "404", Message: q, Data: []AccountRes{}}, ErrResourceNotFound
+		return []AccountRes{}, ErrResourceNotFound
 	}
 
-	res := Response{
-		Status:  "200",
-		Message: "Ok",
-		Data:    resv,
-	}
+	return resv, nil
+}
 
-	return res, nil
+func GetAccountByUser(userID string) (string, error) {
+	vc, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err)
+		return "", ErrServerInternal
+	}
+	defer vc.Rollback()
+
+	q := `
+		SELECT
+			account_id
+		FROM
+			user_accounts
+		WHERE
+			user_id = ?
+			AND status = ?
+	`
+	var resd []string
+	if err := db.Select(&resd, db.Rebind(q), userID, StatusCreated); err != nil {
+		fmt.Println(err)
+		return "", ErrServerInternal
+	}
+	if len(resd) == 0 {
+		return "", ErrResourceNotFound
+	}
+	return resd[0], nil
 }
