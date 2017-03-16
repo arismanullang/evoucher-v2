@@ -119,7 +119,7 @@ func CheckToken(w http.ResponseWriter, r *http.Request) (string, string, time.Ti
 	var a, u string
 
 	if len(token) < 1 {
-		res.AddError("401001", model.ErrCodeMissingToken, model.ErrMessageTokenNotFound, "token")
+		res.AddError(its(http.StatusUnauthorized), model.ErrCodeMissingToken, model.ErrMessageTokenNotFound, "token")
 		render.JSON(w, res, http.StatusUnauthorized)
 		return "", "", time.Now(), false
 	}
@@ -127,15 +127,15 @@ func CheckToken(w http.ResponseWriter, r *http.Request) (string, string, time.Ti
 	if u, a, exp, valid, err = getValiditySession(r, token); err != nil {
 		switch err {
 		case model.ErrTokenNotFound:
-			res.AddError("401002", model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound, "token")
+			res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound, "token")
 			render.JSON(w, res, http.StatusUnauthorized)
 		case model.ErrTokenExpired:
-			res.AddError("401002", model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, "token")
+			res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, "token")
 			render.JSON(w, res, http.StatusUnauthorized)
 		}
 		return "", "", time.Now(), false
 	} else if !valid {
-		res.AddError("401003", model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound, "token")
+		res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound, "token")
 		render.JSON(w, res, http.StatusUnauthorized)
 		return "", "", time.Now(), false
 	}
