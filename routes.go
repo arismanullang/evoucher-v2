@@ -46,7 +46,7 @@ func setRoutes() http.Handler {
 	r.PostFunc("/v1/api/login", controller.DoLogin)
 
 	//partner
-	r.GetFunc("/v1/api/get/partner", controller.GetAllPartner)
+	r.GetFunc("/v1/partner", controller.GetAllPartner)
 	r.PostFunc("/create/partner", controller.AddPartner)
 
 	//account

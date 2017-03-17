@@ -14,16 +14,15 @@ import (
 
 type (
 	TransactionRequest struct {
-		VariantID         string   `json:"variant_id"`
-		PartnerID         string   `json:"partner_id"`
-		RedeemMethod      string   `json:"redeem_method"`
-		SerialNumber      string   `json:"serial_number"`
-		RedeemKey         string   `json:"redeem_key"`
-		TotalTransaction  float64  `json:"total_transaction"`
-		DiscountValue     float64  `json:"discount_value"`
-		PaymentType       string   `json:"payment_type"`
-		AllowAccumulative bool     `json:"allow_accumulative"`
-		Vouchers          []string `json:"vouchers"`
+		VariantID        string   `json:"variant_id"`
+		PartnerID        string   `json:"partner_id"`
+		RedeemMethod     string   `json:"redeem_method"`
+		SerialNumber     string   `json:"serial_number"`
+		RedeemKey        string   `json:"redeem_key"`
+		TotalTransaction float64  `json:"total_transaction"`
+		DiscountValue    float64  `json:"discount_value"`
+		PaymentType      string   `json:"payment_type"`
+		Vouchers         []string `json:"vouchers"`
 	}
 	DeleteTransactionRequest struct {
 		User string `json:"requested_by"`
@@ -57,25 +56,6 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var param = map[string]string{"partner_id": rd.PartnerID}
-
-	if rd.RedeemMethod == `token` {
-		param["serial_number"] = rd.PartnerID
-	} else {
-		param["id"] = rd.PartnerID
-	}
-	fmt.Println(param)
-	//cherck partne
-	if p, err := model.FindVariantPartner(param); err == nil {
-		rd.VariantID = p[0].VariantID // assign variantID value for validate voucher
-		fmt.Println(p)
-	} else {
-		fmt.Println("error :", err.Error())
-		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeVoucherRulesViolated, model.ErrMessageInvalidMerchant, "voucher")
-		render.JSON(w, res, status)
-		return
-	}
 	// chek validation all voucher & variant
 	for _, v := range rd.Vouchers {
 		if ok, err := rd.CheckVoucherRedeemtion(v); !ok {
@@ -113,7 +93,7 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("List valid voucher :", rv.Vouchers)
 	// update voucher state "Used"
-	if ok, err := rv.RedeemVoucherValidation(); !ok {
+	if ok, err := rv.UpdateVoucher(); !ok {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
 		render.JSON(w, res, status)
