@@ -27,8 +27,8 @@ type (
 		VariantDescription string   `db:"variant_description"`
 		CreatedBy          string   `db:"created_by"`
 		CreatedAt          string   `db:"created_at"`
-		ValidPartners      []string `db:"valid_partners"`
-		Voucher            string   `db:"voucher"`
+		ValidPartners      []string `db:"-"`
+		Voucher            []string `db:"-"`
 	}
 	VariantReq struct {
 		AccountId          string   `db:"account_id"`
@@ -509,7 +509,6 @@ func FindVariantDetailsById(id string) (Variant, error) {
 			, va.variant_description
 			, va.created_by
 			, va.created_at
-			, count (vo.id) as voucher
 		FROM
 			variants as va
 		LEFT JOIN
@@ -547,6 +546,22 @@ func FindVariantDetailsById(id string) (Variant, error) {
 		return Variant{}, ErrServerInternal
 	}
 	resv[0].ValidPartners = resd
+
+	q = `
+		SELECT
+			voucher_code
+		FROM
+			vouchers
+		WHERE
+			variant_id = ?
+			AND status = ?
+	`
+	var reso []string
+	if err := db.Select(&reso, db.Rebind(q), id, StatusCreated); err != nil {
+		fmt.Println(err.Error())
+		return Variant{}, ErrServerInternal
+	}
+	resv[0].Voucher = reso
 
 	return resv[0], nil
 }
