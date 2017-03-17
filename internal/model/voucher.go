@@ -71,8 +71,6 @@ func FindVoucher(param map[string]string) (VoucherResponse, error) {
 			vouchers
 		WHERE
 			status = ?
-		and
-			( expired_at + interval '1 month' ) > now()
 	`
 	for key, value := range param {
 		q += ` AND ` + key + ` = '` + value + `'`

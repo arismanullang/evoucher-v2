@@ -40,8 +40,22 @@ type (
 		CreatedBy   string `json:"user"`
 	}
 
-	// GenerateVoucerResponse represent list of voucher data
-	GenerateVoucerResponse struct {
+	GetVoucherOfVariatList []GetVoucherOfVariatdata
+	GetVoucherOfVariatdata struct {
+		VariantName        string           `json:"variant_name"`
+		VoucherType        string           `json:"voucher_type"`
+		VoucherPrice       float64          `json:"voucher_price"`
+		AllowAccumulative  bool             `json:"allow_accumulative"`
+		StartDate          string           `json:"start_date"`
+		EndDate            string           `json:"end_date"`
+		ImgUrl             string           `json:"image_url"`
+		VariantTnc         string           `json:"variant_tnc"`
+		VariantDescription string           `json:"variant_description"`
+		Vouchers           []VoucerResponse `json:"vouchers"`
+	}
+
+	// VoucerResponse represent list of voucher data
+	VoucerResponse struct {
 		VoucherID string `json:"voucher_id"`
 		VoucherNo string `json:"voucher_code"`
 	}
@@ -68,6 +82,7 @@ type (
 	}
 )
 
+//CheckVoucherRedeemtion validation
 func (r *TransactionRequest) CheckVoucherRedeemtion(voucherID string) (bool, error) {
 
 	voucher, err := model.FindVoucher(map[string]string{"id": voucherID, "state": model.StatusCreated})
@@ -94,7 +109,7 @@ func (r *TransactionRequest) CheckVoucherRedeemtion(voucherID string) (bool, err
 	return true, nil
 }
 
-//RedeemVoucherValidation redeem
+//UpdateVoucher redeem
 func (r *RedeemVoucherRequest) UpdateVoucher() (bool, error) {
 	var d model.UpdateDeleteRequest
 
@@ -111,6 +126,76 @@ func (r *RedeemVoucherRequest) UpdateVoucher() (bool, error) {
 	}
 
 	return true, nil
+}
+
+//MyVoucher list voucher by holder
+func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
+	var voucher model.VoucherResponse
+	var err error
+	res := NewResponse(nil)
+	var status int
+
+	//Token Authentocation
+	_, _, _, ok := CheckToken(w, r)
+	if !ok {
+		return
+	}
+
+	param := getUrlParam(r.URL.String())
+	delete(param, "token")
+
+	if len(param) > 0 {
+		voucher, err = model.FindVoucher(param)
+	} else {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+	// fmt.Println(voucher, err)
+	if err == model.ErrResourceNotFound {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
+		render.JSON(w, res, status)
+		return
+	} else if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+	fmt.Println(voucher.VoucherData)
+
+	distinctVariant := []string{}
+	for _, v := range voucher.VoucherData {
+		if !stringInSlice(v.VariantID, distinctVariant) {
+			distinctVariant = append(distinctVariant, v.VariantID)
+		}
+	}
+	fmt.Println(distinctVariant)
+	d := make(GetVoucherOfVariatList, len(distinctVariant))
+	for k, v := range distinctVariant {
+		dt, _ := model.FindVariantDetailsById(v)
+		d[k].VariantName = dt.VariantName
+		d[k].VoucherType = dt.VoucherType
+		d[k].VoucherPrice = dt.VoucherPrice
+		d[k].AllowAccumulative = dt.AllowAccumulative
+		d[k].StartDate = dt.StartDate
+		d[k].EndDate = dt.EndDate
+		d[k].ImgUrl = dt.ImgUrl
+		d[k].VariantTnc = dt.VariantTnc
+		d[k].VariantDescription = dt.VariantDescription
+
+		d[k].Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
+		for i, val := range voucher.VoucherData {
+			d[k].Vouchers[i].VoucherID = val.ID
+			d[k].Vouchers[i].VoucherNo = val.VoucherCode
+		}
+	}
+	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
+	status = http.StatusOK
+	res = NewResponse(d)
+	render.JSON(w, res, status)
 }
 
 // GetVoucherDetail get Voucher detail from DB
@@ -242,7 +327,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gvr := GenerateVoucerResponse{
+	gvr := VoucerResponse{
 		VoucherID: voucher[0].ID,
 		VoucherNo: voucher[0].VoucherCode,
 	}
@@ -318,7 +403,7 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gvr := make([]GenerateVoucerResponse, len(voucher))
+	gvr := make([]VoucerResponse, len(voucher))
 	for i, v := range voucher {
 		gvr[i].VoucherID = v.ID
 		gvr[i].VoucherNo = v.VoucherCode
