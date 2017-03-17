@@ -49,6 +49,7 @@ const (
 	ErrMessageTokenNotFound            string = "Token not found"
 	ErrMessageTokenExpired             string = "Token has been expired"
 	ErrMessageInvalidMerchant          string = "vouchers can not be used in this Partner."
+	ErrMessageInvalidVariant           string = "Invalid Variant ID."
 
 	StatusCreated string = "created"
 	StatusDeleted string = "deleted"
