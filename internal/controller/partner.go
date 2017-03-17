@@ -23,17 +23,63 @@ type (
 		PartnerName  string `json:"partner_name"`
 		SerialNumber string `json:"serial_number"`
 	}
+	PartnerResponseDetails []PartnerResponse
+	PartnerResponse        struct {
+		PartnerName  string `json:"partner_name"`
+		SerialNumber string `json:"serial_number"`
+		VariantID    string `json:"variant_id"`
+		CreatedBy    string `json:"created_by"`
+	}
 )
 
 func GetAllPartner(w http.ResponseWriter, r *http.Request) {
-	status := http.StatusOK
-	partner, err := model.FindAllPartners()
-	if err != nil && err != model.ErrResourceNotFound {
-		//log.Panic(err)
-		status = http.StatusInternalServerError
+
+	res := NewResponse(nil)
+	var status int
+	var err error
+
+	//Token Authentocation
+	accountID, userID, _, ok := CheckToken(w, r)
+	if !ok {
+		return
+	}
+	fmt.Println(accountID, userID)
+
+	param := getUrlParam(r.URL.String())
+	delete(param, "token")
+
+	p := []model.Partner{}
+	if len(param) > 0 {
+		p, err = model.FindVariantPartner(param)
+	} else {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, "voucher")
+		render.JSON(w, res, status)
+		return
 	}
 
-	res := NewResponse(partner)
+	if err == model.ErrResourceNotFound {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
+		render.JSON(w, res, status)
+		return
+	} else if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+
+	d := make(PartnerResponseDetails, len(p))
+	for i, v := range p {
+		d[i].PartnerName = v.PartnerName
+		d[i].SerialNumber = v.SerialNumber.String
+		d[i].VariantID = v.VariantID
+		d[i].CreatedBy = v.CreatedBy.String
+	}
+
+	status = http.StatusOK
+	res = NewResponse(d)
 	render.JSON(w, res, status)
 }
 
