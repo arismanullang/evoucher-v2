@@ -61,7 +61,9 @@ func checkAccountName(name string) (string, error) {
 	if err := db.Select(&res, db.Rebind(q), name, StatusCreated); err != nil {
 		return "", err
 	}
-
+	if len(res) == 0 {
+		return "", nil
+	}
 	return res[0], nil
 }
 

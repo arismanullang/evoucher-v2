@@ -33,7 +33,7 @@ func AddUser(u User) error {
 
 	username, err := CheckUsername(u.Username)
 
-	if username != "" {
+	if username == "" {
 		q := `
 			INSERT INTO users(
 				username
@@ -109,7 +109,9 @@ func CheckUsername(username string) (string, error) {
 		fmt.Println(err)
 		return "", ErrServerInternal
 	}
-
+	if len(res) == 0 {
+		return "", nil
+	}
 	return res[0], nil
 }
 

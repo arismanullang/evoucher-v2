@@ -6,7 +6,7 @@
 {{ define "content" }}
 <!-- Page content-->
 <section>
-<div class="container-overlap bg-blue-grey-100 m0">
+<div class="container-overlap bg-white">
 </div>
 <div class="container container-md">
   <form id="create-variant" name="create-variant" novalidate="" class="card b0 form-validate">
@@ -62,7 +62,8 @@
           <div class="col-sm-12">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input id="imageUrl" name="imageUrl" tabindex="0" aria-invalid="false" class="form-control">
+                <input id="imageUrl" name="imageUrl" type="file" tabindex="0" aria-invalid="false" class="form-control fileInput">
+                <span id="imageValue"></span>
                 <div class="mda-form-control-line"></div>
                 <label>Image URL</label>
               </div>
@@ -245,10 +246,10 @@
 {{ end }}
 
 {{ define "scripts" }}
-<script type="text/javascript" src="/assets/js/variant/create.js"></script>
-<script type="text/javascript" src="/assets/js/onload.js"></script>
 <script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
 <script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="/assets/js/variant/create.js"></script>
+<script type="text/javascript" src="/assets/js/onload.js"></script>
 
 {{ end }}
 

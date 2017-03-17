@@ -1,5 +1,8 @@
 $( window ).ready(function() {
   getPartner();
+  $("#imageUrl").change(function() {
+    $("#imageValue").html($("#imageUrl").val());
+  });
 });
 
 function toTwoDigit(val){
@@ -46,10 +49,11 @@ function send() {
       start_date: $("#startDate").val(),
       end_date: $("#endDate").val(),
       discount_value: parseInt($("#voucherValue").val()),
-      image_url: $("#imageUrl").val(),
+//      image_url: $("#imageUrl").val(),
+      image_url: "http://voucher.apps.id/assets/img/card.jpg",
       variant_tnc: $("#variantTnc").val(),
       variant_description: $("#variantDescription").val(),
-      validUsers: listPartner
+      valid_partners: listPartner
     };
 
     console.log(variant);

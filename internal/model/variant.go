@@ -67,6 +67,7 @@ type (
 		VoucherPrice  float64 `db:"voucher_price"`
 		DiscountValue float64 `db:"discount_value"`
 		MaxVoucher    float64 `db:"max_quantity_voucher"`
+		ImgUrl        string  `db:"img_url"`
 		StartDate     string  `db:"start_date"`
 		EndDate       string  `db:"end_date"`
 		Voucher       string  `db:"voucher"`
@@ -365,6 +366,7 @@ func FindVariantsByDate(start, end, accountId string) ([]SearchVariant, error) {
 			, va.voucher_price
 			, va.discount_value
 			, va.max_quantity_voucher
+			, va.img_url
 			, va.start_date
 			, va.end_date
 			, count (vo.id) as voucher
@@ -404,6 +406,7 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 			, va.voucher_price
 			, va.discount_value
 			, va.max_quantity_voucher
+			, va.img_url
 			, va.start_date
 			, va.end_date
 			, count (vo.id) as voucher
@@ -442,6 +445,7 @@ func FindVariantsCustomParam(param map[string]string) ([]SearchVariant, error) {
 			, va.voucher_price
 			, va.discount_value
 			, va.max_quantity_voucher
+			, va.img_url
 			, va.start_date
 			, va.end_date
 			, count (vo.id) as voucher

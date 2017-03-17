@@ -1,27 +1,27 @@
 {{ template "layout" . }}
 
-{{ define "title" }}User{{ end }}
-{{ define "header-title" }}User{{ end }}
+{{ define "title" }}Create Partner{{ end }}
+{{ define "header-title" }}Create Partner{{ end }}
 
 {{ define "content" }}
 <!-- Page content-->
 <section>
-<div class="container-overlap bg-blue-grey-100 m0">
+<div class="container-overlap bg-white">
 </div>
 <div class="container container-md">
-  <form id="create-user" name="create-user" novalidate="" class="card b0 form-validate">
+  <form id="create-variant" name="create-variant" novalidate="" class="card b0 form-validate">
     <div class="card">
       <div class="card-heading bg-amber-500">
-        <div class="card-title text-center">Register User</div>
+          <div class="card-title text-center">Partner</div>
       </div>
       <div class="card-body">
         <div class="row">
           <div class="col-sm-12">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input id="username" name="username" tabindex="0" aria-invalid="false" class="form-control">
+                <input id="partnerName" name="partnerName" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
-                <label>Username</label>
+                <label>Partner Name</label>
               </div>
             </div>
           </div>
@@ -30,50 +30,16 @@
           <div class="col-sm-12">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input type="password" id="password" name="password" tabindex="0" aria-invalid="false" class="form-control">
+                <input id="serialNumber" name="serialNumber" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
-                <label>Password</label>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="mda-form-group">
-              <div class="mda-form-control">
-                <input placeholder="mail@example.com" id="email" name="email" required="" class="form-control error" aria-required="true" aria-invalid="true" type="email">
-                <div class="mda-form-control-line"></div>
-                <label class="control-label">Email Address</label>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="mda-form-group">
-              <div class="mda-form-control">
-                <input id="phone" name="phone" tabindex="0" aria-invalid="false" class="form-control">
-                <div class="mda-form-control-line"></div>
-                <label>Phone</label>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="mda-form-group">
-              <div class="mda-form-control">
-                <select id="role" name="role" multiple="multiple" class="form-control select2" tabindex="0">
-                </select>
-                <div class="mda-form-control-line"></div>
-                <label>Role</label>
+                <label>Serial Number</label>
               </div>
             </div>
           </div>
         </div>
         <div class="row">
           <div class=" pull-right pr">
-            <button type="button" onclick="send()" class="btn btn-raised btn-primary ripple">Register</button>
+            <button type="button" onclick="send()" class="btn btn-raised btn-primary ripple">Create</button>
           </div>
         </div>
       </div>
@@ -84,14 +50,10 @@
 {{ end }}
 
 {{ define "scripts" }}
-<script type="text/javascript" src="/assets/js/user/create.js"></script>
+<script type="text/javascript" src="/assets/js/partner/create.js"></script>
 <script type="text/javascript" src="/assets/js/onload.js"></script>
-<script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
-<script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
 
 {{ end }}
 
 {{ define "stylesheets" }}
-<link rel="stylesheet" href="/assets/vendor/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css">
-<link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
 {{ end }}

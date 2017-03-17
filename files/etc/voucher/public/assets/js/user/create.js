@@ -37,7 +37,7 @@ function send() {
 
     console.log(userReq);
     $.ajax({
-       url: 'http://voucher.apps.id/v1/create/user?token='+token+'&user='+user,
+       url: '/v1/create/user?token='+token,
        type: 'post',
        dataType: 'json',
        contentType: "application/json",
@@ -52,12 +52,12 @@ function getRole() {
     console.log("Get Role");
 
     $.ajax({
-      url: 'http://voucher.apps.id/v1/get/role',
+      url: '/v1/api/get/role',
       type: 'get',
       success: function (data) {
         console.log("Render Data");
         var arrData = [];
-        arrData = data.data.Data;
+        arrData = data.data;
 
         var i;
         for (i = 0; i < arrData.length; i++){

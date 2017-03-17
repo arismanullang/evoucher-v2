@@ -229,6 +229,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if valid {
+		fmt.Println("Valid")
 		status = http.StatusOK
 		param := model.User{
 			AccountId: accountId,
@@ -241,8 +242,9 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err := model.AddUser(param); err != nil {
+			fmt.Print(err.Error())
 			status = http.StatusInternalServerError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 			}
 
@@ -258,6 +260,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 // Return : user_id, account_id, expired, boolean, error
 func getValiditySession(r *http.Request, token string) (string, string, time.Time, bool, error) {
 	fmt.Println("Check Session")
+	fmt.Println(r)
 	sessionValue, err := store.Get(r, token)
 	if err != nil {
 		return "", "", time.Now(), false, model.ErrTokenNotFound
@@ -278,4 +281,5 @@ func getValiditySession(r *http.Request, token string) (string, string, time.Tim
 	}
 
 	return ds["user"].(string), ds["account"].(string), exp, true, nil
+	// return "test", "NNJs3Nfo", time.Now(), true, nil
 }
