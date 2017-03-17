@@ -125,11 +125,16 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := r.FormValue("token")
-	user := r.FormValue("user")
-	valid := false
 	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
+	user := ""
+	res.AddError(its(status), its(status), err.Error(), "variant")
+
+	valid := false
 	if token != "" && token != "null" {
-		_, _, _, valid, _ = getValiditySession(r, token)
+		fmt.Println("Check Session")
+		user, _, _, valid, err = getValiditySession(r, token)
 	}
 
 	if valid {
@@ -145,13 +150,15 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 				Valid:  true,
 			},
 		}
-
-		if err := model.InsertPartner(param); err != nil {
-			//log.Panic(err)
+		err := model.InsertPartner(param)
+		if err != nil {
 			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				status = http.StatusNotFound
+			}
+
+			res.AddError(its(status), its(status), err.Error(), "variant")
 		}
 	}
-
-	res := NewResponse(nil)
 	render.JSON(w, res, status)
 }

@@ -27,8 +27,8 @@ type (
 		VariantDescription string   `db:"variant_description"`
 		CreatedBy          string   `db:"created_by"`
 		CreatedAt          string   `db:"created_at"`
-		ValidPartners      []string `db:"valid_partners"`
-		Voucher            string   `db:"voucher"`
+		ValidPartners      []string `db:"-"`
+		Voucher            []string `db:"-"`
 	}
 	VariantReq struct {
 		AccountId          string   `db:"account_id"`
@@ -67,6 +67,7 @@ type (
 		VoucherPrice  float64 `db:"voucher_price"`
 		DiscountValue float64 `db:"discount_value"`
 		MaxVoucher    float64 `db:"max_quantity_voucher"`
+		ImgUrl        string  `db:"img_url"`
 		StartDate     string  `db:"start_date"`
 		EndDate       string  `db:"end_date"`
 		Voucher       string  `db:"voucher"`
@@ -365,6 +366,7 @@ func FindVariantsByDate(start, end, accountId string) ([]SearchVariant, error) {
 			, va.voucher_price
 			, va.discount_value
 			, va.max_quantity_voucher
+			, va.img_url
 			, va.start_date
 			, va.end_date
 			, count (vo.id) as voucher
@@ -404,6 +406,7 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 			, va.voucher_price
 			, va.discount_value
 			, va.max_quantity_voucher
+			, va.img_url
 			, va.start_date
 			, va.end_date
 			, count (vo.id) as voucher
@@ -442,6 +445,7 @@ func FindVariantsCustomParam(param map[string]string) ([]SearchVariant, error) {
 			, va.voucher_price
 			, va.discount_value
 			, va.max_quantity_voucher
+			, va.img_url
 			, va.start_date
 			, va.end_date
 			, count (vo.id) as voucher
@@ -505,7 +509,6 @@ func FindVariantDetailsById(id string) (Variant, error) {
 			, va.variant_description
 			, va.created_by
 			, va.created_at
-			, count (vo.id) as voucher
 		FROM
 			variants as va
 		LEFT JOIN
@@ -543,6 +546,22 @@ func FindVariantDetailsById(id string) (Variant, error) {
 		return Variant{}, ErrServerInternal
 	}
 	resv[0].ValidPartners = resd
+
+	q = `
+		SELECT
+			voucher_code
+		FROM
+			vouchers
+		WHERE
+			variant_id = ?
+			AND status = ?
+	`
+	var reso []string
+	if err := db.Select(&reso, db.Rebind(q), id, StatusCreated); err != nil {
+		fmt.Println(err.Error())
+		return Variant{}, ErrServerInternal
+	}
+	resv[0].Voucher = reso
 
 	return resv[0], nil
 }

@@ -229,6 +229,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if valid {
+		fmt.Println("Valid")
 		status = http.StatusOK
 		param := model.User{
 			AccountId: accountId,
@@ -241,8 +242,9 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err := model.AddUser(param); err != nil {
+			fmt.Print(err.Error())
 			status = http.StatusInternalServerError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 			}
 

@@ -1,3 +1,7 @@
+function addVariant(){
+  window.location = "http://voucher.apps.id:8889/variant/create";
+}
+
 (function() {
     'use strict';
     $(initDashboard);

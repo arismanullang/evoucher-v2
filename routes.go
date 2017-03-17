@@ -17,6 +17,8 @@ func setRoutes() http.Handler {
 	//ui
 	r.GetFunc("/variant/:page", viewVariant)
 	r.GetFunc("/user/:page", viewUser)
+	r.GetFunc("/partner/:page", viewPartner)
+	r.GetFunc("/voucher/:page", viewVoucher)
 	r.GetFunc("/", login)
 
 	//variant
@@ -46,8 +48,8 @@ func setRoutes() http.Handler {
 	r.PostFunc("/v1/api/login", controller.DoLogin)
 
 	//partner
-	r.GetFunc("/v1/partner", controller.GetAllPartner)
-	r.PostFunc("/create/partner", controller.AddPartner)
+	r.GetFunc("/v1/api/get/partner", controller.GetAllPartner)
+	r.PostFunc("/v1/create/partner", controller.AddPartner)
 
 	//account
 	r.GetFunc("/v1/api/get/accountId", controller.GetAccountId)
@@ -104,8 +106,38 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "user/update.html", nil)
 	} else if page == "login" {
 		render.FileInLayout(w, "layout.html", "user/login.html", nil)
-	} else if page == "" || page == "index.html" {
+	} else if page == "profile" {
+		render.FileInLayout(w, "layout.html", "user/profile.html", nil)
+	} else if page == "" || page == "index" {
 		render.FileInLayout(w, "layout.html", "user/index.html", nil)
+	}
+}
+
+func viewPartner(w http.ResponseWriter, r *http.Request) {
+	page := bone.GetValue(r, "page")
+
+	if page == "create" {
+		render.FileInLayout(w, "layout.html", "partner/create.html", nil)
+	} else if page == "search" {
+		render.FileInLayout(w, "layout.html", "partner/check.html", nil)
+	} else if page == "update" {
+		render.FileInLayout(w, "layout.html", "partner/update.html", nil)
+	} else if page == "" || page == "index" {
+		render.FileInLayout(w, "layout.html", "partner/index.html", nil)
+	}
+}
+
+func viewVoucher(w http.ResponseWriter, r *http.Request) {
+	page := bone.GetValue(r, "page")
+
+	if page == "create" {
+		render.FileInLayout(w, "layout.html", "voucher/create.html", nil)
+	} else if page == "search" {
+		render.FileInLayout(w, "layout.html", "voucher/check.html", nil)
+	} else if page == "update" {
+		render.FileInLayout(w, "layout.html", "voucher/update.html", nil)
+	} else if page == "" || page == "index" {
+		render.FileInLayout(w, "layout.html", "voucher/index.html", nil)
 	}
 }
 
