@@ -32,7 +32,29 @@ type (
 	}
 )
 
-func GetAllPartner(w http.ResponseWriter, r *http.Request) {
+func GetAllPartners(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusOK
+	errorTittle := ""
+	res := NewResponse(nil)
+	partner, err := model.FindAllPartners()
+	if err != nil {
+		fmt.Println(err.Error())
+		status = http.StatusInternalServerError
+		errorTittle = model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errorTittle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errorTittle, err.Error(), "partner")
+	} else {
+		res = NewResponse(partner)
+	}
+
+	render.JSON(w, res, status)
+}
+
+func GetAllPartnersCustomParam(w http.ResponseWriter, r *http.Request) {
 
 	res := NewResponse(nil)
 	var status int

@@ -1,47 +1,104 @@
 {{ template "layout" . }}
 
-{{ define "title" }}Check Variant{{ end }}
-{{ define "header-title" }}Check Variant{{ end }}
+{{ define "title" }}Variant Details{{ end }}
+{{ define "header-title" }}Variant Details{{ end }}
 
 {{ define "content" }}
+<!-- Page content-->
 <section>
-<div class="container-overlap bg-white">
-</div>
-<div class="container container-md">
-  <div class="card">
-    <div class="card-heading bg-amber-500">
-        <div class="card-title text-center">Variant</div>
-    </div>
-    <div class="card-body">
-      <table id="datatable1" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
-        <thead>
-          <tr role="row">
-            <th>Id</th>
-            <th>Variant Name</th>
-            <th>Voucher Price</th>
-            <th>Voucher Value</th>
-            <th>Voucher Remains</th>
-            <th class="center-text"></th>
-          </tr>
-        </thead>
-      </table>
+  <div class="content-heading bg-white">
+    <div class="row">
+      <div class="media m0 pv">
+        <div class="media-left"><a href="#"><img src="/assets/img/card.jpg" alt="User" class="media-object img-circle thumb64"></a></div>
+        <div class="media-body media-middle">
+          <h4 id="variantName" class="media-heading"></h4>
+          <span id="variantDescription" class="text-muted"></span>
+        </div>
+      </div>
     </div>
   </div>
-</div>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Left column-->
+      <div class="col-md-7 col-lg-8">
+        <form editable-form="" id="profileForm" name="user.profileForm" class="card">
+          <h5 class="card-heading">
+            <div class="pull-right">
+              <button onclick="editPartner()" class="btn btn-default btn-flat btn-flat-icon"><em class="ion-edit"></em></button>
+            </div>
+            Variant Details
+          </h5>
+          <div class="card-body">
+            <table class="table table-striped">
+              <tbody>
+                <tr>
+                  <td><em class="ion-document-text icon-fw mr"></em>Variant Type</td>
+                  <td id="variantType"></td>
+                </tr>
+                <tr>
+                  <td><em class="icon-fw mr"></em>Voucher Type</td>
+                  <td id="voucherType"></td>
+                </tr>
+                <tr>
+                  <td><em class="ion-pricetags icon-fw mr"></em>Voucher Quantity</td>
+                  <td id="maxQuantityVoucher"></td>
+                </tr>
+                <tr>
+                  <td><em class="icon-fw mr"></em>Remaining Voucher</td>
+                  <td id="remainingVoucher"></td>
+                </tr>
+                <tr>
+                  <td><em class="ion-calculator icon-fw mr"></em>Conversion Rate</td>
+                  <td id="conversionRate"></td>
+                </tr>
+                <tr>
+                  <td><em class="ion-cash icon-fw mr"></em>Voucher Value</td>
+                  <td id="voucherValue"></td>
+                </tr>
+                <tr>
+                  <td><em class="ion-ios-calendar icon-fw mr"></em>Period</td>
+                  <td id="period"></td>
+                </tr>
+                <tr>
+                  <td><em class="ion-asterisk icon-fw mr"></em>Term and Condition</td>
+                  <td id="variantTnc"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </form>
+      </div>
+      <!-- Right column-->
+      <div class="col-md-5 col-lg-4">
+        <div class="card">
+          <h5 class="card-heading">
+            Vouchers
+          </h5>
+          <div id="listVoucher" class="mda-list">
+
+          </div>
+        </div>
+        <div class="card">
+          <h5 class="card-heading">
+            Partner
+          </h5>
+          <div id="listPartner" class="mda-list">
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 {{ end }}
 
 {{ define "scripts" }}
-<script type="text/javascript" src="/assets/vendor/sweetalert/dist/sweetalert-dev.js"></script>
-<script type="text/javascript" src="/assets/vendor/datatables/media/js/jquery.dataTables.js"></script>
-<script type="text/javascript" src="/assets/vendor/nouislider/distribute/nouislider.js"></script>
-<script type="text/javascript" src="/assets/js/onload.js"></script>
+<script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
+<script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
 <script type="text/javascript" src="/assets/js/variant/check.js"></script>
 {{ end }}
 
-
 {{ define "stylesheets" }}
-<link rel="stylesheet" href="/assets/vendor/sweetalert/dist/sweetalert.css">
-<link rel="stylesheet" href="/assets/vendor/nouislider/distribute/nouislider.min.css">
-<link rel="stylesheet" href="/assets/vendor/datatables/media/css/jquery.dataTables.css">
+<link rel="stylesheet" href="/assets/vendor/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css">
+<link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
 {{ end }}

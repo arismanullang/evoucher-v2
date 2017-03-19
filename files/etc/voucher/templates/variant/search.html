@@ -1,26 +1,27 @@
 {{ template "layout" . }}
 
-{{ define "title" }}Check Voucher{{ end }}
-{{ define "header-title" }}Check Voucher{{ end }}
+{{ define "title" }}List Variant{{ end }}
+{{ define "header-title" }}List Variant{{ end }}
 
 {{ define "content" }}
 <section>
-<div class="container-overlap bg-blue-grey-100 m0">
+<div class="container-overlap bg-white">
 </div>
 <div class="container container-md">
   <div class="card">
     <div class="card-heading bg-amber-500">
-        <div class="card-title text-center">Voucher</div>
+        <div class="card-title text-center">Variant</div>
     </div>
     <div class="card-body">
       <table id="datatable1" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
         <thead>
           <tr role="row">
-            <th>Voucher Code</th>
-            <th>Reference No</th>
-            <th>Variant</th>
-            <th>Period</th>
-            <th>Status</th>
+            <th>Id</th>
+            <th>Variant Name</th>
+            <th>Voucher Price</th>
+            <th>Voucher Value</th>
+            <th>Voucher Remains</th>
+            <th class="center-text"></th>
           </tr>
         </thead>
       </table>
@@ -33,11 +34,13 @@
 {{ define "scripts" }}
 <script type="text/javascript" src="/assets/vendor/sweetalert/dist/sweetalert-dev.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/jquery.dataTables.js"></script>
-<script type="text/javascript" src="/assets/js/voucher/check.js"></script>
+<script type="text/javascript" src="/assets/vendor/nouislider/distribute/nouislider.js"></script>
+<script type="text/javascript" src="/assets/js/variant/search.js"></script>
 {{ end }}
 
 
 {{ define "stylesheets" }}
-<link rel="stylesheet" href="/assets/vendor/sweetalert/dist/sweetalert.css">>
+<link rel="stylesheet" href="/assets/vendor/sweetalert/dist/sweetalert.css">
+<link rel="stylesheet" href="/assets/vendor/nouislider/distribute/nouislider.min.css">
 <link rel="stylesheet" href="/assets/vendor/datatables/media/css/jquery.dataTables.css">
 {{ end }}

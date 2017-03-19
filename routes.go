@@ -48,7 +48,8 @@ func setRoutes() http.Handler {
 	r.PostFunc("/v1/api/login", controller.DoLogin)
 
 	//partner
-	r.GetFunc("/v1/api/get/partner", controller.GetAllPartner)
+	r.GetFunc("/v1/get/partner", controller.GetAllPartners)
+	r.GetFunc("/v1/api/get/partner", controller.GetAllPartnersCustomParam)
 	r.PostFunc("/v1/create/partner", controller.AddPartner)
 
 	//account
@@ -87,6 +88,8 @@ func viewVariant(w http.ResponseWriter, r *http.Request) {
 	if page == "create" {
 		render.FileInLayout(w, "layout.html", "variant/create.html", nil)
 	} else if page == "search" {
+		render.FileInLayout(w, "layout.html", "variant/search.html", nil)
+	} else if page == "check" {
 		render.FileInLayout(w, "layout.html", "variant/check.html", nil)
 	} else if page == "update" {
 		render.FileInLayout(w, "layout.html", "variant/update.html", nil)
@@ -119,7 +122,7 @@ func viewPartner(w http.ResponseWriter, r *http.Request) {
 	if page == "create" {
 		render.FileInLayout(w, "layout.html", "partner/create.html", nil)
 	} else if page == "search" {
-		render.FileInLayout(w, "layout.html", "partner/check.html", nil)
+		render.FileInLayout(w, "layout.html", "partner/search.html", nil)
 	} else if page == "update" {
 		render.FileInLayout(w, "layout.html", "partner/update.html", nil)
 	} else if page == "" || page == "index" {
@@ -133,6 +136,8 @@ func viewVoucher(w http.ResponseWriter, r *http.Request) {
 	if page == "create" {
 		render.FileInLayout(w, "layout.html", "voucher/create.html", nil)
 	} else if page == "search" {
+		render.FileInLayout(w, "layout.html", "voucher/search.html", nil)
+	} else if page == "check" {
 		render.FileInLayout(w, "layout.html", "voucher/check.html", nil)
 	} else if page == "update" {
 		render.FileInLayout(w, "layout.html", "voucher/update.html", nil)

@@ -1,13 +1,13 @@
 $( document ).ready(function() {
-  getPartner();
+  getVariant();
 });
 
-function getPartner() {
-    console.log("Get Partner Data");
+function getVariant() {
+    console.log("Get Variant Data");
 
     var arrData = [];
     $.ajax({
-        url: 'http://voucher.apps.id:8889/v1/voucher?holder=richard&token='+token,
+        url: '/v1/api/get/allVariant?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -15,39 +15,52 @@ function getPartner() {
           var i;
           var dataSet = [];
           for ( i = 0; i < arrData.length; i++){
-            var date1 = arrData[i].valid_at.substring(0, 10).split("-");
-            var date2 = arrData[i].expired_at.substring(0, 10).split("-");
+            var date1 = arrData[i].StartDate.substring(0, 10).split("-");
+            var date2 = arrData[i].EndDate.substring(0, 10).split("-");
 
             var dateStart  = new Date(date1[0], date1[1]-1, date1[2]);
             var dateEnd  = new Date(date2[0], date2[1]-1, date2[2]);
-            var dateNow  = new Date("2017", "02", "02");
+            var dateNow_ms  = Date.now();
 
             var one_day = 1000*60*60*24;
             var dateStart_ms = dateStart.getTime();
             var dateEnd_ms = dateEnd.getTime();
-            var dateNow_ms = dateNow.getTime();
+            // var dateNow_ms = dateNow.getTime();
 
-            var diffNow = Math.round((dateEnd_ms-dateNow_ms)/one_day);
-            var diffTotal = Math.round((dateEnd_ms-dateStart_ms)/one_day);
-            var persen = diffNow / diffTotal * 100;
-            console.log(dateStart + " " + dateEnd + " " + dateNow);
-            console.log(diffNow + " " + diffTotal + " " + persen);
+            var diffNow = Math.round((dateEnd_ms-dateStart_ms)/one_day);
+            var persen = 100;
+
+            if(dateStart_ms < dateNow_ms){
+              diffNow = Math.round((dateEnd_ms-dateNow_ms)/one_day);
+              var diffTotal = Math.round((dateEnd_ms-dateStart_ms)/one_day);
+              persen = diffNow / diffTotal * 100;
+            }
+
+            if(dateNow_ms > dateEnd_ms){
+              persen = -1;
+            }
+
+            console.log(arrData[i].Id + " " + dateStart + " " + dateEnd);
+            console.log(arrData[i].Id + " " + diffNow + " " + diffTotal + " " + persen);
 
             diffNow = diffNow + " hari";
 
             if( persen < 0){
               diffNow = "Expired";
             }
-// variant jangan id, name aja
+
             dataSet[i] = [
-              arrData[i].voucher_code
-              , arrData[i].reference_no
-              , arrData[i].variant
+              arrData[i].VariantName
+              , arrData[i].VoucherPrice
+              , arrData[i].DiscountValue
+              , (arrData[i].MaxVoucher - arrData[i].Voucher)
               , "<div class='progress'>"
                 + "<div role='progressbar' aria-valuenow='"+diffNow+"' aria-valuemin='0' aria-valuemax='"+diffTotal+"' style='width: "+persen+"%;' class='progress-bar'>"+diffNow+"</div>"
                 + "</div>"
-              , arrData[i].state
-              ];
+              , "<button type='button' onclick='detail(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"+
+              "<button type='button' onclick='edit(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>"+
+              "<button type='button' value=\""+arrData[i].Id+"\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>"
+            ];
           }
           console.log(dataSet);
 
@@ -94,6 +107,28 @@ function findGetParameter(parameterName) {
     });
     return result;
 }
+
+function edit(url){
+  window.location = "/variant/update?id="+url;
+}
+
+function detail(url){
+  window.location = "/variant/check?id="+url;
+}
+
+function deleteVariant(id) {
+    console.log("Delete Variant");
+
+    $.ajax({
+        url: '/v1/delete/variant/'+id+'?token='+token,
+        type: 'get',
+        success: function (data) {
+          getVariant();
+        }
+    });
+}
+
+
 
 (function() {
     'use strict';
