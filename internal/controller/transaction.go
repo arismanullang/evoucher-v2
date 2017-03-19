@@ -76,6 +76,14 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 				status = http.StatusBadRequest
 				res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
 				render.JSON(w, res, status)
+			case model.ErrMessageVoucherAlreadyUsed:
+				status = http.StatusBadRequest
+				res.AddError(its(status), model.ErrCodeVoucherDisabled, model.ErrMessageVoucherAlreadyUsed, "voucher")
+				render.JSON(w, res, status)
+			case model.ErrMessageVoucherAlreadyPaid:
+				status = http.StatusBadRequest
+				res.AddError(its(status), model.ErrCodeVoucherDisabled, model.ErrMessageVoucherAlreadyUsed, "voucher")
+				render.JSON(w, res, status)
 			default:
 				status = http.StatusInternalServerError
 				res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")

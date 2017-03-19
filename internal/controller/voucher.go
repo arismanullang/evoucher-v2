@@ -58,6 +58,7 @@ type (
 	VoucerResponse struct {
 		VoucherID string `json:"voucher_id"`
 		VoucherNo string `json:"voucher_code"`
+		State     string `json:"state"`
 	}
 	// DetailListResponseData represent list of voucher data
 	DetailListResponseData []DetailResponseData
@@ -85,9 +86,13 @@ type (
 //CheckVoucherRedeemtion validation
 func (r *TransactionRequest) CheckVoucherRedeemtion(voucherID string) (bool, error) {
 
-	voucher, err := model.FindVoucher(map[string]string{"id": voucherID, "state": model.StatusCreated})
+	voucher, err := model.FindVoucher(map[string]string{"id": voucherID})
 	if err != nil {
 		return false, err
+	} else if voucher.VoucherData[0].State == model.VoucherStateUsed {
+		return false, errors.New(model.ErrMessageVoucherAlreadyUsed)
+	} else if voucher.VoucherData[0].State == model.VoucherStatePaid {
+		return false, errors.New(model.ErrMessageVoucherAlreadyPaid)
 	}
 
 	dt, err := model.FindVariantDetailsById(voucher.VoucherData[0].VariantID)
@@ -190,6 +195,7 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 		for i, val := range voucher.VoucherData {
 			d[k].Vouchers[i].VoucherID = val.ID
 			d[k].Vouchers[i].VoucherNo = val.VoucherCode
+			d[k].Vouchers[i].State = val.State
 		}
 	}
 	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
