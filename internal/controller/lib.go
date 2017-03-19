@@ -169,3 +169,12 @@ func sti(s string) int {
 func bts(b bool) string {
 	return strconv.FormatBool(b)
 }
+
+func stringInSlice(str string, list []string) bool {
+	for _, v := range list {
+		if v == str {
+			return true
+		}
+	}
+	return false
+}
