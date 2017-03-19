@@ -41,6 +41,7 @@ const (
 	ErrMessageVoucherNotActive         string = "voucher is not active yet (before start date)"
 	ErrMessageVoucherDisabled          string = "voucher has been disabled (has already been used or paid)"
 	ErrMessageVoucherExpired           string = "voucher has already expired (after expiration date)"
+	ErrMessageVoucherAlreadyUsed       string = "voucher has already Used "
 	ErrMessageVoucherAlreadyPaid       string = "voucher has already Paid"
 	ErrMessageInvalidVoucher           string = "invalid voucher , VariantID not found"
 	ErrMessageVoucherQtyExceeded       string = "voucher's quantities limit has been exceeded"
