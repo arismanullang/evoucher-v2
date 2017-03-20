@@ -42,10 +42,13 @@ type (
 
 	GetVoucherOfVariatList []GetVoucherOfVariatdata
 	GetVoucherOfVariatdata struct {
+		AccountId          string           `json:"account_id"`
 		VariantName        string           `json:"variant_name"`
+		VariantType        string           `json:"variant_type"`
 		VoucherType        string           `json:"voucher_type"`
 		RedeemMethod       string           `json:"redeemtion_method"`
 		VoucherPrice       float64          `json:"voucher_price"`
+		DiscountValue      float64          `json:"discount_value"`
 		AllowAccumulative  bool             `json:"allow_accumulative"`
 		StartDate          string           `json:"start_date"`
 		EndDate            string           `json:"end_date"`
@@ -187,10 +190,13 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 	case "variant":
 		for k, v := range distinctVariant {
 			dt, _ := model.FindVariantDetailsById(v)
+			d[k].AccountId = dt.AccountId
 			d[k].VariantName = dt.VariantName
+			d[k].VariantType = dt.VariantType
 			d[k].VoucherType = dt.VoucherType
 			d[k].RedeemMethod = dt.RedeemtionMethod
 			d[k].VoucherPrice = dt.VoucherPrice
+			d[k].DiscountValue = dt.DiscountValue
 			d[k].AllowAccumulative = dt.AllowAccumulative
 			d[k].StartDate = dt.StartDate
 			d[k].EndDate = dt.EndDate
@@ -212,10 +218,13 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 	default:
 		for k, v := range distinctVariant {
 			dt, _ := model.FindVariantDetailsById(v)
+			d[k].AccountId = dt.AccountId
 			d[k].VariantName = dt.VariantName
+			d[k].VariantType = dt.VariantType
 			d[k].VoucherType = dt.VoucherType
 			d[k].RedeemMethod = dt.RedeemtionMethod
 			d[k].VoucherPrice = dt.VoucherPrice
+			d[k].DiscountValue = dt.DiscountValue
 			d[k].AllowAccumulative = dt.AllowAccumulative
 			d[k].StartDate = dt.StartDate
 			d[k].EndDate = dt.EndDate
