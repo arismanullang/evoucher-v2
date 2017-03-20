@@ -51,6 +51,9 @@ const (
 	ErrMessageTokenExpired             string = "Token has been expired"
 	ErrMessageInvalidMerchant          string = "vouchers can not be used in this Partner."
 	ErrMessageInvalidVariant           string = "Invalid Variant ID."
+	ErrMessageInvalidHolder            string = "Invalid Holder."
+	ErrMessageNilVariant               string = "Account doesn't have any Variant."
+	ErrMessageNilPartner               string = " doesn't have any Partner."
 
 	StatusCreated string = "created"
 	StatusDeleted string = "deleted"

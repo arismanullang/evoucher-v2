@@ -57,9 +57,14 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/api/get/accountById", controller.GetAccountByUser)
 	r.GetFunc("/v1/api/get/role", controller.GetAllAccountRoles)
 
+	//open API
+	r.GetFunc("/v1/variants", controller.ListVariants)
+	r.GetFunc("/v1/variants/:id", controller.ListVariantsDetails)
+	r.GetFunc("/v1/variant/vouchers", controller.GetVoucherOfVariant)
+	r.GetFunc("/v1/variant/vouchers/:id", controller.GetVoucherOfVariantDetails)
+
 	//voucher
 	r.GetFunc("/v1/vouchers", controller.GetVoucherDetail)
-	r.GetFunc("/v1/variant/vouchers", controller.GetVoucherOfVariant)
 	// r.PostFunc("/v1/voucher/delete", controller.DeleteVoucher)
 	// r.PostFunc("/v1/voucher/pay", controller.PayVoucher)
 	r.PostFunc("/v1/voucher/generate/bulk", controller.GenerateVoucher)

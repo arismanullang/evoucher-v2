@@ -71,6 +71,111 @@ type (
 	}
 )
 
+func ListVariants(w http.ResponseWriter, r *http.Request) {
+	res := NewResponse(nil)
+	var status int
+
+	accountID, _, _, ok := CheckToken(w, r)
+	if !ok {
+		return
+	}
+
+	variant, err := model.FindAllVariants(accountID)
+	if err == model.ErrResourceNotFound {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilVariant, "voucher")
+		render.JSON(w, res, status)
+		return
+	} else if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+	d := make(GetVoucherOfVariatList, len(variant))
+	for k, dt := range variant {
+		d[k].VariantID = dt.Id
+		d[k].AccountId = dt.AccountId
+		d[k].VariantName = dt.VariantName
+		d[k].VoucherType = dt.VoucherType
+		d[k].VoucherPrice = dt.VoucherPrice
+		d[k].DiscountValue = dt.DiscountValue
+		d[k].StartDate = dt.StartDate
+		d[k].EndDate = dt.EndDate
+		d[k].ImgUrl = dt.ImgUrl
+		d[k].Used = its(getCountVoucher(dt.Id))
+	}
+
+	status = http.StatusOK
+	res = NewResponse(d)
+	render.JSON(w, res, status)
+}
+
+func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
+	variant := bone.GetValue(r, "id")
+	res := NewResponse(nil)
+	var status int
+
+	_, _, _, ok := CheckToken(w, r)
+	if !ok {
+		return
+	}
+
+	dt, err := model.FindVariantDetailsById(variant)
+	if err == model.ErrResourceNotFound {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, "voucher")
+		render.JSON(w, res, status)
+		return
+	} else if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+	p, err := model.FindVariantPartner(map[string]string{"variant_id": variant})
+	if err == model.ErrResourceNotFound {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant+"(Partner of Variant Not Found)", "voucher")
+		render.JSON(w, res, status)
+		return
+	} else if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+
+	d := GetVoucherOfVariatListDetails{}
+	d.VariantID = dt.Id
+	d.AccountId = dt.AccountId
+	d.VariantName = dt.VariantName
+	d.VoucherType = dt.VoucherType
+	d.VoucherType = dt.VoucherType
+	d.VoucherPrice = dt.VoucherPrice
+	d.AllowAccumulative = dt.AllowAccumulative
+	d.StartDate = dt.StartDate
+	d.EndDate = dt.EndDate
+	d.DiscountValue = dt.DiscountValue
+	d.MaxQuantityVoucher = dt.MaxQuantityVoucher
+	d.MaxUsageVoucher = dt.MaxUsageVoucher
+	d.RedeemtionMethod = dt.RedeemtionMethod
+	d.ImgUrl = dt.ImgUrl
+	d.VariantTnc = dt.VariantTnc
+	d.VariantDescription = dt.VariantDescription
+
+	d.Partners = make([]Partner, len(p))
+	for i, pd := range p {
+		d.Partners[i].ID = pd.Id
+		d.Partners[i].PartnerName = pd.PartnerName
+		d.Partners[i].SerialNumber = pd.SerialNumber.String
+	}
+
+	status = http.StatusOK
+	res = NewResponse(d)
+	render.JSON(w, res, status)
+}
+
 func GetAllVariants(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Get Variant")
 	accountId := ""
@@ -199,6 +304,7 @@ func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 			res.AddError(its(status), its(status), err.Error(), "variant")
 		} else {
 			res = NewResponse(variant)
+
 		}
 	}
 
