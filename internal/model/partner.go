@@ -173,15 +173,14 @@ func FindVariantPartner(param map[string]string) ([]Partner, error) {
 			b.status = ?
 	`
 	for k, v := range param {
-		switch k {
-		case "id":
-			q += ` AND b.id = '` + v + `'`
-		default:
-			q += ` AND ` + k + ` = '` + v + `'`
+		table := "b"
+		if k == "variant_id" {
+			table = "a"
 		}
 
-	}
+		q += ` AND ` + table + `.` + k + ` = '` + v + `'`
 
+	}
 	var resv []Partner
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
 		return []Partner{}, err

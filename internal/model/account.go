@@ -86,30 +86,33 @@ func FindAllAccounts() ([]AccountRes, error) {
 	return resv, nil
 }
 
-func GetAccountByUser(userID string) (string, error) {
+func GetAccountByUser(userID string) ([]AccountRes, error) {
 	vc, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err)
-		return "", ErrServerInternal
+		return []AccountRes{}, ErrServerInternal
 	}
 	defer vc.Rollback()
 
 	q := `
 		SELECT
-			account_id
+			a.id
+			, a.account_name
 		FROM
-			user_accounts
+			accounts as a
+		JOIN
+			user_accounts as ua
 		WHERE
-			user_id = ?
-			AND status = ?
+			ua.user_id = ?
+			AND a.status = ?
 	`
-	var resd []string
+	var resd []AccountRes
 	if err := db.Select(&resd, db.Rebind(q), userID, StatusCreated); err != nil {
 		fmt.Println(err)
-		return "", ErrServerInternal
+		return []AccountRes{}, ErrServerInternal
 	}
 	if len(resd) == 0 {
-		return "", ErrResourceNotFound
+		return []AccountRes{}, ErrResourceNotFound
 	}
-	return resd[0], nil
+	return resd, nil
 }

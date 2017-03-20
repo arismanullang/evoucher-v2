@@ -2,6 +2,7 @@ var id = findGetParameter('id')
 $( document ).ready(function() {
   getVoucher(id);
   getVariant(id);
+  getPartner(id);
 
   $('#profileForm').submit(function(e) {
        e.preventDefault();
@@ -14,7 +15,7 @@ function getVoucher(id) {
 
     var arrData = [];
     $.ajax({
-        url: '/v1/voucher?variant_id='+id+'&token='+token,
+        url: '/v1/vouchers?variant_id='+id+'&token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -23,7 +24,7 @@ function getVoucher(id) {
           var limit = arrData.length;
           if (arrData.length > 4){
             limit = 4;
-            $("<div class='card-body pv0 text-right'><a href='#' class='btn btn-flat btn-info'>View all</a></div>").appendTo('#listVoucher');
+            $("<div class='card-body pv0 text-right'><a href='/voucher/search?variant_id="+id+"' class='btn btn-flat btn-info'>View all</a></div>").appendTo('#cardVoucher');
           }
 
           for ( i = 0; i < limit; i++){
@@ -35,9 +36,40 @@ function getVoucher(id) {
             var li = $("<div class='mda-list-item'></div>").html(html);
             li.appendTo('#listVoucher');
           }
+        },
+        error: function (data) {
+          console.log(data.data);
+          $("<div class='card-body text-center'>No Voucher Yet</div>").appendTo('#cardVoucher');
         }
     });
 }
+
+function getPartner(id) {
+    console.log("Get Voucher Data");
+
+    var arrData = [];
+    $.ajax({
+        url: '/v1/api/get/partner?variant_id='+id+'&token='+token,
+        type: 'get',
+        success: function (data) {
+          console.log(data.data);
+          var i;
+          var arrData = data.data;
+          var limit = arrData.length;
+
+          for ( i = 0; i < limit; i++){
+            var html = "<div class='mda-list-item-icon'><em class='ion-ios-person icon-2x'></em></div>"
+            +  "<div class='mda-list-item-text'>"
+            +  "<h3><a href='#'>"+arrData[i].partner_name+"</a></h3>"
+            +  "<div class='text-muted text-ellipsis'>"+arrData[i].serial_number+"</div>"
+            +"</div>";
+            var li = $("<div class='mda-list-item'></div>").html(html);
+            li.appendTo('#listPartner');
+          }
+        }
+    });
+}
+
 
 function getVariant(id) {
     console.log("Get Variant Data");
@@ -54,6 +86,10 @@ function getVariant(id) {
           var endDate = result.EndDate.substr(0,10);
           var period = startDate + " to " + endDate;
 
+          var remainingVoucher = result.MaxQuantityVoucher;
+          if( result.Voucher != null)
+            remainingVoucher = esult.MaxQuantityVoucher - result.Voucher.length;
+
           $('#variantName').html(result.VariantName);
           $('#variantDescription').html(result.VariantDescription);
           $('#variantType').html(result.VariantType);
@@ -63,26 +99,7 @@ function getVariant(id) {
           $('#voucherValue').html(result.DiscountValue);
           $('#period').html(period);
           $('#variantTnc').html(result.VariantTnc);
-          $('#remainingVoucher').html(result.MaxQuantityVoucher - result.Voucher.length);
-
-          var i;
-          var arrData = data.data.ValidPartners;
-          var limit = arrData.length;
-          if (arrData.length > 4){
-            limit = 4;
-            $("<div class='card-body pv0 text-right'><a href='#' class='btn btn-flat btn-info'>View all</a></div>").appendTo('#listPartner');
-          }
-
-          for ( i = 0; i < limit; i++){
-            var html = "<div class='mda-list-item-icon'><em class='ion-ios-person icon-2x'></em></div>"
-            +  "<div class='mda-list-item-text'>"
-            +  "<p>"+arrData[i]+"</p>"
-            +"</div>";
-            var li = $("<div class='mda-list-item'></div>").html(html);
-            li.appendTo('#listPartner');
-          }
-
-
+          $('#remainingVoucher').html(remainingVoucher);
         }
     });
 }

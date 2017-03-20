@@ -4,10 +4,10 @@ $( document ).ready(function() {
 
 function getVoucher() {
     console.log("Get Voucher Data");
-    var holder = findGetParameter('holder');
+    var holder = findGetParameter();
     var arrData = [];
     $.ajax({
-        url: '/v1/voucher?holder='+holder+'&token='+token,
+        url: '/v1/vouchers?'+holder[0]+'='+decodeURIComponent(holder[1])+'&token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -44,6 +44,7 @@ function getVoucher() {
 // variant jangan id, name aja
             dataSet[i] = [
               arrData[i].voucher_code
+              , arrData[i].holder
               , arrData[i].reference_no
               , arrData[i].variant_id
               , "<div class='progress'>"
@@ -62,6 +63,7 @@ function getVoucher() {
               data: dataSet,
               columns: [
                   { title: "Voucher Code" },
+                  { title: "Holder Name" },
                   { title: "Reference No" },
                   { title: "Variant" },
                   { title: "Period" },
@@ -92,7 +94,7 @@ function findGetParameter(parameterName) {
         .split("&")
         .forEach(function (item) {
         tmp = item.split("=");
-        if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+        result = tmp;
     });
     return result;
 }

@@ -53,7 +53,8 @@ func setRoutes() http.Handler {
 	r.PostFunc("/v1/create/partner", controller.AddPartner)
 
 	//account
-	r.GetFunc("/v1/api/get/accountId", controller.GetAccountId)
+	r.GetFunc("/v1/api/get/account", controller.GetAccount)
+	r.GetFunc("/v1/api/get/accountById", controller.GetAccountByUser)
 	r.GetFunc("/v1/api/get/role", controller.GetAllAccountRoles)
 
 	//voucher

@@ -383,6 +383,8 @@ func FindVariantsByDate(start, end, accountId string) ([]SearchVariant, error) {
 			AND status = ?
 		GROUP BY
 			va.id
+		ORDER BY
+			va.start_date DESC
 	`
 
 	var resv []SearchVariant
@@ -421,6 +423,8 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 			AND va.status = ?
 		GROUP BY
 			va.id
+		ORDER BY
+			va.start_date DESC
 	`
 
 	var resv []SearchVariant

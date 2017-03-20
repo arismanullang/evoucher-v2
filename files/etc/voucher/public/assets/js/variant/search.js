@@ -116,6 +116,10 @@ function detail(url){
   window.location = "/variant/check?id="+url;
 }
 
+function addVariant(url){
+  window.location = "/variant/create";
+}
+
 function deleteVariant(id) {
     console.log("Delete Variant");
 
