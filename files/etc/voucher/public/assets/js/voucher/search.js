@@ -1,13 +1,13 @@
 $( document ).ready(function() {
-  getPartner();
+  getVoucher();
 });
 
-function getPartner() {
-    console.log("Get Partner Data");
-
+function getVoucher() {
+    console.log("Get Voucher Data");
+    var holder = findGetParameter();
     var arrData = [];
     $.ajax({
-        url: 'http://voucher.apps.id:8889/v1/voucher?holder=richard&token='+token,
+        url: '/v1/vouchers?'+holder[0]+'='+decodeURIComponent(holder[1])+'&token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -38,13 +38,17 @@ function getPartner() {
             if( persen < 0){
               diffNow = "Expired";
             }
+            if( persen == Infinity){
+              diffNow = "Expired";
+            }
 // variant jangan id, name aja
             dataSet[i] = [
               arrData[i].voucher_code
+              , arrData[i].holder
               , arrData[i].reference_no
-              , arrData[i].variant
+              , arrData[i].variant_id
               , "<div class='progress'>"
-                + "<div role='progressbar' aria-valuenow='"+diffNow+"' aria-valuemin='0' aria-valuemax='"+diffTotal+"' style='width: "+persen+"%;' class='progress-bar'>"+diffNow+"</div>"
+                + "<div role='progressbar progress-bar-success' aria-valuenow='"+diffNow+"' aria-valuemin='0' aria-valuemax='"+diffTotal+"' style='width: "+persen+"%;' class='progress-bar'>"+diffNow+"</div>"
                 + "</div>"
               , arrData[i].state
               ];
@@ -58,12 +62,12 @@ function getPartner() {
           $('#datatable1').dataTable({
               data: dataSet,
               columns: [
-                  { title: "Variant Name" },
-                  { title: "Voucher Price" },
-                  { title: "Voucher Value" },
-                  { title: "Remaining Voucher" },
+                  { title: "Voucher Code" },
+                  { title: "Holder Name" },
+                  { title: "Reference No" },
+                  { title: "Variant" },
                   { title: "Period" },
-                  { title: "Action"}
+                  { title: "State" }
               ],
               oLanguage: {
                   sSearch: '<em class="ion-search"></em>',
@@ -90,7 +94,7 @@ function findGetParameter(parameterName) {
         .split("&")
         .forEach(function (item) {
         tmp = item.split("=");
-        if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+        result = tmp;
     });
     return result;
 }

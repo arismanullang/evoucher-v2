@@ -1,7 +1,7 @@
 {{ template "layout" . }}
 
-{{ define "title" }}Check Voucher{{ end }}
-{{ define "header-title" }}Check Voucher{{ end }}
+{{ define "title" }}List Partner{{ end }}
+{{ define "header-title" }}List Partner{{ end }}
 
 {{ define "content" }}
 <section>
@@ -10,20 +10,15 @@
 <div class="container container-md">
   <div class="card">
     <div class="card-heading bg-amber-500">
-        <div class="card-title text-center">Voucher</div>
+      <div class="pull-right">
+        <button type="button" onclick="addPartner()" class="btn btn-default btn-flat btn-flat-icon"><em class="ion-plus-circled"></em></button>
+      </div>
+      <div class="card-title text-center">Partner</div>
     </div>
     <div class="card-body">
-      <table id="datatable1" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
-        <thead>
-          <tr role="row">
-            <th>Voucher Code</th>
-            <th>Reference No</th>
-            <th>Variant</th>
-            <th>Period</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-      </table>
+      <div id="listPartner" class="mda-list">
+
+      </div>
     </div>
   </div>
 </div>
@@ -33,7 +28,7 @@
 {{ define "scripts" }}
 <script type="text/javascript" src="/assets/vendor/sweetalert/dist/sweetalert-dev.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/jquery.dataTables.js"></script>
-<script type="text/javascript" src="/assets/js/voucher/check.js"></script>
+<script type="text/javascript" src="/assets/js/partner/search.js"></script>
 {{ end }}
 
 

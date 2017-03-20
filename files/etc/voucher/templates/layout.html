@@ -29,6 +29,7 @@
 <script type="text/javascript" src="/assets/master/components/colors/colors.constant.js"></script>
 <script type="text/javascript" src="/assets/master/components/colors/colors.js"></script>
 {{ block "scripts" . }}{{ end }}
+<script type="text/javascript" src="/assets/js/onload.js"></script>
 
 </head>
 
@@ -45,10 +46,10 @@
             </ul>
             <h2 class="header-title">{{ template "header-title" }}</h2>
             <ul class="pull-right">
+                <li><a id="header-search" href="#" class="ripple"><em class="ion-ios-search-strong"></em></a></li>
                 <li class="dropdown"><a href="#" data-toggle="dropdown" class="dropdown-toggle has-badge ripple"><em class="ion-person"></em></a>
                     <ul class="dropdown-menu dropdown-menu-right md-dropdown-menu">
                         <li><a href="/user/profile"><em class="ion-home icon-fw"></em>Profile</a></li>
-                        <li><a href="messages.html"><em class="ion-gear-a icon-fw"></em>Messages</a></li>
                         <li role="presentation" class="divider"></li>
                         <li><a href="user.login.html"><em class="ion-log-out icon-fw"></em>Logout</a></li>
                     </ul>
@@ -67,16 +68,11 @@
                     <li><a href="/variant/index" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="/assets/img/icons/aperture.svg" alt="MenuItem" class="hidden"></span><span>Dashboard</span></a></li>
                     <li><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/connection-bars.svg" alt="MenuItem" class="hidden"></span><span>Variant</span></a>
                         <ul class="sidebar-subnav">
-                          <li><a href="/variant/search" class="ripple"><span class="pull-right nav-label"></span><span>Check Variant</span></a></li>
+                          <li><a href="/variant/search" class="ripple"><span class="pull-right nav-label"></span><span>List Variant</span></a></li>
                           <li><a href="/variant/create" class="ripple"><span class="pull-right nav-label"></span><span>Create Variant</span></a></li>
                         </ul>
                     </li>
-                    <li><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Voucher</span></a>
-                        <ul class="sidebar-subnav">
-                          <li><a href="/voucher/check" class="ripple"><span class="pull-right nav-label"></span><span>Check Voucher</span></a></li>
-                          <li><a href="#" class="ripple"><span class="pull-right nav-label"></span><span>Create Voucher</span></a></li>
-                        </ul>
-                    </li>
+                    <li><a href="/partner/search" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="/assets/img/icons/aperture.svg" alt="MenuItem" class="hidden"></span><span>Partner</span></a></li>
                     <li><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Report</span></a>
                         <ul class="sidebar-subnav">
                           <li><a href="/variant/index" class="ripple"><span class="pull-right nav-label"></span><span>Variant</span></a></li>
@@ -87,13 +83,7 @@
                     <li><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/planet.svg" alt="MenuItem" class="hidden"></span><span>Setting</span></a>
                         <ul class="sidebar-subnav">
                             <li><a href="/user/register" class="ripple"><span class="pull-right nav-label"></span><span>User</span></a></li>
-                            <li><a href="/partner/search" class="ripple"><span class="pull-right nav-label"></span><span>Partner</span></a></li>
-                        </ul>
-                    </li>
-                    <li><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Admin</span></a>
-                        <ul class="sidebar-subnav">
-                          <li><a href="#" class="ripple"><span class="pull-right nav-label"></span><span>Account</span></a></li>
-                          <li><a href="#" class="ripple"><span class="pull-right nav-label"></span><span>User Setting</span></a></li>
+                            <li><a href="" class="ripple"><span class="pull-right nav-label"></span><span>Partner</span></a></li>
                         </ul>
                     </li>
                 </ul>
@@ -107,6 +97,23 @@
       <footer><span>2016 - Centric app.</span></footer>
     </main>
   </div>
+
+  <!-- Search template-->
+  <div tabindex="-1" role="dialog" class="modal modal-top fade modal-search">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body">
+          <form id="general-search" action="/voucher/search" method="GET" class="oh">
+            <div class="mda-form-control pt0">
+              <input type="text" id="holder" name="holder" placeholder="Holder Name" class="form-control header-input-search">
+              <div class="mda-form-control-line"></div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End Search template-->
 </body>
 </html>
 {{ end }}

@@ -6,7 +6,7 @@ function send() {
 
     console.log(partner);
     $.ajax({
-       url: 'http://voucher.apps.id:8889/v1/create/partner?token='+token,
+       url: '/v1/create/partner?token='+token,
        type: 'post',
        dataType: 'json',
        contentType: "application/json",
