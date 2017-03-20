@@ -259,8 +259,8 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 // Return : user_id, account_id, expired, boolean, error
 func getValiditySession(r *http.Request, token string) (string, string, time.Time, bool, error) {
-	// fmt.Println("Check Session")
-	// fmt.Println(r)
+	fmt.Println("Check Session")
+	fmt.Println(r)
 	// sessionValue, err := store.Get(r, token)
 	// if err != nil {
 	// 	return "", "", time.Now(), false, model.ErrTokenNotFound

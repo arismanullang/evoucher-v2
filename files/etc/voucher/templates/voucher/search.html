@@ -1,7 +1,7 @@
 {{ template "layout" . }}
 
-{{ define "title" }}Check Voucher{{ end }}
-{{ define "header-title" }}Check Voucher{{ end }}
+{{ define "title" }}List Voucher{{ end }}
+{{ define "header-title" }}List Voucher{{ end }}
 
 {{ define "content" }}
 <section>
@@ -17,6 +17,7 @@
         <thead>
           <tr role="row">
             <th>Voucher Code</th>
+            <th>Holder Name</th>
             <th>Reference No</th>
             <th>Variant</th>
             <th>Period</th>
@@ -33,7 +34,7 @@
 {{ define "scripts" }}
 <script type="text/javascript" src="/assets/vendor/sweetalert/dist/sweetalert-dev.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/jquery.dataTables.js"></script>
-<script type="text/javascript" src="/assets/js/voucher/check.js"></script>
+<script type="text/javascript" src="/assets/js/voucher/search.js"></script>
 {{ end }}
 
 

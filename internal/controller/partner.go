@@ -32,7 +32,29 @@ type (
 	}
 )
 
-func GetAllPartner(w http.ResponseWriter, r *http.Request) {
+func GetAllPartners(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusOK
+	errorTittle := ""
+	res := NewResponse(nil)
+	partner, err := model.FindAllPartners()
+	if err != nil {
+		fmt.Println(err.Error())
+		status = http.StatusInternalServerError
+		errorTittle = model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errorTittle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errorTittle, err.Error(), "partner")
+	} else {
+		res = NewResponse(partner)
+	}
+
+	render.JSON(w, res, status)
+}
+
+func GetAllPartnersCustomParam(w http.ResponseWriter, r *http.Request) {
 
 	res := NewResponse(nil)
 	var status int
@@ -53,19 +75,19 @@ func GetAllPartner(w http.ResponseWriter, r *http.Request) {
 		p, err = model.FindVariantPartner(param)
 	} else {
 		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, "voucher")
+		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, "partner")
 		render.JSON(w, res, status)
 		return
 	}
 
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "partner")
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "partner")
 		render.JSON(w, res, status)
 		return
 	}
@@ -91,7 +113,7 @@ func GetPartnerSerialName(w http.ResponseWriter, r *http.Request) {
 	err := model.ErrTokenNotFound
 	res := NewResponse(nil)
 
-	res.AddError(its(status), its(status), err.Error(), "variant")
+	res.AddError(its(status), its(status), err.Error(), "partner")
 
 	valid := false
 	if token != "" && token != "null" {
@@ -107,7 +129,7 @@ func GetPartnerSerialName(w http.ResponseWriter, r *http.Request) {
 				status = http.StatusNotFound
 			}
 
-			res.AddError(its(status), its(status), err.Error(), "variant")
+			res.AddError(its(status), its(status), err.Error(), "partner")
 		} else {
 			res = NewResponse(partner)
 		}
@@ -129,7 +151,7 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 	err := model.ErrTokenNotFound
 	res := NewResponse(nil)
 	user := ""
-	res.AddError(its(status), its(status), err.Error(), "variant")
+	res.AddError(its(status), its(status), err.Error(), "partner")
 
 	valid := false
 	if token != "" && token != "null" {
@@ -157,7 +179,7 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 				status = http.StatusNotFound
 			}
 
-			res.AddError(its(status), its(status), err.Error(), "variant")
+			res.AddError(its(status), its(status), err.Error(), "partner")
 		}
 	}
 	render.JSON(w, res, status)

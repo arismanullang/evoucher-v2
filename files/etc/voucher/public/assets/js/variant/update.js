@@ -4,7 +4,7 @@ var token = localStorage.getItem(user);
 
 $( window ).ready(function() {
   searchById(id);
-  getPartner();
+  // getPartner();
 });
 
 function findGetParameter(parameterName) {
@@ -25,11 +25,11 @@ function searchById(id) {
     var arrData = [];
 
     $.ajax({
-        url: 'http://voucher.apps.id:8889/v1/get/variant/'+id+'?token='+token,
+        url: 'http://voucher.apps.id:8889/v1/api/get/variant/'+id+'?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data);
-          var variant = data.data.Data;
+          var variant = data.data;
 
           $("#variantName").val(variant.VariantName);
           $("#variantType").val(variant.VariantType);
@@ -72,7 +72,7 @@ function send() {
     console.log(variant);
 
     $.ajax({
-        url: 'http://voucher.apps.id:8889/v1/update/variant/'+id+'?token='+token+'&user='+user,
+        url: 'http://voucher.apps.id:8889/v1/update/variant/'+id+'?token='+token,
         type: 'post',
         dataType: 'json',
         contentType: "application/json",
@@ -87,12 +87,12 @@ function getPartner() {
     console.log("Get Partner Data");
 
     $.ajax({
-      url: 'http://voucher.apps.id:8889/v1/api/get/partner',
+      url: 'http://voucher.apps.id:8889/v1/get/partner',
       type: 'get',
       success: function (data) {
         console.log("Render Data");
         var arrData = [];
-        arrData = data.data.Data;
+        arrData = data.data;
 
         var i;
         for (i = 0; i < arrData.length; i++){

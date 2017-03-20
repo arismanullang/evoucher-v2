@@ -50,7 +50,7 @@ function login(){
           localStorage.setItem("token", token);
         }
 
-        window.location = "http://voucher.apps.id:8889/variant/create";
+        window.location = "http://voucher.apps.id:8889/variant/";
       }
   });
 }

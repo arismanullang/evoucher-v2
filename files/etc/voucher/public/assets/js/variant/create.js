@@ -50,7 +50,7 @@ function send() {
       end_date: $("#endDate").val(),
       discount_value: parseInt($("#voucherValue").val()),
 //      image_url: $("#imageUrl").val(),
-      image_url: "http://voucher.apps.id/assets/img/card.jpg",
+      image_url: "/assets/img/card.jpg",
       variant_tnc: $("#variantTnc").val(),
       variant_description: $("#variantDescription").val(),
       valid_partners: listPartner
@@ -58,7 +58,7 @@ function send() {
 
     console.log(variant);
     $.ajax({
-       url: 'http://voucher.apps.id:8889/v1/create/variant?token='+token,
+       url: '/v1/create/variant?token='+token,
        type: 'post',
        dataType: 'json',
        contentType: "application/json",
@@ -73,7 +73,7 @@ function getPartner() {
     console.log("Get Partner Data");
 
     $.ajax({
-      url: 'http://voucher.apps.id:8889/v1/api/get/partner',
+      url: '/v1/get/partner',
       type: 'get',
       success: function (data) {
         console.log("Render Data");

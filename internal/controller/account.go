@@ -43,7 +43,7 @@ func RegisterAccount(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
-func GetAccountId(w http.ResponseWriter, r *http.Request) {
+func GetAccount(w http.ResponseWriter, r *http.Request) {
 	account, err := model.FindAllAccounts()
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
@@ -51,6 +51,37 @@ func GetAccountId(w http.ResponseWriter, r *http.Request) {
 
 	res := NewResponse(account)
 	render.JSON(w, res)
+}
+
+func GetAccountByUser(w http.ResponseWriter, r *http.Request) {
+	user := ""
+	token := r.FormValue("token")
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
+
+	res.AddError(its(status), its(status), err.Error(), "partner")
+
+	valid := false
+	if token != "" && token != "null" {
+		user, _, _, valid, _ = getValiditySession(r, token)
+	}
+
+	if valid {
+		status = http.StatusOK
+		account, err := model.GetAccountByUser(user)
+		if err != nil {
+			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				status = http.StatusNotFound
+			}
+
+			res.AddError(its(status), its(status), err.Error(), "partner")
+		} else {
+			res = NewResponse(account)
+		}
+	}
+	render.JSON(w, res, status)
 }
 
 func GetAllAccountRoles(w http.ResponseWriter, r *http.Request) {

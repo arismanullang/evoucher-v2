@@ -3,7 +3,7 @@ var token = localStorage.getItem("token");
 $( window ).ready(function() {
   console.log(token);
   if(token == null){
-    window.location = "http://voucher.apps.id:8889/user/login";
+    window.location = "/user/login";
   }
 
   getSession();
@@ -11,18 +11,18 @@ $( window ).ready(function() {
 
 function getSession() {
     $.ajax({
-      url: 'http://voucher.apps.id:8889/v1/api/get/session?token='+token,
+      url: '/v1/api/get/session?token='+token,
       type: 'get',
       success: function (data) {
         console.log(data.data);
         if(data.data == false){
-          window.location = "http://voucher.apps.id:8889/user/login";
+          window.location = "/user/login";
         }
       },
       error:function (data) {
         console.log(data.status);
         if(data.status == 500){
-          window.location = "http://voucher.apps.id:8889/user/login";
+          window.location = "/user/login";
         }
       }
   });
