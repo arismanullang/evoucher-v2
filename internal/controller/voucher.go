@@ -42,6 +42,7 @@ type (
 
 	GetVoucherOfVariatList []GetVoucherOfVariatdata
 	GetVoucherOfVariatdata struct {
+		VariantID          string           `json:"variant_id"`
 		AccountId          string           `json:"account_id"`
 		VariantName        string           `json:"variant_name"`
 		VariantType        string           `json:"variant_type"`
@@ -190,6 +191,7 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 	case "variant":
 		for k, v := range distinctVariant {
 			dt, _ := model.FindVariantDetailsById(v)
+			d[k].VariantID = dt.Id
 			d[k].AccountId = dt.AccountId
 			d[k].VariantName = dt.VariantName
 			d[k].VariantType = dt.VariantType
@@ -205,19 +207,34 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 			d[k].VariantDescription = dt.VariantDescription
 		}
 	case "voucher":
-		dd := make([]VoucerResponse, len(voucher.VoucherData))
-		for i, val := range voucher.VoucherData {
-			dd[i].VoucherID = val.ID
-			dd[i].VoucherNo = val.VoucherCode
-			dd[i].State = val.State
+		for k, v := range distinctVariant {
+			dt, _ := model.FindVariantDetailsById(v)
+			d[k].VariantID = dt.Id
+			d[k].AccountId = dt.AccountId
+			d[k].VariantName = dt.VariantName
+			d[k].VariantType = dt.VariantType
+			d[k].VoucherType = dt.VoucherType
+			d[k].RedeemMethod = dt.RedeemtionMethod
+			d[k].VoucherPrice = dt.VoucherPrice
+			d[k].DiscountValue = dt.DiscountValue
+			d[k].AllowAccumulative = dt.AllowAccumulative
+			d[k].StartDate = dt.StartDate
+			d[k].EndDate = dt.EndDate
+			d[k].ImgUrl = dt.ImgUrl
+			d[k].VariantTnc = dt.VariantTnc
+			d[k].VariantDescription = dt.VariantDescription
+
+			d[k].Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
+			for i, val := range voucher.VoucherData {
+				d[k].Vouchers[i].VoucherID = val.ID
+				d[k].Vouchers[i].VoucherNo = val.VoucherCode
+				d[k].Vouchers[i].State = val.State
+			}
 		}
-		status = http.StatusOK
-		res = NewResponse(dd)
-		render.JSON(w, res, status)
-		return
 	default:
 		for k, v := range distinctVariant {
 			dt, _ := model.FindVariantDetailsById(v)
+			d[k].VariantID = dt.Id
 			d[k].AccountId = dt.AccountId
 			d[k].VariantName = dt.VariantName
 			d[k].VariantType = dt.VariantType
