@@ -42,16 +42,20 @@ type (
 
 	GetVoucherOfVariatList []GetVoucherOfVariatdata
 	GetVoucherOfVariatdata struct {
+		AccountId          string           `json:"account_id"`
 		VariantName        string           `json:"variant_name"`
+		VariantType        string           `json:"variant_type"`
 		VoucherType        string           `json:"voucher_type"`
+		RedeemMethod       string           `json:"redeemtion_method"`
 		VoucherPrice       float64          `json:"voucher_price"`
+		DiscountValue      float64          `json:"discount_value"`
 		AllowAccumulative  bool             `json:"allow_accumulative"`
 		StartDate          string           `json:"start_date"`
 		EndDate            string           `json:"end_date"`
 		ImgUrl             string           `json:"image_url"`
 		VariantTnc         string           `json:"variant_tnc"`
 		VariantDescription string           `json:"variant_description"`
-		Vouchers           []VoucerResponse `json:"vouchers"`
+		Vouchers           []VoucerResponse `json:"vouchers,omitempty"`
 	}
 
 	// VoucerResponse represent list of voucher data
@@ -147,6 +151,8 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	param := getUrlParam(r.URL.String())
+	viewresponse := param["list"]
+	delete(param, "list")
 	delete(param, "token")
 
 	if len(param) > 0 {
@@ -177,27 +183,64 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 			distinctVariant = append(distinctVariant, v.VariantID)
 		}
 	}
-	fmt.Println(distinctVariant)
+	// fmt.Println(distinctVariant)
 	d := make(GetVoucherOfVariatList, len(distinctVariant))
-	for k, v := range distinctVariant {
-		dt, _ := model.FindVariantDetailsById(v)
-		d[k].VariantName = dt.VariantName
-		d[k].VoucherType = dt.VoucherType
-		d[k].VoucherPrice = dt.VoucherPrice
-		d[k].AllowAccumulative = dt.AllowAccumulative
-		d[k].StartDate = dt.StartDate
-		d[k].EndDate = dt.EndDate
-		d[k].ImgUrl = dt.ImgUrl
-		d[k].VariantTnc = dt.VariantTnc
-		d[k].VariantDescription = dt.VariantDescription
 
-		d[k].Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
+	switch viewresponse {
+	case "variant":
+		for k, v := range distinctVariant {
+			dt, _ := model.FindVariantDetailsById(v)
+			d[k].AccountId = dt.AccountId
+			d[k].VariantName = dt.VariantName
+			d[k].VariantType = dt.VariantType
+			d[k].VoucherType = dt.VoucherType
+			d[k].RedeemMethod = dt.RedeemtionMethod
+			d[k].VoucherPrice = dt.VoucherPrice
+			d[k].DiscountValue = dt.DiscountValue
+			d[k].AllowAccumulative = dt.AllowAccumulative
+			d[k].StartDate = dt.StartDate
+			d[k].EndDate = dt.EndDate
+			d[k].ImgUrl = dt.ImgUrl
+			d[k].VariantTnc = dt.VariantTnc
+			d[k].VariantDescription = dt.VariantDescription
+		}
+	case "voucher":
+		dd := make([]VoucerResponse, len(voucher.VoucherData))
 		for i, val := range voucher.VoucherData {
-			d[k].Vouchers[i].VoucherID = val.ID
-			d[k].Vouchers[i].VoucherNo = val.VoucherCode
-			d[k].Vouchers[i].State = val.State
+			dd[i].VoucherID = val.ID
+			dd[i].VoucherNo = val.VoucherCode
+			dd[i].State = val.State
+		}
+		status = http.StatusOK
+		res = NewResponse(dd)
+		render.JSON(w, res, status)
+		return
+	default:
+		for k, v := range distinctVariant {
+			dt, _ := model.FindVariantDetailsById(v)
+			d[k].AccountId = dt.AccountId
+			d[k].VariantName = dt.VariantName
+			d[k].VariantType = dt.VariantType
+			d[k].VoucherType = dt.VoucherType
+			d[k].RedeemMethod = dt.RedeemtionMethod
+			d[k].VoucherPrice = dt.VoucherPrice
+			d[k].DiscountValue = dt.DiscountValue
+			d[k].AllowAccumulative = dt.AllowAccumulative
+			d[k].StartDate = dt.StartDate
+			d[k].EndDate = dt.EndDate
+			d[k].ImgUrl = dt.ImgUrl
+			d[k].VariantTnc = dt.VariantTnc
+			d[k].VariantDescription = dt.VariantDescription
+
+			d[k].Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
+			for i, val := range voucher.VoucherData {
+				d[k].Vouchers[i].VoucherID = val.ID
+				d[k].Vouchers[i].VoucherNo = val.VoucherCode
+				d[k].Vouchers[i].State = val.State
+			}
 		}
 	}
+
 	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
 	status = http.StatusOK
 	res = NewResponse(d)
