@@ -8,27 +8,25 @@ import (
 
 type (
 	Variant struct {
-		Id                 string   `db:"id"`
-		AccountId          string   `db:"account_id"`
-		VariantName        string   `db:"variant_name"`
-		VariantType        string   `db:"variant_type"`
-		VoucherFormat      int      `db:"voucher_format_id"`
-		VoucherType        string   `db:"voucher_type"`
-		VoucherPrice       float64  `db:"voucher_price"`
-		AllowAccumulative  bool     `db:"allow_accumulative"`
-		StartDate          string   `db:"start_date"`
-		EndDate            string   `db:"end_date"`
-		DiscountValue      float64  `db:"discount_value"`
-		MaxQuantityVoucher float64  `db:"max_quantity_voucher"`
-		MaxUsageVoucher    float64  `db:"max_usage_voucher"`
-		RedeemtionMethod   string   `db:"redeemtion_method"`
-		ImgUrl             string   `db:"img_url"`
-		VariantTnc         string   `db:"variant_tnc"`
-		VariantDescription string   `db:"variant_description"`
-		CreatedBy          string   `db:"created_by"`
-		CreatedAt          string   `db:"created_at"`
-		ValidPartners      []string `db:"-"`
-		Voucher            []string `db:"-"`
+		Id                 string  `db:"id"`
+		AccountId          string  `db:"account_id"`
+		VariantName        string  `db:"variant_name"`
+		VariantType        string  `db:"variant_type"`
+		VoucherFormat      int     `db:"voucher_format_id"`
+		VoucherType        string  `db:"voucher_type"`
+		VoucherPrice       float64 `db:"voucher_price"`
+		AllowAccumulative  bool    `db:"allow_accumulative"`
+		StartDate          string  `db:"start_date"`
+		EndDate            string  `db:"end_date"`
+		DiscountValue      float64 `db:"discount_value"`
+		MaxQuantityVoucher float64 `db:"max_quantity_voucher"`
+		MaxUsageVoucher    float64 `db:"max_usage_voucher"`
+		RedeemtionMethod   string  `db:"redeemtion_method"`
+		ImgUrl             string  `db:"img_url"`
+		VariantTnc         string  `db:"variant_tnc"`
+		VariantDescription string  `db:"variant_description"`
+		CreatedBy          string  `db:"created_by"`
+		CreatedAt          string  `db:"created_at"`
 	}
 	VariantReq struct {
 		AccountId          string   `db:"account_id"`
@@ -494,36 +492,30 @@ func FindVariantsCustomParam(param map[string]string) ([]SearchVariant, error) {
 func FindVariantDetailsById(id string) (Variant, error) {
 	q := `
 		SELECT
-			va.id
-			, va.account_id
-			, va.variant_name
-			, va.variant_type
-			, va.voucher_format_id
-			, va.voucher_type
-			, va.voucher_price
-			, va.allow_accumulative
-			, va.start_date
-			, va.end_date
-			, va.discount_value
-			, va.max_quantity_voucher
-			, va.max_usage_voucher
-			, va.redeemtion_method
-			, va.img_url
-			, va.variant_tnc
-			, va.variant_description
-			, va.created_by
-			, va.created_at
+			id
+			, account_id
+			, variant_name
+			, variant_type
+			, voucher_format_id
+			, voucher_type
+			, voucher_price
+			, allow_accumulative
+			, start_date
+			, end_date
+			, discount_value
+			, max_quantity_voucher
+			, max_usage_voucher
+			, redeemtion_method
+			, img_url
+			, variant_tnc
+			, variant_description
+			, created_by
+			, created_at
 		FROM
-			variants as va
-		LEFT JOIN
-			vouchers as vo
-		ON
-			va.id = vo.variant_id
+			variants
 		WHERE
-			va.id = ?
-			AND va.status = ?
-		GROUP BY
-			va.id
+			id = ?
+			AND status = ?
 	`
 
 	var resv []Variant
@@ -534,38 +526,6 @@ func FindVariantDetailsById(id string) (Variant, error) {
 	if len(resv) < 1 {
 		return Variant{}, ErrResourceNotFound
 	}
-
-	q = `
-		SELECT
-			partner_id
-		FROM
-			variant_partners
-		WHERE
-			variant_id = ?
-			AND status = ?
-	`
-	var resd []string
-	if err := db.Select(&resd, db.Rebind(q), id, StatusCreated); err != nil {
-		fmt.Println(err.Error())
-		return Variant{}, ErrServerInternal
-	}
-	resv[0].ValidPartners = resd
-
-	q = `
-		SELECT
-			voucher_code
-		FROM
-			vouchers
-		WHERE
-			variant_id = ?
-			AND status = ?
-	`
-	var reso []string
-	if err := db.Select(&reso, db.Rebind(q), id, StatusCreated); err != nil {
-		fmt.Println(err.Error())
-		return Variant{}, ErrServerInternal
-	}
-	resv[0].Voucher = reso
 
 	return resv[0], nil
 }
@@ -616,23 +576,6 @@ func FindVariantDetailsCustomParam(param map[string]string) ([]Variant, error) {
 	}
 	if len(resv) < 1 {
 		return []Variant{}, ErrResourceNotFound
-	}
-
-	for i, v := range resv {
-		q = `
-			SELECT
-				partner_id
-			FROM
-				variant_partners
-			WHERE
-				variant_id = ?
-				AND status = ?
-		`
-		var resd []string
-		if err := db.Select(&resd, db.Rebind(q), v.Id, StatusCreated); err != nil {
-			return []Variant{}, err
-		}
-		resv[i].ValidPartners = resd
 	}
 
 	return resv, nil

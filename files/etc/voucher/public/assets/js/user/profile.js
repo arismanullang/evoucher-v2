@@ -1,7 +1,7 @@
 var id = findGetParameter('id')
 $( document ).ready(function() {
-  getVoucher(id);
-  getPartner(id);
+  getUser(id);
+  getAccount(id);
 
   $('#profileForm').submit(function(e) {
        e.preventDefault();
@@ -9,7 +9,7 @@ $( document ).ready(function() {
   });
 });
 
-function getVoucher(id) {
+function getUser(id) {
     console.log("Get Voucher Data");
 
     var arrData = [];
@@ -35,19 +35,16 @@ function getVoucher(id) {
             var li = $("<div class='mda-list-item'></div>").html(html);
             li.appendTo('#listVoucher');
           }
-
-          getVariant(id, arrData.length);
         },
         error: function (data) {
           console.log(data.data);
           $("<div class='card-body text-center'>No Voucher Yet</div>").appendTo('#cardVoucher');
-          getVariant(id, 0);
         }
     });
 }
 
 function getPartner(id) {
-    console.log("Get Partner Data");
+    console.log("Get Voucher Data");
 
     var arrData = [];
     $.ajax({
@@ -73,9 +70,9 @@ function getPartner(id) {
 }
 
 
-function getVariant(id, voucher) {
+function getVariant(id) {
     console.log("Get Variant Data");
-    console.log(voucher);
+
     var arrData = [];
     $.ajax({
         url: '/v1/api/get/variant/'+id+'?token='+token,
@@ -89,8 +86,8 @@ function getVariant(id, voucher) {
           var period = startDate + " to " + endDate;
 
           var remainingVoucher = result.MaxQuantityVoucher;
-          if( voucher != null)
-            remainingVoucher = result.MaxQuantityVoucher - voucher;
+          if( result.Voucher != null)
+            remainingVoucher = esult.MaxQuantityVoucher - result.Voucher.length;
 
           $('#variantName').html(result.VariantName);
           $('#variantDescription').html(result.VariantDescription);
@@ -104,10 +101,6 @@ function getVariant(id, voucher) {
           $('#remainingVoucher').html(remainingVoucher);
         }
     });
-}
-
-function editVariant(){
-  window.location = "/variant/update?id="+id;
 }
 
 function findGetParameter(parameterName) {
