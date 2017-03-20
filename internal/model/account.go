@@ -86,11 +86,11 @@ func FindAllAccounts() ([]AccountRes, error) {
 	return resv, nil
 }
 
-func GetAccountByUser(userID string) ([]AccountRes, error) {
+func GetAccountByUser(userID string) ([]Account, error) {
 	vc, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err)
-		return []AccountRes{}, ErrServerInternal
+		return []Account{}, ErrServerInternal
 	}
 	defer vc.Rollback()
 
@@ -98,6 +98,7 @@ func GetAccountByUser(userID string) ([]AccountRes, error) {
 		SELECT
 			a.id
 			, a.account_name
+			, a.billing
 		FROM
 			accounts as a
 		JOIN
@@ -106,13 +107,13 @@ func GetAccountByUser(userID string) ([]AccountRes, error) {
 			ua.user_id = ?
 			AND a.status = ?
 	`
-	var resd []AccountRes
+	var resd []Account
 	if err := db.Select(&resd, db.Rebind(q), userID, StatusCreated); err != nil {
 		fmt.Println(err)
-		return []AccountRes{}, ErrServerInternal
+		return []Account{}, ErrServerInternal
 	}
 	if len(resd) == 0 {
-		return []AccountRes{}, ErrResourceNotFound
+		return []Account{}, ErrResourceNotFound
 	}
 	return resd, nil
 }

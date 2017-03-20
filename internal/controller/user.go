@@ -130,6 +130,38 @@ func FindUserByRole(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
+func GetUserDetails(w http.ResponseWriter, r *http.Request) {
+	user := ""
+	token := r.FormValue("token")
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
+
+	res.AddError(its(status), its(status), err.Error(), "user")
+
+	valid := false
+	if token != "" && token != "null" {
+		user, _, _, valid, _ = getValiditySession(r, token)
+	}
+
+	if valid {
+		status = http.StatusOK
+		user, err := model.FindUserDetail(user)
+		if err != nil {
+			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				status = http.StatusNotFound
+			}
+
+			res.AddError(its(status), its(status), err.Error(), "user")
+		} else {
+			res = NewResponse(user)
+		}
+	}
+
+	render.JSON(w, res, status)
+}
+
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	accountId := ""
 	token := r.FormValue("token")
@@ -261,25 +293,25 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 func getValiditySession(r *http.Request, token string) (string, string, time.Time, bool, error) {
 	fmt.Println("Check Session")
 	fmt.Println(r)
-	// sessionValue, err := store.Get(r, token)
-	// if err != nil {
-	// 	return "", "", time.Now(), false, model.ErrTokenNotFound
-	// }
-	// ds := sessionValue.Values
-	// if len(ds) == 0 {
-	// 	return "", "", time.Now(), false, model.ErrTokenNotFound
-	// }
-	//
-	// exp, err := time.Parse("2006-01-02 15:04:05", ds["expired"].(string))
-	// if err != nil {
-	// 	//log.Panic(err)
-	// 	return "", "", time.Now(), false, model.ErrTokenExpired
-	// }
-	//
-	// if exp.Before(time.Now()) {
-	// 	return "", "", time.Now(), false, model.ErrTokenExpired
-	// }
-	//
-	// return ds["user"].(string), ds["account"].(string), exp, true, nil
-	return "g6mrRguA", "So-GAf-G", time.Now(), true, nil
+	sessionValue, err := store.Get(r, token)
+	if err != nil {
+		return "", "", time.Now(), false, model.ErrTokenNotFound
+	}
+	ds := sessionValue.Values
+	if len(ds) == 0 {
+		return "", "", time.Now(), false, model.ErrTokenNotFound
+	}
+
+	exp, err := time.Parse("2006-01-02 15:04:05", ds["expired"].(string))
+	if err != nil {
+		//log.Panic(err)
+		return "", "", time.Now(), false, model.ErrTokenExpired
+	}
+
+	if exp.Before(time.Now()) {
+		return "", "", time.Now(), false, model.ErrTokenExpired
+	}
+
+	return ds["user"].(string), ds["account"].(string), exp, true, nil
+	// return "g6mrRguA", "So-GAf-G", time.Now(), true, nil
 }
