@@ -4,7 +4,7 @@ $( window ).ready(function() {
 
 function getAccount(){
   $.ajax({
-    url: '/v1/api/get/accountId',
+    url: '/v1/api/get/account',
     type: 'get',
     success: function (data) {
       var i = 0;
