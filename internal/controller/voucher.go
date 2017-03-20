@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gilkor/evoucher/internal/model"
+	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
 )
 
@@ -42,21 +43,41 @@ type (
 
 	GetVoucherOfVariatList []GetVoucherOfVariatdata
 	GetVoucherOfVariatdata struct {
+		VariantID     string  `json:"variant_id"`
+		AccountId     string  `json:"account_id"`
+		VariantName   string  `json:"variant_name"`
+		VoucherType   string  `json:"voucher_type"`
+		VoucherPrice  float64 `json:"voucher_price"`
+		DiscountValue float64 `json:"discount_value"`
+		MaxQty        float64 `json:"max_quantity_voucher"`
+		ImgUrl        string  `json:"image_url"`
+		StartDate     string  `json:"start_date"`
+		EndDate       string  `json:"end_date"`
+		Used          string  `json:"used"`
+	}
+
+	GetVoucherOfVariatListDetails struct {
 		VariantID          string           `json:"variant_id"`
 		AccountId          string           `json:"account_id"`
 		VariantName        string           `json:"variant_name"`
 		VariantType        string           `json:"variant_type"`
+		VoucherFormat      int              `json:"voucher_format_id"`
 		VoucherType        string           `json:"voucher_type"`
-		RedeemMethod       string           `json:"redeemtion_method"`
 		VoucherPrice       float64          `json:"voucher_price"`
-		DiscountValue      float64          `json:"discount_value"`
 		AllowAccumulative  bool             `json:"allow_accumulative"`
 		StartDate          string           `json:"start_date"`
 		EndDate            string           `json:"end_date"`
-		ImgUrl             string           `json:"image_url"`
+		DiscountValue      float64          `json:"discount_value"`
+		MaxQuantityVoucher float64          `json:"max_quantity_voucher"`
+		MaxUsageVoucher    float64          `json:"max_usage_voucher"`
+		RedeemtionMethod   string           `json:"redeemtion_method"`
+		ImgUrl             string           `json:"img_url"`
 		VariantTnc         string           `json:"variant_tnc"`
 		VariantDescription string           `json:"variant_description"`
-		Vouchers           []VoucerResponse `json:"vouchers,omitempty"`
+		CreatedBy          string           `json:"created_by"`
+		CreatedAt          string           `json:"created_at"`
+		Partners           []Partner        `json:"Partners"`
+		Voucher            []VoucerResponse `json:"Vouchers"`
 	}
 
 	// VoucerResponse represent list of voucher data
@@ -152,8 +173,6 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	param := getUrlParam(r.URL.String())
-	viewresponse := param["list"]
-	delete(param, "list")
 	delete(param, "token")
 
 	if len(param) > 0 {
@@ -186,76 +205,114 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 	}
 	// fmt.Println(distinctVariant)
 	d := make(GetVoucherOfVariatList, len(distinctVariant))
+	for k, v := range distinctVariant {
+		dt, _ := model.FindVariantDetailsById(v)
+		d[k].VariantID = dt.Id
+		d[k].AccountId = dt.AccountId
+		d[k].VariantName = dt.VariantName
+		d[k].VoucherType = dt.VoucherType
+		d[k].VoucherPrice = dt.VoucherPrice
+		d[k].DiscountValue = dt.DiscountValue
+		d[k].StartDate = dt.StartDate
+		d[k].EndDate = dt.EndDate
+		d[k].ImgUrl = dt.ImgUrl
+		d[k].Used = its(getCountVoucher(v))
+	}
 
-	switch viewresponse {
-	case "variant":
-		for k, v := range distinctVariant {
-			dt, _ := model.FindVariantDetailsById(v)
-			d[k].VariantID = dt.Id
-			d[k].AccountId = dt.AccountId
-			d[k].VariantName = dt.VariantName
-			d[k].VariantType = dt.VariantType
-			d[k].VoucherType = dt.VoucherType
-			d[k].RedeemMethod = dt.RedeemtionMethod
-			d[k].VoucherPrice = dt.VoucherPrice
-			d[k].DiscountValue = dt.DiscountValue
-			d[k].AllowAccumulative = dt.AllowAccumulative
-			d[k].StartDate = dt.StartDate
-			d[k].EndDate = dt.EndDate
-			d[k].ImgUrl = dt.ImgUrl
-			d[k].VariantTnc = dt.VariantTnc
-			d[k].VariantDescription = dt.VariantDescription
-		}
-	case "voucher":
-		for k, v := range distinctVariant {
-			dt, _ := model.FindVariantDetailsById(v)
-			d[k].VariantID = dt.Id
-			d[k].AccountId = dt.AccountId
-			d[k].VariantName = dt.VariantName
-			d[k].VariantType = dt.VariantType
-			d[k].VoucherType = dt.VoucherType
-			d[k].RedeemMethod = dt.RedeemtionMethod
-			d[k].VoucherPrice = dt.VoucherPrice
-			d[k].DiscountValue = dt.DiscountValue
-			d[k].AllowAccumulative = dt.AllowAccumulative
-			d[k].StartDate = dt.StartDate
-			d[k].EndDate = dt.EndDate
-			d[k].ImgUrl = dt.ImgUrl
-			d[k].VariantTnc = dt.VariantTnc
-			d[k].VariantDescription = dt.VariantDescription
+	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
+	status = http.StatusOK
+	res = NewResponse(d)
+	render.JSON(w, res, status)
+}
 
-			d[k].Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
-			for i, val := range voucher.VoucherData {
-				d[k].Vouchers[i].VoucherID = val.ID
-				d[k].Vouchers[i].VoucherNo = val.VoucherCode
-				d[k].Vouchers[i].State = val.State
-			}
-		}
-	default:
-		for k, v := range distinctVariant {
-			dt, _ := model.FindVariantDetailsById(v)
-			d[k].VariantID = dt.Id
-			d[k].AccountId = dt.AccountId
-			d[k].VariantName = dt.VariantName
-			d[k].VariantType = dt.VariantType
-			d[k].VoucherType = dt.VoucherType
-			d[k].RedeemMethod = dt.RedeemtionMethod
-			d[k].VoucherPrice = dt.VoucherPrice
-			d[k].DiscountValue = dt.DiscountValue
-			d[k].AllowAccumulative = dt.AllowAccumulative
-			d[k].StartDate = dt.StartDate
-			d[k].EndDate = dt.EndDate
-			d[k].ImgUrl = dt.ImgUrl
-			d[k].VariantTnc = dt.VariantTnc
-			d[k].VariantDescription = dt.VariantDescription
+func GetVoucherOfVariantDetails(w http.ResponseWriter, r *http.Request) {
+	variant := bone.GetValue(r, "id")
+	res := NewResponse(nil)
+	var status int
 
-			d[k].Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
-			for i, val := range voucher.VoucherData {
-				d[k].Vouchers[i].VoucherID = val.ID
-				d[k].Vouchers[i].VoucherNo = val.VoucherCode
-				d[k].Vouchers[i].State = val.State
-			}
-		}
+	//Token Authentocation
+	_, _, _, ok := CheckToken(w, r)
+	if !ok {
+		return
+	}
+
+	param := getUrlParam(r.URL.String())
+	delete(param, "token")
+
+	if len(param) < 0 || variant == "" {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+
+	voucher, err := model.FindVoucher(param)
+	if err == model.ErrResourceNotFound {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidHolder, "voucher")
+		render.JSON(w, res, status)
+		return
+	} else if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+	dt, err := model.FindVariantDetailsById(variant)
+	if err == model.ErrResourceNotFound {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, "voucher")
+		render.JSON(w, res, status)
+		return
+	} else if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+	p, err := model.FindVariantPartner(map[string]string{"variant_id": variant})
+	if err == model.ErrResourceNotFound {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant+"(Partner of Variant Not Found)", "voucher")
+		render.JSON(w, res, status)
+		return
+	} else if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+
+	d := GetVoucherOfVariatListDetails{}
+	d.VariantID = dt.Id
+	d.AccountId = dt.AccountId
+	d.VariantName = dt.VariantName
+	d.VoucherType = dt.VoucherType
+	d.VoucherType = dt.VoucherType
+	d.VoucherPrice = dt.VoucherPrice
+	d.AllowAccumulative = dt.AllowAccumulative
+	d.StartDate = dt.StartDate
+	d.EndDate = dt.EndDate
+	d.DiscountValue = dt.DiscountValue
+	d.MaxQuantityVoucher = dt.MaxQuantityVoucher
+	d.MaxUsageVoucher = dt.MaxUsageVoucher
+	d.RedeemtionMethod = dt.RedeemtionMethod
+	d.ImgUrl = dt.ImgUrl
+	d.VariantTnc = dt.VariantTnc
+	d.VariantDescription = dt.VariantDescription
+
+	d.Partners = make([]Partner, len(p))
+	for i, pd := range p {
+		d.Partners[i].ID = pd.Id
+		d.Partners[i].PartnerName = pd.PartnerName
+		d.Partners[i].SerialNumber = pd.SerialNumber.String
+	}
+
+	d.Voucher = make([]VoucerResponse, len(voucher.VoucherData))
+	for j, vd := range voucher.VoucherData {
+		d.Voucher[j].VoucherID = vd.ID
+		d.Voucher[j].VoucherNo = vd.VoucherCode
+		d.Voucher[j].State = vd.State
 	}
 
 	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))

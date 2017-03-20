@@ -20,6 +20,7 @@ type (
 		CreatedBy string `json:"created_by"`
 	}
 	Partner struct {
+		ID           string `json:"id"`
 		PartnerName  string `json:"partner_name"`
 		SerialNumber string `json:"serial_number"`
 	}
