@@ -25,7 +25,7 @@ function searchById(id) {
     var arrData = [];
 
     $.ajax({
-        url: 'http://voucher.apps.id:8889/v1/api/get/variant/'+id+'?token='+token,
+        url: '/v1/api/get/variant/'+id+'?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data);
@@ -72,7 +72,7 @@ function send() {
     console.log(variant);
 
     $.ajax({
-        url: 'http://voucher.apps.id:8889/v1/update/variant/'+id+'?token='+token,
+        url: '/v1/update/variant/'+id+'?token='+token,
         type: 'post',
         dataType: 'json',
         contentType: "application/json",
@@ -87,7 +87,7 @@ function getPartner() {
     console.log("Get Partner Data");
 
     $.ajax({
-      url: 'http://voucher.apps.id:8889/v1/get/partner',
+      url: '/v1/get/partner',
       type: 'get',
       success: function (data) {
         console.log("Render Data");
