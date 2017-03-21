@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -571,4 +572,30 @@ func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 
 	res := NewResponse(nil)
 	render.JSON(w, res, status)
+}
+
+func CheckVariant(rm, id string, qty int) (bool, error) {
+	dt, err := model.FindVariantDetailsById(id)
+	sd, err := time.Parse(time.RFC3339Nano, dt.StartDate)
+	if err != nil {
+		return false, err
+	}
+	ed, err := time.Parse(time.RFC3339Nano, dt.EndDate)
+	if err != nil {
+		return false, err
+	}
+
+	if !sd.Before(time.Now()) || !ed.After(time.Now()) {
+		return false, errors.New(model.ErrCodeVoucherNotActive)
+	}
+
+	if dt.AllowAccumulative == false && qty > 1 {
+		return false, errors.New(model.ErrCodeAllowAccumulativeDisable)
+	}
+
+	if dt.RedeemtionMethod != rm {
+		return false, errors.New(model.ErrCodeInvalidRedeemMethod)
+	}
+
+	return true, nil
 }

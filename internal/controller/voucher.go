@@ -121,22 +121,6 @@ func (r *TransactionRequest) CheckVoucherRedeemtion(voucherID string) (bool, err
 		return false, errors.New(model.ErrMessageVoucherAlreadyPaid)
 	}
 
-	dt, err := model.FindVariantDetailsById(voucher.VoucherData[0].VariantID)
-
-	sd, err := time.Parse(time.RFC3339Nano, dt.StartDate)
-	if err != nil {
-		return false, err
-	}
-	ed, err := time.Parse(time.RFC3339Nano, dt.EndDate)
-	if err != nil {
-		return false, err
-	}
-
-	fmt.Println(sd, " vs ", ed)
-	if !sd.Before(time.Now()) || !ed.After(time.Now()) {
-		return false, errors.New(model.ErrCodeVoucherNotActive)
-	}
-
 	return true, nil
 }
 
@@ -237,6 +221,7 @@ func GetVoucherOfVariantDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	param := getUrlParam(r.URL.String())
+	param["state"] = model.VoucherStateCreated
 	param["variant_id"] = variant
 	delete(param, "token")
 
@@ -416,7 +401,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInvalidVariant+"("+err.Error()+")", "voucher")
 		render.JSON(w, res, status)
 		return
 	}
@@ -446,7 +431,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	voucher, err = d.generateVoucherBulk(&dt)
 	if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"( failed Genarate Voucher :"+err.Error()+")", "voucher")
 		render.JSON(w, res, status)
 		return
 	}
@@ -522,7 +507,7 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 	voucher, err = d.generateVoucherBulk(&dt)
 	if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeVoucherRulesViolated, model.ErrMessageVoucherRulesViolated, "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"(failed Genarate Voucher :"+err.Error()+")", "voucher")
 		render.JSON(w, res, status)
 		return
 	}
@@ -553,15 +538,13 @@ func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model
 	}
 
 	for i := 0; i <= vr.Quantity-1; i++ {
-
 		switch {
 		case v.VoucherFormat == 0:
 			code = randStr(model.DEFAULT_LENGTH, model.DEFAULT_CODE)
-		case vcf.Body.Valid == true:
+		case vcf.Body.Valid == true && vcf.Body.String != "":
 			code = vcf.Prefix.String + vcf.Body.String + vcf.Postfix.String
 		default:
 			code = vcf.Prefix.String + randStr(vcf.Length-(len(vcf.Prefix.String)+len(vcf.Postfix.String)), vcf.FormatType) + vcf.Postfix.String
-			// fmt.Println("3 :", code)
 		}
 		rt = append(rt, code)
 
