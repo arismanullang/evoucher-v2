@@ -14,6 +14,7 @@ function getVariant() {
           var limit = 5;
 
           var totalVoucher = 0;
+          var totalGeneratedVoucher = 0;
 
           for ( i = 0; i < result.length; i++){
             if( i < 5){
@@ -37,11 +38,13 @@ function getVariant() {
               li.appendTo('#upcomming-variant');
             }
 
-            totalVoucher += parseInt(result[i].Voucher);
+            totalVoucher += parseInt(result[i].MaxVoucher);
+            totalGeneratedVoucher += parseInt(result[i].Voucher);
           }
 
           $("#total-variant").html(result.length);
           $("#total-voucher").html(totalVoucher);
+          $("#total-generated").html(totalGeneratedVoucher);
         },
         error: function (data) {
           alert("Account Not Found.");
