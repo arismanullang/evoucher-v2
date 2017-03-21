@@ -1,5 +1,30 @@
 $( window ).ready(function() {
   getRole()
+
+  $( "#username" ).focusout(function() {
+    if($("#username").val() != ""){
+      $("#username").removeClass("error");
+      $("#username-card").removeClass("input-error");
+    }
+  });
+  $( "#password" ).focusout(function() {
+    if($("#password").val() != ""){
+      $("#password").removeClass("error");
+      $("#password-card").removeClass("input-error");
+    }
+  });
+  $( "#email" ).focusout(function() {
+    if($("#email").val() != ""){
+      $("#email").removeClass("error");
+      $("#email-card").removeClass("input-error");
+    }
+  });
+  $( "#phone" ).focusout(function() {
+    if($("#phone").val() != ""){
+      $("#phone").removeClass("error");
+      $("#phone-card").removeClass("input-error");
+    }
+  });
 });
 
 function toTwoDigit(val){
@@ -26,6 +51,32 @@ function send() {
   }
 
   listRole.splice(0, 1);
+  var error = false;
+  if($("#username").val() == ""){
+    $("#username").addClass("error");
+    $("#username-card").addClass("input-error");
+    error = true;
+  }
+  if($("#password").val() == ""){
+    $("#password").addClass("error");
+    $("#password-card").addClass("input-error");
+    error = true;
+  }
+  if($("#email").val() == ""){
+    $("#email").addClass("error");
+    $("#email-card").addClass("input-error");
+    error = true;
+  }
+  if($("#phone").val() == ""){
+    $("#phone").addClass("error");
+    $("#phone-card").addClass("input-error");
+    error = true;
+  }
+
+  if(error){
+    alert("Please check your input.");
+    return
+  }
 
   var userReq = {
       username: $("#username").val(),
@@ -88,11 +139,6 @@ function findGetParameter(parameterName) {
 
     function formAdvanced() {
         $('.select2').select2();
-
-        $('.datepicker4')
-            .datepicker({
-                container:'#example-datepicker-container-4'
-            });
     }
 
 })();

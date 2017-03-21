@@ -1,3 +1,6 @@
 $( function() {
-  $( ".datepicker" ).datepicker();
+  $( ".datepicker" ).datepicker({
+    autoclose: true,
+    startDate: 'd'
+  });
 } );
