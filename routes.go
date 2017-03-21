@@ -74,6 +74,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/view/", viewHandler)
 	r.GetFunc("/viewNoLayout", viewNoLayoutHandler)
 
+	r.NotFoundFunc(errorHandler)
 	return r
 }
 
@@ -155,4 +156,8 @@ func viewVoucher(w http.ResponseWriter, r *http.Request) {
 
 func login(w http.ResponseWriter, r *http.Request) {
 	render.FileInLayout(w, "layout.html", "user/login.html", nil)
+}
+
+func errorHandler(w http.ResponseWriter, r *http.Request) {
+	render.FileInLayout(w, "layout.html", "notfound.html", nil)
 }
