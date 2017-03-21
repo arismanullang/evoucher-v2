@@ -132,8 +132,6 @@ function deleteVariant(id) {
     });
 }
 
-
-
 (function() {
     'use strict';
 

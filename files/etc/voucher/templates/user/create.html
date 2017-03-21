@@ -18,8 +18,8 @@
         <div class="row">
           <div class="col-sm-12">
             <div class="mda-form-group">
-              <div class="mda-form-control">
-                <input id="username" name="username" tabindex="0" aria-invalid="false" class="form-control">
+              <div id="username-card" class="mda-form-control">
+                <input id="username" name="username" tabindex="0" aria-invalid="false" aria-required="true" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Username</label>
               </div>
@@ -29,8 +29,8 @@
         <div class="row">
           <div class="col-sm-12">
             <div class="mda-form-group">
-              <div class="mda-form-control">
-                <input type="password" id="password" name="password" tabindex="0" aria-invalid="false" class="form-control">
+              <div id="password-card" class="mda-form-control">
+                <input type="password" id="password" name="password"  tabindex="0" aria-required="true" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Password</label>
               </div>
@@ -40,8 +40,8 @@
         <div class="row">
           <div class="col-sm-12">
             <div class="mda-form-group">
-              <div class="mda-form-control">
-                <input placeholder="mail@example.com" id="email" name="email" required="" class="form-control error" aria-required="true" aria-invalid="true" type="email">
+              <div id="email-card" class="mda-form-control">
+                <input placeholder="mail@example.com" id="email" name="email" class="form-control" aria-required="true" aria-invalid="true" type="email">
                 <div class="mda-form-control-line"></div>
                 <label class="control-label">Email Address</label>
               </div>
@@ -51,8 +51,8 @@
         <div class="row">
           <div class="col-sm-12">
             <div class="mda-form-group">
-              <div class="mda-form-control">
-                <input id="phone" name="phone" tabindex="0" aria-invalid="false" class="form-control">
+              <div id="phone-card" class="mda-form-control">
+                <input id="phone" name="phone" tabindex="0" aria-required="true" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Phone</label>
               </div>
@@ -62,8 +62,8 @@
         <div class="row">
           <div class="col-sm-12">
             <div class="mda-form-group">
-              <div class="mda-form-control">
-                <select id="role" name="role" multiple="multiple" class="form-control select2" tabindex="0">
+              <div id="role-card" class="mda-form-control">
+                <select id="role" name="role" multiple="multiple" aria-required="true" class="form-control select2" tabindex="0">
                 </select>
                 <div class="mda-form-control-line"></div>
                 <label>Role</label>

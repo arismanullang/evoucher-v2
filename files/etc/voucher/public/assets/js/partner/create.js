@@ -12,7 +12,34 @@ function send() {
        contentType: "application/json",
        data: JSON.stringify(partner),
        success: function () {
-           alert("Partner created.");
+           window.location = "/partner/search";
        }
    });
 }
+
+(function() {
+    'use strict';
+
+    $(runSweetAlert);
+    //onclick='deleteVariant(\""+arrData[i].Id+"\")'
+    function runSweetAlert() {
+        $(document).on('click', '.swal-demo4', function(e) {
+            e.preventDefault();
+            console.log(e.target.value);
+            swal({
+                    title: 'Are you sure?',
+                    text: 'Do you want create partner '+$("#partnerName").val()+' with serial number '+$("#serialNumber").val()+'?',
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#DD6B55',
+                    confirmButtonText: 'Yes',
+                    closeOnConfirm: false
+                },
+                function() {
+                    swal('Success', 'Partner '+$("#partnerName").val()+' created.', send());
+                });
+
+        });
+    }
+
+})();

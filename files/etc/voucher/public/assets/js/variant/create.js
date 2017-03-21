@@ -56,17 +56,18 @@ function send() {
       valid_partners: listPartner
     };
 
-    console.log(variant);
-    $.ajax({
-       url: '/v1/create/variant?token='+token,
-       type: 'post',
-       dataType: 'json',
-       contentType: "application/json",
-       data: JSON.stringify(variant),
-       success: function () {
-           alert("Variant created.");
-       }
-   });
+  //   console.log(variant);
+  //   $.ajax({
+  //      url: '/v1/create/variant?token='+token,
+  //      type: 'post',
+  //      dataType: 'json',
+  //      contentType: "application/json",
+  //      data: JSON.stringify(variant),
+  //      success: function () {
+  //          alert("Variant created.");
+  //          window.location = "/variant/search";
+  //      }
+  //  });
 }
 
 function getPartner() {
@@ -117,10 +118,14 @@ function findGetParameter(parameterName) {
     function formAdvanced() {
         $('.select2').select2();
 
-        $('.datepicker4')
-            .datepicker({
-                container:'#example-datepicker-container-4'
+        $('.datepicker4').datepicker({
+                container:'#example-datepicker-container-4',
+                autoclose: true,
+                startDate: 'd',
+                setDate: new Date()
             });
+        $('#startDate').datepicker('update', new Date());
+        $('#endDate').datepicker('update', '+1d');
     }
 
 })();

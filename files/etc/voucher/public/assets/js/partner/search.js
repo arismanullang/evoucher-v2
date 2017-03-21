@@ -17,8 +17,8 @@ function getPartner() {
         for (i = 0; i < arrData.length; i++){
           var html = "<div class='mda-list-item-icon'><em class='ion-home icon-2x'></em></div>"
           +  "<div class='mda-list-item-text'>"
-          +  "<h3><a href='#'>"+arrData[i].PartnerName+"</a></h3>"
-          +  "<p> Serial Number : "+arrData[i].SerialNumber.String+"</p>"
+          +  "<h3>"+arrData[i].PartnerName+"</h3>"
+          +  "<p class='text-muted'> Serial Number : "+arrData[i].SerialNumber.String+"</p>"
           +"</div>";
           var li = $("<div class='mda-list-item'></div>").html(html);
           li.appendTo('#listPartner');
