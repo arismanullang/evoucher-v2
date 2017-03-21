@@ -52,7 +52,7 @@ function getVariant() {
             dataSet[i] = [
               arrData[i].VariantName
               , arrData[i].VoucherPrice
-              , arrData[i].DiscountValue
+              , "Rp " + addDecimalPoints(arrData[i].DiscountValue) + ",00"
               , (arrData[i].MaxVoucher - arrData[i].Voucher)
               , "<div class='progress'>"
                 + "<div role='progressbar' aria-valuenow='"+diffNow+"' aria-valuemin='0' aria-valuemax='"+diffTotal+"' style='width: "+persen+"%;' class='progress-bar'>"+diffNow+"</div>"
@@ -72,7 +72,7 @@ function getVariant() {
               data: dataSet,
               columns: [
                   { title: "Variant Name" },
-                  { title: "Voucher Price" },
+                  { title: "Convention Rate" },
                   { title: "Voucher Value" },
                   { title: "Remaining Voucher" },
                   { title: "Period" },
@@ -108,6 +108,19 @@ function findGetParameter(parameterName) {
     return result;
 }
 
+function addDecimalPoints(value) {
+    var input = " "+value;
+    var inputValue = input.replace('.', '').split("").reverse().join(""); // reverse
+    var newValue = '';
+    for (var i = 0; i < inputValue.length; i++) {
+        if (i % 3 == 0 && i != 0 && i != inputValue.length-1) {
+            newValue += '.';
+        }
+        newValue += inputValue[i];
+    }
+    return newValue.split("").reverse().join("");
+}
+
 function edit(url){
   window.location = "/variant/update?id="+url;
 }
@@ -131,8 +144,6 @@ function deleteVariant(id) {
         }
     });
 }
-
-
 
 (function() {
     'use strict';
