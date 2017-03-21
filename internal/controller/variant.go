@@ -80,6 +80,8 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	param := getUrlParam(r.URL.String())
+
+	param["variant_type"] = model.VariantTypeOnDemand
 	param["account_id"] = accountID
 	delete(param, "token")
 

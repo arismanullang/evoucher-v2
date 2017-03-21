@@ -132,8 +132,8 @@ func (r *TransactionRequest) CheckVoucherRedeemtion(voucherID string) (bool, err
 		return false, err
 	}
 
-	// fmt.Println(dt.RedeemtionMethod, " vs ", r.RedeemMethod)
-	if sd.After(time.Now()) && ed.After(time.Now()) {
+	fmt.Println(sd, " vs ", ed)
+	if !sd.Before(time.Now()) || !ed.After(time.Now()) {
 		return false, errors.New(model.ErrCodeVoucherNotActive)
 	}
 
@@ -237,6 +237,7 @@ func GetVoucherOfVariantDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	param := getUrlParam(r.URL.String())
+	param["variant_id"] = variant
 	delete(param, "token")
 
 	if len(param) < 0 || variant == "" {
