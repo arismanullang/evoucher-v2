@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	//"fmt"
 	"log"
 	"net/http"
@@ -14,9 +16,9 @@ import (
 
 type (
 	Account struct {
-		AccountName string `json:"account_name"`
-		Billing     string `json:"billing"`
-		CreatedBy   string `json:"created_by"`
+		AccountName string         `json:"account_name"`
+		Billing     sql.NullString `json:"billing"`
+		CreatedBy   string         `json:"created_by"`
 	}
 )
 
@@ -53,30 +55,60 @@ func GetAccount(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res)
 }
 
-func GetAccountByUser(w http.ResponseWriter, r *http.Request) {
+func GetAccountDetailByUser(w http.ResponseWriter, r *http.Request) {
 	user := ""
 	token := r.FormValue("token")
 	status := http.StatusUnauthorized
 	err := model.ErrTokenNotFound
 	res := NewResponse(nil)
 
-	res.AddError(its(status), its(status), err.Error(), "partner")
+	res.AddError(its(status), its(status), err.Error(), "account")
 
 	valid := false
 	if token != "" && token != "null" {
 		user, _, _, valid, _ = getValiditySession(r, token)
 	}
-
+	fmt.Println("user " + user)
 	if valid {
 		status = http.StatusOK
-		account, err := model.GetAccountByUser(user)
+		account, err := model.GetAccountDetailByUser(user)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
 				status = http.StatusNotFound
 			}
 
-			res.AddError(its(status), its(status), err.Error(), "partner")
+			res.AddError(its(status), its(status), err.Error(), "account")
+		} else {
+			res = NewResponse(account)
+		}
+	}
+	render.JSON(w, res, status)
+}
+
+func GetAccountsByUser(w http.ResponseWriter, r *http.Request) {
+	user := ""
+	token := r.FormValue("token")
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
+
+	res.AddError(its(status), its(status), err.Error(), "account")
+
+	valid := false
+	if token != "" && token != "null" {
+		user, _, _, valid, _ = getValiditySession(r, token)
+	}
+	if valid {
+		status = http.StatusOK
+		account, err := model.GetAccountsByUser(user)
+		if err != nil {
+			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				status = http.StatusNotFound
+			}
+
+			res.AddError(its(status), its(status), err.Error(), "account")
 		} else {
 			res = NewResponse(account)
 		}

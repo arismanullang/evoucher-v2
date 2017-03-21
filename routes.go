@@ -25,6 +25,7 @@ func setRoutes() http.Handler {
 	r.PostFunc("/v1/create/variant", controller.CreateVariant)
 	r.GetFunc("/v1/api/get/allVariant", controller.GetAllVariants)
 	r.GetFunc("/v1/api/get/variant", controller.GetVariants)
+	r.GetFunc("/v1/api/get/totalVariant", controller.GetTotalVariant)
 	r.GetFunc("/v1/api/get/variantByDate", controller.GetVariantDetailsByDate)
 	r.GetFunc("/v1/api/get/variantDetails/custom", controller.GetVariantDetailsCustom)
 
@@ -44,7 +45,8 @@ func setRoutes() http.Handler {
 	r.PostFunc("/v1/create/user", controller.RegisterUser)
 	r.GetFunc("/v1/api/get/session", controller.CheckSession)
 	r.GetFunc("/v1/api/get/userByRole", controller.FindUserByRole)
-	r.GetFunc("/v1/api/get/user", controller.GetUser)
+	r.GetFunc("/v1/api/get/users", controller.GetUser)
+	r.GetFunc("/v1/api/get/userDetails", controller.GetUserDetails)
 	r.PostFunc("/v1/api/login", controller.DoLogin)
 
 	//partner
@@ -54,7 +56,8 @@ func setRoutes() http.Handler {
 
 	//account
 	r.GetFunc("/v1/api/get/account", controller.GetAccount)
-	r.GetFunc("/v1/api/get/accountById", controller.GetAccountByUser)
+	r.GetFunc("/v1/api/get/accountsDetail", controller.GetAccountDetailByUser)
+	r.GetFunc("/v1/api/get/accountsByUser", controller.GetAccountsByUser)
 	r.GetFunc("/v1/api/get/role", controller.GetAllAccountRoles)
 
 	//open API
