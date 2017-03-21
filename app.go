@@ -70,6 +70,9 @@ func main() {
 	if err := model.ConnectDB(config.Database.Endpoint); err != nil {
 		log.Fatal(err)
 	}
+	if err := model.OpenRedisPool(config.Database.Redis); err != nil {
+		log.Fatal(err)
+	}
 
 	render.SetPath(config.Server.TemplateDirectory)
 

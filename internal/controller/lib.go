@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/gilkor/evoucher/internal/model"
-	"github.com/ruizu/render"
 )
 
 func getUrlParam(url string) map[string]string {
@@ -108,38 +107,6 @@ func replaceSpecialCharacter(param string) string {
 	safe := reg.ReplaceAllString(param, "x")
 	safe = strings.Trim(safe, "-")
 	return safe
-}
-
-func CheckToken(w http.ResponseWriter, r *http.Request) (string, string, time.Time, bool) {
-	res := NewResponse(nil)
-	token := r.FormValue("token")
-	var exp time.Time
-	var valid bool
-	var err error
-	var a, u string
-
-	if len(token) < 1 {
-		res.AddError(its(http.StatusUnauthorized), model.ErrCodeMissingToken, model.ErrMessageTokenNotFound, "token")
-		render.JSON(w, res, http.StatusUnauthorized)
-		return "", "", time.Now(), false
-	}
-	// Return : user_id, account_id, expired, boolean, error
-	if u, a, exp, valid, err = getValiditySession(r, token); err != nil {
-		switch err {
-		case model.ErrTokenNotFound:
-			res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound, "token")
-			render.JSON(w, res, http.StatusUnauthorized)
-		case model.ErrTokenExpired:
-			res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, "token")
-			render.JSON(w, res, http.StatusUnauthorized)
-		}
-		return "", "", time.Now(), false
-	} else if !valid {
-		res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound, "token")
-		render.JSON(w, res, http.StatusUnauthorized)
-		return "", "", time.Now(), false
-	}
-	return a, u, exp, true
 }
 
 func randStr(ln int, fm string) string {
