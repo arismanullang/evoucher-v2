@@ -1,6 +1,7 @@
 package model
 
 import (
+	"database/sql"
 	"fmt"
 )
 
@@ -10,10 +11,10 @@ type (
 		AccountName string `db:"account_name"`
 	}
 	Account struct {
-		Id          string `db:"id"`
-		AccountName string `db:"account_name"`
-		Billing     string `db:"billing"`
-		CreatedBy   string `db:"created_by"`
+		Id          string         `db:"id"`
+		AccountName string         `db:"account_name"`
+		Billing     sql.NullString `db:"billing"`
+		CreatedBy   string         `db:"created_by"`
 	}
 )
 
@@ -86,7 +87,7 @@ func FindAllAccounts() ([]AccountRes, error) {
 	return resv, nil
 }
 
-func GetAccountByUser(userID string) ([]Account, error) {
+func GetAccountDetailByUser(userID string) ([]Account, error) {
 	vc, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err)
@@ -103,6 +104,8 @@ func GetAccountByUser(userID string) ([]Account, error) {
 			accounts as a
 		JOIN
 			user_accounts as ua
+		ON
+			a.id = ua.account_id
 		WHERE
 			ua.user_id = ?
 			AND a.status = ?
@@ -114,6 +117,38 @@ func GetAccountByUser(userID string) ([]Account, error) {
 	}
 	if len(resd) == 0 {
 		return []Account{}, ErrResourceNotFound
+	}
+	return resd, nil
+}
+
+func GetAccountsByUser(userID string) ([]string, error) {
+	vc, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err)
+		return []string{}, ErrServerInternal
+	}
+	defer vc.Rollback()
+
+	q := `
+		SELECT
+			a.id
+		FROM
+			accounts as a
+		JOIN
+			user_accounts as ua
+		ON
+			a.id = ua.account_id
+		WHERE
+			ua.user_id = ?
+			AND a.status = ?
+	`
+	var resd []string
+	if err := db.Select(&resd, db.Rebind(q), userID, StatusCreated); err != nil {
+		fmt.Println(err)
+		return []string{}, ErrServerInternal
+	}
+	if len(resd) == 0 {
+		return []string{}, ErrResourceNotFound
 	}
 	return resd, nil
 }

@@ -1,5 +1,56 @@
+$(document).ready(function() {
+  getVariant();
+});
+
+function getVariant() {
+    console.log("Get Account Data");
+
+    $.ajax({
+        url: '/v1/api/get/allVariant?token='+token,
+        type: 'get',
+        success: function (data) {
+          console.log(data.data);
+          var result = data.data;
+          var limit = 5;
+
+          var totalVoucher = 0;
+
+          for ( i = 0; i < result.length; i++){
+            if( i < 5){
+
+              var date = result[i].EndDate.substring(0, 10).split("-");
+              var dateEnd  = new Date(date[0], date[1]-1, date[2]);
+              var dateEnd_ms = dateEnd.getTime();
+              var dateNow_ms  = Date.now();
+              var one_day = 1000*60*60*24;
+              var diffNow = Math.round((dateEnd_ms-dateNow_ms)/one_day);
+
+              var html = "<h5 class='mb-sm'><a href='/variant/check?id='"+result[i].Id+">"+result[i].VariantName+"</a></h5>"
+              + "<p class='text-muted'>End in "+diffNow+" days</p>";
+              console.log(result[i].MaxVoucher);
+              if(parseInt(result[i].Voucher) == 0){
+                html += "<p>No voucher generated</p>";
+              } else {
+                html += "<p>"+parseInt(result[i].Voucher)+" vouchers have generated. "+(result[i].MaxVoucher - parseInt(result[i].Voucher))+" vouchers left.</p>";
+              }
+              var li = $("<li class='list-group-item'></li>").html(html);
+              li.appendTo('#upcomming-variant');
+            }
+
+            totalVoucher += parseInt(result[i].Voucher);
+          }
+
+          $("#total-variant").html(result.length);
+          $("#total-voucher").html(totalVoucher);
+        },
+        error: function (data) {
+          alert("Account Not Found.");
+        }
+    });
+}
+
 function addVariant(){
-  window.location = "http://voucher.apps.id:8889/variant/create";
+  window.location = "/variant/create";
 }
 
 (function() {

@@ -11,6 +11,7 @@ type (
 		Phone     string   `db:"phone"`
 		RoleId    []string `db:"-"`
 		CreatedBy string   `db:"created_by"`
+		CreatedAt string   `db:"created_at"`
 	}
 	UserRes struct {
 		Id       string `db:"id"`
@@ -194,8 +195,9 @@ func FindUserDetail(userId string) (User, error) {
 			username
 			, email
 			, phone
+			, created_at
 		FROM
-			users
+			users as u
 		WHERE
 			id = ?
 			AND status = ?
