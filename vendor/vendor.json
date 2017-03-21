@@ -9,6 +9,18 @@
 			"revisionTime": "2017-01-04T21:11:26Z"
 		},
 		{
+			"checksumSHA1": "6X3O3mfvOyiwV2iAb5GjxARs08c=",
+			"path": "github.com/garyburd/redigo/internal",
+			"revision": "0d253a66e6e1349f4581d6d2b300ee434ee2da9f",
+			"revisionTime": "2017-02-16T21:49:44Z"
+		},
+		{
+			"checksumSHA1": "EDmOMfaSDiQ760zXZRBZNeggmgs=",
+			"path": "github.com/garyburd/redigo/redis",
+			"revision": "0d253a66e6e1349f4581d6d2b300ee434ee2da9f",
+			"revisionTime": "2017-02-16T21:49:44Z"
+		},
+		{
 			"checksumSHA1": "IkPM2QLv9urri7S49wzroQx9oXA=",
 			"path": "github.com/gorilla/context",
 			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
@@ -73,6 +85,12 @@
 			"path": "github.com/serenize/snaker",
 			"revision": "543781d2b79bd95c51ffe70e70a55c946ca211ff",
 			"revisionTime": "2016-11-23T06:43:35Z"
+		},
+		{
+			"checksumSHA1": "53Wt63TZkYzzbdh4Yo/B7kVGiyQ=",
+			"path": "gopkg.in/boj/redistore.v1",
+			"revision": "fc113767cd6b051980f260d6dbe84b2740c46ab0",
+			"revisionTime": "2016-01-28T11:33:10Z"
 		},
 		{
 			"checksumSHA1": "lzxr2rdWylya6Z5Ft4oA0Fvr4TU=",

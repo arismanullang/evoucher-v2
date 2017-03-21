@@ -79,8 +79,11 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+	param := getUrlParam(r.URL.String())
+	param["account_id"] = accountID
+	delete(param, "token")
 
-	variant, err := model.FindAllVariants(accountID)
+	variant, err := model.FindVariantsCustomParam(param)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilVariant, "voucher")
@@ -150,7 +153,7 @@ func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
 	d.VariantID = dt.Id
 	d.AccountId = dt.AccountId
 	d.VariantName = dt.VariantName
-	d.VoucherType = dt.VoucherType
+	d.VariantType = dt.VariantType
 	d.VoucherType = dt.VoucherType
 	d.VoucherPrice = dt.VoucherPrice
 	d.AllowAccumulative = dt.AllowAccumulative

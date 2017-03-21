@@ -64,6 +64,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/variant/vouchers/:id", controller.GetVoucherOfVariantDetails)
 
 	//voucher
+	r.GetFunc("/v1/token", controller.GetToken)
 	r.GetFunc("/v1/vouchers", controller.GetVoucherDetail)
 	// r.PostFunc("/v1/voucher/delete", controller.DeleteVoucher)
 	// r.PostFunc("/v1/voucher/pay", controller.PayVoucher)
