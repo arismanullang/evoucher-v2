@@ -1,7 +1,9 @@
 var id = findGetParameter('id')
 $( document ).ready(function() {
-  getUser(id);
-  getAccount(id);
+  getUserDetails();
+  getAccount();
+  getUser();
+  getVariant();
 
   $('#profileForm').submit(function(e) {
        e.preventDefault();
@@ -9,96 +11,106 @@ $( document ).ready(function() {
   });
 });
 
-function getUser(id) {
+function getUserDetails() {
+    console.log("Get User Data");
+
+    var arrData = [];
+    $.ajax({
+        url: '/v1/api/get/userDetails?token='+token,
+        type: 'get',
+        success: function (data) {
+          console.log(data.data);
+          var i;
+          var arrData = data.data;
+          var limit = arrData.RoleId.length;
+          var desc = "Act as ";
+          for ( i = 0; i < limit; i++){
+            desc += arrData.RoleId[i];
+            if( i != limit-1){
+              desc += ", ";
+            }
+          }
+          desc += ".";
+          $("#user-desc").html(desc);
+          $("#user-name").html(arrData.Username);
+          $("#user-email").html(arrData.Email);
+          $("#user-phone").html(arrData.Phone);
+          $("#user-date").html(arrData.CreatedAt.substr(0,10));
+        },
+        error: function (data) {
+          alert("User Not Found.");
+        }
+    });
+}
+
+function getUser() {
     console.log("Get Voucher Data");
 
     var arrData = [];
     $.ajax({
-        url: '/v1/vouchers?variant_id='+id+'&token='+token,
+        url: '/v1/api/get/users?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
           var i;
           var arrData = data.data;
           var limit = arrData.length;
-          if (arrData.length > 4){
-            limit = 4;
-            $("<div class='card-body pv0 text-right'><a href='/voucher/search?variant_id="+id+"' class='btn btn-flat btn-info'>View all</a></div>").appendTo('#cardVoucher');
-          }
 
           for ( i = 0; i < limit; i++){
-            var html = "<div class='mda-list-item-icon'><em class='ion-pricetag icon-2x'></em></div>"
-            +  "<div class='mda-list-item-text'>"
-            +  "<h3><a href='#'>"+arrData[i].voucher_code+"</a></h3>"
-            +  "<div class='text-muted text-ellipsis'>Status "+arrData[i].state+"</div>"
-            +"</div>";
+            var html = "<img src='/assets/img/user/04.jpg' alt='List user' class='mda-list-item-img'>"
+              + "<div class='mda-list-item-text mda-2-line'>"
+              +    "<h3>"+arrData[i].Username+"</h3>"
+              + "</div>";
             var li = $("<div class='mda-list-item'></div>").html(html);
-            li.appendTo('#listVoucher');
+            li.appendTo('#listUser');
           }
         },
         error: function (data) {
-          console.log(data.data);
-          $("<div class='card-body text-center'>No Voucher Yet</div>").appendTo('#cardVoucher');
+          alert("Teammates Not Found.");
         }
     });
 }
 
-function getPartner(id) {
-    console.log("Get Voucher Data");
+function getAccount() {
+    console.log("Get Account Data");
 
-    var arrData = [];
     $.ajax({
-        url: '/v1/api/get/partner?variant_id='+id+'&token='+token,
-        type: 'get',
-        success: function (data) {
-          console.log(data.data);
-          var i;
-          var arrData = data.data;
-          var limit = arrData.length;
-
-          for ( i = 0; i < limit; i++){
-            var html = "<div class='mda-list-item-icon'><em class='ion-ios-person icon-2x'></em></div>"
-            +  "<div class='mda-list-item-text'>"
-            +  "<h3><a href='#'>"+arrData[i].partner_name+"</a></h3>"
-            +  "<div class='text-muted text-ellipsis'>"+arrData[i].serial_number+"</div>"
-            +"</div>";
-            var li = $("<div class='mda-list-item'></div>").html(html);
-            li.appendTo('#listPartner');
-          }
-        }
-    });
-}
-
-
-function getVariant(id) {
-    console.log("Get Variant Data");
-
-    var arrData = [];
-    $.ajax({
-        url: '/v1/api/get/variant/'+id+'?token='+token,
+        url: '/v1/api/get/accountsDetail?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
           var result = data.data;
 
-          var startDate = result.StartDate.substr(0,10);
-          var endDate = result.EndDate.substr(0,10);
-          var period = startDate + " to " + endDate;
+          var limit = result.length;
+          var desc = "";
+          for ( i = 0; i < limit; i++){
+            desc += result[i].AccountName;
+            if( i != limit-1){
+              desc += ", ";
+            }
+          }
 
-          var remainingVoucher = result.MaxQuantityVoucher;
-          if( result.Voucher != null)
-            remainingVoucher = esult.MaxQuantityVoucher - result.Voucher.length;
+          $("#user-accounts").html(desc.toUpperCase());
+        },
+        error: function (data) {
+          alert("Account Not Found.");
+        }
+    });
+}
 
-          $('#variantName').html(result.VariantName);
-          $('#variantDescription').html(result.VariantDescription);
-          $('#variantType').html(result.VariantType);
-          $('#voucherType').html(result.VoucherType);
-          $('#conversionRate').html(result.VoucherPrice);
-          $('#maxQuantityVoucher').html(result.MaxQuantityVoucher);
-          $('#voucherValue').html(result.DiscountValue);
-          $('#period').html(period);
-          $('#variantTnc').html(result.VariantTnc);
-          $('#remainingVoucher').html(remainingVoucher);
+function getVariant() {
+    console.log("Get Account Data");
+
+    $.ajax({
+        url: '/v1/api/get/totalVariant?token='+token,
+        type: 'get',
+        success: function (data) {
+          console.log(data.data);
+          var result = data.data;
+          $("#user-variant").html(result);
+        },
+        error: function (data) {
+          alert("Account Not Found.");
         }
     });
 }

@@ -216,6 +216,40 @@ func GetAllVariants(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
+func GetTotalVariant(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Get Variant")
+	accountId := ""
+
+	token := r.FormValue("token")
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
+
+	res.AddError(its(status), its(status), err.Error(), "variant")
+
+	valid := false
+	if token != "" && token != "null" {
+		fmt.Println("Check Session")
+		_, accountId, _, valid, err = getValiditySession(r, token)
+	}
+
+	if valid {
+		status = http.StatusOK
+		variant, err := model.FindAllVariants(accountId)
+		if err != nil {
+			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				status = http.StatusNotFound
+			}
+
+			res.AddError(its(status), its(status), err.Error(), "variant")
+		} else {
+			res = NewResponse(len(variant))
+		}
+	}
+	render.JSON(w, res, status)
+}
+
 func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
 	param := getUrlParam(r.URL.String())
 	token := r.FormValue("token")

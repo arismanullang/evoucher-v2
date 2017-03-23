@@ -11,8 +11,8 @@
       <div class="media m0 pv">
         <div class="media-left"><a href="#"><img src="/assets/img/user/01.jpg" alt="User" class="media-object img-circle thumb64"></a></div>
         <div class="media-body media-middle">
-          <h4 id="user-name" class="media-heading">Richard</h4>
-          <span id="user-desc" class="text-muted">Sed eget lacus quis diam molestie mollis.</span>
+          <h4 id="user-name" class="media-heading"></h4>
+          <span id="user-desc" class="text-muted"></span>
         </div>
       </div>
     </div>
@@ -28,23 +28,23 @@
               <tbody>
                 <tr>
                   <td><em class="ion-briefcase icon-fw mr"></em>Account</td>
-                  <td id="user-accounts">GILKOR</td>
+                  <td id="user-accounts"></td>
                 </tr>
                 <tr>
                   <td><em class="ion-android-globe icon-fw mr"></em>Email</td>
-                  <td id="user-email">richard@gilkor.com</td>
+                  <td id="user-email"></td>
                 </tr>
                 <tr>
                   <td><em class="ion-ios-telephone icon-fw mr"></em>Phone</td>
-                  <td id="user-phone">082144738985</td>
+                  <td id="user-phone"></td>
                 </tr>
                 <tr>
                   <td><em class="ion-ios-body icon-fw mr"></em>Member since</td>
-                  <td><span data-type="date" class="text-inherit">05/11/2015</span></td>
+                  <td id="user-date"></td>
                 </tr>
                 <tr>
                   <td><em class="ion-navicon-round icon-fw mr"></em>Total Variant</td>
-                  <td id="user-variant">5</td>
+                  <td id="user-variant"></td>
                 </tr>
               </tbody>
             </table>
@@ -55,15 +55,9 @@
       <div class="col-md-5 col-lg-4">
         <div class="card">
           <h5 class="card-heading">
-            <!-- START dropdown-->
-            <!-- END dropdown-->Teammates
+            Teammates
           </h5>
-          <div class="mda-list">
-            <div class="mda-list-item"><img src="/assets/img/user/04.jpg" alt="List user" class="mda-list-item-img">
-              <div class="mda-list-item-text mda-2-line">
-                <h3><a href="#">Alfan</a></h3>
-              </div>
-            </div>
+          <div id="listUser" class="mda-list">
           </div>
           <div class="card-body pv0 text-right"><a href="#" class="btn btn-flat btn-info">View all</a></div>
         </div>
@@ -76,7 +70,7 @@
 {{ define "scripts" }}
 <script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
 <script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
-<script type="text/javascript" src="/assets/js/user/create.js"></script>
+<script type="text/javascript" src="/assets/js/user/profile.js"></script>
 {{ end }}
 
 {{ define "stylesheets" }}

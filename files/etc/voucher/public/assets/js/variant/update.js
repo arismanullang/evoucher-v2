@@ -78,7 +78,7 @@ function send() {
         contentType: "application/json",
         data: JSON.stringify(variant),
         success: function () {
-            alert("Variant Edited.");
+            window.location = "/variant/search";
         }
     });
 }

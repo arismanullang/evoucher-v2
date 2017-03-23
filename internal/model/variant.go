@@ -422,7 +422,7 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 		GROUP BY
 			va.id
 		ORDER BY
-			va.start_date DESC
+			va.end_date DESC
 	`
 
 	var resv []SearchVariant
