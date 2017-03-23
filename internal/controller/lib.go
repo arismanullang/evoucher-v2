@@ -73,31 +73,6 @@ func hash(param string) string {
 	return base64.StdEncoding.EncodeToString(hash[:])
 }
 
-// func basicAuth(w http.ResponseWriter, r *http.Request) (string, bool) {
-// 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
-// 	if len(s) != 2 {
-// 		return "", false
-// 	}
-//
-// 	b, err := base64.StdEncoding.DecodeString(s[1])
-// 	if err != nil {
-// 		return "", false
-// 	}
-//
-// 	pair := strings.SplitN(string(b), ":", 2)
-// 	if len(pair) != 2 {
-// 		return "", false
-// 	}
-// 	fmt.Println(pair[0], hash(pair[1]))
-// 	login, err := model.Login(pair[0], hash(pair[1]))
-//
-// 	if login == "" || err != nil {
-// 		return "", false
-// 	}
-//
-// 	return /*getAccountID(login)*/ "", true
-// }
-
 func replaceSpecialCharacter(param string) string {
 	reg, err := regexp.Compile("[^A-Za-z0-9]")
 	if err != nil {

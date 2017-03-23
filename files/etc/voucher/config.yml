@@ -5,3 +5,4 @@ server:
 
 database:
     endpoint: "postgres://elys:elys@127.0.0.1:5432/evoucher?sslmode=disable"
+    redis: "127.0.0.1:6379"
