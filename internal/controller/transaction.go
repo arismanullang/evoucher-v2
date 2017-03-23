@@ -42,7 +42,7 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 
 	//Token Authentocation
-	accountID, userID, _, ok := CheckToken(w, r)
+	accountID, userID, _, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}

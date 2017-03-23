@@ -39,6 +39,7 @@ const (
 	ErrCodeInvalidToken             string = "invalid_token"
 	ErrCodeOTPFailed                string = "OTP_Failed"
 	ErrCodeInvalidPartnerQr         string = "invalid_partner_qr"
+	ErrCodeInvalidUser              string = "invalid_username_and_password"
 
 	ErrMessageAllowAccumulativeDisable string = "accumulation is not allowed"
 	ErrMessageResourceNotFound         string = "resource not found"
@@ -62,6 +63,7 @@ const (
 	ErrMessageOTPFailed                string = "Doesn't match OTP"
 	ErrMessageInvalidQr                string = "Invalid parner QR"
 	ErrMessageInvalidRedeemMethod      string = "Invalid Redeemtion Method"
+	ErrMessageInvalidUser              string = "Invalid Username and Password."
 
 	StatusCreated string = "created"
 	StatusDeleted string = "deleted"
@@ -88,4 +90,6 @@ const (
 
 	DEFAULT_TXCODE   string = "Numerals"
 	DEFAULT_TXLENGTH int    = 8
+
+	TOKEN_LIFE int = 1440
 )

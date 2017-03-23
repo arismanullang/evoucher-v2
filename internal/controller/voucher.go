@@ -87,8 +87,26 @@ type (
 		State     string `json:"state"`
 	}
 	// DetailListResponseData represent list of voucher data
-	DetailListResponseData []DetailResponseData
+	DetailListResponseData []RespomseData
 	// DetailResponseData represent list of voucher data
+	RespomseData struct {
+		ID            string    `json:"id"`
+		VoucherCode   string    `json:"voucher_code"`
+		ReferenceNo   string    `json:"reference_no"`
+		Holder        string    `json:"holder"`
+		VariantID     string    `json:"variant_id"`
+		ValidAt       time.Time `json:"valid_at"`
+		ExpiredAt     time.Time `json:"expired_at"`
+		DiscountValue float64   `json:"discount_value"`
+		State         string    `json:"state"`
+		CreatedBy     string    `json:"created_by"`
+		CreatedAt     time.Time `json:"created_at"`
+		UpdatedBy     string    `json:"updated_by"`
+		UpdatedAt     time.Time `json:"updated_at"`
+		DeletedBy     string    `json:"deleted_by"`
+		DeletedAt     time.Time `json:"deleted_at"`
+		Status        string    `json:"status"`
+	}
 	DetailResponseData struct {
 		ID            string    `json:"id"`
 		VoucherCode   string    `json:"voucher_code"`
@@ -106,6 +124,10 @@ type (
 		DeletedBy     string    `json:"deleted_by"`
 		DeletedAt     time.Time `json:"deleted_at"`
 		Status        string    `json:"status"`
+
+		VariantName  string  `json:"Variant_name"`
+		VoucherPrice float64 `json:"Voucher_price"`
+		VoucherType  string  `json:"Voucher_type"`
 	}
 )
 
@@ -143,7 +165,7 @@ func (r *RedeemVoucherRequest) UpdateVoucher() (bool, error) {
 	return true, nil
 }
 
-//MyVoucher list voucher by holder
+//GetVoucherOfVariant list voucher by holder
 func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 	var voucher model.VoucherResponse
 	var err error
@@ -151,7 +173,7 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 	var status int
 
 	//Token Authentocation
-	_, _, _, ok := CheckToken(w, r)
+	_, _, _, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
@@ -215,7 +237,7 @@ func GetVoucherOfVariantDetails(w http.ResponseWriter, r *http.Request) {
 	var status int
 
 	//Token Authentocation
-	_, _, _, ok := CheckToken(w, r)
+	_, _, _, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
@@ -308,14 +330,14 @@ func GetVoucherOfVariantDetails(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetVoucherDetail get Voucher detail from DB
-func GetVoucherDetail(w http.ResponseWriter, r *http.Request) {
+func GetVoucherList(w http.ResponseWriter, r *http.Request) {
 	var voucher model.VoucherResponse
 	var err error
 	res := NewResponse(nil)
 	var status int
 
 	//Token Authentocation
-	accountID, userID, _, ok := CheckToken(w, r)
+	accountID, userID, _, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
@@ -372,6 +394,84 @@ func GetVoucherDetail(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func GetVoucherDetails(w http.ResponseWriter, r *http.Request) {
+	vc := bone.GetValue(r, "id")
+	res := NewResponse(nil)
+	var status int
+
+	_, _, _, ok := AuthToken(w, r)
+	if !ok {
+		return
+	}
+
+	d, err := model.FindVoucher(map[string]string{"id": vc})
+
+	if err == model.ErrResourceNotFound {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
+		render.JSON(w, res, status)
+		return
+	} else if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+
+	dt, err := model.FindVariantDetailsById(d.VoucherData[0].VariantID)
+	if err == model.ErrResourceNotFound {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, "voucher")
+		render.JSON(w, res, status)
+		return
+	} else if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+	// p, err := model.FindVariantPartner(map[string]string{"variant_id": d.VoucherData[0].VariantID})
+	// if err == model.ErrResourceNotFound {
+	// 	status = http.StatusNotFound
+	// 	res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant+"(Partner of Variant Not Found)", "voucher")
+	// 	render.JSON(w, res, status)
+	// 	return
+	// } else if err != nil {
+	// 	status = http.StatusInternalServerError
+	// 	res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+	// 	render.JSON(w, res, status)
+	// 	return
+	// }
+
+	dvr := DetailResponseData{
+		ID:            d.VoucherData[0].ID,
+		VoucherCode:   d.VoucherData[0].VoucherCode,
+		ReferenceNo:   d.VoucherData[0].ReferenceNo,
+		Holder:        d.VoucherData[0].Holder,
+		VariantID:     d.VoucherData[0].VariantID,
+		ValidAt:       d.VoucherData[0].ValidAt,
+		ExpiredAt:     d.VoucherData[0].ExpiredAt,
+		DiscountValue: d.VoucherData[0].DiscountValue,
+		State:         d.VoucherData[0].State,
+		CreatedBy:     d.VoucherData[0].CreatedBy,
+		CreatedAt:     d.VoucherData[0].CreatedAt,
+		UpdatedBy:     d.VoucherData[0].UpdatedBy.String,
+		UpdatedAt:     d.VoucherData[0].UpdatedAt.Time,
+		DeletedBy:     d.VoucherData[0].DeletedBy.String,
+		DeletedAt:     d.VoucherData[0].DeletedAt.Time,
+		Status:        d.VoucherData[0].Status,
+		VariantName:   dt.VariantName,
+		VoucherPrice:  dt.VoucherPrice,
+		VoucherType:   dt.VoucherType,
+	}
+
+	status = http.StatusOK
+	res = NewResponse(dvr)
+	render.JSON(w, res, status)
+	return
+
+}
+
 //GenerateVoucherOnDemand Generate singgle voucher request
 func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	var gvd GenerateVoucherRequest
@@ -379,7 +479,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 
 	//Token Authentocation
-	accountID, userID, _, ok := CheckToken(w, r)
+	accountID, userID, _, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
@@ -455,7 +555,7 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 
 	//Token Authentocation
-	accountID, userID, _, ok := CheckToken(w, r)
+	accountID, userID, _, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}

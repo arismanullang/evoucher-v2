@@ -36,13 +36,9 @@ func basicAuth(w http.ResponseWriter, r *http.Request) (string, string, bool) {
 	return "So-GAf-G", login, true
 }
 
-func CheckToken(w http.ResponseWriter, r *http.Request) (string, string, time.Time, bool) {
+func AuthToken(w http.ResponseWriter, r *http.Request) (string, string, time.Time, bool) {
 	res := NewResponse(nil)
 	token := r.FormValue("token")
-	var exp time.Time
-	var valid bool
-	var err error
-	var a, u string
 
 	if len(token) < 1 {
 		res.AddError(its(http.StatusUnauthorized), model.ErrCodeMissingToken, model.ErrMessageTokenNotFound, "token")
@@ -50,7 +46,8 @@ func CheckToken(w http.ResponseWriter, r *http.Request) (string, string, time.Ti
 		return "", "", time.Now(), false
 	}
 	// Return : user_id, account_id, expired, boolean, error
-	if u, a, exp, valid, err = getValiditySession(r, token); err != nil {
+	s, err := model.GetSession(token)
+	if err != nil {
 		switch err {
 		case model.ErrTokenNotFound:
 			res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound, "token")
@@ -60,12 +57,9 @@ func CheckToken(w http.ResponseWriter, r *http.Request) (string, string, time.Ti
 			render.JSON(w, res, http.StatusUnauthorized)
 		}
 		return "", "", time.Now(), false
-	} else if !valid {
-		res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound, "token")
-		render.JSON(w, res, http.StatusUnauthorized)
-		return "", "", time.Now(), false
 	}
-	return a, u, exp, true
+
+	return s.AccountID, s.UserId, s.ExpiredAt, true
 }
 
 func GetToken(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +67,7 @@ func GetToken(w http.ResponseWriter, r *http.Request) {
 
 	ac, ui, ok := basicAuth(w, r)
 	if !ok {
-		res.AddError(its(http.StatusUnauthorized), model.ErrCodeMissingToken, model.ErrMessageTokenNotFound, "token")
+		res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidUser, model.ErrMessageInvalidUser, "token")
 		render.JSON(w, res, http.StatusUnauthorized)
 		return
 	}
@@ -81,5 +75,18 @@ func GetToken(w http.ResponseWriter, r *http.Request) {
 	d := model.GenerateToken(ac, ui)
 
 	res = NewResponse(d)
+	render.JSON(w, res, http.StatusOK)
+}
+
+func CheckToken(w http.ResponseWriter, r *http.Request) {
+	res := NewResponse(nil)
+	token := r.FormValue("token")
+
+	Exists := true
+	if !model.IsExistToken(token) {
+		Exists = false
+	}
+
+	res = NewResponse(Exists)
 	render.JSON(w, res, http.StatusUnauthorized)
 }

@@ -76,7 +76,7 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	var status int
 
-	accountID, _, _, ok := CheckToken(w, r)
+	accountID, _, _, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
@@ -122,7 +122,7 @@ func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	var status int
 
-	_, _, _, ok := CheckToken(w, r)
+	_, _, _, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
