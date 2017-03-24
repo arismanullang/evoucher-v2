@@ -8,10 +8,6 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
-var (
-	TokenLife int = TOKEN_LIFE
-)
-
 type Token struct {
 	Token     string    `json:"token"`
 	ExpiredAt time.Time `json:"expired_at"`
@@ -31,7 +27,7 @@ func GenerateToken(AccountID, userId string) Token {
 
 	t := Token{
 		Token:     r,
-		ExpiredAt: now.Add(time.Duration(TokenLife) * time.Minute),
+		ExpiredAt: now.Add(time.Duration(TOKENLIFE) * time.Minute),
 	}
 
 	c := redisPool.Get()
@@ -132,7 +128,7 @@ func UpdateTokenExpireTime(token string) {
 	sd, _ := GetSession(token)
 
 	now := time.Now()
-	sd.ExpiredAt = now.Add(time.Duration(TokenLife) * time.Minute)
+	sd.ExpiredAt = now.Add(time.Duration(TOKENLIFE) * time.Minute)
 
 	sds, _ := json.Marshal(sd)
 
@@ -173,7 +169,7 @@ func DeleteSession(AccountID, userId string) {
 //
 // 	t := Token{
 // 		Token:     r,
-// 		ExpiredAt: now.Add(time.Duration(TokenLife) * time.Minute),
+// 		ExpiredAt: now.Add(time.Duration(TOKENLIFE) * time.Minute),
 // 	}
 //
 // 	c := redisPool.Get()
