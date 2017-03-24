@@ -91,5 +91,5 @@ const (
 	DEFAULT_TXCODE   string = "Numerals"
 	DEFAULT_TXLENGTH int    = 8
 
-	TOKEN_LIFE int = 1440
+	TOKENLIFE int = 1440
 )
