@@ -201,7 +201,7 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
-	fmt.Println(voucher.VoucherData)
+	// fmt.Println(voucher.VoucherData)
 
 	distinctVariant := []string{}
 	for _, v := range voucher.VoucherData {
@@ -341,7 +341,7 @@ func GetVoucherList(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	fmt.Println(accountID, userID)
+	fmt.Println("auth result => ", accountID, userID)
 
 	param := getUrlParam(r.URL.String())
 	delete(param, "token")
@@ -483,7 +483,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	fmt.Println(accountID, userID)
+	fmt.Println("auth result => ", accountID, userID)
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&gvd); err != nil {
@@ -559,7 +559,7 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	fmt.Println(accountID, userID)
+	fmt.Println("auth result => ", accountID, userID)
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&gvd); err != nil {

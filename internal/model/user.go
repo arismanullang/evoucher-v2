@@ -249,11 +249,10 @@ func Login(username, password, accountId string) (string, error) {
 		WHERE
 			u.username = ?
 			AND u.password = ?
-			AND ua.account_id = ?
 			AND u.status = ?
 	`
 	var res []string
-	if err := db.Select(&res, db.Rebind(q), username, password, accountId, StatusCreated); err != nil {
+	if err := db.Select(&res, db.Rebind(q), username, password /*accountId,*/, StatusCreated); err != nil {
 		fmt.Println(err)
 		return "", ErrServerInternal
 	}
