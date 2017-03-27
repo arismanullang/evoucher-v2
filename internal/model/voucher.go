@@ -10,22 +10,25 @@ import (
 
 type (
 	Voucher struct {
-		ID            string         `db:"id"`
-		VoucherCode   string         `db:"voucher_code"`
-		ReferenceNo   string         `db:"reference_no"`
-		Holder        string         `db:"holder"`
-		VariantID     string         `db:"variant_id"`
-		ValidAt       time.Time      `db:"valid_at"`
-		ExpiredAt     time.Time      `db:"expired_at"`
-		DiscountValue float64        `db:"discount_value"`
-		State         string         `db:"state"`
-		CreatedBy     string         `db:"created_by"`
-		CreatedAt     time.Time      `db:"created_at"`
-		UpdatedBy     sql.NullString `db:"updated_by"`
-		UpdatedAt     pq.NullTime    `db:"updated_at"`
-		DeletedBy     sql.NullString `db:"deleted_by"`
-		DeletedAt     pq.NullTime    `db:"deleted_at"`
-		Status        string         `db:"status"`
+		ID                string         `db:"id"`
+		VoucherCode       string         `db:"voucher_code"`
+		ReferenceNo       string         `db:"reference_no"`
+		Holder            sql.NullString `db:"holder"`
+		HolderPhone       sql.NullString `db:"holder_phone"`
+		HolderEmail       sql.NullString `db:"holder_email"`
+		HolderDescription sql.NullString `db:"holder_description"`
+		VariantID         string         `db:"variant_id"`
+		ValidAt           time.Time      `db:"valid_at"`
+		ExpiredAt         time.Time      `db:"expired_at"`
+		DiscountValue     float64        `db:"discount_value"`
+		State             string         `db:"state"`
+		CreatedBy         string         `db:"created_by"`
+		CreatedAt         time.Time      `db:"created_at"`
+		UpdatedBy         sql.NullString `db:"updated_by"`
+		UpdatedAt         pq.NullTime    `db:"updated_at"`
+		DeletedBy         sql.NullString `db:"deleted_by"`
+		DeletedAt         pq.NullTime    `db:"deleted_at"`
+		Status            string         `db:"status"`
 	}
 
 	VoucherResponse struct {
@@ -55,6 +58,9 @@ func FindVoucher(param map[string]string) (VoucherResponse, error) {
 			, voucher_code
 			, reference_no
 			, holder
+			, holder_phone
+			, holder_email
+			, holder_description
 			, variant_id
 			, valid_at
 			, expired_at
@@ -75,6 +81,7 @@ func FindVoucher(param map[string]string) (VoucherResponse, error) {
 	for key, value := range param {
 		q += ` AND ` + key + ` = '` + value + `'`
 	}
+	q += ` ORDER BY created_at DESC`
 
 	var resd []Voucher
 	if err := db.Select(&resd, db.Rebind(q), StatusCreated); err != nil {
@@ -107,6 +114,9 @@ func (d *Voucher) InsertVc() error {
 			      voucher_code
 			      , reference_no
 			      , holder
+			      , holder_phone
+			      , holder_email
+			      , holder_description
 			      , variant_id
 			      , valid_at
 			      , expired_at
@@ -114,12 +124,15 @@ func (d *Voucher) InsertVc() error {
 			      , state
 			      , created_by
 	      		)
-	      	 VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	      	 VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	      RETURNING
 			      id
 			      , voucher_code
 			      , reference_no
 			      , holder
+			      , holder_phone
+			      , holder_email
+			      , holder_description
 			      , variant_id
 			      , valid_at
 			      , expired_at
@@ -134,7 +147,7 @@ func (d *Voucher) InsertVc() error {
 			      , status
       `
 	var res []Voucher
-	if err := vc.Select(&res, vc.Rebind(q), d.VoucherCode, d.ReferenceNo, d.Holder, d.VariantID, d.ValidAt, d.ExpiredAt, d.DiscountValue, VoucherStateCreated, d.CreatedBy); err != nil {
+	if err := vc.Select(&res, vc.Rebind(q), d.VoucherCode, d.ReferenceNo, d.Holder, d.HolderPhone, d.HolderEmail, d.HolderDescription, d.VariantID, d.ValidAt, d.ExpiredAt, d.DiscountValue, VoucherStateCreated, d.CreatedBy); err != nil {
 		return err
 	}
 
