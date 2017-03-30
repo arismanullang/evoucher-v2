@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -79,12 +80,17 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	var status int
 
-	accountID, _, _, ok := CheckToken(w, r)
+	accountID, _, _, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
+	param := getUrlParam(r.URL.String())
 
-	variant, err := model.FindAllVariants(accountID)
+	param["variant_type"] = model.VariantTypeOnDemand
+	param["account_id"] = accountID
+	delete(param, "token")
+
+	variant, err := model.FindVariantsCustomParam(param)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilVariant, "voucher")
@@ -120,7 +126,7 @@ func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	var status int
 
-	_, _, _, ok := CheckToken(w, r)
+	_, _, _, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
@@ -154,7 +160,7 @@ func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
 	d.VariantID = dt.Id
 	d.AccountId = dt.AccountId
 	d.VariantName = dt.VariantName
-	d.VoucherType = dt.VoucherType
+	d.VariantType = dt.VariantType
 	d.VoucherType = dt.VoucherType
 	d.VoucherPrice = dt.VoucherPrice
 	d.AllowAccumulative = dt.AllowAccumulative
@@ -604,4 +610,30 @@ func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 
 	res := NewResponse(nil)
 	render.JSON(w, res, status)
+}
+
+func CheckVariant(rm, id string, qty int) (bool, error) {
+	dt, err := model.FindVariantDetailsById(id)
+	sd, err := time.Parse(time.RFC3339Nano, dt.StartDate)
+	if err != nil {
+		return false, err
+	}
+	ed, err := time.Parse(time.RFC3339Nano, dt.EndDate)
+	if err != nil {
+		return false, err
+	}
+
+	if !sd.Before(time.Now()) || !ed.After(time.Now()) {
+		return false, errors.New(model.ErrCodeVoucherNotActive)
+	}
+
+	if dt.AllowAccumulative == false && qty > 1 {
+		return false, errors.New(model.ErrCodeAllowAccumulativeDisable)
+	}
+
+	if dt.RedeemtionMethod != rm {
+		return false, errors.New(model.ErrCodeInvalidRedeemMethod)
+	}
+
+	return true, nil
 }

@@ -20,7 +20,10 @@ const (
 	ResponseStateOk  string = "Ok"
 	ResponseStateNok string = "Nok"
 
-	ErrCodeAllowAccumulativeDisable string = "allow_accumulative_disable"
+	RedeemtionMethodQr    string = "qr"
+	RedeemtionMethodToken string = "token"
+
+	ErrCodeAllowAccumulativeDisable string = "accumulation_is_not_allowed"
 	ErrCodeInvalidRedeemMethod      string = "invalid_redeem_method"
 	ErrCodeResourceNotFound         string = "resource_not_found"
 	ErrCodeInternalError            string = "internal_error"
@@ -34,8 +37,11 @@ const (
 	ErrCodeMissingOrderItem         string = "missing_order_items"
 	ErrCodeMissingToken             string = "missing_token"
 	ErrCodeInvalidToken             string = "invalid_token"
+	ErrCodeOTPFailed                string = "OTP_Failed"
+	ErrCodeInvalidPartnerQr         string = "invalid_partner_qr"
+	ErrCodeInvalidUser              string = "invalid_username_and_password"
 
-	ErrMessageAllowAccumulativeDisable string = "didn't allow multiple voucher code"
+	ErrMessageAllowAccumulativeDisable string = "accumulation is not allowed"
 	ErrMessageResourceNotFound         string = "resource not found"
 	ErrMessageInternalError            string = "internal error "
 	ErrMessageVoucherNotActive         string = "voucher is not active yet (before start date)"
@@ -54,6 +60,10 @@ const (
 	ErrMessageInvalidHolder            string = "Invalid Holder."
 	ErrMessageNilVariant               string = "Account doesn't have any Variant."
 	ErrMessageNilPartner               string = " doesn't have any Partner."
+	ErrMessageOTPFailed                string = "Doesn't match OTP"
+	ErrMessageInvalidQr                string = "Invalid parner QR"
+	ErrMessageInvalidRedeemMethod      string = "Invalid Redeemtion Method"
+	ErrMessageInvalidUser              string = "Invalid Username and Password."
 
 	StatusCreated string = "created"
 	StatusDeleted string = "deleted"
@@ -80,4 +90,6 @@ const (
 
 	DEFAULT_TXCODE   string = "Numerals"
 	DEFAULT_TXLENGTH int    = 8
+
+	TOKENLIFE int = 1440
 )

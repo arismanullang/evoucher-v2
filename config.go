@@ -19,6 +19,7 @@ type Config struct {
 
 	Database struct {
 		Endpoint string
+		Redis    string
 	}
 }
 

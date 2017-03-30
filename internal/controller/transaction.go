@@ -42,11 +42,10 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 
 	//Token Authentocation
-	accountID, userID, _, ok := CheckToken(w, r)
+	accountID, userID, _, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
-	fmt.Println(accountID, userID)
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
@@ -56,18 +55,62 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if ok, err := CheckVariant(rd.RedeemMethod, rd.VariantID, len(rd.Vouchers)); !ok {
+		switch err.Error() {
+		case model.ErrCodeAllowAccumulativeDisable:
+			status = http.StatusBadRequest
+			res.AddError(its(status), err.Error(), model.ErrMessageAllowAccumulativeDisable, "voucher")
+			render.JSON(w, res, status)
+		case model.ErrCodeInvalidRedeemMethod:
+			status = http.StatusBadRequest
+			res.AddError(its(status), err.Error(), model.ErrMessageInvalidRedeemMethod, "voucher")
+			render.JSON(w, res, status)
+		case model.ErrCodeVoucherNotActive:
+			status = http.StatusBadRequest
+			res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, "voucher")
+			render.JSON(w, res, status)
+		case model.ErrResourceNotFound.Error():
+			status = http.StatusBadRequest
+			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
+			render.JSON(w, res, status)
+		default:
+			status = http.StatusInternalServerError
+			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+			render.JSON(w, res, status)
+		}
+		return
+	}
+
+	//check redeemtion method
+	switch rd.RedeemMethod {
+	case model.RedeemtionMethodQr:
+		//to-do validate partner_id
+		par := map[string]string{"variant_id": rd.VariantID, "id": rd.RedeemKey}
+		if _, err := model.FindVariantPartner(par); err == model.ErrResourceNotFound {
+			status = http.StatusBadRequest
+			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidQr, "partner")
+			render.JSON(w, res, status)
+			return
+		} else if err != nil {
+			status = http.StatusInternalServerError
+			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "partner")
+			render.JSON(w, res, status)
+			return
+		}
+	case model.RedeemtionMethodToken:
+		//to-do validate token
+		if !OTPAuth() {
+			status = http.StatusBadRequest
+			res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, "voucher")
+			render.JSON(w, res, status)
+			return
+		}
+	}
+
 	// chek validation all voucher & variant
 	for _, v := range rd.Vouchers {
 		if ok, err := rd.CheckVoucherRedeemtion(v); !ok {
 			switch err.Error() {
-			case model.ErrCodeAllowAccumulativeDisable:
-				status = http.StatusBadRequest
-				res.AddError(its(status), err.Error(), model.ErrMessageAllowAccumulativeDisable, "voucher")
-				render.JSON(w, res, status)
-			case model.ErrCodeInvalidRedeemMethod:
-				status = http.StatusBadRequest
-				res.AddError(its(status), err.Error(), model.ErrMessageAllowAccumulativeDisable, "voucher")
-				render.JSON(w, res, status)
 			case model.ErrCodeVoucherNotActive:
 				status = http.StatusBadRequest
 				res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, "voucher")
