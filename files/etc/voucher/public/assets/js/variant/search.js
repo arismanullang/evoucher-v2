@@ -49,6 +49,18 @@ function getVariant() {
               diffNow = "Expired";
             }
 
+            var button = "<button type='button' onclick='detail(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"+
+            "<button type='button' onclick='edit(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>"+
+            "<button type='button' value=\""+arrData[i].Id+"\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>";
+
+            console.log(arrData[i].Voucher > 0);
+
+            if (arrData[i].Voucher > 0){
+              button = "<button type='button' onclick='detail(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"+
+              "<button type='button' disabled='' onclick='edit(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>"+
+              "<button type='button' disabled='' value=\""+arrData[i].Id+"\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>";
+            }
+
             dataSet[i] = [
               arrData[i].VariantName
               , arrData[i].VoucherPrice
@@ -57,9 +69,7 @@ function getVariant() {
               , "<div class='progress'>"
                 + "<div role='progressbar' aria-valuenow='"+diffNow+"' aria-valuemin='0' aria-valuemax='"+diffTotal+"' style='width: "+persen+"%;' class='progress-bar'>"+diffNow+"</div>"
                 + "</div>"
-              , "<button type='button' onclick='detail(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"+
-              "<button type='button' onclick='edit(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>"+
-              "<button type='button' value=\""+arrData[i].Id+"\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>"
+              , button
             ];
           }
           console.log(dataSet);
