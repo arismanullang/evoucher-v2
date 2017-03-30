@@ -3,6 +3,10 @@
 	"ignore": "test",
 	"package": [
 		{
+			"path": "github.com/GoogleCloudPlatform/google-cloud-go.git",
+			"revision": ""
+		},
+		{
 			"checksumSHA1": "Nj+NHb9SiIpcMNzb/ztkZuYFLkk=",
 			"path": "github.com/asaskevich/govalidator",
 			"revision": "fdf19785fd3558d619ef81212f5edf1d6c2a5911",

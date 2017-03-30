@@ -89,7 +89,7 @@ type (
 	VoucerResponse struct {
 		VoucherID string `json:"voucher_id"`
 		VoucherNo string `json:"voucher_code"`
-		State     string `json:"state"`
+		State     string `json:"state,omitempty"`
 	}
 	// DetailListResponseData represent list of voucher data
 	DetailListResponseData []RespomseData
