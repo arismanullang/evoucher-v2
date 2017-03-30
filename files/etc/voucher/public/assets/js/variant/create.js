@@ -1,9 +1,19 @@
 $( window ).ready(function() {
   getPartner();
-  $("#imageUrl").change(function() {
-    $("#imageValue").html($("#imageUrl").val());
+  $("#image-url").change(function() {
+    $("#image-value").html($("#imageUrl").val());
   });
 });
+
+function addRule(){
+  console.log("add");
+  var body = "<td class='text-ellipsis td-index'>*</td>"
+            + "<td class='text-ellipsis tnc'>"+$("#input-term-condition").val()+"</td>";
+  var li = $("<tr class='msg-display clickable'></tr>");
+  li.html(body);
+  li.appendTo('#list-rule');
+
+}
 
 function toTwoDigit(val){
   if (val < 10){
@@ -19,6 +29,10 @@ function send() {
   var listPartner = [];
   var li = $( "ul.select2-selection__rendered" ).find( "li" );
 
+  if(li.length == 0 || parseInt($("#length").val()) < 8){
+    error = true;
+  }
+
   for (i = 0; i < li.length-1; i++) {
       var text = li[i].getAttribute("title");
       var value = $("option").filter(function() {
@@ -27,36 +41,60 @@ function send() {
 
       listPartner[i] = value;
   }
+  console.log(listPartner.length);
 
   var voucherFormat = {
     prefix: $("#prefix").val(),
     postfix: $("#postfix").val(),
     body: $("#body").val(),
-    format_type: $("#voucherFormat").find(":selected").val(),
+    format_type: $("#voucher-format").find(":selected").val(),
     length: parseInt($("#length").val())
   }
 
+  var tncTd = $('tr').find('td.tnc');
+  var tnc = "";
+  for (i = 0; i < tncTd.length; i++) {
+      tnc += tncTd[i].innerHTML+";";
+  }
+  console.log(tnc);
+  $('input[check="true"]').each(function() {
+    if($(this).val() == ""){
+      $(this).addClass("error");
+      $(this).parent().closest('div').addClass("input-error");
+      error = true;
+    }
+
+    if($(this).attr("id") == "length"){
+      if(parseInt($(this).val()) < 8){
+        error = true;
+      }
+    }
+  });
+
+  if(error){
+    alert("Please check your input.");
+    return
+  }
+
   var variant = {
-      variant_name: $("#variantName").val(),
-      variant_type: $("#variantType").find(":selected").val(),
+      variant_name: $("#variant-name").val(),
+      variant_type: $("#variant-type").find(":selected").val(),
       voucher_format: voucherFormat,
-      voucher_type: $("#voucherType").find(":selected").val(),
-      voucher_price: parseInt($("#voucherPrice").val()),
-      max_quantity_voucher: parseInt($("#maxQuantityVoucher").val()),
-      max_usage_voucher: parseInt($("#maxUsageVoucher").val()),
-      allowAccumulative: $("#allowAccumulative").is(":checked"),
-      redeemtion_method: $("#redeemtionMethod").find(":selected").val(),
-      start_date: $("#startDate").val(),
-      end_date: $("#endDate").val(),
-      discount_value: parseInt($("#voucherValue").val()),
-//      image_url: $("#imageUrl").val(),
+      voucher_type: $("#voucher-type").find(":selected").val(),
+      voucher_price: parseInt($("#voucher-price").val()),
+      max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
+      max_usage_voucher: parseInt($("#max-usage-voucher").val()),
+      allowAccumulative: $("#allow-accumulative").is(":checked"),
+      redeemtion_method: $("#redeemtion-method").find(":selected").val(),
+      start_date: $("#start-date").val(),
+      end_date: $("#end-date").val(),
+      discount_value: parseInt($("#voucher-value").val()),
       image_url: "/assets/img/card.jpg",
-      variant_tnc: $("#variantTnc").val(),
-      variant_description: $("#variantDescription").val(),
+      variant_tnc: tnc,
+      variant_description: $("#variant-description").val(),
       valid_partners: listPartner
     };
 
-    console.log(variant);
     $.ajax({
        url: '/v1/create/variant?token='+token,
        type: 'post',
@@ -64,7 +102,7 @@ function send() {
        contentType: "application/json",
        data: JSON.stringify(variant),
        success: function () {
-           alert("Variant created.");
+           alert("Program created.");
            window.location = "/variant/search";
        }
    });
@@ -88,26 +126,6 @@ function getPartner() {
         }
       }
   });
-}
-
-function setDefaultValue() {
-  $("#voucherFormat").find("option")[0].attr("selected","selected");
-  $("#voucherType").find("option")[0].attr("selected","selected");
-  $("#variantType").find("option")[0].attr("selected","selected");
-  $("#redeemMethod").find("option")[0].attr("selected","selected");
-}
-
-function findGetParameter(parameterName) {
-    var result = null,
-        tmp = [];
-    location.search
-    .substr(1)
-        .split("&")
-        .forEach(function (item) {
-        tmp = item.split("=");
-        if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
-    });
-    return result;
 }
 
 (function() {

@@ -20,6 +20,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/partner/:page", viewPartner)
 	r.GetFunc("/voucher/:page", viewVoucher)
 	r.GetFunc("/", login)
+	r.GetFunc("/test", controller.Test)
 
 	//variant
 	r.PostFunc("/v1/create/variant", controller.CreateVariant)

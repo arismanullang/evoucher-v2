@@ -37,23 +37,23 @@ type (
 		ValidPartners      []string  `json:"valid_partners"`
 	}
 	VariantDetailResponse struct {
-		VariantName        string    `json:"variant_name"`
-		VariantType        string    `json:"variant_type"`
-		VoucherFormat      FormatReq `json:"voucher_format"`
-		VoucherType        string    `json:"voucher_type"`
-		VoucherPrice       float64   `json:"voucher_price"`
-		AllowAccumulative  bool      `json:"allow_accumulative"`
-		StartDate          string    `json:"start_date"`
-		EndDate            string    `json:"end_date"`
-		DiscountValue      float64   `json:"discount_value"`
-		MaxQuantityVoucher float64   `json:"max_quantity_voucher"`
-		MaxUsageVoucher    float64   `json:"max_usage_voucher"`
-		RedeemtionMethod   string    `json:"redeemtion_method"`
-		ImgUrl             string    `json:"image_url"`
-		VariantTnc         string    `json:"variant_tnc"`
-		VariantDescription string    `json:"variant_description"`
-		ValidPartners      []string  `json:"valid_partners"`
-		Voucher            int       `json:"-"`
+		Id                 string  `json:"id"`
+		AccountId          string  `json:"account_id"`
+		VariantName        string  `json:"variant_name"`
+		VariantType        string  `json:"variant_type"`
+		VoucherFormat      int     `json:"voucher_format"`
+		VoucherType        string  `json:"voucher_type"`
+		VoucherPrice       float64 `json:"voucher_price"`
+		AllowAccumulative  bool    `json:"allow_accumulative"`
+		StartDate          string  `json:"start_date"`
+		EndDate            string  `json:"end_date"`
+		DiscountValue      float64 `json:"discount_value"`
+		MaxQuantityVoucher float64 `json:"max_quantity_voucher"`
+		MaxUsageVoucher    float64 `json:"max_usage_voucher"`
+		RedeemtionMethod   string  `json:"redeemtion_method"`
+		ImgUrl             string  `json:"image_url"`
+		VariantTnc         string  `json:"variant_tnc"`
+		VariantDescription string  `json:"variant_description"`
 	}
 	FormatReq struct {
 		Prefix     string `json:"prefix"`
@@ -70,6 +70,10 @@ type (
 		Data []string `json:"data"`
 	}
 )
+
+func Test(w http.ResponseWriter, r *http.Request) {
+	model.TestQuery()
+}
 
 func ListVariants(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)

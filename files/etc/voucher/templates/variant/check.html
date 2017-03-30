@@ -1,7 +1,7 @@
 {{ template "layout" . }}
 
-{{ define "title" }}Variant Details{{ end }}
-{{ define "header-title" }}Variant Details{{ end }}
+{{ define "title" }}Program Details{{ end }}
+{{ define "header-title" }}Program Details{{ end }}
 
 {{ define "content" }}
 <!-- Page content-->
@@ -26,13 +26,13 @@
             <div class="pull-right">
               <button onclick="editVariant()" class="btn btn-default btn-flat btn-flat-icon"><em class="ion-edit"></em></button>
             </div>
-            Variant Details
+            Program Details
           </h5>
           <div class="card-body">
             <table class="table table-striped">
               <tbody>
                 <tr>
-                  <td><em class="ion-document-text icon-fw mr"></em>Variant Type</td>
+                  <td><em class="ion-document-text icon-fw mr"></em>Program Type</td>
                   <td id="variantType"></td>
                 </tr>
                 <tr>
@@ -78,7 +78,7 @@
 
           </div>
         </div>
-        <div class="card">
+        <div id="cardPartner" class="card">
           <h5 class="card-heading">
             Partner
           </h5>

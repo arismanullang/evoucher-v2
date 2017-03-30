@@ -1,20 +1,20 @@
 function send() {
   var partner = {
-      partner_name: $("#partnerName").val(),
-      serial_number: $("#serialNumber").val(),
-    };
+    partner_name: $("#partner-name").val(),
+    serial_number: $("#serial-number").val(),
+  };
 
-    console.log(partner);
-    $.ajax({
-       url: '/v1/create/partner?token='+token,
-       type: 'post',
-       dataType: 'json',
-       contentType: "application/json",
-       data: JSON.stringify(partner),
-       success: function () {
-           window.location = "/partner/search";
-       }
-   });
+  console.log(partner);
+  $.ajax({
+     url: '/v1/create/partner?token='+token,
+     type: 'post',
+     dataType: 'json',
+     contentType: "application/json",
+     data: JSON.stringify(partner),
+     success: function () {
+         window.location = "/partner/search";
+     }
+ });
 }
 
 (function() {
@@ -36,7 +36,20 @@ function send() {
                     closeOnConfirm: false
                 },
                 function() {
-                    swal('Success', 'Partner '+$("#partnerName").val()+' created.', send());
+                  $('input[check="true"]').each(function() {
+                    if($(this).val() == ""){
+                      $(this).addClass("error");
+                      $(this).parent().closest('div').addClass("input-error");
+                      error = true;
+                    }
+                  });
+
+                  if(error){
+                    alert("Please check your input.");
+                    return
+                  }
+
+                  swal('Success', 'Partner '+$("#partnerName").val()+' created.', send());
                 });
 
         });

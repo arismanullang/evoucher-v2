@@ -1,6 +1,7 @@
 package model
 
 import (
+	"database/sql"
 	"fmt"
 	"strconv"
 	"time"
@@ -76,6 +77,34 @@ type (
 		Data      []string `db:"-"`
 	}
 )
+
+func TestQuery() error {
+	fmt.Println("Select *")
+	q := `
+		SELECT
+			*
+		FROM
+			variants
+	`
+
+	rows, err := db.Query(q)
+	if err != nil {
+		return ErrServerInternal
+	}
+	cols, err := rows.Columns()
+	if err != nil {
+		return ErrServerInternal
+	}
+	defer rows.Close()
+
+	vals := make([]interface{}, len(cols))
+	for i, _ := range cols {
+		vals[i] = new(sql.RawBytes)
+	}
+	fmt.Println(cols)
+	fmt.Println(rows.Scan("id"))
+	return nil
+}
 
 func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 	tx, err := db.Beginx()

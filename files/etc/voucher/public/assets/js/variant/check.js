@@ -68,6 +68,10 @@ function getPartner(id) {
             var li = $("<div class='mda-list-item'></div>").html(html);
             li.appendTo('#listPartner');
           }
+        },
+        error: function (data) {
+          console.log(data.data);
+          $("<div class='card-body text-center'>No Partner Found</div>").appendTo('#cardPartner');
         }
     });
 }

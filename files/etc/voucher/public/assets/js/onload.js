@@ -1,10 +1,18 @@
 var token = localStorage.getItem("token");
-
+var error = true;
 $( window ).ready(function() {
   console.log(token);
   if(token == null){
     window.location = "/user/login";
   }
+
+  $( 'input[check="true"]' ).focusout(function() {
+    if($(this).val() != ""){
+      $(this).removeClass("error");
+      $(this).parent().closest('div').removeClass("input-error");
+      error = false;
+    }
+  });
 
   getSession();
 });
@@ -26,6 +34,19 @@ function getSession() {
         }
       }
   });
+}
+
+function findGetParameter(parameterName) {
+    var result = null,
+        tmp = [];
+    location.search
+    .substr(1)
+        .split("&")
+        .forEach(function (item) {
+        tmp = item.split("=");
+        if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+    });
+    return result;
 }
 
 (function() {

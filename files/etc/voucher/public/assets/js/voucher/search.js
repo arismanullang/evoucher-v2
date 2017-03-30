@@ -41,6 +41,18 @@ function getVoucher() {
             if( persen == Infinity){
               diffNow = "Expired";
             }
+
+            var status = "";
+            switch (arrData[i].state) {
+              case "paid":
+                status = "Cash Out";
+                break;
+              case "used":
+                status = "Redeem";
+                break;
+              default:
+                status = "Issued";
+            }
 // variant jangan id, name aja
             dataSet[i] = [
               arrData[i].voucher_code
@@ -50,7 +62,7 @@ function getVoucher() {
               , "<div class='progress'>"
                 + "<div role='progressbar progress-bar-success' aria-valuenow='"+diffNow+"' aria-valuemin='0' aria-valuemax='"+diffTotal+"' style='width: "+persen+"%;' class='progress-bar'>"+diffNow+"</div>"
                 + "</div>"
-              , arrData[i].state
+              , status
               ];
           }
           console.log(dataSet);
@@ -64,10 +76,10 @@ function getVoucher() {
               columns: [
                   { title: "Voucher Code" },
                   { title: "Holder Name" },
-                  { title: "Reference No" },
-                  { title: "Variant" },
+                  { title: "Reference Code" },
+                  { title: "Program" },
                   { title: "Period" },
-                  { title: "State" }
+                  { title: "Status" }
               ],
               oLanguage: {
                   sSearch: '<em class="ion-search"></em>',
@@ -84,19 +96,6 @@ function getVoucher() {
           });
         }
     });
-}
-
-function findGetParameter(parameterName) {
-    var result = null,
-        tmp = [];
-    location.search
-    .substr(1)
-        .split("&")
-        .forEach(function (item) {
-        tmp = item.split("=");
-        result = tmp;
-    });
-    return result;
 }
 
 (function() {
