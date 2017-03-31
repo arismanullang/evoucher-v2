@@ -567,7 +567,7 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 	var gvd GenerateVoucherRequest
 	var status int
 	res := NewResponse(nil)
-
+	a := r.FormFile("")
 	//Token Authentocation
 	accountID, userID, _, ok := AuthToken(w, r)
 	if !ok {
