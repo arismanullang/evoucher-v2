@@ -147,6 +147,7 @@ func (d *Voucher) InsertVc() error {
 			      , status
       `
 	var res []Voucher
+	// fmt.Println("insert data =>", d)
 	if err := vc.Select(&res, vc.Rebind(q), d.VoucherCode, d.ReferenceNo, d.Holder, d.HolderPhone, d.HolderEmail, d.HolderDescription, d.VariantID, d.ValidAt, d.ExpiredAt, d.DiscountValue, VoucherStateCreated, d.CreatedBy); err != nil {
 		return err
 	}
