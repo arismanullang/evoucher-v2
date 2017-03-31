@@ -89,7 +89,7 @@ type (
 	VoucerResponse struct {
 		VoucherID string `json:"voucher_id"`
 		VoucherNo string `json:"voucher_code"`
-		State     string `json:"state"`
+		State     string `json:"state,omitempty"`
 	}
 	// DetailListResponseData represent list of voucher data
 	DetailListResponseData []RespomseData
@@ -567,7 +567,7 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 	var gvd GenerateVoucherRequest
 	var status int
 	res := NewResponse(nil)
-
+	a := r.FormFile("")
 	//Token Authentocation
 	accountID, userID, _, ok := AuthToken(w, r)
 	if !ok {
