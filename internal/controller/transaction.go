@@ -59,23 +59,23 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		switch err.Error() {
 		case model.ErrCodeAllowAccumulativeDisable:
 			status = http.StatusBadRequest
-			res.AddError(its(status), err.Error(), model.ErrMessageAllowAccumulativeDisable, "voucher")
+			res.AddError(its(status), err.Error(), model.ErrMessageAllowAccumulativeDisable, "variant")
 			render.JSON(w, res, status)
 		case model.ErrCodeInvalidRedeemMethod:
 			status = http.StatusBadRequest
-			res.AddError(its(status), err.Error(), model.ErrMessageInvalidRedeemMethod, "voucher")
+			res.AddError(its(status), err.Error(), model.ErrMessageInvalidRedeemMethod, "variant")
 			render.JSON(w, res, status)
 		case model.ErrCodeVoucherNotActive:
 			status = http.StatusBadRequest
-			res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, "voucher")
+			res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, "variant")
 			render.JSON(w, res, status)
 		case model.ErrResourceNotFound.Error():
 			status = http.StatusBadRequest
-			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
+			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, "variant")
 			render.JSON(w, res, status)
 		default:
 			status = http.StatusInternalServerError
-			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "variant")
 			render.JSON(w, res, status)
 		}
 		return
