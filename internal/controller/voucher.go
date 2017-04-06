@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -89,7 +90,7 @@ type (
 	VoucerResponse struct {
 		VoucherID string `json:"voucher_id"`
 		VoucherNo string `json:"voucher_code"`
-		State     string `json:"state"`
+		State     string `json:"state,omitempty"`
 	}
 	// DetailListResponseData represent list of voucher data
 	DetailListResponseData []RespomseData
@@ -540,7 +541,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	gvd.Quantity = 1
 	gvd.CreatedBy = userID
 
-	fmt.Println("request data =>", gvd.Holder)
+	// fmt.Println("request data =>", gvd.Holder)
 	var voucher []model.Voucher
 	voucher, err = gvd.generateVoucherBulk(&dt)
 	if err != nil {
@@ -567,7 +568,6 @@ func GenerateVoucher(w http.ResponseWriter, r *http.Request) {
 	var gvd GenerateVoucherRequest
 	var status int
 	res := NewResponse(nil)
-
 	//Token Authentocation
 	accountID, userID, _, ok := AuthToken(w, r)
 	if !ok {
@@ -665,7 +665,7 @@ func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model
 		if err != nil {
 			log.Panic(err)
 		}
-		fmt.Println("generate data =>", vr.Holder)
+		// fmt.Println("generate data =>", vr.Holder)
 		rd := model.Voucher{
 			VoucherCode:   rt[i],
 			ReferenceNo:   vr.ReferenceNo,
@@ -677,10 +677,10 @@ func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model
 			CreatedBy:     vr.CreatedBy, //note harus nya by user
 			CreatedAt:     time.Now(),
 		}
-		rd.Holder.String = vr.Holder.Key
-		rd.HolderPhone.String = vr.Holder.Phone
-		rd.HolderEmail.String = vr.Holder.Email
-		rd.HolderDescription.String = vr.Holder.Description
+		rd.Holder = sql.NullString{String: vr.Holder.Key, Valid: true}
+		rd.HolderPhone = sql.NullString{String: vr.Holder.Phone, Valid: true}
+		rd.HolderEmail = sql.NullString{String: vr.Holder.Email, Valid: true}
+		rd.HolderDescription = sql.NullString{String: vr.Holder.Description, Valid: true}
 
 		if err := rd.InsertVc(); err != nil {
 			log.Panic(err)
