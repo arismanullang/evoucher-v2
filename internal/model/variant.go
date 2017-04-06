@@ -1,8 +1,8 @@
 package model
 
 import (
-	"database/sql"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 )
@@ -38,6 +38,8 @@ type (
 		AllowAccumulative  bool     `db:"allow_accumulative"`
 		StartDate          string   `db:"start_date"`
 		EndDate            string   `db:"end_date"`
+		StartHour          string   `db:"start_hour"`
+		EndHour            string   `db:"end_hour"`
 		DiscountValue      float64  `db:"discount_value"`
 		MaxQuantityVoucher float64  `db:"max_quantity_voucher"`
 		MaxUsageVoucher    float64  `db:"max_usage_voucher"`
@@ -78,32 +80,67 @@ type (
 	}
 )
 
-func TestQuery() error {
-	fmt.Println("Select *")
-	q := `
-		SELECT
-			*
-		FROM
-			variants
-	`
+func CustomQuery(q string) (map[int][]map[string]interface{}, error) {
+	fmt.Println("Select Database")
 
 	rows, err := db.Query(q)
 	if err != nil {
-		return ErrServerInternal
+		fmt.Println(err.Error())
+		return map[int][]map[string]interface{}{}, ErrServerInternal
 	}
 	cols, err := rows.Columns()
 	if err != nil {
-		return ErrServerInternal
+		fmt.Println(err.Error())
+		return map[int][]map[string]interface{}{}, ErrServerInternal
 	}
 	defer rows.Close()
 
-	vals := make([]interface{}, len(cols))
-	for i, _ := range cols {
-		vals[i] = new(sql.RawBytes)
+	index := 0
+	result := make(map[int][]map[string]interface{})
+
+	for rows.Next() {
+		m := make(map[string]interface{})
+
+		pointer := make([]interface{}, len(cols))
+		pointers := make([]interface{}, len(cols))
+
+		for i, _ := range cols {
+			pointers[i] = &pointer[i]
+		}
+
+		err := rows.Scan(pointers...)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for i, col := range cols {
+
+			var v interface{}
+
+			val := pointer[i]
+
+			b, ok := val.([]byte)
+			if ok {
+				v = string(b)
+			} else {
+				v = val
+			}
+
+			fmt.Println(col, v)
+
+			v, ok = v.(string)
+			if ok {
+				m[col] = v.(string)
+			} else {
+				m[col] = v.(float64)
+			}
+		}
+
+		result[index] = append(result[index], m)
+		index++
 	}
-	fmt.Println(cols)
-	fmt.Println(rows.Scan("id"))
-	return nil
+	fmt.Println(result)
+	return result, nil
 }
 
 func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
@@ -145,6 +182,8 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 			, allow_accumulative
 			, start_date
 			, end_date
+			, start_hour
+			, end_hour
 			, discount_value
 			, max_quantity_voucher
 			, max_usage_voucher
@@ -155,12 +194,12 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 			, created_by
 			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING
 			id
 	`
 	var res2 []string
-	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.VariantName, vr.VariantType, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.DiscountValue, vr.MaxQuantityVoucher, vr.MaxUsageVoucher, vr.RedeemtionMethod, vr.ImgUrl, vr.VariantTnc, vr.VariantDescription, user, StatusCreated); err != nil {
+	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.VariantName, vr.VariantType, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.StartHour, vr.EndHour, vr.DiscountValue, vr.MaxQuantityVoucher, vr.MaxUsageVoucher, vr.RedeemtionMethod, vr.ImgUrl, vr.VariantTnc, vr.VariantDescription, user, StatusCreated); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}

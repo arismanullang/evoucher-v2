@@ -1,5 +1,5 @@
-var id = findGetParameter('id')
 $( document ).ready(function() {
+  var id = findGetParameter('id')
   getVoucher(id);
   getPartner(id);
 
@@ -112,19 +112,6 @@ function getVariant(id, voucher) {
 
 function editVariant(){
   window.location = "/variant/update?id="+id;
-}
-
-function findGetParameter(parameterName) {
-    var result = null,
-        tmp = [];
-    location.search
-    .substr(1)
-        .split("&")
-        .forEach(function (item) {
-        tmp = item.split("=");
-        if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
-    });
-    return result;
 }
 
 (function() {

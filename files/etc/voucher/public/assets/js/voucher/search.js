@@ -4,10 +4,10 @@ $( document ).ready(function() {
 
 function getVoucher() {
     console.log("Get Voucher Data");
-    var holder = findGetParameter();
+    var holder = findGetParameter("holder");
     var arrData = [];
     $.ajax({
-        url: '/v1/vouchers?'+holder[0]+'='+decodeURIComponent(holder[1])+'&token='+token,
+        url: '/v1/vouchers?holder='+holder+'&token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -20,25 +20,32 @@ function getVoucher() {
 
             var dateStart  = new Date(date1[0], date1[1]-1, date1[2]);
             var dateEnd  = new Date(date2[0], date2[1]-1, date2[2]);
-            var dateNow  = new Date("2017", "02", "02");
+            var dateNow_ms  = Date.now();
 
             var one_day = 1000*60*60*24;
             var dateStart_ms = dateStart.getTime();
             var dateEnd_ms = dateEnd.getTime();
-            var dateNow_ms = dateNow.getTime();
+            // var dateNow_ms = dateNow.getTime();
 
-            var diffNow = Math.round((dateEnd_ms-dateNow_ms)/one_day);
-            var diffTotal = Math.round((dateEnd_ms-dateStart_ms)/one_day);
-            var persen = diffNow / diffTotal * 100;
-            console.log(dateStart + " " + dateEnd + " " + dateNow);
-            console.log(diffNow + " " + diffTotal + " " + persen);
+            var diffNow = Math.round((dateEnd_ms-dateStart_ms)/one_day);
+            var persen = 100;
+
+            if(dateStart_ms < dateNow_ms){
+              diffNow = Math.round((dateEnd_ms-dateNow_ms)/one_day);
+              var diffTotal = Math.round((dateEnd_ms-dateStart_ms)/one_day);
+              persen = diffNow / diffTotal * 100;
+            }
+
+            if(dateNow_ms > dateEnd_ms){
+              persen = -1;
+            }
+
+            console.log(arrData[i].id + " " + dateStart + " " + dateEnd);
+            console.log(arrData[i].id + " " + diffNow + " " + diffTotal + " " + persen);
 
             diffNow = diffNow + " hari";
 
             if( persen < 0){
-              diffNow = "Expired";
-            }
-            if( persen == Infinity){
               diffNow = "Expired";
             }
 
@@ -63,6 +70,7 @@ function getVoucher() {
                 + "<div role='progressbar progress-bar-success' aria-valuenow='"+diffNow+"' aria-valuemin='0' aria-valuemax='"+diffTotal+"' style='width: "+persen+"%;' class='progress-bar'>"+diffNow+"</div>"
                 + "</div>"
               , status
+              , "<button type='button' onclick='detail(\""+arrData[i].id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"
               ];
           }
           console.log(dataSet);
@@ -79,7 +87,8 @@ function getVoucher() {
                   { title: "Reference Code" },
                   { title: "Program" },
                   { title: "Period" },
-                  { title: "Status" }
+                  { title: "Status" },
+                  { title: "Action" }
               ],
               oLanguage: {
                   sSearch: '<em class="ion-search"></em>',
@@ -96,6 +105,10 @@ function getVoucher() {
           });
         }
     });
+}
+
+function detail(url){
+  window.location = "/voucher/check?id="+url;
 }
 
 (function() {

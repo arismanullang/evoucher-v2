@@ -3,8 +3,7 @@ $(document).ready(function() {
 });
 
 function getVariant() {
-    console.log("Get Account Data");
-
+    console.log("Get Variant Data");
     $.ajax({
         url: '/v1/api/get/allVariant?token='+token,
         type: 'get',
@@ -47,7 +46,7 @@ function getVariant() {
           $("#total-generated").html(totalGeneratedVoucher);
         },
         error: function (data) {
-          alert("Account Not Found.");
+          alert("Variant Not Found.");
         }
     });
 }

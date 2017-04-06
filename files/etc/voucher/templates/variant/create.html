@@ -40,13 +40,18 @@
                 </div>
               </div>
             </div>
+            <div class="row">
+              <div class="col-sm-12">
+                <label>Date</label>
+              </div>
+            </div>
             <div class="row ">
               <div class="col-sm-6">
                 <div class="mda-form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
                   <div id="example-datepicker-container-4" class="mda-form-control">
                     <input id="start-date" name="start-date" tabindex="0" aria-invalid="false" class="form-control datepicker4">
                     <div class="mda-form-control-line"></div>
-                    <label>Start Date</label>
+                    <label>Start</label>
                   </div>
                 </div>
               </div>
@@ -55,7 +60,32 @@
                   <div class="mda-form-control">
                     <input id="end-date" name="end-date" tabindex="0" aria-invalid="false" class="form-control datepicker4">
                     <div class="mda-form-control-line"></div>
-                    <label>End Date</label>
+                    <label>End</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-12">
+                <label>Active Hour</label>
+              </div>
+            </div>
+            <div class="row ">
+              <div class="col-sm-6">
+                <div class="mda-form-group clockpicker" data-autoclose="true">
+                  <div class="mda-form-control">
+                    <input id="start-hour" name="start-hour" tabindex="0" aria-invalid="false" class="form-control">
+                    <div class="mda-form-control-line"></div>
+                    <label>Start</label>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="mda-form-group clockpicker" data-autoclose="true">
+                  <div class="mda-form-control">
+                    <input id="end-hour" name="end-hour" tabindex="0" aria-invalid="false" class="form-control">
+                    <div class="mda-form-control-line"></div>
+                    <label>End</label>
                   </div>
                 </div>
               </div>
@@ -275,6 +305,7 @@
 
 {{ define "scripts" }}
 <script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
+<script type="text/javascript" src="/assets/vendor/clockpicker/dist/bootstrap-clockpicker.js"></script>
 <script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
 <script type="text/javascript" src="/assets/js/variant/create.js"></script>
 {{ end }}
@@ -282,4 +313,5 @@
 {{ define "stylesheets" }}
 <link rel="stylesheet" href="/assets/vendor/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css">
 <link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
+<link rel="stylesheet" href="/assets/vendor/clockpicker/dist/bootstrap-clockpicker.css">
 {{ end }}

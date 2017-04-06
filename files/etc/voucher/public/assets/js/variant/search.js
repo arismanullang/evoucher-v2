@@ -105,19 +105,6 @@ function getVariant() {
     });
 }
 
-function addDecimalPoints(value) {
-    var input = " "+value;
-    var inputValue = input.replace('.', '').split("").reverse().join(""); // reverse
-    var newValue = '';
-    for (var i = 0; i < inputValue.length; i++) {
-        if (i % 3 == 0 && i != 0 && i != inputValue.length-1) {
-            newValue += '.';
-        }
-        newValue += inputValue[i];
-    }
-    return newValue.split("").reverse().join("");
-}
-
 function edit(url){
   window.location = "/variant/update?id="+url;
 }
