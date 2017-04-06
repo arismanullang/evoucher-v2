@@ -80,7 +80,11 @@ func setRoutes() http.Handler {
 	r.GetFunc("/view/", viewHandler)
 	r.GetFunc("/viewNoLayout", viewNoLayoutHandler)
 
-	r.NotFoundFunc(errorHandler)
+	// r.NotFoundFunc(errorHandler)
+
+	// http.HandleFunc("/test", controller.UploadFormTest)
+	r.GetFunc("/listfile/", controller.GetListFile)
+
 	return r
 }
 
