@@ -14,15 +14,13 @@ import (
 
 type (
 	TransactionRequest struct {
-		VariantID        string   `json:"variant_id"`
-		PartnerID        string   `json:"partner_id"`
-		RedeemMethod     string   `json:"redeem_method"`
-		SerialNumber     string   `json:"serial_number"`
-		RedeemKey        string   `json:"redeem_key"`
-		TotalTransaction float64  `json:"total_transaction"`
-		DiscountValue    float64  `json:"discount_value"`
-		PaymentType      string   `json:"payment_type"`
-		Vouchers         []string `json:"vouchers"`
+		VariantID     string   `json:"variant_id"`
+		PartnerID     string   `json:"partner_id"`
+		RedeemMethod  string   `json:"redeem_method"`
+		SerialNumber  string   `json:"serial_number"`
+		RedeemKey     string   `json:"redeem_key"`
+		DiscountValue float64  `json:"discount_value"`
+		Vouchers      []string `json:"vouchers"`
 	}
 	DeleteTransactionRequest struct {
 		User string `json:"requested_by"`
@@ -136,6 +134,24 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	txCode := randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
+	d := model.Transaction{
+		AccountId:       accountID,
+		PartnerId:       rd.PartnerID,
+		TransactionCode: txCode,
+		DiscountValue:   rd.DiscountValue,
+		Token:           rd.RedeemKey,
+		User:            userID,
+		Vouchers:        rd.Vouchers,
+	}
+	fmt.Println(d)
+	if err := model.InsertTransaction(d); err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+
 	rv := RedeemVoucherRequest{
 		AccountID: accountID,
 		User:      userID,
@@ -149,40 +165,33 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
 		render.JSON(w, res, status)
 		return
-	}
-
-	txCode := randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
-	d := model.Transaction{
-		AccountId:        accountID,
-		PartnerId:        rd.PartnerID,
-		TransactionCode:  txCode,
-		TotalTransaction: rd.TotalTransaction,
-		DiscountValue:    rd.DiscountValue,
-		PaymentType:      rd.PaymentType,
-		User:             userID,
-		Vouchers:         rd.Vouchers,
-	}
-	fmt.Println(d)
-	if err := model.InsertTransaction(d); err != nil {
+	} else if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
 		render.JSON(w, res, status)
 		return
 	}
+
 	status = http.StatusCreated
 	res = NewResponse(TransactionResponse{TransactionCode: txCode})
 	render.JSON(w, res, status)
 }
 
-func GetTransactionDetails(w http.ResponseWriter, r *http.Request) {
-	id := bone.GetValue(r, "id")
-	variant, err := model.FindTransactionByID(id)
+func GetTransaction(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusOK
+
+	accountID, _, _, ok := AuthToken(w, r)
+	if !ok {
+		return
+	}
+
+	tx, err := model.FindTransactionByID(accountID)
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}
 
-	res := NewResponse(variant)
-	render.JSON(w, res)
+	res := NewResponse(tx)
+	render.JSON(w, res, status)
 }
 
 func GetTransactionByDate(w http.ResponseWriter, r *http.Request) {
@@ -209,16 +218,19 @@ func UpdateTransaction(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
+	accountID, userID, _, ok := AuthToken(w, r)
+	if !ok {
+		return
+	}
+
 	d := &model.Transaction{
-		Id:               id,
-		AccountId:        "",
-		PartnerId:        rd.PartnerID,
-		TransactionCode:  "",
-		TotalTransaction: rd.TotalTransaction,
-		DiscountValue:    0,
-		PaymentType:      rd.PaymentType,
-		User:             "",
-		Vouchers:         rd.Vouchers,
+		Id:              id,
+		AccountId:       accountID,
+		PartnerId:       rd.PartnerID,
+		TransactionCode: "",
+		DiscountValue:   0,
+		User:            userID,
+		Vouchers:        rd.Vouchers,
 	}
 	if err := d.Update(); err != nil {
 		log.Panic(err)
