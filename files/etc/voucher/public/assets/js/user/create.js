@@ -1,30 +1,5 @@
 $( window ).ready(function() {
   getRole()
-
-  $( "#username" ).focusout(function() {
-    if($("#username").val() != ""){
-      $("#username").removeClass("error");
-      $("#username-card").removeClass("input-error");
-    }
-  });
-  $( "#password" ).focusout(function() {
-    if($("#password").val() != ""){
-      $("#password").removeClass("error");
-      $("#password-card").removeClass("input-error");
-    }
-  });
-  $( "#email" ).focusout(function() {
-    if($("#email").val() != ""){
-      $("#email").removeClass("error");
-      $("#email-card").removeClass("input-error");
-    }
-  });
-  $( "#phone" ).focusout(function() {
-    if($("#phone").val() != ""){
-      $("#phone").removeClass("error");
-      $("#phone-card").removeClass("input-error");
-    }
-  });
 });
 
 function toTwoDigit(val){
@@ -41,6 +16,10 @@ function send() {
   var listRole = [];
   var li = $( "ul.select2-selection__rendered" ).find( "li" );
 
+  if(li.length == 0){
+    error = true;
+  }
+
   for (i = 0; i < li.length-1; i++) {
       var text = li[i].getAttribute("title");
       var value = $("option").filter(function() {
@@ -52,26 +31,13 @@ function send() {
 
   listRole.splice(0, 1);
   var error = false;
-  if($("#username").val() == ""){
-    $("#username").addClass("error");
-    $("#username-card").addClass("input-error");
-    error = true;
-  }
-  if($("#password").val() == ""){
-    $("#password").addClass("error");
-    $("#password-card").addClass("input-error");
-    error = true;
-  }
-  if($("#email").val() == ""){
-    $("#email").addClass("error");
-    $("#email-card").addClass("input-error");
-    error = true;
-  }
-  if($("#phone").val() == ""){
-    $("#phone").addClass("error");
-    $("#phone-card").addClass("input-error");
-    error = true;
-  }
+  $('input[check="true"]').each(function() {
+    if($(this).val() == ""){
+      $(this).addClass("error");
+      $(this).parent().closest('div').addClass("input-error");
+      error = true;
+    }
+  });
 
   if(error){
     alert("Please check your input.");
@@ -117,19 +83,6 @@ function getRole() {
         }
       }
   });
-}
-
-function findGetParameter(parameterName) {
-    var result = null,
-        tmp = [];
-    location.search
-    .substr(1)
-        .split("&")
-        .forEach(function (item) {
-        tmp = item.split("=");
-        if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
-    });
-    return result;
 }
 
 (function() {

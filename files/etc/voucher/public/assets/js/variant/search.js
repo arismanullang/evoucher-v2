@@ -42,11 +42,27 @@ function getVariant() {
 
             console.log(arrData[i].Id + " " + dateStart + " " + dateEnd);
             console.log(arrData[i].Id + " " + diffNow + " " + diffTotal + " " + persen);
-
+            var diffDay = diffNow;
             diffNow = diffNow + " hari";
 
             if( persen < 0){
               diffNow = "Expired";
+            }
+
+            if( diffDay == 30 && diffTotal > 30){
+              diffNow = "Not start yet";
+            }
+
+            var button = "<button type='button' onclick='detail(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"+
+            "<button type='button' onclick='edit(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>"+
+            "<button type='button' value=\""+arrData[i].Id+"\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>";
+
+            console.log(arrData[i].Voucher > 0);
+
+            if (arrData[i].Voucher > 0){
+              button = "<button type='button' onclick='detail(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"+
+              "<button type='button' disabled='' onclick='edit(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>"+
+              "<button type='button' disabled='' value=\""+arrData[i].Id+"\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>";
             }
 
             dataSet[i] = [
@@ -57,9 +73,7 @@ function getVariant() {
               , "<div class='progress'>"
                 + "<div role='progressbar' aria-valuenow='"+diffNow+"' aria-valuemin='0' aria-valuemax='"+diffTotal+"' style='width: "+persen+"%;' class='progress-bar'>"+diffNow+"</div>"
                 + "</div>"
-              , "<button type='button' onclick='detail(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"+
-              "<button type='button' onclick='edit(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>"+
-              "<button type='button' value=\""+arrData[i].Id+"\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>"
+              , button
             ];
           }
           console.log(dataSet);
@@ -68,11 +82,11 @@ function getVariant() {
             $('#datatable1').DataTable().clear().destroy();
           }
 
-          $('#datatable1').dataTable({
+          var table = $('#datatable1').dataTable({
               data: dataSet,
               columns: [
-                  { title: "Variant Name" },
-                  { title: "Convention Rate" },
+                  { title: "Program Name" },
+                  { title: "Conversion Rate" },
                   { title: "Voucher Value" },
                   { title: "Remaining Voucher" },
                   { title: "Period" },
@@ -90,35 +104,17 @@ function getVariant() {
                       sPrevious: '<em class="ion-ios-arrow-left"></em>'
                   }
               }
-          });
+            });
+            var inputSearchClass = 'datatable_input_col_search';
+            var columnInputs = $('tfoot .' + inputSearchClass);
+
+            // On input keyup trigger filtering
+            columnInputs
+                .keyup(function() {
+                    table.fnFilter(this.value, columnInputs.index(this));
+                });
         }
     });
-}
-
-function findGetParameter(parameterName) {
-    var result = null,
-        tmp = [];
-    location.search
-    .substr(1)
-        .split("&")
-        .forEach(function (item) {
-        tmp = item.split("=");
-        if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
-    });
-    return result;
-}
-
-function addDecimalPoints(value) {
-    var input = " "+value;
-    var inputValue = input.replace('.', '').split("").reverse().join(""); // reverse
-    var newValue = '';
-    for (var i = 0; i < inputValue.length; i++) {
-        if (i % 3 == 0 && i != 0 && i != inputValue.length-1) {
-            newValue += '.';
-        }
-        newValue += inputValue[i];
-    }
-    return newValue.split("").reverse().join("");
 }
 
 function edit(url){

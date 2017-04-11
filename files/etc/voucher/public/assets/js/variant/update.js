@@ -1,24 +1,8 @@
-var id = findGetParameter("id");
-var user = localStorage.getItem("user");
-var token = localStorage.getItem(user);
-
 $( window ).ready(function() {
+  var id = findGetParameter("id");
   searchById(id);
   // getPartner();
 });
-
-function findGetParameter(parameterName) {
-    var result = null,
-        tmp = [];
-    location.search
-    .substr(1)
-        .split("&")
-        .forEach(function (item) {
-        tmp = item.split("=");
-        if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
-    });
-    return result;
-}
 
 function searchById(id) {
 
@@ -31,42 +15,58 @@ function searchById(id) {
           console.log(data);
           var variant = data.data;
 
-          $("#variantName").val(variant.VariantName);
-          $("#variantType").val(variant.VariantType);
-          $("#select2-variantType-container").html(convcertToUpperCase(variant.VariantType));
-          $("#voucherType").val(variant.VoucherType);
-          $("#select2-voucherType-container").html(convcertToUpperCase(variant.VoucherType));
-          $("#voucherPrice").val(variant.VoucherPrice);
-          $("#maxQuantityVoucher").val(variant.MaxQuantityVoucher);
-          $("#maxUsageVoucher").val(variant.MaxUsageVoucher);
-          $("#redeemtionMethod").val(variant.RedeemtionMethod);
-          $("#select2-redeemtionMethod-container").html(convcertToUpperCase(variant.RedeemtionMethod));
-          $("#startDate").val(convertToDate(variant.StartDate));
-          $("#endDate").val(convertToDate(variant.EndDate));
-          $("#voucherValue").val(variant.DiscountValue);
-          $("#imageUrl").val(variant.ImgUrl);
-          $("#variantTnc").val(variant.VariantTnc);
-          $("#variantDescription").val(variant.VariantDescription);
+          $("#variant-id").val(id);
+          $("#variant-name").val(variant.VariantName);
+          $("#variant-type").val(variant.VariantType);
+          $("#select2-variant-type-container").html(convcertToUpperCase(variant.VariantType));
+          $("#voucher-type").val(variant.VoucherType);
+          $("#select2-voucher-type-container").html(convcertToUpperCase(variant.VoucherType));
+          $("#voucher-price").val(variant.VoucherPrice);
+          $("#max-quantity-voucher").val(variant.MaxQuantityVoucher);
+          $("#max-usage-voucher").val(variant.MaxUsageVoucher);
+          $("#redemption-method").val(variant.RedeemtionMethod);
+          $("#select2-redemption-method-container").html(convcertToUpperCase(variant.RedeemtionMethod));
+          $("#start-date").val(convertToDate(variant.StartDate));
+          $("#end-date").val(convertToDate(variant.EndDate));
+          $("#voucher-value").val(variant.DiscountValue);
+          $("#image-url").val(variant.ImgUrl);
+          $("#variant-tnc").val(variant.VariantTnc);
+          $("#variant-description").val(variant.VariantDescription);
 
         }
     });
 }
 
 function send() {
+  error = false;
+    $('input[check="true"]').each(function() {
+      if($(this).val() == ""){
+        $(this).addClass("error");
+        $(this).parent().closest('div').addClass("input-error");
+        alert($(this).val());
+        error = true;
+      }
+    });
+
+    if(error){
+      alert("Please check your input.");
+      return
+    }
+    var id = $("#variant-id").val();
     var variant = {
-      variant_name: $("#variantName").val(),
-      variant_type: $("#variantType").val(),
-      voucher_type: $("#voucherType").val(),
-      voucher_price: parseInt($("#voucherPrice").val()),
-      max_quantity_voucher: parseInt($("#maxQuantityVoucher").val()),
-      max_usage_voucher: parseInt($("#maxUsageVoucher").val()),
-      redeemtion_method: $("#redeemtionMethod").val(),
-      start_date: $("#startDate").val(),
-      end_date: $("#endDate").val(),
-      discount_value: parseInt($("#voucherValue").val()),
-      image_url: $("#imageUrl").val(),
-      variant_tnc: $("#variantTnc").val(),
-      variant_description: $("#variantDescription").val()
+      variant_name: $("#variant-name").val(),
+      variant_type: $("#variant-type").val(),
+      voucher_type: $("#voucher-type").val(),
+      voucher_price: parseInt($("#voucher-price").val()),
+      max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
+      max_usage_voucher: parseInt($("#max-usage-voucher").val()),
+      redeemtion_method: $("#redemption-method").val(),
+      start_date: $("#start-date").val(),
+      end_date: $("#end-date").val(),
+      discount_value: parseInt($("#voucher-value").val()),
+      image_url: $("#image-url").val(),
+      variant_tnc: $("#variant-tnc").val(),
+      variant_description: $("#variant-description").val()
     };
 
     console.log(variant);

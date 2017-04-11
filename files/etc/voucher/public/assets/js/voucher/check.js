@@ -4,97 +4,41 @@ $( document ).ready(function() {
 
 function getVoucher() {
     console.log("Get Voucher Data");
-    var holder = findGetParameter('holder');
-    var arrData = [];
+    var id = findGetParameter('id');
     $.ajax({
-        url: '/v1/voucher?holder='+holder+'&token='+token,
+        url: '/v1/vouchers/'+id+'?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
-          arrData = data.data;
-          var i;
-          var dataSet = [];
-          for ( i = 0; i < arrData.length; i++){
-            var date1 = arrData[i].valid_at.substring(0, 10).split("-");
-            var date2 = arrData[i].expired_at.substring(0, 10).split("-");
+          var data = data.data;
 
-            var dateStart  = new Date(date1[0], date1[1]-1, date1[2]);
-            var dateEnd  = new Date(date2[0], date2[1]-1, date2[2]);
-            var dateNow  = new Date("2017", "02", "02");
+          var date1 = data.valid_at.substring(0, 19).replace("T", " ");
+          var date2 = data.expired_at.substring(0, 19).replace("T", " ");
 
-            var one_day = 1000*60*60*24;
-            var dateStart_ms = dateStart.getTime();
-            var dateEnd_ms = dateEnd.getTime();
-            var dateNow_ms = dateNow.getTime();
+          $("#program-name").html(data.Variant_name);
+          $("#voucher-code").html(data.voucher_code);
+          $("#voucher-type").html(data.Voucher_type);
+          $("#voucher-value").html("Rp " + addDecimalPoints(data.discount_value) + ",00");
+          $("#reference-no").html(data.reference_no);
+          $("#period").html(date1 + "</br></br>To</br></br>" + date2)
 
-            var diffNow = Math.round((dateEnd_ms-dateNow_ms)/one_day);
-            var diffTotal = Math.round((dateEnd_ms-dateStart_ms)/one_day);
-            var persen = diffNow / diffTotal * 100;
-            console.log(dateStart + " " + dateEnd + " " + dateNow);
-            console.log(diffNow + " " + diffTotal + " " + persen);
-
-            diffNow = diffNow + " hari";
-
-            if( persen < 0){
-              diffNow = "Expired";
-            }
-            if( persen == Infinity){
-              diffNow = "Expired";
-            }
-// variant jangan id, name aja
-            dataSet[i] = [
-              arrData[i].voucher_code
-              , arrData[i].reference_no
-              , arrData[i].variant_id
-              , "<div class='progress'>"
-                + "<div role='progressbar progress-bar-success' aria-valuenow='"+diffNow+"' aria-valuemin='0' aria-valuemax='"+diffTotal+"' style='width: "+persen+"%;' class='progress-bar'>"+diffNow+"</div>"
-                + "</div>"
-              , arrData[i].state
-              ];
+          var email = data.holder_email;
+          if(data.holder_email == ""){
+              email = "Unknown";
           }
-          console.log(dataSet);
-
-          if ($.fn.DataTable.isDataTable("#datatable1")) {
-            $('#datatable1').DataTable().clear().destroy();
+          var phone = data.holder_phone;
+          if(data.holder_phone == ""){
+              phone = "Unknown";
           }
 
-          $('#datatable1').dataTable({
-              data: dataSet,
-              columns: [
-                  { title: "Voucher Code" },
-                  { title: "Reference No" },
-                  { title: "Variant" },
-                  { title: "Period" },
-                  { title: "State" }
-              ],
-              oLanguage: {
-                  sSearch: '<em class="ion-search"></em>',
-                  sLengthMenu: '_MENU_ records per page',
-                  info: 'Showing page _PAGE_ of _PAGES_',
-                  zeroRecords: 'Nothing found - sorry',
-                  infoEmpty: 'No records available',
-                  infoFiltered: '(filtered from _MAX_ total records)',
-                  oPaginate: {
-                      sNext: '<em class="ion-ios-arrow-right"></em>',
-                      sPrevious: '<em class="ion-ios-arrow-left"></em>'
-                  }
-              }
-          });
+          $("#holder-name").html(toTitleCase(data.holder));
+          $("#holder-email").html(email);
+          $("#holder-phone").html(phone);
+
+          var dateCreated = data.created_at.substring(0, 19).replace("T", " ");
+          $("#issued-state").html(dateCreated);
         }
     });
-}
-
-function findGetParameter(parameterName) {
-    var result = null,
-        tmp = [];
-    location.search
-    .substr(1)
-        .split("&")
-        .forEach(function (item) {
-        tmp = item.split("=");
-        if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
-    });
-    return result;
 }
 
 (function() {

@@ -235,21 +235,19 @@ func FindUserDetail(userId string) (User, error) {
 	return res[0], nil
 }
 
-func Login(username, password, accountId string) (string, error) {
+func Login(username, password string) (string, error) {
 	fmt.Println("Login")
+	fmt.Println(username)
+	fmt.Println(password)
 	q := `
 		SELECT
-			u.id
+			id
 		FROM
-			users as u
-		JOIN
-			user_accounts as ua
-		ON
-			u.id = ua.user_id
+			users
 		WHERE
-			u.username = ?
-			AND u.password = ?
-			AND u.status = ?
+			username = ?
+			AND password = ?
+			AND status = ?
 	`
 	var res []string
 	if err := db.Select(&res, db.Rebind(q), username, password /*accountId,*/, StatusCreated); err != nil {

@@ -1,17 +1,29 @@
 var token = localStorage.getItem("token");
-
+var error = true;
 $( window ).ready(function() {
   console.log(token);
   if(token == null){
     window.location = "/user/login";
   }
 
+  $( 'input[check="true"]' ).focusout(function() {
+    if($(this).val() == ""){
+      $(this).addClass("error");
+      $(this).parent().closest('div').addClass("input-error");
+      error = true;
+    }
+    else{
+      $(this).removeClass("error");
+      $(this).parent().closest('div').removeClass("input-error");
+    }
+  });
+
   getSession();
 });
 
 function getSession() {
     $.ajax({
-      url: '/v1/api/get/session?token='+token,
+      url: '/v1/token/check?token='+token,
       type: 'get',
       success: function (data) {
         console.log(data.data);
@@ -26,6 +38,42 @@ function getSession() {
         }
       }
   });
+}
+
+function logOut() {
+  localStorage.clear();
+  window.location = "/user/login";
+}
+
+function addDecimalPoints(value) {
+    var input = " "+value;
+    var inputValue = input.replace('.', '').split("").reverse().join(""); // reverse
+    var newValue = '';
+    for (var i = 0; i < inputValue.length; i++) {
+        if (i % 3 == 0 && i != 0 && i != inputValue.length-1) {
+            newValue += '.';
+        }
+        newValue += inputValue[i];
+    }
+    return newValue.split("").reverse().join("");
+}
+
+function toTitleCase(str)
+{
+    return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+}
+
+function findGetParameter(parameterName) {
+    var result = null,
+        tmp = [];
+    location.search
+    .substr(1)
+        .split("&")
+        .forEach(function (item) {
+        tmp = item.split("=");
+        if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+    });
+    return result;
 }
 
 (function() {

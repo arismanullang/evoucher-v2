@@ -35,19 +35,18 @@ type (
 
 func GetAllPartners(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
-	errorTittle := ""
 	res := NewResponse(nil)
 	partner, err := model.FindAllPartners()
 	if err != nil {
 		fmt.Println(err.Error())
 		status = http.StatusInternalServerError
-		errorTittle = model.ErrCodeInternalError
+		errorTitle := model.ErrCodeInternalError
 		if err == model.ErrResourceNotFound {
 			status = http.StatusNotFound
-			errorTittle = model.ErrCodeResourceNotFound
+			errorTitle = model.ErrCodeResourceNotFound
 		}
 
-		res.AddError(its(status), errorTittle, err.Error(), "partner")
+		res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
 	} else {
 		res = NewResponse(partner)
 	}
@@ -109,28 +108,25 @@ func GetAllPartnersCustomParam(w http.ResponseWriter, r *http.Request) {
 func GetPartnerSerialName(w http.ResponseWriter, r *http.Request) {
 	param := r.FormValue("param")
 
-	token := r.FormValue("token")
 	status := http.StatusUnauthorized
 	err := model.ErrTokenNotFound
+	errorTitle := model.ErrCodeInvalidToken
 	res := NewResponse(nil)
+	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
 
-	res.AddError(its(status), its(status), err.Error(), "partner")
-
-	valid := false
-	if token != "" && token != "null" {
-		_, _, _, valid, _ = getValiditySession(r, token)
-	}
-
+	_, _, _, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
 		partner, err := model.FindPartnerSerialNumber(param)
 		if err != nil {
 			status = http.StatusInternalServerError
+			errorTitle = model.ErrCodeInternalError
 			if err != model.ErrResourceNotFound {
 				status = http.StatusNotFound
+				errorTitle = model.ErrCodeResourceNotFound
 			}
 
-			res.AddError(its(status), its(status), err.Error(), "partner")
+			res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
 		} else {
 			res = NewResponse(partner)
 		}
@@ -147,19 +143,14 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	token := r.FormValue("token")
 	status := http.StatusUnauthorized
 	err := model.ErrTokenNotFound
+	errorTitle := model.ErrCodeInvalidToken
 	res := NewResponse(nil)
-	user := ""
-	res.AddError(its(status), its(status), err.Error(), "partner")
+	res.AddError(its(status), errorTitle, err.Error(), "Add Partner")
 
-	valid := false
-	if token != "" && token != "null" {
-		fmt.Println("Check Session")
-		user, _, _, valid, err = getValiditySession(r, token)
-	}
-
+	fmt.Println("Check Session")
+	_, user, _, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusCreated
 		param := model.Partner{
@@ -176,11 +167,13 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 		err := model.InsertPartner(param)
 		if err != nil {
 			status = http.StatusInternalServerError
+			errorTitle = model.ErrCodeInternalError
 			if err != model.ErrResourceNotFound {
 				status = http.StatusNotFound
+				errorTitle = model.ErrCodeResourceNotFound
 			}
 
-			res.AddError(its(status), its(status), err.Error(), "partner")
+			res.AddError(its(status), errorTitle, err.Error(), "Add Partner")
 		}
 	}
 	render.JSON(w, res, status)

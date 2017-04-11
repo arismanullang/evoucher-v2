@@ -1,20 +1,20 @@
 function send() {
   var partner = {
-      partner_name: $("#partnerName").val(),
-      serial_number: $("#serialNumber").val(),
-    };
+    partner_name: $("#partner-name").val(),
+    serial_number: $("#serial-number").val(),
+  };
 
-    console.log(partner);
-    $.ajax({
-       url: '/v1/create/partner?token='+token,
-       type: 'post',
-       dataType: 'json',
-       contentType: "application/json",
-       data: JSON.stringify(partner),
-       success: function () {
-           window.location = "/partner/search";
-       }
-   });
+  console.log(partner);
+  $.ajax({
+     url: '/v1/create/partner?token='+token,
+     type: 'post',
+     dataType: 'json',
+     contentType: "application/json",
+     data: JSON.stringify(partner),
+     success: function () {
+         window.location = "/partner/search";
+     }
+ });
 }
 
 (function() {
@@ -25,10 +25,17 @@ function send() {
     function runSweetAlert() {
         $(document).on('click', '.swal-demo4', function(e) {
             e.preventDefault();
-            console.log(e.target.value);
+            var html;
+            if($("#serial-number").val() == null){
+              html = 'Do you want create partner '+$("#partner-name").val()+' with no serial number?';
+            }
+            else{
+              html = 'Do you want create partner '+$("#partner-name").val()+' with serial number '+$("#serial-number").val()+'?';
+            }
+
             swal({
                     title: 'Are you sure?',
-                    text: 'Do you want create partner '+$("#partnerName").val()+' with serial number '+$("#serialNumber").val()+'?',
+                    text: html,
                     type: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#DD6B55',
@@ -36,7 +43,21 @@ function send() {
                     closeOnConfirm: false
                 },
                 function() {
-                    swal('Success', 'Partner '+$("#partnerName").val()+' created.', send());
+                  error = false;
+                  $('input[check="true"]').each(function() {
+                    if($(this).val() == ""){
+                      $(this).addClass("error");
+                      $(this).parent().closest('div').addClass("input-error");
+                      error = true;
+                    }
+                  });
+
+                  if(error){
+                    alert("Please check your input.");
+                    return
+                  }
+
+                  swal('Success', 'Partner '+$("#partner-name").val()+' created.', send());
                 });
 
         });

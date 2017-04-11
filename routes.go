@@ -19,7 +19,14 @@ func setRoutes() http.Handler {
 	r.GetFunc("/user/:page", viewUser)
 	r.GetFunc("/partner/:page", viewPartner)
 	r.GetFunc("/voucher/:page", viewVoucher)
+	r.GetFunc("/report/:page", viewReport)
 	r.GetFunc("/", login)
+	r.PostFunc("/v1/query", controller.CustomQuery)
+
+	//report
+	r.GetFunc("/v1/report", controller.MakeReport)
+	r.GetFunc("/v1/report/variant", controller.MakeReportVariant)
+	r.GetFunc("/v1/report/voucher/variant", controller.MakeReportVoucherByUser)
 
 	//variant
 	r.PostFunc("/v1/create/variant", controller.CreateVariant)
@@ -43,11 +50,9 @@ func setRoutes() http.Handler {
 
 	//user
 	r.PostFunc("/v1/create/user", controller.RegisterUser)
-	r.GetFunc("/v1/api/get/session", controller.CheckSession)
 	r.GetFunc("/v1/api/get/userByRole", controller.FindUserByRole)
 	r.GetFunc("/v1/api/get/users", controller.GetUser)
 	r.GetFunc("/v1/api/get/userDetails", controller.GetUserDetails)
-	r.PostFunc("/v1/api/login", controller.DoLogin)
 
 	//partner
 	r.GetFunc("/v1/get/partner", controller.GetAllPartners)
@@ -83,7 +88,7 @@ func setRoutes() http.Handler {
 	// r.NotFoundFunc(errorHandler)
 
 	// http.HandleFunc("/test", controller.UploadFormTest)
-	r.GetFunc("/listfile/", controller.GetListFile)
+	// r.GetFunc("/listfile/", controller.GetListFile)
 
 	return r
 }
@@ -161,6 +166,16 @@ func viewVoucher(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "voucher/update.html", nil)
 	} else if page == "" || page == "index" {
 		render.FileInLayout(w, "layout.html", "voucher/index.html", nil)
+	}
+}
+
+func viewReport(w http.ResponseWriter, r *http.Request) {
+	page := bone.GetValue(r, "page")
+
+	if page == "variant" {
+		render.FileInLayout(w, "layout.html", "report/variant.html", nil)
+	} else if page == "" || page == "index" {
+		render.FileInLayout(w, "layout.html", "report/test.html", nil)
 	}
 }
 

@@ -26,17 +26,18 @@ func basicAuth(w http.ResponseWriter, r *http.Request) (string, string, bool) {
 	if len(pair) != 2 {
 		return "", "", false
 	}
-	fmt.Println(pair[0], hash(pair[1]))
-	login, err := model.Login(pair[0], hash(pair[1]), "NNJs3Nfo")
 
+	login, err := model.Login(pair[0], hash(pair[1]))
 	if login == "" || err != nil {
 		return "", "", false
 	}
+	fmt.Println(login)
 
 	ac, err := model.GetAccountsByUser(login)
 	if err != nil {
 		return "", "", false
 	}
+	fmt.Println("a")
 
 	return ac[0], login, true
 }

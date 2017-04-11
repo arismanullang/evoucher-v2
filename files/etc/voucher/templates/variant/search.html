@@ -1,7 +1,7 @@
 {{ template "layout" . }}
 
-{{ define "title" }}List Variant{{ end }}
-{{ define "header-title" }}List Variant{{ end }}
+{{ define "title" }}List Program{{ end }}
+{{ define "header-title" }}List Program{{ end }}
 
 {{ define "content" }}
 <section>
@@ -13,20 +13,54 @@
       <div class="pull-right">
         <button type="button" onclick="addVariant()" class="btn btn-default btn-flat btn-flat-icon"><em class="ion-plus-circled"></em></button>
       </div>
-      <div class="card-title text-center">Variant</div>
+      <div class="card-title text-center">Program</div>
     </div>
     <div class="card-body">
       <table id="datatable1" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
         <thead>
           <tr role="row">
             <th>Id</th>
-            <th>Variant Name</th>
+            <th>Program Name</th>
             <th>Voucher Price</th>
             <th>Voucher Value</th>
             <th>Voucher Remains</th>
             <th class="center-text"></th>
           </tr>
         </thead>
+        <tfoot>
+          <tr>
+            <th>
+              <div class="mda-form-control pt0">
+                <input type="text" name="filter_program_name" placeholder="Program Name" class="form-control input-sm datatable_input_col_search">
+                <div class="mda-form-control-line"></div>
+              </div>
+            </th>
+            <th>
+              <div class="mda-form-control pt0">
+                <input type="text" name="filter_convention_rate" placeholder="Conversion Rate" class="form-control input-sm datatable_input_col_search">
+                <div class="mda-form-control-line"></div>
+              </div>
+            </th>
+            <th>
+              <div class="mda-form-control pt0">
+                <input type="text" name="filter_voucher_value" placeholder="Voucher Value" class="form-control input-sm datatable_input_col_search">
+                <div class="mda-form-control-line"></div>
+              </div>
+            </th>
+            <th>
+              <div class="mda-form-control pt0">
+                <input type="text" name="filter_remaining_voucher" placeholder="Remaining Voucher" class="form-control input-sm datatable_input_col_search">
+                <div class="mda-form-control-line"></div>
+              </div>
+            </th>
+            <th>
+              <div class="mda-form-control pt0">
+                <input type="text" name="filter_period" placeholder="Period" class="form-control input-sm datatable_input_col_search">
+                <div class="mda-form-control-line"></div>
+              </div>
+            </th>
+          </tr>
+        </tfoot>
       </table>
     </div>
   </div>
@@ -37,6 +71,13 @@
 {{ define "scripts" }}
 <script type="text/javascript" src="/assets/vendor/sweetalert/dist/sweetalert-dev.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/jquery.dataTables.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.flash.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/jszip.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/pdfmake.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/vfs_fonts.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.html5.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.print.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/nouislider/distribute/nouislider.js"></script>
 <script type="text/javascript" src="/assets/js/variant/search.js"></script>
 {{ end }}

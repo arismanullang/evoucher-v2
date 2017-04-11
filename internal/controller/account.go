@@ -56,29 +56,27 @@ func GetAccount(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAccountDetailByUser(w http.ResponseWriter, r *http.Request) {
-	user := ""
-	token := r.FormValue("token")
+	fmt.Println("Get Account Details")
 	status := http.StatusUnauthorized
 	err := model.ErrTokenNotFound
+	errTitle := model.ErrCodeInvalidToken
 	res := NewResponse(nil)
 
-	res.AddError(its(status), its(status), err.Error(), "account")
+	res.AddError(its(status), errTitle, err.Error(), "Get Account")
 
-	valid := false
-	if token != "" && token != "null" {
-		user, _, _, valid, _ = getValiditySession(r, token)
-	}
-	fmt.Println("user " + user)
+	_, user, _, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
 		account, err := model.GetAccountDetailByUser(user)
 		if err != nil {
 			status = http.StatusInternalServerError
+			errTitle = model.ErrCodeInternalError
 			if err != model.ErrResourceNotFound {
 				status = http.StatusNotFound
+				errTitle = model.ErrCodeResourceNotFound
 			}
 
-			res.AddError(its(status), its(status), err.Error(), "account")
+			res.AddError(its(status), errTitle, err.Error(), "Get Acccount")
 		} else {
 			res = NewResponse(account)
 		}
@@ -87,28 +85,26 @@ func GetAccountDetailByUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAccountsByUser(w http.ResponseWriter, r *http.Request) {
-	user := ""
-	token := r.FormValue("token")
 	status := http.StatusUnauthorized
 	err := model.ErrTokenNotFound
+	errTitle := model.ErrCodeInvalidToken
 	res := NewResponse(nil)
 
-	res.AddError(its(status), its(status), err.Error(), "account")
+	res.AddError(its(status), errTitle, err.Error(), "Get ccount")
 
-	valid := false
-	if token != "" && token != "null" {
-		user, _, _, valid, _ = getValiditySession(r, token)
-	}
+	_, user, _, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
 		account, err := model.GetAccountsByUser(user)
 		if err != nil {
 			status = http.StatusInternalServerError
+			errTitle = model.ErrCodeInternalError
 			if err != model.ErrResourceNotFound {
 				status = http.StatusNotFound
+				errTitle = model.ErrCodeResourceNotFound
 			}
 
-			res.AddError(its(status), its(status), err.Error(), "account")
+			res.AddError(its(status), errTitle, err.Error(), "Get ccount")
 		} else {
 			res = NewResponse(account)
 		}
