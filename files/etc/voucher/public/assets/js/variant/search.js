@@ -82,7 +82,7 @@ function getVariant() {
             $('#datatable1').DataTable().clear().destroy();
           }
 
-          $('#datatable1').dataTable({
+          var table = $('#datatable1').dataTable({
               data: dataSet,
               columns: [
                   { title: "Program Name" },
@@ -104,7 +104,15 @@ function getVariant() {
                       sPrevious: '<em class="ion-ios-arrow-left"></em>'
                   }
               }
-          });
+            });
+            var inputSearchClass = 'datatable_input_col_search';
+            var columnInputs = $('tfoot .' + inputSearchClass);
+
+            // On input keyup trigger filtering
+            columnInputs
+                .keyup(function() {
+                    table.fnFilter(this.value, columnInputs.index(this));
+                });
         }
     });
 }

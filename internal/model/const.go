@@ -39,6 +39,7 @@ const (
 	ErrCodeInvalidToken             string = "invalid_token"
 	ErrCodeOTPFailed                string = "OTP_Failed"
 	ErrCodeInvalidPartnerQr         string = "invalid_partner_qr"
+	ErrCodeInvalidVariant           string = "invalid_variant"
 	ErrCodeInvalidUser              string = "invalid_username_and_password"
 
 	ErrMessageAllowAccumulativeDisable string = "accumulation is not allowed"
@@ -92,4 +93,7 @@ const (
 	DEFAULT_TXLENGTH int    = 8
 
 	TOKENLIFE int = 1440
+
+	GCS_BUCKET     string = "e-voucher"
+	GCS_PROJECT_ID string = "shared-project-159515"
 )

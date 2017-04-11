@@ -44,7 +44,7 @@ func setRoutes() http.Handler {
 
 	//transaction
 	r.PostFunc("/v1/transaction/redeem", controller.CreateTransaction)
-	r.GetFunc("/transaction/:id/", controller.GetTransactionDetails)
+	r.GetFunc("/transaction/:id/", controller.GetTransaction)
 	r.PostFunc("/transaction/:id/update", controller.UpdateTransaction)
 	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)
 
@@ -85,7 +85,11 @@ func setRoutes() http.Handler {
 	r.GetFunc("/view/", viewHandler)
 	r.GetFunc("/viewNoLayout", viewNoLayoutHandler)
 
-	r.NotFoundFunc(errorHandler)
+	// r.NotFoundFunc(errorHandler)
+
+	// http.HandleFunc("/test", controller.UploadFormTest)
+	// r.GetFunc("/listfile/", controller.GetListFile)
+
 	return r
 }
 

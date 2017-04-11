@@ -6,16 +6,15 @@ import (
 
 type (
 	Transaction struct {
-		Id               string    `db:"id"`
-		AccountId        string    `db:"account_id"`
-		PartnerId        string    `db:"partner_id"`
-		TransactionCode  string    `db:"transaction_code"`
-		TotalTransaction float64   `db:"total_transaction"`
-		DiscountValue    float64   `db:"discount_value"`
-		PaymentType      string    `db:"payment_type"`
-		CreatedAt        time.Time `db:"created_at"`
-		User             string    `db:"created_by"`
-		Vouchers         []string  `db:"-"`
+		Id              string    `db:"id"`
+		AccountId       string    `db:"account_id"`
+		PartnerId       string    `db:"partner_id"`
+		TransactionCode string    `db:"transaction_code"`
+		Token           string    `db:"token"`
+		DiscountValue   float64   `db:"discount_value"`
+		CreatedAt       time.Time `db:"created_at"`
+		User            string    `db:"created_by"`
+		Vouchers        []string  `db:"-"`
 	}
 	DeleteTransactionRequest struct {
 		Id   string `db:"id"`
@@ -36,6 +35,7 @@ func InsertTransaction(d Transaction) error {
 			, partner_id
 			, transaction_code
 			, discount_value
+			, token
 			, created_by
 			, status
 		)
@@ -44,7 +44,7 @@ func InsertTransaction(d Transaction) error {
 			id
 	`
 	var res []string //[]Transaction
-	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.PartnerId, d.TransactionCode, d.DiscountValue, d.User, StatusCreated); err != nil {
+	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.PartnerId, d.TransactionCode, d.DiscountValue, d.Token, d.User, StatusCreated); err != nil {
 		return err
 	}
 	d.Id = res[0]
@@ -184,11 +184,12 @@ func FindTransactionByID(id string) ([]Transaction, error) {
 	q := `
 		SELECT
 			id
-			, company_id
-			, pic_merchant
+			, account_id
+			, partner_id
 			, transaction_code
 			, total_transaction
 			, discount_value
+			, token
 			, payment_type
 			, created_by
 			, created_at
@@ -236,6 +237,7 @@ func FindTransactionByDate(start, end string) ([]Transaction, error) {
 			, pic_merchant
 			, total_transaction
 			, discount_value
+			, token
 			, payment_type
 			, created_by
 			, created_at
