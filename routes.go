@@ -25,7 +25,8 @@ func setRoutes() http.Handler {
 
 	//report
 	r.GetFunc("/v1/report", controller.MakeReport)
-	r.GetFunc("/v1/report/variant", controller.MakeReportVariantFlotBar)
+	r.GetFunc("/v1/report/variant", controller.MakeReportVariant)
+	r.GetFunc("/v1/report/voucher/variant", controller.MakeReportVoucherByUser)
 
 	//variant
 	r.PostFunc("/v1/create/variant", controller.CreateVariant)

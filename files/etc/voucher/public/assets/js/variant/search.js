@@ -42,11 +42,15 @@ function getVariant() {
 
             console.log(arrData[i].Id + " " + dateStart + " " + dateEnd);
             console.log(arrData[i].Id + " " + diffNow + " " + diffTotal + " " + persen);
-
+            var diffDay = diffNow;
             diffNow = diffNow + " hari";
 
             if( persen < 0){
               diffNow = "Expired";
+            }
+
+            if( diffDay == 30 && diffTotal > 30){
+              diffNow = "Not start yet";
             }
 
             var button = "<button type='button' onclick='detail(\""+arrData[i].Id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"+

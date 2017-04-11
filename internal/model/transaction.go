@@ -35,18 +35,16 @@ func InsertTransaction(d Transaction) error {
 			account_id
 			, partner_id
 			, transaction_code
-			, total_transaction
 			, discount_value
-			, payment_type
 			, created_by
 			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?)
 		RETURNING
 			id
 	`
 	var res []string //[]Transaction
-	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.PartnerId, d.TransactionCode, d.TotalTransaction, d.DiscountValue, d.PaymentType, d.User, StatusCreated); err != nil {
+	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.PartnerId, d.TransactionCode, d.DiscountValue, d.User, StatusCreated); err != nil {
 		return err
 	}
 	d.Id = res[0]
@@ -87,9 +85,7 @@ func (d *Transaction) Update() error {
 			company_id = ?
 			, pic_merchant = ?
 			, transaction_code = ?
-			, total_transaction = ?
 			, discount_value = ?
-			, payment_type = ?
 			, updated_by = ?
 			, updated_at = ?
 		WHERE
@@ -97,7 +93,7 @@ func (d *Transaction) Update() error {
 			AND status = ?;
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), d.AccountId, d.PartnerId, d.TransactionCode, d.TotalTransaction, d.DiscountValue, d.PaymentType, d.User, time.Now(), d.Id, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), d.AccountId, d.PartnerId, d.TransactionCode, d.DiscountValue, d.User, time.Now(), d.Id, StatusCreated)
 	if err != nil {
 		return err
 	}

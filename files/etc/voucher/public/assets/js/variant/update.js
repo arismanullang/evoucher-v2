@@ -1,8 +1,5 @@
-var id = findGetParameter("id");
-var user = localStorage.getItem("user");
-var token = localStorage.getItem(user);
-
 $( window ).ready(function() {
+  var id = findGetParameter("id");
   searchById(id);
   // getPartner();
 });
@@ -18,6 +15,7 @@ function searchById(id) {
           console.log(data);
           var variant = data.data;
 
+          $("#variant-id").val(id);
           $("#variant-name").val(variant.VariantName);
           $("#variant-type").val(variant.VariantType);
           $("#select2-variant-type-container").html(convcertToUpperCase(variant.VariantType));
@@ -40,17 +38,13 @@ function searchById(id) {
 }
 
 function send() {
+  error = false;
     $('input[check="true"]').each(function() {
       if($(this).val() == ""){
         $(this).addClass("error");
         $(this).parent().closest('div').addClass("input-error");
+        alert($(this).val());
         error = true;
-      }
-
-      if($(this).attr("id") == "length"){
-        if(parseInt($(this).val()) < 8){
-          error = true;
-        }
       }
     });
 
@@ -58,7 +52,7 @@ function send() {
       alert("Please check your input.");
       return
     }
-
+    var id = $("#variant-id").val();
     var variant = {
       variant_name: $("#variant-name").val(),
       variant_type: $("#variant-type").val(),

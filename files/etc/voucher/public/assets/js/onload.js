@@ -12,6 +12,10 @@ $( window ).ready(function() {
       $(this).parent().closest('div').addClass("input-error");
       error = true;
     }
+    else{
+      $(this).removeClass("error");
+      $(this).parent().closest('div').removeClass("input-error");
+    }
   });
 
   getSession();

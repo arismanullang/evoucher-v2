@@ -8,7 +8,8 @@ $( window ).ready(function() {
 function addRule(){
   console.log("add");
   var body = "<td class='text-ellipsis td-index'>*</td>"
-            + "<td class='text-ellipsis tnc'>"+$("#input-term-condition").val()+"</td>";
+            + "<td class='text-ellipsis tnc'><div>"+$("#input-term-condition").val()+"</td>"
+            + "<td><button type='button' onclick='removeElem(this)' class='btn btn-flat btn-sm btn-info pull-right'><em class='ion-close-circled'></em></button></td>";
   var li = $("<tr class='msg-display clickable'></tr>");
   li.html(body);
   li.appendTo('#list-rule');
@@ -55,14 +56,17 @@ function send() {
   var tncTd = $('tr').find('td.tnc');
   var tnc = "";
   for (i = 0; i < tncTd.length; i++) {
-    if(tncTd[i].innerHTML != "")
-      tnc += tncTd[i].innerHTML+";";
+    if(tncTd[i].innerHTML != ""){
+      var decoded = $("<div/>").html(tncTd[i].innerHTML+";").text();
+      tnc += decoded;
+    }
   }
   console.log(tnc);
   $('input[check="true"]').each(function() {
-    if($(this).val() != ""){
-      $(this).removeClass("error");
-      $(this).parent().closest('div').removeClass("input-error");
+    if($(this).val() == ""){
+      $(this).addClass("error");
+      $(this).parent().closest('div').addClass("input-error");
+      error = true;
     }
 
     if($(this).attr("id") == "length"){
@@ -106,7 +110,7 @@ function send() {
        data: JSON.stringify(variant),
        success: function () {
            alert("Program created.");
-           //window.location = "/variant/search";
+           window.location = "/variant/search";
        }
    });
 }
@@ -129,6 +133,11 @@ function getPartner() {
         }
       }
   });
+}
+
+function removeElem(elem){
+  console.log("remove");
+  $(elem).parent().closest('tr').remove();
 }
 
 (function() {

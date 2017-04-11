@@ -21,14 +21,14 @@ function getVariant() {
 function getVoucher(id) {
     console.log("Get Variant Data");
     $.ajax({
-        url: '/v1/report?id='+id,
+        url: '/v1/report/voucher/variant?id='+id,
         type: 'get',
         success: function (data) {
           console.log(data.data);
           var result = data.data;
 
           console.log(result);
-          initFlotLine(result);
+          initFlotBar(result);
         },
         error: function (data) {
           alert("Variant Not Found.");
@@ -121,11 +121,11 @@ function initFlotBar(data){
 
   $("#flot-bar-chart").bind("plotclick", function (event, pos, item) {
       if (item) {
-          alert(item.series.label);
           getVoucher(item.series.label);
       }
   });
 
+  $('#chart-category').html("");
   var i;
   for( i = 0; i < data.length; i++){
     var elemBody = "<em class='ion-record spr' style='color:"+data[i].bars.fillColor+"'></em>"
