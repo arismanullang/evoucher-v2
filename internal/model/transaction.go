@@ -39,7 +39,7 @@ func InsertTransaction(d Transaction) error {
 			, created_by
 			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
 		RETURNING
 			id
 	`

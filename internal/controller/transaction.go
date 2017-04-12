@@ -137,7 +137,7 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	txCode := randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
 	d := model.Transaction{
 		AccountId:       accountID,
-		PartnerId:       rd.PartnerID,
+		PartnerId:       rd.RedeemKey,
 		TransactionCode: txCode,
 		DiscountValue:   rd.DiscountValue,
 		Token:           rd.RedeemKey,
