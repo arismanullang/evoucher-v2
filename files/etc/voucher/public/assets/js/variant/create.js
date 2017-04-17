@@ -1,9 +1,22 @@
 $( window ).ready(function() {
   getPartner();
   $("#image-url").change(function() {
-    $("#image-value").html($("#imageUrl").val());
+    readURL(this);
+    $("#image-value").html($("#image-url").val());
   });
 });
+
+function readURL(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        console.log(reader);
+        reader.onload = function (e) {
+            $('#image-preview').attr('src', e.target.result);
+        }
+
+        reader.readAsDataURL(input.files[0]);
+    }
+}
 
 function addRule(){
   console.log("add");
@@ -96,7 +109,7 @@ function send() {
       start_hour: $("#start-hour").val(),
       end_hour: $("#end-hour").val(),
       discount_value: parseInt($("#voucher-value").val()),
-      image_url: "/assets/img/card.jpg",
+      image_url: $("#image-url").val(),
       variant_tnc: tnc,
       variant_description: $("#variant-description").val(),
       valid_partners: listPartner

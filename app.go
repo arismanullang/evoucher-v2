@@ -76,6 +76,11 @@ func main() {
 
 	render.SetPath(config.Server.TemplateDirectory)
 
+	model.Domain = config.Mailgun.Domain
+	model.ApiKey = config.Mailgun.MailgunKey
+	model.PublicApiKey = config.Mailgun.MailgunPublicKey
+	model.RootTemplate = config.Mailgun.RootTemplate
+
 	r := setRoutes()
 	m := negroni.New()
 	m.Use(negroni.NewRecovery())

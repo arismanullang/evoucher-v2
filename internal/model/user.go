@@ -260,6 +260,36 @@ func Login(username, password string) (string, error) {
 	return res[0], nil
 }
 
+func UpdatePassword(id, password string) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE users
+		SET
+			password = ?
+		WHERE
+			id = ?
+			AND status = ?
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), password, id, StatusCreated)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
+}
+
 // Role -----------------------------------------------------------------------------------------------
 
 func FindAllRole() ([]Role, error) {

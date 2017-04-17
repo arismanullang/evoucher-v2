@@ -25,6 +25,9 @@ function login(){
         }
 
         window.location = "/variant/";
+      },
+      error: function (data){
+        alert("Invalid Username or Password");
       }
   });
 }
