@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"google.golang.org/appengine"
 	//"time"
 	//"path/filepath"
 
@@ -84,6 +86,8 @@ func main() {
 
 	log.Printf("Server is listening on %q\n", config.Server.Host)
 	http.ListenAndServe(config.Server.Host, m)
+	//google app engine
+	appengine.Main()
 }
 
 func printVersion() {
