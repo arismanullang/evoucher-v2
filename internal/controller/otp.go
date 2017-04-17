@@ -1,5 +1,8 @@
 package controller
 
-func OTPAuth() bool {
-	return true
+func OTPAuth(sn, token string) bool {
+	if sn != "" {
+		return true
+	}
+	return false
 }
