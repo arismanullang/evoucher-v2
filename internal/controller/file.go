@@ -1,19 +1,59 @@
 package controller
 
 import (
-	"crypto/sha1"
+	"context"
+	"errors"
 	"fmt"
 	"io"
-	"mime/multipart"
 	"net/http"
-	"strings"
+	"path"
 
 	"github.com/gilkor/evoucher/internal/model"
+	uuid "github.com/satori/go.uuid"
 
+	"cloud.google.com/go/storage"
 	"google.golang.org/appengine"
-	"google.golang.org/appengine/log"
-	"google.golang.org/cloud/storage"
 )
+
+func uploadFileFromForm(r *http.Request) (url string, err error) {
+	f, fh, err := r.FormFile("image-url")
+	if err == http.ErrMissingFile {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+
+	err = model.GcsInit()
+	if err != nil {
+		return "", err
+	}
+
+	if model.StorageBucket == nil {
+		return "", errors.New("storage bucket is missing")
+	}
+
+	// random filename, retaining existing extension.
+	name := uuid.NewV4().String() + path.Ext(fh.Filename)
+
+	ctx := context.Background()
+	w := model.StorageBucket.Object(name).NewWriter(ctx)
+	w.ACL = []storage.ACLRule{{Entity: storage.AllUsers, Role: storage.RoleReader}}
+	w.ContentType = fh.Header.Get("Content-Type")
+
+	// Entries are immutable, be aggressive about caching (1 day).
+	w.CacheControl = "public, max-age=86400"
+
+	if _, err := io.Copy(w, f); err != nil {
+		return "", err
+	}
+	if err := w.Close(); err != nil {
+		return "", err
+	}
+
+	const publicURL = "https://storage.googleapis.com/%s/%s"
+	return fmt.Sprintf(publicURL, model.GCS_BUCKET, name), nil
+}
 
 func GetListFile(w http.ResponseWriter, r *http.Request) {
 
@@ -37,36 +77,4 @@ func GetListFile(w http.ResponseWriter, r *http.Request) {
 	// status = http.StatusOK
 	// res = NewResponse(d)
 	// render.JSON(w, res, status)
-}
-
-func uploadFile(req *http.Request, mpf multipart.File, hdr *multipart.FileHeader) (string, error) {
-
-	ext, err := fileFilter(req, hdr)
-	if err != nil {
-		return "", err
-	}
-	name := getSha(mpf) + `.` + ext
-	mpf.Seek(0, 0)
-
-	ctx := appengine.NewContext(req)
-	return name, model.PutFile(ctx, name, mpf)
-}
-
-func fileFilter(req *http.Request, hdr *multipart.FileHeader) (string, error) {
-
-	ext := hdr.Filename[strings.LastIndex(hdr.Filename, ".")+1:]
-	ctx := appengine.NewContext(req)
-	log.Infof(ctx, "FILE EXTENSION: %s", ext)
-
-	switch ext {
-	case "jpg", "jpeg", "txt", "md":
-		return ext, nil
-	}
-	return ext, fmt.Errorf("We do not allow files of type %s. We only allow jpg, jpeg, txt, md extensions.", ext)
-}
-
-func getSha(src multipart.File) string {
-	h := sha1.New()
-	io.Copy(h, src)
-	return fmt.Sprintf("%x", h.Sum(nil))
 }

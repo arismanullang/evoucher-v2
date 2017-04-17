@@ -77,7 +77,7 @@ type (
 		MaxQuantityVoucher float64          `json:"max_quantity_voucher"`
 		MaxUsageVoucher    float64          `json:"max_usage_voucher"`
 		RedeemtionMethod   string           `json:"redeemtion_method"`
-		ImgUrl             string           `json:"img_url"`
+		ImgUrl             string           `json:"image_url"`
 		VariantTnc         string           `json:"variant_tnc"`
 		VariantDescription string           `json:"variant_description"`
 		CreatedBy          string           `json:"created_by"`

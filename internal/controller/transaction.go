@@ -15,9 +15,8 @@ import (
 type (
 	TransactionRequest struct {
 		VariantID     string   `json:"variant_id"`
-		PartnerID     string   `json:"partner_id"`
 		RedeemMethod  string   `json:"redeem_method"`
-		SerialNumber  string   `json:"serial_number"`
+		Partner       string   `json:"partner"`
 		RedeemKey     string   `json:"redeem_key"`
 		DiscountValue float64  `json:"discount_value"`
 		Vouchers      []string `json:"vouchers"`
@@ -36,7 +35,7 @@ type (
 
 func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	var rd TransactionRequest
-	var status int
+	status := http.StatusCreated
 	res := NewResponse(nil)
 
 	//Token Authentocation
@@ -51,6 +50,47 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		res.AddError(its(status), http.StatusText(status), http.StatusText(status)+"("+err.Error()+")", "voucher")
 		render.JSON(w, res, status)
 		return
+	}
+
+	//check redeemtion method
+	switch rd.RedeemMethod {
+	case model.RedeemtionMethodQr:
+		//to-do validate partner_id
+		par := map[string]string{"variant_id": rd.VariantID, "id": rd.Partner}
+		if _, err := model.FindVariantPartner(par); err == model.ErrResourceNotFound {
+			status = http.StatusBadRequest
+			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidQr, "partner")
+			render.JSON(w, res, status)
+			return
+		} else if err != nil {
+			status = http.StatusInternalServerError
+			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "partner")
+			render.JSON(w, res, status)
+			return
+		}
+	case model.RedeemtionMethodToken:
+		//to-do validate token
+		par := map[string]string{"variant_id": rd.VariantID, "id": rd.Partner}
+		if p, err := model.FindVariantPartner(par); err == model.ErrResourceNotFound {
+			status = http.StatusBadRequest
+			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidQr, "partner")
+			render.JSON(w, res, status)
+			return
+		} else if err != nil {
+			status = http.StatusInternalServerError
+			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "partner")
+			render.JSON(w, res, status)
+			return
+		} else {
+			fmt.Println("panrner data : ", p[0].SerialNumber.String)
+			if !OTPAuth(p[0].SerialNumber.String, rd.RedeemKey) {
+				status = http.StatusBadRequest
+				res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, "voucher")
+				render.JSON(w, res, status)
+				return
+			}
+		}
+
 	}
 
 	if ok, err := CheckVariant(rd.RedeemMethod, rd.VariantID, len(rd.Vouchers)); !ok {
@@ -77,32 +117,6 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 			render.JSON(w, res, status)
 		}
 		return
-	}
-
-	//check redeemtion method
-	switch rd.RedeemMethod {
-	case model.RedeemtionMethodQr:
-		//to-do validate partner_id
-		par := map[string]string{"variant_id": rd.VariantID, "id": rd.RedeemKey}
-		if _, err := model.FindVariantPartner(par); err == model.ErrResourceNotFound {
-			status = http.StatusBadRequest
-			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidQr, "partner")
-			render.JSON(w, res, status)
-			return
-		} else if err != nil {
-			status = http.StatusInternalServerError
-			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "partner")
-			render.JSON(w, res, status)
-			return
-		}
-	case model.RedeemtionMethodToken:
-		//to-do validate token
-		if !OTPAuth() {
-			status = http.StatusBadRequest
-			res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, "voucher")
-			render.JSON(w, res, status)
-			return
-		}
 	}
 
 	// chek validation all voucher & variant
@@ -137,7 +151,7 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	txCode := randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
 	d := model.Transaction{
 		AccountId:       accountID,
-		PartnerId:       rd.PartnerID,
+		PartnerId:       rd.Partner,
 		TransactionCode: txCode,
 		DiscountValue:   rd.DiscountValue,
 		Token:           rd.RedeemKey,
@@ -172,7 +186,6 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	status = http.StatusCreated
 	res = NewResponse(TransactionResponse{TransactionCode: txCode})
 	render.JSON(w, res, status)
 }
@@ -226,7 +239,7 @@ func UpdateTransaction(w http.ResponseWriter, r *http.Request) {
 	d := &model.Transaction{
 		Id:              id,
 		AccountId:       accountID,
-		PartnerId:       rd.PartnerID,
+		PartnerId:       rd.Partner,
 		TransactionCode: "",
 		DiscountValue:   0,
 		User:            userID,
