@@ -81,6 +81,10 @@ function getVoucher() {
 
           $('#datatable1').dataTable({
               data: dataSet,
+              dom: 'lBrtip',
+              buttons: [
+                  'copy', 'csv', 'excel', 'pdf', 'print'
+              ],
               columns: [
                   { title: "Voucher Code" },
                   { title: "Holder Name" },
@@ -103,6 +107,13 @@ function getVoucher() {
                   }
               }
           });
+          var inputSearchClass = 'datatable_input_col_search';
+          var columnInputs = $('thead .' + inputSearchClass);
+
+          columnInputs
+              .keyup(function() {
+                  table.fnFilter(this.value, columnInputs.index(this));
+              });
         }
     });
 }

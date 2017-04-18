@@ -41,6 +41,10 @@ type (
 		UserId    string
 		Expired   time.Time
 	}
+
+	PasswordReq struct {
+		Password string `json:"password"`
+	}
 )
 
 func FindUserByRole(w http.ResponseWriter, r *http.Request) {
@@ -190,4 +194,30 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	render.JSON(w, res, status)
+}
+
+func ForgotPassword(w http.ResponseWriter, r *http.Request) {
+	if err := model.SendMail(model.Domain, model.ApiKey, model.PublicApiKey, "qWRJkGcD"); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func UpdatePassword(w http.ResponseWriter, r *http.Request) {
+	var rd PasswordReq
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	password := r.FormValue("password")
+	user, err := model.GetSession(password)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	err = model.UpdatePassword(user.UserId, hash(rd.Password))
+	if err != nil {
+		log.Panic(err)
+	}
+	render.JSON(w, http.StatusOK)
 }

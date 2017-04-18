@@ -68,7 +68,7 @@ function getVariant() {
             dataSet[i] = [
               arrData[i].VariantName
               , arrData[i].VoucherPrice
-              , "Rp " + addDecimalPoints(arrData[i].DiscountValue) + ",00"
+              , addDecimalPoints(arrData[i].DiscountValue)
               , (arrData[i].MaxVoucher - arrData[i].Voucher)
               , "<div class='progress'>"
                 + "<div role='progressbar' aria-valuenow='"+diffNow+"' aria-valuemin='0' aria-valuemax='"+diffTotal+"' style='width: "+persen+"%;' class='progress-bar'>"+diffNow+"</div>"
@@ -84,12 +84,17 @@ function getVariant() {
 
           var table = $('#datatable1').dataTable({
               data: dataSet,
+              dom: 'lBrtip',
+              buttons: [
+                  'copy', 'csv', 'excel', 'pdf', 'print'
+              ],
+              "order": [[ 4, "asc" ]],
               columns: [
                   { title: "Program Name" },
-                  { title: "Conversion Rate" },
-                  { title: "Voucher Value" },
-                  { title: "Remaining Voucher" },
-                  { title: "Period" },
+                  { title: "Conversion Rate </br> (point)" },
+                  { title: "Voucher Value </br> (IDR)" },
+                  { title: "Remaining Voucher </br> (pc)" },
+                  { title: "Period </br> (day)" },
                   { title: "Action"}
               ],
               oLanguage: {
@@ -106,9 +111,8 @@ function getVariant() {
               }
             });
             var inputSearchClass = 'datatable_input_col_search';
-            var columnInputs = $('tfoot .' + inputSearchClass);
+            var columnInputs = $('thead .' + inputSearchClass);
 
-            // On input keyup trigger filtering
             columnInputs
                 .keyup(function() {
                     table.fnFilter(this.value, columnInputs.index(this));

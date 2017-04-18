@@ -21,6 +21,13 @@ type Config struct {
 		Endpoint string
 		Redis    string
 	}
+
+	Mailgun struct {
+		Domain           string
+		MailgunKey       string `yaml:"mailgun_key"`
+		MailgunPublicKey string `yaml:"mailgun_public_key"`
+		RootTemplate     string `yaml:"root_mail_template"`
+	}
 }
 
 func ReadConfig(f string, c *Config) error {
