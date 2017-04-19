@@ -114,3 +114,12 @@ footer{
 .table > tbody > tr > td{
   padding: 0 20px;
 }
+
+div.dt-buttons {
+  float: right;
+}
+
+th {
+  text-align: center;
+  vertical-align: middle !important;
+}

@@ -18,16 +18,6 @@
     <div class="card-body">
       <table id="datatable1" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
         <thead>
-          <tr role="row">
-            <th>Id</th>
-            <th>Program Name</th>
-            <th>Voucher Price</th>
-            <th>Voucher Value</th>
-            <th>Voucher Remains</th>
-            <th class="center-text"></th>
-          </tr>
-        </thead>
-        <tfoot>
           <tr>
             <th>
               <div class="mda-form-control pt0">
@@ -60,7 +50,15 @@
               </div>
             </th>
           </tr>
-        </tfoot>
+          <tr role="row">
+            <th>Id</th>
+            <th>Program Name</th>
+            <th>Voucher Price</th>
+            <th>Voucher Value</th>
+            <th>Voucher Remains</th>
+            <th class="center-text"></th>
+          </tr>
+        </thead>
       </table>
     </div>
   </div>
@@ -87,4 +85,5 @@
 <link rel="stylesheet" href="/assets/vendor/sweetalert/dist/sweetalert.css">
 <link rel="stylesheet" href="/assets/vendor/nouislider/distribute/nouislider.min.css">
 <link rel="stylesheet" href="/assets/vendor/datatables/media/css/jquery.dataTables.css">
+<link rel="stylesheet" href="/assets/vendor/datatables/media/css/buttons.dataTables.min.css">
 {{ end }}

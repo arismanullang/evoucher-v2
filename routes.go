@@ -26,7 +26,8 @@ func setRoutes() http.Handler {
 	//report
 	r.GetFunc("/v1/report", controller.MakeReport)
 	r.GetFunc("/v1/report/variant", controller.MakeReportVariant)
-	r.GetFunc("/v1/report/voucher/variant", controller.MakeReportVoucherByUser)
+	r.GetFunc("/v1/report/voucher/variant", controller.MakeCompleteReportVoucherByUser)
+	r.GetFunc("/v1/report/vouchers/variant", controller.MakeReportVoucherByUser)
 
 	//variant
 	r.PostFunc("/v1/create/variant", controller.CreateVariant)
@@ -53,6 +54,8 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/api/get/userByRole", controller.FindUserByRole)
 	r.GetFunc("/v1/api/get/users", controller.GetUser)
 	r.GetFunc("/v1/api/get/userDetails", controller.GetUserDetails)
+	r.GetFunc("/v1/api/mail", controller.ForgotPassword)
+	r.PostFunc("/v1/password", controller.UpdatePassword)
 
 	//partner
 	r.GetFunc("/v1/get/partner", controller.GetAllPartners)

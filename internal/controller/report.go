@@ -11,6 +11,10 @@ import (
 )
 
 type (
+	ResponseReport struct {
+		Chart interface{} `json:"chart"`
+		Data  interface{} `json:"data"`
+	}
 	ReportLine struct {
 		Label string      `json:"label"`
 		Color string      `json:"color"`
@@ -68,7 +72,11 @@ func MakeReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultVal = append(resultVal, temp)
-	res := NewResponse(resultVal)
+	response := ResponseReport{
+		Chart: resultVal,
+		Data:  result,
+	}
+	res := NewResponse(response)
 	render.JSON(w, res, http.StatusOK)
 }
 
@@ -80,12 +88,12 @@ func MakeReportVariant(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(result)
 	resultVal := []ReportFlotBar{}
 	m := [][2]string{}
-	label := result[0].Creator
-	color := [5]string{"#00BCD4", "#CDDC39", "#FF5722", "#42f44b", "#ff0000"}
+	label := result[0].Username
+	color := [5]string{"#CEE7FB", "#F4D989", "#FF5722", "#42f44b", "#ff0000"}
 	indexColor := 0
 	for _, v := range result {
-		if v.Creator != label {
-			fmt.Println("go " + v.Creator)
+		if v.Username != label {
+			fmt.Println("go " + v.Username)
 			bars := FlotBar{
 				Order:     indexColor,
 				FillColor: color[indexColor%5],
@@ -99,7 +107,7 @@ func MakeReportVariant(w http.ResponseWriter, r *http.Request) {
 			resultVal = append(resultVal, temp)
 
 			m = [][2]string{}
-			label = v.Creator
+			label = v.Username
 			indexColor++
 		}
 
@@ -120,13 +128,17 @@ func MakeReportVariant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultVal = append(resultVal, temp)
-	res := NewResponse(resultVal)
+	response := ResponseReport{
+		Chart: resultVal,
+		Data:  result,
+	}
+	res := NewResponse(response)
 	render.JSON(w, res, http.StatusOK)
 }
 
-func MakeReportVoucherByUser(w http.ResponseWriter, r *http.Request) {
+func MakeCompleteReportVoucherByUser(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")
-	result, err := model.MakeReportVoucherByUser(id)
+	result, err := model.MakeCompleteReportVoucherByUser(id)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -200,7 +212,61 @@ func MakeReportVoucherByUser(w http.ResponseWriter, r *http.Request) {
 	}
 	resultVal = append(resultVal, temp)
 
-	res := NewResponse(resultVal)
+	response := ResponseReport{
+		Chart: resultVal,
+		Data:  result,
+	}
+	res := NewResponse(response)
+	render.JSON(w, res, http.StatusOK)
+}
+
+func MakeReportVoucherByUser(w http.ResponseWriter, r *http.Request) {
+	id := r.FormValue("id")
+	result, err := model.MakeReportVoucherByUser(id)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Println(result)
+	resultVal := []ReportLine{}
+	color := [5]string{"#CEE7FB", "#F4D989", "#FF5722", "#42f44b", "#ff0000"}
+	indexColor := 0
+
+	m := [][2]string{}
+	label := "voucher"
+	for _, v := range result {
+		mm := [2]string{}
+		mm[0] = v.Name
+		mm[1] = v.Total
+		m = append(m, mm)
+	}
+	temp := ReportLine{
+		Label: label,
+		Color: color[indexColor%5],
+		Data:  m,
+	}
+	resultVal = append(resultVal, temp)
+	indexColor++
+
+	m = [][2]string{}
+	label = "quota"
+	for _, v := range result {
+		mm := [2]string{}
+		mm[0] = v.Name
+		mm[1] = v.Quota
+		m = append(m, mm)
+	}
+	temp = ReportLine{
+		Label: "remaining",
+		Color: color[indexColor%5],
+		Data:  m,
+	}
+	resultVal = append(resultVal, temp)
+
+	response := ResponseReport{
+		Chart: resultVal,
+		Data:  result,
+	}
+	res := NewResponse(response)
 	render.JSON(w, res, http.StatusOK)
 }
 
