@@ -15,7 +15,8 @@ import (
 	"google.golang.org/appengine"
 )
 
-func uploadFileFromForm(r *http.Request) (url string, err error) {
+func UploadFileFromForm(r *http.Request) (url string, err error) {
+	r.ParseMultipartForm(32 << 20)
 	f, fh, err := r.FormFile("image-url")
 	if err == http.ErrMissingFile {
 		return "", nil

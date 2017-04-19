@@ -410,7 +410,7 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			log.Panic(err)
 		}
 
-		imgURL, err := uploadFileFromForm(r)
+		imgURL, err := UploadFileFromForm(r)
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
