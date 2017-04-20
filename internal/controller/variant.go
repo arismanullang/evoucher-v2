@@ -410,6 +410,13 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			log.Panic(err)
 		}
 
+		imgURL, err := uploadFileFromForm(r)
+		if err != nil {
+			status = http.StatusInternalServerError
+			errTitle = model.ErrCodeInternalError
+			res.AddError(its(status), errTitle, err.Error(), "Create Variant")
+		}
+
 		vr := model.VariantReq{
 			AccountId:          accountId,
 			VariantName:        rd.VariantName,
@@ -425,7 +432,7 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			EndDate:            te.Format("2006-01-02 15:04:05.000"),
 			StartHour:          rd.StartHour,
 			EndHour:            rd.EndHour,
-			ImgUrl:             rd.ImgUrl,
+			ImgUrl:             imgURL,
 			VariantTnc:         rd.VariantTnc,
 			VariantDescription: rd.VariantDescription,
 			ValidPartners:      rd.ValidPartners,

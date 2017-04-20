@@ -197,7 +197,9 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func ForgotPassword(w http.ResponseWriter, r *http.Request) {
-	if err := model.SendMail(model.Domain, model.ApiKey, model.PublicApiKey, "qWRJkGcD"); err != nil {
+	var username = r.FormValue("username")
+	fmt.Println(username)
+	if err := model.SendMail(model.Domain, model.ApiKey, model.PublicApiKey, username); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -209,7 +211,7 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	password := r.FormValue("password")
+	password := r.FormValue("key")
 	user, err := model.GetSession(password)
 	if err != nil {
 		log.Panic(err)
