@@ -111,6 +111,7 @@ function getVariant(id, voucher) {
 }
 
 function editVariant(){
+  var id = findGetParameter("id");
   window.location = "/variant/update?id="+id;
 }
 

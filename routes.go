@@ -36,6 +36,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/api/get/totalVariant", controller.GetTotalVariant)
 	r.GetFunc("/v1/api/get/variantByDate", controller.GetVariantDetailsByDate)
 	r.GetFunc("/v1/api/get/variantDetails/custom", controller.GetVariantDetailsCustom)
+	r.PostFunc("/file/upload", controller.UploadFile)
 
 	r.GetFunc("/v1/api/get/variant/:id", controller.GetVariantDetailsById)
 	r.PostFunc("/v1/update/variant/:id", controller.UpdateVariant)
@@ -84,6 +85,7 @@ func setRoutes() http.Handler {
 
 	r.GetFunc("/v1/token", controller.GetToken)
 	r.GetFunc("/v1/token/check", controller.CheckToken)
+
 	//custom
 	r.GetFunc("/view/", viewHandler)
 	r.GetFunc("/viewNoLayout", viewNoLayoutHandler)

@@ -1,15 +1,21 @@
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"path"
 	"time"
+
+	"cloud.google.com/go/storage"
 
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/gilkor/evoucher/internal/model"
 )
@@ -76,6 +82,96 @@ type (
 		Query string `json:"query"`
 	}
 )
+
+func UploadFileFromForm(r *http.Request) (url string, err error) {
+
+	r.ParseMultipartForm(32 << 20)
+
+	f, fh, err := r.FormFile("image-url")
+
+	if err == http.ErrMissingFile {
+
+		return "", nil
+
+	}
+
+	if err != nil {
+
+		return "", err
+
+	}
+
+	err = model.GcsInit()
+
+	if err != nil {
+
+		return "", err
+
+	}
+
+	if model.StorageBucket == nil {
+
+		return "", errors.New("storage bucket is missing")
+
+	}
+
+	// random filename, retaining existing extension.
+
+	name := uuid.NewV4().String() + path.Ext(fh.Filename)
+
+	ctx := context.Background()
+
+	w := model.StorageBucket.Object(name).NewWriter(ctx)
+
+	w.ACL = []storage.ACLRule{{Entity: storage.AllUsers, Role: storage.RoleReader}}
+
+	w.ContentType = fh.Header.Get("Content-Type")
+
+	// Entries are immutable, be aggressive about caching (1 day).
+
+	w.CacheControl = "public, max-age=86400"
+
+	if _, err := io.Copy(w, f); err != nil {
+
+		return "", err
+
+	}
+
+	if err := w.Close(); err != nil {
+
+		return "", err
+
+	}
+
+	const publicURL = "https://storage.googleapis.com/%s/%s"
+
+	return fmt.Sprintf(publicURL, model.GCS_BUCKET, name), nil
+
+}
+
+func UploadFile(w http.ResponseWriter, r *http.Request) {
+
+	status := http.StatusOK
+
+	res := NewResponse(nil)
+
+	imgURL, err := UploadFileFromForm(r)
+
+	if err != nil {
+
+		status = http.StatusInternalServerError
+
+		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), "Upload File")
+
+		fmt.Println(err)
+
+	}
+
+	res = NewResponse(imgURL)
+
+	render.JSON(w, res, status)
+
+}
 
 func CustomQuery(w http.ResponseWriter, r *http.Request) {
 	var rd QueryRequest
@@ -410,12 +506,12 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			log.Panic(err)
 		}
 
-		imgURL, err := uploadFileFromForm(r)
-		if err != nil {
-			status = http.StatusInternalServerError
-			errTitle = model.ErrCodeInternalError
-			res.AddError(its(status), errTitle, err.Error(), "Create Variant")
-		}
+		// imgURL, err := uploadFileFromForm(r)
+		// if err != nil {
+		// 	status = http.StatusInternalServerError
+		// 	errTitle = model.ErrCodeInternalError
+		// 	res.AddError(its(status), errTitle, err.Error(), "Create Variant")
+		// }
 
 		vr := model.VariantReq{
 			AccountId:          accountId,
@@ -432,7 +528,7 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			EndDate:            te.Format("2006-01-02 15:04:05.000"),
 			StartHour:          rd.StartHour,
 			EndHour:            rd.EndHour,
-			ImgUrl:             imgURL,
+			ImgUrl:             rd.ImgUrl,
 			VariantTnc:         rd.VariantTnc,
 			VariantDescription: rd.VariantDescription,
 			ValidPartners:      rd.ValidPartners,

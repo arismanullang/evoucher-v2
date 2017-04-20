@@ -1,4 +1,3 @@
-var id = findGetParameter('id')
 $( document ).ready(function() {
   getUserDetails();
   getAccount();
