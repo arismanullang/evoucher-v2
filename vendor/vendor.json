@@ -29,20 +29,26 @@
 		{
 			"checksumSHA1": "vXPMGAHxvqWSpSFqqUfZBZS1dBo=",
 			"path": "cloud.google.com/go/internal",
-			"revision": "1180f1d0d05f61a65f39b3b9be37815493758d2f",
-			"revisionTime": "2017-04-10T21:25:35Z"
+			"revision": "57377bad3486b37af17b47230a61603794c798ae",
+			"revisionTime": "2017-04-17T19:34:08Z"
 		},
 		{
 			"checksumSHA1": "W2xJ0+fvugRhRi1PMi64bYofBbU=",
 			"path": "cloud.google.com/go/internal/optional",
-			"revision": "1180f1d0d05f61a65f39b3b9be37815493758d2f",
-			"revisionTime": "2017-04-10T21:25:35Z"
+			"revision": "57377bad3486b37af17b47230a61603794c798ae",
+			"revisionTime": "2017-04-17T19:34:08Z"
 		},
 		{
 			"checksumSHA1": "hhpHIMzdTOjNreQOq8vu9ZcLmJE=",
 			"path": "cloud.google.com/go/internal/version",
-			"revision": "1180f1d0d05f61a65f39b3b9be37815493758d2f",
-			"revisionTime": "2017-04-10T21:25:35Z"
+			"revision": "57377bad3486b37af17b47230a61603794c798ae",
+			"revisionTime": "2017-04-17T19:34:08Z"
+		},
+		{
+			"checksumSHA1": "SFEUVZGy7+SVOuATNCrt8lzVxTE=",
+			"path": "cloud.google.com/go/storage",
+			"revision": "57377bad3486b37af17b47230a61603794c798ae",
+			"revisionTime": "2017-04-17T19:34:08Z"
 		},
 		{
 			"checksumSHA1": "2UmMbNHc8FBr98mJFN1k8ISOIHk=",
@@ -103,6 +109,16 @@
 			"path": "github.com/pkg/errors",
 			"revision": "ff09b135c25aae272398c51a07235b90a75aa4f0",
 			"revisionTime": "2017-03-16T20:15:38Z"
+		},
+		{
+			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",
+			"path": "github.com/satori/go.uuid",
+			"revision": "5bf94b69c6b68ee1b541973bb8e1144db23a194b",
+			"revisionTime": "2017-03-21T23:07:31Z"
+		},
+		{
+			"path": "github.com/staori/go.uuid",
+			"revision": ""
 		},
 		{
 			"path": "golang.org/x/net",

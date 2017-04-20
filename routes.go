@@ -137,6 +137,14 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "user/login.html", nil)
 	} else if page == "profile" {
 		render.FileInLayout(w, "layout.html", "user/profile.html", nil)
+	} else if page == "forgot-password" {
+		render.File(w, "user/forgot.html", nil)
+	} else if page == "mail-send" {
+		render.File(w, "user/forgot_succ.html", nil)
+		//render.FileInLayout(w, "layout.html", "user/forgot.html", nil)
+	} else if page == "recover" {
+		render.File(w, "user/recover.html", nil)
+		//render.FileInLayout(w, "layout.html", "user/recover.html", nil)
 	} else if page == "" || page == "index" {
 		render.FileInLayout(w, "layout.html", "user/index.html", nil)
 	}
