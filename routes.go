@@ -91,7 +91,7 @@ func setRoutes() http.Handler {
 	// r.NotFoundFunc(errorHandler)
 
 	r.GetFunc("/test", controller.UploadFormTest)
-	r.PostFunc("/upload", controller.Uploadimage)
+	r.PostFunc("/file/upload", controller.UploadFile)
 	// r.GetFunc("/listfile/", controller.GetListFile)
 
 	return r

@@ -9,11 +9,27 @@ import (
 	"path"
 
 	"github.com/gilkor/evoucher/internal/model"
+	"github.com/ruizu/render"
 	uuid "github.com/satori/go.uuid"
 
 	"cloud.google.com/go/storage"
 	"google.golang.org/appengine"
 )
+
+func UploadFile(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusOK
+	res := NewResponse(nil)
+
+	imgURL, err := UploadFileFromForm(r)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), "Upload File")
+		fmt.Println(err)
+	}
+
+	res = NewResponse(imgURL)
+	render.JSON(w, res, status)
+}
 
 func UploadFileFromForm(r *http.Request) (url string, err error) {
 	r.ParseMultipartForm(32 << 20)

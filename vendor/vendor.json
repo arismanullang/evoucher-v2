@@ -99,7 +99,7 @@
 			"revisionTime": "2017-03-07T00:35:30Z"
 		},
 		{
-			"checksumSHA1": "ynJSWoF6v+3zMnh9R0QmmG6iGV8=",
+			"checksumSHA1": "iwLqOY6Nr1BitBUex4K0Wep3JL8=",
 			"path": "github.com/pkg/errors",
 			"revision": "ff09b135c25aae272398c51a07235b90a75aa4f0",
 			"revisionTime": "2017-03-16T20:15:38Z"
@@ -487,7 +487,7 @@
 			"revisionTime": "2016-01-28T11:33:10Z"
 		},
 		{
-			"checksumSHA1": "oFION+ZSb6Vb+uITOOLUzVfawE0=",
+			"checksumSHA1": "ghzOPOv3ZGlBi4lTDo3GUoBxEmw=",
 			"path": "gopkg.in/mailgun/mailgun-go.v1",
 			"revision": "a4002e2df2e8ca2da6a6fbb4a72871b504e49f50",
 			"revisionTime": "2017-02-13T15:09:30Z"
