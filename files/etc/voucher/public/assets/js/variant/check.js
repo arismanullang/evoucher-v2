@@ -29,7 +29,7 @@ function getVoucher(id) {
           for ( i = 0; i < limit; i++){
             var html = "<div class='mda-list-item-icon'><em class='ion-pricetag icon-2x'></em></div>"
             +  "<div class='mda-list-item-text'>"
-            +  "<h3><a href='#'>"+arrData[i].voucher_code+"</a></h3>"
+            +  "<h3><a href='/voucher/check?id="+arrData[i].id+"'>"+arrData[i].voucher_code+"</a></h3>"
             +  "<div class='text-muted text-ellipsis'>Status "+arrData[i].state+"</div>"
             +"</div>";
             var li = $("<div class='mda-list-item'></div>").html(html);

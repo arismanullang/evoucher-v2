@@ -9,6 +9,7 @@ import (
 	//"time"
 
 	//"github.com/go-zoo/bone"
+	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
 
 	"github.com/gilkor/evoucher/internal/model"
@@ -121,7 +122,7 @@ func GetPartnerSerialName(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = http.StatusInternalServerError
 			errorTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 				errorTitle = model.ErrCodeResourceNotFound
 			}
@@ -129,6 +130,98 @@ func GetPartnerSerialName(w http.ResponseWriter, r *http.Request) {
 			res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
 		} else {
 			res = NewResponse(partner)
+		}
+	}
+	render.JSON(w, res, status)
+}
+
+func GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
+	id := bone.GetValue(r, "id")
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	errorTitle := model.ErrCodeInvalidToken
+	res := NewResponse(nil)
+	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
+
+	_, _, _, valid := AuthToken(w, r)
+	if valid {
+		status = http.StatusOK
+		partner, err := model.FindPartnerDetails(id)
+		if err != nil {
+			status = http.StatusInternalServerError
+			errorTitle = model.ErrCodeInternalError
+			if err == model.ErrResourceNotFound {
+				status = http.StatusNotFound
+				errorTitle = model.ErrCodeResourceNotFound
+			}
+
+			res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
+		} else {
+			res = NewResponse(partner)
+		}
+	}
+	render.JSON(w, res, status)
+}
+
+func UpdatePartner(w http.ResponseWriter, r *http.Request) {
+	id := bone.GetValue(r, "id")
+
+	var rd Partner
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	errorTitle := model.ErrCodeInvalidToken
+	res := NewResponse(nil)
+	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
+
+	_, user, _, valid := AuthToken(w, r)
+	if valid {
+		status = http.StatusOK
+		err := model.UpdatePartner(id, rd.SerialNumber, user)
+		if err != nil {
+			status = http.StatusInternalServerError
+			errorTitle = model.ErrCodeInternalError
+			if err == model.ErrResourceNotFound {
+				status = http.StatusNotFound
+				errorTitle = model.ErrCodeResourceNotFound
+			}
+
+			res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
+		} else {
+			res = NewResponse("Success")
+		}
+	}
+	render.JSON(w, res, status)
+}
+
+func DeletePartner(w http.ResponseWriter, r *http.Request) {
+	id := bone.GetValue(r, "id")
+
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	errorTitle := model.ErrCodeInvalidToken
+	res := NewResponse(nil)
+	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
+
+	_, user, _, valid := AuthToken(w, r)
+	if valid {
+		status = http.StatusOK
+		err := model.DeletePartner(id, user)
+		if err != nil {
+			status = http.StatusInternalServerError
+			errorTitle = model.ErrCodeInternalError
+			if err == model.ErrResourceNotFound {
+				status = http.StatusNotFound
+				errorTitle = model.ErrCodeResourceNotFound
+			}
+
+			res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
+		} else {
+			res = NewResponse("Success")
 		}
 	}
 	render.JSON(w, res, status)
@@ -168,7 +261,7 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = http.StatusInternalServerError
 			errorTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 				errorTitle = model.ErrCodeResourceNotFound
 			}

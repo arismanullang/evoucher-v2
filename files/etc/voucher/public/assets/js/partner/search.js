@@ -16,15 +16,19 @@ function getPartner() {
         var i;
         for (i = 0; i < arrData.length; i++){
           var html = "<div class='mda-list-item-icon'><em class='ion-home icon-2x'></em></div>"
-          +  "<div class='mda-list-item-text'>"
-          +  "<h3>"+arrData[i].PartnerName+"</h3>"
-          +  "<p class='text-muted'> Serial Number : "+arrData[i].SerialNumber.String+"</p>"
-          +"</div>";
+          + "<div class='mda-list-item-text'>"
+          + "<h3><button type='button' onclick='edit(\""+arrData[i].id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>"+arrData[i].partner_name+"</h3>"
+          + "<p class='text-muted'> Serial Number : "+arrData[i].serial_number.String+"</p>"
+          + "</div>";
           var li = $("<div class='mda-list-item'></div>").html(html);
           li.appendTo('#listPartner');
         }
       }
   });
+}
+
+function edit(url){
+  window.location = "/partner/update?id="+url;
 }
 
 function addPartner() {

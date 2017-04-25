@@ -156,7 +156,7 @@ function getPartner() {
 
         var i;
         for (i = 0; i < arrData.length; i++){
-          var li = $("<option value='"+arrData[i].Id+"'>"+arrData[i].PartnerName+"</option>");
+          var li = $("<option value='"+arrData[i].Id+"'>"+arrData[i].partner_name+"</option>");
           li.appendTo('#variant-partners');
         }
       }

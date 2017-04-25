@@ -52,6 +52,8 @@ func setRoutes() http.Handler {
 
 	//user
 	r.PostFunc("/v1/create/user", controller.RegisterUser)
+	r.PostFunc("/v1/update/user", controller.UpdateUser)
+	r.PostFunc("/v1/update/user/password", controller.ChangePassword)
 	r.GetFunc("/v1/api/get/userByRole", controller.FindUserByRole)
 	r.GetFunc("/v1/api/get/users", controller.GetUser)
 	r.GetFunc("/v1/api/get/userDetails", controller.GetUserDetails)
@@ -60,6 +62,9 @@ func setRoutes() http.Handler {
 
 	//partner
 	r.GetFunc("/v1/get/partner", controller.GetAllPartners)
+	r.GetFunc("/v1/get/partner/:id", controller.GetPartnerDetails)
+	r.PostFunc("/v1/update/partner/:id", controller.UpdatePartner)
+	r.GetFunc("/v1/delete/partner/:id", controller.DeletePartner)
 	r.GetFunc("/v1/api/get/partner", controller.GetAllPartnersCustomParam)
 	r.PostFunc("/v1/create/partner", controller.AddPartner)
 
@@ -135,6 +140,8 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "user/check.html", nil)
 	} else if page == "update" {
 		render.FileInLayout(w, "layout.html", "user/update.html", nil)
+	} else if page == "change-password" {
+		render.FileInLayout(w, "layout.html", "user/change_pass.html", nil)
 	} else if page == "login" {
 		render.FileInLayout(w, "layout.html", "user/login.html", nil)
 	} else if page == "profile" {

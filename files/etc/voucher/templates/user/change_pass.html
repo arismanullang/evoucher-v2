@@ -9,19 +9,19 @@
 <div class="container-overlap bg-white">
 </div>
 <div class="container container-md">
-  <form id="create-user" name="create-user" novalidate="" class="card b0 form-validate">
+  <form id="user-recover" name="user-recover" novalidate="" class="card b0 form-validate">
     <div class="card">
       <div class="card-heading bg-amber-500">
-        <div class="card-title text-center">Edit Profile</div>
+        <div class="card-title text-center">Change Password</div>
       </div>
       <div class="card-body">
         <div class="row">
           <div class="col-sm-12">
             <div class="mda-form-group">
-              <div id="username-card" class="mda-form-control">
-                <input id="username" name="username" check="true" disabled="" tabindex="0" aria-invalid="false" aria-required="true" class="form-control">
+              <div id="oldpass-card" class="mda-form-control">
+                <input id="oldpass" name="oldpass" type="password" check="true" tabindex="0" aria-invalid="false" aria-required="true" class="form-control">
                 <div class="mda-form-control-line"></div>
-                <label>Username</label>
+                <label>Old Password</label>
               </div>
             </div>
           </div>
@@ -29,10 +29,10 @@
         <div class="row">
           <div class="col-sm-12">
             <div class="mda-form-group">
-              <div id="email-card" class="mda-form-control">
-                <input placeholder="mail@example.com" id="email" name="email" check="true" class="form-control" aria-invalid="true" type="email">
+              <div id="newpass-card" class="mda-form-control">
+                <input id="newpass" name="newpass" type="password" check="true" class="form-control" aria-invalid="true" type="email">
                 <div class="mda-form-control-line"></div>
-                <label class="control-label">Email Address</label>
+                <label class="control-label">New Password</label>
               </div>
             </div>
           </div>
@@ -40,17 +40,17 @@
         <div class="row">
           <div class="col-sm-12">
             <div class="mda-form-group">
-              <div id="phone-card" class="mda-form-control">
-                <input id="phone" name="phone" tabindex="0" check="true" class="form-control">
+              <div id="confpass-card" class="mda-form-control">
+                <input id="confpass" name="phone" type="password" tabindex="0" check="true" class="form-control">
                 <div class="mda-form-control-line"></div>
-                <label>Phone</label>
+                <label>Confirm Password</label>
               </div>
             </div>
           </div>
         </div>
         <div class="row">
           <div class=" pull-right pr">
-            <button type="button" onclick="send()" class="btn btn-raised btn-primary ripple">Edit</button>
+            <button type="button" onclick="recover()" class="btn btn-raised btn-primary ripple">Update</button>
           </div>
         </div>
       </div>
@@ -61,7 +61,7 @@
 {{ end }}
 
 {{ define "scripts" }}
-<script type="text/javascript" src="/assets/js/user/update.js"></script>
+<script type="text/javascript" src="/assets/js/user/change_pass.js"></script>
 {{ end }}
 
 {{ define "stylesheets" }}

@@ -114,29 +114,6 @@ function getVariant() {
     });
 }
 
-(function() {
-    'use strict';
-
-    $(runSweetAlert);
-    //onclick='deleteVariant(\""+arrData[i].Id+"\")'
-    function runSweetAlert() {
-        $(document).on('click', '.swal-demo4', function(e) {
-            e.preventDefault();
-            console.log(e.target.value);
-            swal({
-                    title: 'Are you sure?',
-                    text: 'Do you want delete variant?',
-                    type: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#DD6B55',
-                    confirmButtonText: 'Yes, delete it!',
-                    closeOnConfirm: false
-                },
-                function() {
-                    swal('Deleted!', 'Delete success.', deleteVariant(e.target.value));
-                });
-
-        });
-    }
-
-})();
+function updateUser(){
+  window.location = "/user/update";
+}

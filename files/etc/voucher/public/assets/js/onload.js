@@ -33,9 +33,7 @@ function getSession() {
       },
       error:function (data) {
         console.log(data.status);
-        if(data.status == 500){
-          window.location = "/user/login";
-        }
+        window.location = "/user/login";
       }
   });
 }
