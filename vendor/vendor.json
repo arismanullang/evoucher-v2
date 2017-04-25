@@ -45,6 +45,12 @@
 			"revisionTime": "2017-04-10T21:25:35Z"
 		},
 		{
+			"checksumSHA1": "SFEUVZGy7+SVOuATNCrt8lzVxTE=",
+			"path": "cloud.google.com/go/storage",
+			"revision": "1ec09e65be459e9a0c9014ff8e4591d8c2f1bed6",
+			"revisionTime": "2017-04-14T20:50:12Z"
+		},
+		{
 			"checksumSHA1": "2UmMbNHc8FBr98mJFN1k8ISOIHk=",
 			"path": "github.com/garyburd/redigo/internal",
 			"revision": "0d253a66e6e1349f4581d6d2b300ee434ee2da9f",
@@ -81,22 +87,28 @@
 			"revisionTime": "2017-03-21T00:53:43Z"
 		},
 		{
-			"checksumSHA1": "IkPM2QLv9urri7S49wzroQx9oXA=",
+			"checksumSHA1": "g/V4qrXjUGG9B+e3hB+4NAYJ5Gs=",
 			"path": "github.com/gorilla/context",
 			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
 			"revisionTime": "2016-08-17T18:46:32Z"
 		},
 		{
-			"checksumSHA1": "GKB96ojS6AY/uBnfLWqZBsxTBY4=",
+			"checksumSHA1": "ucTBCc7dDRKLGPsYfAzu/Gq63qA=",
 			"path": "github.com/gorilla/securecookie",
 			"revision": "e59506cc896acb7f7bf732d4fdf5e25f7ccd8983",
 			"revisionTime": "2017-02-24T19:38:04Z"
 		},
 		{
-			"checksumSHA1": "7nOVP3Gi1ylX55Yd2rKoOsYGZTU=",
+			"checksumSHA1": "qmq72HOuwQQ87E3WKFh/Wl/SE9c=",
 			"path": "github.com/gorilla/sessions",
 			"revision": "ba78acc856fe7c79891d516131b3d903cc8d9367",
 			"revisionTime": "2017-03-07T00:35:30Z"
+		},
+		{
+			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",
+			"path": "github.com/satori/go.uuid",
+			"revision": "5bf94b69c6b68ee1b541973bb8e1144db23a194b",
+			"revisionTime": "2017-03-21T23:07:31Z"
 		},
 		{
 			"path": "golang.org/x/net",
@@ -475,7 +487,7 @@
 			"revisionTime": "2017-04-10T22:44:10Z"
 		},
 		{
-			"checksumSHA1": "53Wt63TZkYzzbdh4Yo/B7kVGiyQ=",
+			"checksumSHA1": "/LUk3a4GNQLJ1F/LMtkY3eDTJwk=",
 			"path": "gopkg.in/boj/redistore.v1",
 			"revision": "fc113767cd6b051980f260d6dbe84b2740c46ab0",
 			"revisionTime": "2016-01-28T11:33:10Z"
