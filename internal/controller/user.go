@@ -42,6 +42,11 @@ type (
 		Expired   time.Time
 	}
 
+	ChangePasswordReq struct {
+		OldPassword string `json:"old_password"`
+		NewPassword string `json:"new_password"`
+	}
+
 	PasswordReq struct {
 		Password string `json:"password"`
 	}
@@ -196,6 +201,47 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
+
+	res.AddError(its(status), its(status), err.Error(), "user")
+
+	_, user, _, valid := AuthToken(w, r)
+
+	var rd User
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	if valid {
+		fmt.Println("Valid")
+		status = http.StatusOK
+		param := model.User{
+			Username:  rd.Username,
+			Email:     rd.Email,
+			Phone:     rd.Phone,
+			CreatedBy: user,
+		}
+
+		if err := model.UpdateUser(param); err != nil {
+			fmt.Print(err.Error())
+			status = http.StatusInternalServerError
+			if err == model.ErrResourceNotFound {
+				status = http.StatusNotFound
+			}
+
+			res.AddError(its(status), its(status), err.Error(), "user")
+		} else {
+			res = NewResponse(user)
+		}
+	}
+
+	render.JSON(w, res, status)
+}
+
 func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	var username = r.FormValue("username")
 	fmt.Println(username)
@@ -222,4 +268,40 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 	render.JSON(w, http.StatusOK)
+}
+
+func ChangePassword(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Change Password")
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
+
+	res.AddError(its(status), its(status), err.Error(), "user")
+
+	_, user, _, valid := AuthToken(w, r)
+
+	var rd ChangePasswordReq
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	if valid {
+		fmt.Println("Valid")
+		status = http.StatusOK
+
+		if err := model.ChangePassword(user, hash(rd.OldPassword), hash(rd.NewPassword)); err != nil {
+			fmt.Print(err.Error())
+			status = http.StatusInternalServerError
+			if err == model.ErrResourceNotFound {
+				status = http.StatusNotFound
+			}
+
+			res.AddError(its(status), its(status), err.Error(), "user")
+		} else {
+			res = NewResponse(user)
+		}
+	}
+
+	render.JSON(w, res, status)
 }

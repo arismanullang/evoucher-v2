@@ -8,11 +8,11 @@ import (
 
 type (
 	Partner struct {
-		Id           string         `db:"id"`
-		PartnerName  string         `db:"partner_name"`
-		SerialNumber sql.NullString `db:"serial_number"`
-		CreatedBy    sql.NullString `db:"created_by"`
-		VariantID    string         `db:"variant_id"`
+		Id           string         `db:"id" json:"id"`
+		PartnerName  string         `db:"partner_name" json:"partner_name"`
+		SerialNumber sql.NullString `db:"serial_number" json:"serial_number"`
+		CreatedBy    sql.NullString `db:"created_by" json:"created_by"`
+		VariantID    string         `db:"variant_id" json:"variant_id"`
 	}
 )
 
@@ -125,6 +125,61 @@ func FindPartnerSerialNumber(param string) (Partner, error) {
 	return resv[0], nil
 }
 
+func FindPartnerDetails(param string) (Partner, error) {
+	fmt.Println("Select partner")
+	q := `
+		SELECT
+			partner_name
+			, serial_number
+		FROM
+			partners
+		WHERE 	id = ?
+		AND 	status = ?
+	`
+
+	var resv []Partner
+	if err := db.Select(&resv, db.Rebind(q), param, StatusCreated); err != nil {
+		fmt.Println(err.Error())
+		return Partner{}, ErrServerInternal
+	}
+	if len(resv) < 1 {
+		return Partner{}, ErrResourceNotFound
+	}
+
+	return resv[0], nil
+}
+
+func UpdatePartner(partnerId, serialNumber, user string) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE partners
+		SET
+			serial_number = ?
+			, updated_by = ?
+			, updated_at = ?
+		WHERE
+			id = ?
+			AND status = ?;
+	`
+	_, err = tx.Exec(tx.Rebind(q), serialNumber, user, time.Now(), partnerId, StatusCreated)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
+}
+
 func DeletePartner(partnerId, userId string) error {
 	tx, err := db.Beginx()
 	if err != nil {
@@ -140,10 +195,9 @@ func DeletePartner(partnerId, userId string) error {
 			, updated_at = ?
 			, status = ?
 		WHERE
-			id = ?
-			AND status = ?;
+			id = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), userId, time.Now(), StatusDeleted, partnerId, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), userId, time.Now(), StatusDeleted, partnerId)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
