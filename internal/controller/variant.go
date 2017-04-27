@@ -130,7 +130,7 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 		d[k].StartDate = dt.StartDate
 		d[k].EndDate = dt.EndDate
 		d[k].ImgUrl = dt.ImgUrl
-		d[k].Used = its(getCountVoucher(dt.Id))
+		d[k].Used = getCountVoucher(dt.Id)
 	}
 
 	status = http.StatusOK
@@ -198,6 +198,8 @@ func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
 		d.Partners[i].SerialNumber = pd.SerialNumber.String
 	}
 
+	d.Used = getCountVoucher(dt.Id)
+
 	status = http.StatusOK
 	res = NewResponse(d)
 	render.JSON(w, res, status)
@@ -212,14 +214,15 @@ func GetAllVariants(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Get Variant")
 
 	fmt.Println("Check Session")
-	accountId, _, _, valid := AuthToken(w, r)
+	account, _, _, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
-		variant, err := model.FindAllVariants(accountId)
+		variant, err := model.FindAllVariants(account)
+		fmt.Println(err)
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 				errTitle = model.ErrCodeResourceNotFound
 			}
@@ -249,7 +252,7 @@ func GetTotalVariant(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 				errTitle = model.ErrCodeResourceNotFound
 			}
@@ -278,7 +281,7 @@ func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 				errTitle = model.ErrCodeResourceNotFound
 			}
@@ -308,7 +311,7 @@ func GetVariants(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 				errTitle = model.ErrCodeResourceNotFound
 			}
@@ -337,7 +340,7 @@ func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 				errTitle = model.ErrCodeResourceNotFound
 			}
@@ -369,7 +372,7 @@ func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 				errTitle = model.ErrCodeResourceNotFound
 			} else {
@@ -425,7 +428,7 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			EndDate:            te.Format("2006-01-02 15:04:05.000"),
 			StartHour:          rd.StartHour,
 			EndHour:            rd.EndHour,
-			ImgUrl:             "",
+			ImgUrl:             rd.ImgUrl,
 			VariantTnc:         rd.VariantTnc,
 			VariantDescription: rd.VariantDescription,
 			ValidPartners:      rd.ValidPartners,
@@ -590,6 +593,10 @@ func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
 			res.AddError(its(status), errTitle, err.Error(), "Delete Variant")
+
+		}
+		if deleteFile(w, r, d.Img_url) {
+			return
 		}
 	}
 	render.JSON(w, res, status)

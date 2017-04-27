@@ -57,8 +57,9 @@ type (
 		Length     int    `db:"length"`
 	}
 	DeleteVariantRequest struct {
-		Id   string `db:"id"`
-		User string `db:"deleted_by"`
+		Id      string `db:"id"`
+		User    string `db:"deleted_by"`
+		Img_url string `db:"img_url"`
 	}
 	SearchVariant struct {
 		Id            string  `db:"id"`
@@ -382,21 +383,26 @@ func (d *DeleteVariantRequest) Delete() error {
 	defer tx.Rollback()
 
 	q := `
-		UPDATE variants
+		UPDATE 	variants
 		SET
 			deleted_by = ?
 			, deleted_at = ?
 			, status = ?
 		WHERE
 			id = ?
-			AND status = ?;
+			AND status = ?
+		RETURNING
+			id
+			, deleted_by
+			, img_url
 	`
-
+	var res []DeleteVariantRequest
 	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.Id, StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+	*d = res[0]
 
 	q = `
 		UPDATE variant_partners

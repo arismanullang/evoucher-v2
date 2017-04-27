@@ -86,14 +86,19 @@ const (
 	NUMERALS     = "1234567890"
 	ALPHANUMERIC = ALPHABET + NUMERALS
 
+	// defaut config Voucher format
 	DEFAULT_CODE   string = "Numerals"
 	DEFAULT_LENGTH int    = 8
 
+	//default config tx code
 	DEFAULT_TXCODE   string = "Numerals"
-	DEFAULT_TXLENGTH int    = 8
+	DEFAULT_TXLENGTH int    = 10
 
+	// Redis token life time
 	TOKENLIFE int = 1440
 
+	// Google Cloud Storage Config
 	GCS_BUCKET     string = "e-voucher"
 	GCS_PROJECT_ID string = "shared-project-159515"
+	PublicURL      string = "https://storage.googleapis.com/%s/%s"
 )

@@ -16,7 +16,7 @@
 <link rel="stylesheet" href="/assets/vendor/material-colors/dist/colors.css">
 
 
-{{ block "stylesheets" . }}{{ end }}
+{{ template "stylesheets" }}
 <link rel="stylesheet" href="/assets/css/app.css">
 <link rel="stylesheet" href="/assets/css/style.css">
 
@@ -28,7 +28,7 @@
 <script type="text/javascript" src="/assets/vendor/material-colors/dist/colors.js"></script>
 <script type="text/javascript" src="/assets/master/components/colors/colors.constant.js"></script>
 <script type="text/javascript" src="/assets/master/components/colors/colors.js"></script>
-{{ block "scripts" . }}{{ end }}
+{{ template "scripts" }}
 <script type="text/javascript" src="/assets/js/onload.js"></script>
 <script type="text/javascript" src="/assets/js/style.js"></script>
 
@@ -50,7 +50,8 @@
                 <li><a id="header-search" href="#" class="ripple"><em class="ion-ios-search-strong"></em></a></li>
                 <li class="dropdown"><a href="#" data-toggle="dropdown" class="dropdown-toggle has-badge ripple"><em class="ion-person"></em></a>
                     <ul class="dropdown-menu dropdown-menu-right md-dropdown-menu">
-                        <li><a href="/user/profile"><em class="ion-home icon-fw"></em>Profile</a></li>
+                        <li><a href="/user/profile"><em class="ion-ios-person icon-fw"></em>Profile</a></li>
+                        <li><a href="/user/change-password"><em class="ion-ios-locked-outline icon-fw"></em>Change Password</a></li>
                         <li role="presentation" class="divider"></li>
                         <li><a href="#" onclick="logOut()"><em class="ion-log-out icon-fw"></em>Logout</a></li>
                     </ul>

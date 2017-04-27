@@ -9,7 +9,6 @@ $( window ).ready(function() {
 function readURL(input) {
     if (input.files && input.files[0]) {
         var reader = new FileReader();
-        console.log(reader);
         reader.onload = function (e) {
             $('#image-preview').attr('src', e.target.result);
         }
@@ -56,7 +55,6 @@ function send() {
 
       listPartner[i] = value;
   }
-  console.log(listPartner.length);
 
   var voucherFormat = {
     prefix: $("#prefix").val(),
@@ -70,11 +68,11 @@ function send() {
   var tnc = "";
   for (i = 0; i < tncTd.length; i++) {
     if(tncTd[i].innerHTML != ""){
-      var decoded = $("<div/>").html(tncTd[i].innerHTML+";").text();
-      tnc += decoded;
+      var decoded = $("<div/>").html((i+1) + ". " + tncTd[i].innerHTML).text();
+      tnc += decoded + " <br>";
     }
   }
-  console.log(tnc);
+
   $('input[check="true"]').each(function() {
     if($(this).val() == ""){
       $(this).addClass("error");
@@ -93,6 +91,22 @@ function send() {
     alert("Please check your input.");
     return
   }
+
+  var formData = new FormData();
+  console.log($('#image-url')[0].files[0]);
+  formData.append('image-url', $('#image-url')[0].files[0]);
+  console.log(formData);
+
+  jQuery.ajax({
+      url:'/file/upload',
+      type:"POST",
+      processData: false,
+      contentType: false,
+      data: formData,
+      success: function(data){
+        console.log(data);
+      }
+  });
 
   var variant = {
       variant_name: $("#variant-name").val(),
@@ -115,6 +129,7 @@ function send() {
       valid_partners: listPartner
     };
     console.log(variant);
+
     $.ajax({
        url: '/v1/create/variant?token='+token,
        type: 'post',
@@ -141,7 +156,7 @@ function getPartner() {
 
         var i;
         for (i = 0; i < arrData.length; i++){
-          var li = $("<option value='"+arrData[i].Id+"'>"+arrData[i].PartnerName+"</option>");
+          var li = $("<option value='"+arrData[i].Id+"'>"+arrData[i].partner_name+"</option>");
           li.appendTo('#variant-partners');
         }
       }
