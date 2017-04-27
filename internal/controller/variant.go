@@ -1,15 +1,21 @@
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"path"
 	"time"
+
+	"cloud.google.com/go/storage"
 
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/gilkor/evoucher/internal/model"
 )
@@ -77,6 +83,96 @@ type (
 	}
 )
 
+func UploadFileFromForm(r *http.Request) (url string, err error) {
+
+	r.ParseMultipartForm(32 << 20)
+
+	f, fh, err := r.FormFile("image-url")
+
+	if err == http.ErrMissingFile {
+
+		return "", nil
+
+	}
+
+	if err != nil {
+
+		return "", err
+
+	}
+
+	err = model.GcsInit()
+
+	if err != nil {
+
+		return "", err
+
+	}
+
+	if model.StorageBucket == nil {
+
+		return "", errors.New("storage bucket is missing")
+
+	}
+
+	// random filename, retaining existing extension.
+
+	name := uuid.NewV4().String() + path.Ext(fh.Filename)
+
+	ctx := context.Background()
+
+	w := model.StorageBucket.Object(name).NewWriter(ctx)
+
+	w.ACL = []storage.ACLRule{{Entity: storage.AllUsers, Role: storage.RoleReader}}
+
+	w.ContentType = fh.Header.Get("Content-Type")
+
+	// Entries are immutable, be aggressive about caching (1 day).
+
+	w.CacheControl = "public, max-age=86400"
+
+	if _, err := io.Copy(w, f); err != nil {
+
+		return "", err
+
+	}
+
+	if err := w.Close(); err != nil {
+
+		return "", err
+
+	}
+
+	const publicURL = "https://storage.googleapis.com/%s/%s"
+
+	return fmt.Sprintf(publicURL, model.GCS_BUCKET, name), nil
+
+}
+
+func UploadFile(w http.ResponseWriter, r *http.Request) {
+
+	status := http.StatusOK
+
+	res := NewResponse(nil)
+
+	imgURL, err := UploadFileFromForm(r)
+
+	if err != nil {
+
+		status = http.StatusInternalServerError
+
+		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), "Upload File")
+
+		fmt.Println(err)
+
+	}
+
+	res = NewResponse(imgURL)
+
+	render.JSON(w, res, status)
+
+}
+
 func CustomQuery(w http.ResponseWriter, r *http.Request) {
 	var rd QueryRequest
 	decoder := json.NewDecoder(r.Body)
@@ -130,7 +226,7 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 		d[k].StartDate = dt.StartDate
 		d[k].EndDate = dt.EndDate
 		d[k].ImgUrl = dt.ImgUrl
-		d[k].Used = its(getCountVoucher(dt.Id))
+		d[k].Used = getCountVoucher(dt.Id)
 	}
 
 	status = http.StatusOK
@@ -198,6 +294,8 @@ func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
 		d.Partners[i].SerialNumber = pd.SerialNumber.String
 	}
 
+	d.Used = getCountVoucher(dt.Id)
+
 	status = http.StatusOK
 	res = NewResponse(d)
 	render.JSON(w, res, status)
@@ -212,14 +310,15 @@ func GetAllVariants(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Get Variant")
 
 	fmt.Println("Check Session")
-	accountId, _, _, valid := AuthToken(w, r)
+	account, _, _, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
-		variant, err := model.FindAllVariants(accountId)
+		variant, err := model.FindAllVariants(account)
+		fmt.Println(err)
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 				errTitle = model.ErrCodeResourceNotFound
 			}
@@ -249,7 +348,7 @@ func GetTotalVariant(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 				errTitle = model.ErrCodeResourceNotFound
 			}
@@ -278,7 +377,7 @@ func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 				errTitle = model.ErrCodeResourceNotFound
 			}
@@ -308,7 +407,7 @@ func GetVariants(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 				errTitle = model.ErrCodeResourceNotFound
 			}
@@ -337,7 +436,7 @@ func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 				errTitle = model.ErrCodeResourceNotFound
 			}
@@ -369,7 +468,7 @@ func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
+			if err == model.ErrResourceNotFound {
 				status = http.StatusNotFound
 				errTitle = model.ErrCodeResourceNotFound
 			} else {
@@ -410,12 +509,12 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			log.Panic(err)
 		}
 
-		imgURL, err := uploadFileFromForm(r)
-		if err != nil {
-			status = http.StatusInternalServerError
-			errTitle = model.ErrCodeInternalError
-			res.AddError(its(status), errTitle, err.Error(), "Create Variant")
-		}
+		// imgURL, err := uploadFileFromForm(r)
+		// if err != nil {
+		// 	status = http.StatusInternalServerError
+		// 	errTitle = model.ErrCodeInternalError
+		// 	res.AddError(its(status), errTitle, err.Error(), "Create Variant")
+		// }
 
 		vr := model.VariantReq{
 			AccountId:          accountId,
@@ -432,7 +531,7 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			EndDate:            te.Format("2006-01-02 15:04:05.000"),
 			StartHour:          rd.StartHour,
 			EndHour:            rd.EndHour,
-			ImgUrl:             imgURL,
+			ImgUrl:             rd.ImgUrl,
 			VariantTnc:         rd.VariantTnc,
 			VariantDescription: rd.VariantDescription,
 			ValidPartners:      rd.ValidPartners,

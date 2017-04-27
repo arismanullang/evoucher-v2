@@ -29,20 +29,26 @@
 		{
 			"checksumSHA1": "vXPMGAHxvqWSpSFqqUfZBZS1dBo=",
 			"path": "cloud.google.com/go/internal",
-			"revision": "1180f1d0d05f61a65f39b3b9be37815493758d2f",
-			"revisionTime": "2017-04-10T21:25:35Z"
+			"revision": "57377bad3486b37af17b47230a61603794c798ae",
+			"revisionTime": "2017-04-17T19:34:08Z"
 		},
 		{
 			"checksumSHA1": "W2xJ0+fvugRhRi1PMi64bYofBbU=",
 			"path": "cloud.google.com/go/internal/optional",
-			"revision": "1180f1d0d05f61a65f39b3b9be37815493758d2f",
-			"revisionTime": "2017-04-10T21:25:35Z"
+			"revision": "57377bad3486b37af17b47230a61603794c798ae",
+			"revisionTime": "2017-04-17T19:34:08Z"
 		},
 		{
 			"checksumSHA1": "hhpHIMzdTOjNreQOq8vu9ZcLmJE=",
 			"path": "cloud.google.com/go/internal/version",
-			"revision": "1180f1d0d05f61a65f39b3b9be37815493758d2f",
-			"revisionTime": "2017-04-10T21:25:35Z"
+			"revision": "57377bad3486b37af17b47230a61603794c798ae",
+			"revisionTime": "2017-04-17T19:34:08Z"
+		},
+		{
+			"checksumSHA1": "SFEUVZGy7+SVOuATNCrt8lzVxTE=",
+			"path": "cloud.google.com/go/storage",
+			"revision": "57377bad3486b37af17b47230a61603794c798ae",
+			"revisionTime": "2017-04-17T19:34:08Z"
 		},
 		{
 			"checksumSHA1": "SFEUVZGy7+SVOuATNCrt8lzVxTE=",
@@ -103,6 +109,12 @@
 			"path": "github.com/gorilla/sessions",
 			"revision": "ba78acc856fe7c79891d516131b3d903cc8d9367",
 			"revisionTime": "2017-03-07T00:35:30Z"
+		},
+		{
+			"checksumSHA1": "ynJSWoF6v+3zMnh9R0QmmG6iGV8=",
+			"path": "github.com/pkg/errors",
+			"revision": "ff09b135c25aae272398c51a07235b90a75aa4f0",
+			"revisionTime": "2017-03-16T20:15:38Z"
 		},
 		{
 			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",
@@ -491,6 +503,12 @@
 			"path": "gopkg.in/boj/redistore.v1",
 			"revision": "fc113767cd6b051980f260d6dbe84b2740c46ab0",
 			"revisionTime": "2016-01-28T11:33:10Z"
+		},
+		{
+			"checksumSHA1": "oFION+ZSb6Vb+uITOOLUzVfawE0=",
+			"path": "gopkg.in/mailgun/mailgun-go.v1",
+			"revision": "a4002e2df2e8ca2da6a6fbb4a72871b504e49f50",
+			"revisionTime": "2017-02-13T15:09:30Z"
 		}
 	],
 	"rootPath": "github.com/gilkor/evoucher"

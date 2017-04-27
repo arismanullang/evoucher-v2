@@ -237,8 +237,7 @@ func FindUserDetail(userId string) (User, error) {
 
 func Login(username, password string) (string, error) {
 	fmt.Println("Login")
-	fmt.Println(username)
-	fmt.Println(password)
+
 	q := `
 		SELECT
 			id
@@ -258,6 +257,118 @@ func Login(username, password string) (string, error) {
 		return "", ErrResourceNotFound
 	}
 	return res[0], nil
+}
+
+func UpdatePassword(id, password string) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE users
+		SET
+			password = ?
+		WHERE
+			id = ?
+			AND status = ?
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), password, id, StatusCreated)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
+}
+
+func ChangePassword(id, oldPassword, newPassword string) error {
+	fmt.Println("Change Password")
+	q := `
+		SELECT
+			id
+		FROM
+			users
+		WHERE
+			id = ?
+			AND password = ?
+			AND status = ?
+	`
+	var res []string
+	if err := db.Select(&res, db.Rebind(q), id, oldPassword, StatusCreated); err != nil {
+		fmt.Println(err)
+		return ErrServerInternal
+	}
+	if len(res) == 0 {
+		return ErrResourceNotFound
+	}
+
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q = `
+		UPDATE users
+		SET
+			password = ?
+		WHERE
+			id = ?
+			And password = ?
+			AND status = ?
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), newPassword, id, oldPassword, StatusCreated)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
+}
+
+func UpdateUser(user User) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE users
+		SET
+			email = ?
+			, phone = ?
+		WHERE
+			username = ?
+			AND status = ?
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), user.Email, user.Phone, user.Username, StatusCreated)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
 }
 
 // Role -----------------------------------------------------------------------------------------------

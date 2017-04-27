@@ -1,0 +1,48 @@
+{{ template "layout" . }}
+
+{{ define "title" }}Edit Partner{{ end }}
+{{ define "header-title" }}Edit Partner{{ end }}
+
+{{ define "content" }}
+<!-- Page content-->
+<section>
+<div class="container-overlap bg-white">
+</div>
+<div class="container container-md">
+  <form id="create-variant" name="create-variant" novalidate="" class="card b0 form-validate">
+    <div class="card">
+      <div class="card-heading bg-amber-500">
+          <div class="card-title text-center">Edit Partner : <span id="partner-name"></span></div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input id="serial-number" name="serial-number" check="true" tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Serial Number</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class=" pull-right pr">
+            <button type="button" onclick="update()" class="btn btn-raised btn-primary ripple">Update</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+</section>
+{{ end }}
+
+{{ define "scripts" }}
+<script type="text/javascript" src="/assets/vendor/sweetalert/dist/sweetalert-dev.js"></script>
+<script type="text/javascript" src="/assets/js/partner/update.js"></script>
+{{ end }}
+
+{{ define "stylesheets" }}
+<link rel="stylesheet" href="/assets/vendor/sweetalert/dist/sweetalert.css">
+{{ end }}

@@ -59,7 +59,7 @@ type (
 		ImgUrl        string  `json:"image_url"`
 		StartDate     string  `json:"start_date"`
 		EndDate       string  `json:"end_date"`
-		Used          string  `json:"used"`
+		Used          int     `json:"used"`
 	}
 
 	GetVoucherOfVariatListDetails struct {
@@ -82,6 +82,7 @@ type (
 		VariantDescription string           `json:"variant_description"`
 		CreatedBy          string           `json:"created_by"`
 		CreatedAt          string           `json:"created_at"`
+		Used               int              `json:"used"`
 		Partners           []Partner        `json:"Partners"`
 		Voucher            []VoucerResponse `json:"Vouchers"`
 	}
@@ -234,7 +235,7 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 		d[k].StartDate = dt.StartDate
 		d[k].EndDate = dt.EndDate
 		d[k].ImgUrl = dt.ImgUrl
-		d[k].Used = its(getCountVoucher(v))
+		d[k].Used = getCountVoucher(v)
 	}
 
 	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))

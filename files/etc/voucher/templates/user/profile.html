@@ -21,8 +21,13 @@
     <div class="row">
       <!-- Left column-->
       <div class="col-md-7 col-lg-8">
-        <form editable-form="" name="user.profileForm" class="card">
-          <h5 class="card-heading">User Details</h5>
+        <form id="profileForm" editable-form="" name="user.profileForm" class="card">
+          <h5 class="card-heading">
+            <div class="pull-right">
+              <button onclick="updateUser()" class="btn btn-default btn-flat btn-flat-icon"><em class="ion-edit"></em></button>
+            </div>
+            User Details
+          </h5>
           <div class="card-body">
             <table class="table table-striped">
               <tbody>
