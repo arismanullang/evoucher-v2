@@ -9,13 +9,29 @@ import (
 	"path"
 
 	"github.com/gilkor/evoucher/internal/model"
-	uuid "github.com/satori/go.uuid"
+	"github.com/ruizu/render"
 
 	"cloud.google.com/go/storage"
-	"google.golang.org/appengine"
 )
 
-func uploadFileFromForm(r *http.Request) (url string, err error) {
+func UploadFile(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusOK
+	res := NewResponse(nil)
+
+	imgURL, err := UploadFileFromForm(r)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), "Upload File")
+		fmt.Println(err)
+	}
+
+	fmt.Println(imgURL)
+	res = NewResponse(imgURL)
+	render.JSON(w, res, status)
+}
+
+func UploadFileFromForm(r *http.Request) (url string, err error) {
+	r.ParseMultipartForm(32 << 20)
 	f, fh, err := r.FormFile("image-url")
 	if err == http.ErrMissingFile {
 		return "", nil
@@ -33,8 +49,14 @@ func uploadFileFromForm(r *http.Request) (url string, err error) {
 		return "", errors.New("storage bucket is missing")
 	}
 
+	ext := path.Ext(fh.Filename)
+	switch ext {
+	case ".jpg", ".jpeg", ".png":
+		return "We do not allow files of type " + ext + ". We only allow jpg, jpeg, png extensions.", nil
+	}
+
 	// random filename, retaining existing extension.
-	name := uuid.NewV4().String() + path.Ext(fh.Filename)
+	name := randStr(32, "Alphanumeric") + ext
 
 	ctx := context.Background()
 	w := model.StorageBucket.Object(name).NewWriter(ctx)
@@ -51,30 +73,43 @@ func uploadFileFromForm(r *http.Request) (url string, err error) {
 		return "", err
 	}
 
-	const publicURL = "https://storage.googleapis.com/%s/%s"
-	return fmt.Sprintf(publicURL, model.GCS_BUCKET, name), nil
+	return fmt.Sprintf(model.PublicURL, model.GCS_BUCKET, name), nil
 }
 
-func GetListFile(w http.ResponseWriter, r *http.Request) {
-
-	ctx := appengine.NewContext(r)
-	client, err := storage.NewClient(ctx)
-	if err != nil {
-		w.Write([]byte("error"))
-		return
-	}
-	defer client.Close()
-
-	bucket := client.Bucket(model.GCS_BUCKET)
-	objs, err := bucket.Objects(ctx, nil).Next()
-	if err != nil {
-		w.Write([]byte("error"))
+func DeleteFile(w http.ResponseWriter, r *http.Request) {
+	objname := r.FormValue("obj")
+	if !deleteFile(w, r, objname) {
 		return
 	}
 
-	w.Write([]byte(objs.Name))
+	render.JSON(w, nil, http.StatusOK)
+}
 
-	// status = http.StatusOK
-	// res = NewResponse(d)
-	// render.JSON(w, res, status)
+func deleteFile(w http.ResponseWriter, r *http.Request, objname string) bool {
+	res := NewResponse(nil)
+	status := http.StatusOK
+
+	err := model.GcsInit()
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, "("+err.Error()+")", "file")
+		return false
+	}
+
+	if model.StorageBucket == nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, "storage bucket is missing "+"("+err.Error()+")", "file")
+		return false
+	}
+
+	ctx := context.Background()
+	o := model.StorageBucket.Object(objname)
+	if err := o.Delete(ctx); err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "file")
+		return false
+	}
+
+	render.JSON(w, nil, status)
+	return true
 }
