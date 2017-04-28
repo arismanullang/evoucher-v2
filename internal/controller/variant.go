@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-zoo/bone"
@@ -440,7 +441,9 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			FormatType: rd.VoucherFormat.FormatType,
 			Length:     rd.VoucherFormat.Length,
 		}
-
+		fmt.Println("variant insert ", vr)
+		fmt.Println("voucher format insert ", fr)
+		fmt.Println("user ", user)
 		if err := model.InsertVariant(vr, fr, user); err != nil {
 			//log.Panic(err)
 			status = http.StatusInternalServerError
@@ -595,7 +598,8 @@ func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 			res.AddError(its(status), errTitle, err.Error(), "Delete Variant")
 
 		}
-		if deleteFile(w, r, d.Img_url) {
+		objName := strings.Split(d.Img_url, "/")
+		if deleteFile(w, r, objName[4]) {
 			return
 		}
 	}

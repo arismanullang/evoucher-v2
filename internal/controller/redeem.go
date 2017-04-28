@@ -7,5 +7,5 @@ import (
 )
 
 func UploadFormTest(w http.ResponseWriter, r *http.Request) {
-	render.FileInLayout(w, "layout.html", "testform.html", nil)
+	render.FileInLayout(w, "layout.html", "redeem.html", nil)
 }

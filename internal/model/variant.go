@@ -168,7 +168,7 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 	`
 	var res []string
 	if err := tx.Select(&res, tx.Rebind(q), fr.Prefix, fr.Postfix, fr.Body, fr.FormatType, fr.Length, user, StatusCreated); err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err.Error(), "(insert voucher format)")
 		return ErrServerInternal
 	}
 
@@ -201,7 +201,7 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 	`
 	var res2 []string
 	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.VariantName, vr.VariantType, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.StartHour, vr.EndHour, vr.DiscountValue, vr.MaxQuantityVoucher, vr.MaxUsageVoucher, vr.RedeemtionMethod, vr.ImgUrl, vr.VariantTnc, vr.VariantDescription, user, StatusCreated); err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err.Error(), "(insert variant)")
 		return ErrServerInternal
 	}
 
@@ -219,13 +219,15 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 
 			_, err := tx.Exec(tx.Rebind(q), res2[0], v, user, StatusCreated)
 			if err != nil {
-				fmt.Println(err.Error())
+				fmt.Println("data :", res2[0], v, user)
+				fmt.Println(err.Error(), "(insert variant_partner)")
 				return ErrServerInternal
 			}
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
+
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
