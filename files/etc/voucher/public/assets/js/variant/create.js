@@ -96,7 +96,7 @@ function send() {
   console.log($('#image-url')[0].files[0]);
   formData.append('image-url', $('#image-url')[0].files[0]);
   console.log(formData);
-
+  var img = "";
   jQuery.ajax({
       url:'/file/upload',
       type:"POST",
@@ -105,42 +105,45 @@ function send() {
       data: formData,
       success: function(data){
         console.log(data);
+        img = data.data;
+
+
+        console.log(img);
+        var variant = {
+            variant_name: $("#variant-name").val(),
+            variant_type: $("#variant-type").find(":selected").val(),
+            voucher_format: voucherFormat,
+            voucher_type: $("#voucher-type").find(":selected").val(),
+            voucher_price: parseInt($("#voucher-price").val()),
+            max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
+            max_usage_voucher: parseInt($("#max-usage-voucher").val()),
+            allowAccumulative: $("#allow-accumulative").is(":checked"),
+            redeemtion_method: $("#redeemtion-method").find(":selected").val(),
+            start_date: $("#start-date").val(),
+            end_date: $("#end-date").val(),
+            start_hour: $("#start-hour").val(),
+            end_hour: $("#end-hour").val(),
+            discount_value: parseInt($("#voucher-value").val()),
+            image_url: img,
+            variant_tnc: tnc,
+            variant_description: $("#variant-description").val(),
+            valid_partners: listPartner
+          };
+          console.log(variant);
+
+          $.ajax({
+             url: '/v1/create/variant?token='+token,
+             type: 'post',
+             dataType: 'json',
+             contentType: "application/json",
+             data: JSON.stringify(variant),
+             success: function () {
+                 alert("Program created.");
+                 //window.location = "/variant/search";
+             }
+         });
       }
   });
-
-  var variant = {
-      variant_name: $("#variant-name").val(),
-      variant_type: $("#variant-type").find(":selected").val(),
-      voucher_format: voucherFormat,
-      voucher_type: $("#voucher-type").find(":selected").val(),
-      voucher_price: parseInt($("#voucher-price").val()),
-      max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
-      max_usage_voucher: parseInt($("#max-usage-voucher").val()),
-      allowAccumulative: $("#allow-accumulative").is(":checked"),
-      redeemtion_method: $("#redeemtion-method").find(":selected").val(),
-      start_date: $("#start-date").val(),
-      end_date: $("#end-date").val(),
-      start_hour: $("#start-hour").val(),
-      end_hour: $("#end-hour").val(),
-      discount_value: parseInt($("#voucher-value").val()),
-      image_url: $("#image-url").val(),
-      variant_tnc: tnc,
-      variant_description: $("#variant-description").val(),
-      valid_partners: listPartner
-    };
-    console.log(variant);
-
-    $.ajax({
-       url: '/v1/create/variant?token='+token,
-       type: 'post',
-       dataType: 'json',
-       contentType: "application/json",
-       data: JSON.stringify(variant),
-       success: function () {
-           alert("Program created.");
-           window.location = "/variant/search";
-       }
-   });
 }
 
 function getPartner() {
@@ -156,7 +159,7 @@ function getPartner() {
 
         var i;
         for (i = 0; i < arrData.length; i++){
-          var li = $("<option value='"+arrData[i].Id+"'>"+arrData[i].partner_name+"</option>");
+          var li = $("<option value='"+arrData[i].id+"'>"+arrData[i].partner_name+"</option>");
           li.appendTo('#variant-partners');
         }
       }
