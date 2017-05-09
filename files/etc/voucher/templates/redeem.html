@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="description" content="Bootstrap Admin Template">
     <meta name="keywords" content="app, responsive, jquery, bootstrap, dashboard, admin">
-    <title>Elys eVoucher - Login</title>
+    <title>Elys eVoucher - Redeem</title>
 
     <link rel="stylesheet" href="/assets/vendor/animate.css/animate.css">
     <link rel="stylesheet" href="/assets/vendor/bootstrap/dist/css/bootstrap.min.css">
@@ -33,17 +33,22 @@
                     <label>Partner</label>
                   </div><span class="mda-input-group-addon"><em class="ion-ios-person-outline icon-lg"></em></span>
                 </div>
+                <div class="form-group">
+                    <label class="col-lg-2 control-label"></label>
+                    <div class="col-lg-10">
+                      <input type="text" placeholder="Disabled input here..." disabled="" class="form-control">
+                    </div>
+                </div>
                 <div class="mda-form-group float-label mda-input-group">
                   <div class="mda-form-control">
                     <input type="text" id="password" name="password" required="" class="form-control">
                     <div class="mda-form-control-line"></div>
-                    <label>Password</label>
+                    <label>TOKEN</label>
                   </div><span class="mda-input-group-addon"><em class="ion-ios-locked-outline icon-lg"></em></span>
                 </div>
               </div>
-              <button onclick="login()" class="btn btn-primary btn-flat">LOGIN</button>
+              <button onclick="login()" class="btn btn-primary btn-flat">REDEEM</button>
             </form>
-            <div class="text-center text-sm"><a href="/user/forgot-password" class="text-inherit">Forgot password?</a></div>
           </div>
         </div>
       </div>

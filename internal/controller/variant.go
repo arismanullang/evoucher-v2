@@ -31,6 +31,10 @@ type (
 		EndDate            string    `json:"end_date"`
 		StartHour          string    `json:"start_hour"`
 		EndHour            string    `json:"end_hour"`
+		ValidVoucherStart  string    `json:"Valid_voucher_start"`
+		ValidVoucherEnd    string    `json:"Valid_voucher_end"`
+		VoucherLifetime    int       `json:"voucher_lifetime"`
+		ValidityDays       string    `json:"validity_days"`
 		DiscountValue      float64   `json:"discount_value"`
 		MaxQuantityVoucher float64   `json:"max_quantity_voucher"`
 		MaxUsageVoucher    float64   `json:"max_usage_voucher"`
@@ -429,6 +433,10 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			EndDate:            te.Format("2006-01-02 15:04:05.000"),
 			StartHour:          rd.StartHour,
 			EndHour:            rd.EndHour,
+			ValidVoucherStart:  rd.ValidVoucherStart,
+			ValidVoucherEnd:    rd.ValidVoucherEnd,
+			VoucherLifetime:    rd.VoucherLifetime,
+			ValidityDays:       rd.ValidityDays,
 			ImgUrl:             rd.ImgUrl,
 			VariantTnc:         rd.VariantTnc,
 			VariantDescription: rd.VariantDescription,
@@ -494,6 +502,12 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 			DiscountValue:      rd.DiscountValue,
 			StartDate:          ts.Format("2006-01-02 15:04:05.000"),
 			EndDate:            te.Format("2006-01-02 15:04:05.000"),
+			StartHour:          rd.StartHour,
+			EndHour:            rd.EndHour,
+			ValidVoucherStart:  rd.ValidVoucherStart,
+			ValidVoucherEnd:    rd.ValidVoucherEnd,
+			VoucherLifetime:    rd.VoucherLifetime,
+			ValidityDays:       rd.ValidityDays,
 			ImgUrl:             rd.ImgUrl,
 			VariantTnc:         rd.VariantTnc,
 			VariantDescription: rd.VariantDescription,
@@ -608,6 +622,7 @@ func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 
 func CheckVariant(rm, id string, qty int) (bool, error) {
 	dt, err := model.FindVariantDetailsById(id)
+
 	sd, err := time.Parse(time.RFC3339Nano, dt.StartDate)
 	if err != nil {
 		return false, err
@@ -615,6 +630,14 @@ func CheckVariant(rm, id string, qty int) (bool, error) {
 	ed, err := time.Parse(time.RFC3339Nano, dt.EndDate)
 	if err != nil {
 		return false, err
+	}
+
+	if !validdays(dt.ValidityDays) {
+		return false, errors.New(model.ErrCodeRedeemNotValidDay)
+	}
+
+	if !validhours(dt.StartHour, dt.EndHour) {
+		return false, errors.New(model.ErrCodeRedeemNotValidHour)
 	}
 
 	if !sd.Before(time.Now()) || !ed.After(time.Now()) {
@@ -630,4 +653,28 @@ func CheckVariant(rm, id string, qty int) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func validdays(s string) bool {
+	ret := false
+	vd := strings.Split(s, ";")
+
+	for i := range vd {
+		if strings.ToUpper(vd[i]) == strings.ToUpper(time.Now().Weekday().String()) {
+			ret = true
+			break
+		}
+	}
+	return ret
+}
+
+func validhours(s, e string) bool {
+	st := sti(strings.Replace(s, ":", "", 1))
+	en := sti(strings.Replace(s, ":", "", 1))
+	th, tm, _ := time.Now().Clock()
+	tnow := sti(its(th) + its(tm))
+	if tnow < st || tnow > en {
+		return false
+	}
+	return true
 }

@@ -41,6 +41,8 @@ const (
 	ErrCodeInvalidPartnerQr         string = "invalid_partner_qr"
 	ErrCodeInvalidVariant           string = "invalid_variant"
 	ErrCodeInvalidUser              string = "invalid_username_and_password"
+	ErrCodeRedeemNotValidDay        string = "voucher_cannot_be_used_today"
+	ErrCodeRedeemNotValidHour       string = "voucher_cannot_be_used_at_current_time"
 
 	ErrMessageAllowAccumulativeDisable string = "accumulation is not allowed"
 	ErrMessageResourceNotFound         string = "resource not found"
@@ -65,6 +67,8 @@ const (
 	ErrMessageInvalidQr                string = "Invalid parner QR"
 	ErrMessageInvalidRedeemMethod      string = "Invalid Redeemtion Method"
 	ErrMessageInvalidUser              string = "Invalid Username and Password."
+	ErrMessageRedeemNotValidDay        string = "Voucher cannot be used today."
+	ErrMessageRedeemNotValidHour       string = "voucher cannot be used at current time."
 
 	StatusCreated string = "created"
 	StatusDeleted string = "deleted"
