@@ -72,6 +72,11 @@ func IsExistToken(token string) bool {
 	defer c.Close()
 
 	exists, _ := redis.Bool(c.Do("EXISTS", "SESSION"+token))
+	if dt, err := GetSession(token); err != nil {
+		exists = false
+	} else if dt.ExpiredAt.Before(time.Now()) {
+		exists = false
+	}
 
 	c.Close()
 	return bool(exists)

@@ -19,6 +19,12 @@ type (
 		AllowAccumulative  bool    `db:"allow_accumulative"`
 		StartDate          string  `db:"start_date"`
 		EndDate            string  `db:"end_date"`
+		StartHour          string  `db:"start_hour"`
+		EndHour            string  `db:"end_hour"`
+		ValidVoucherStart  string  `db:"Valid_voucher_start"`
+		ValidVoucherEnd    string  `db:"Valid_voucher_end"`
+		VoucherLifetime    int     `db:"voucher_lifetime"`
+		ValidityDays       string  `db:"validity_days"`
 		DiscountValue      float64 `db:"discount_value"`
 		MaxQuantityVoucher float64 `db:"max_quantity_voucher"`
 		MaxUsageVoucher    float64 `db:"max_usage_voucher"`
@@ -40,6 +46,10 @@ type (
 		EndDate            string   `db:"end_date"`
 		StartHour          string   `db:"start_hour"`
 		EndHour            string   `db:"end_hour"`
+		ValidVoucherStart  string   `db:"Valid_voucher_start"`
+		ValidVoucherEnd    string   `db:"Valid_voucher_end"`
+		VoucherLifetime    int      `db:"voucher_lifetime"`
+		ValidityDays       string   `db:"validity_days"`
 		DiscountValue      float64  `db:"discount_value"`
 		MaxQuantityVoucher float64  `db:"max_quantity_voucher"`
 		MaxUsageVoucher    float64  `db:"max_usage_voucher"`
@@ -185,6 +195,10 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 			, end_date
 			, start_hour
 			, end_hour
+			, valid_voucher_start
+			, valid_voucher_end
+			, voucher_lifetime
+			, validity_days
 			, discount_value
 			, max_quantity_voucher
 			, max_usage_voucher
@@ -195,12 +209,12 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 			, created_by
 			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING
 			id
 	`
 	var res2 []string
-	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.VariantName, vr.VariantType, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.StartHour, vr.EndHour, vr.DiscountValue, vr.MaxQuantityVoucher, vr.MaxUsageVoucher, vr.RedeemtionMethod, vr.ImgUrl, vr.VariantTnc, vr.VariantDescription, user, StatusCreated); err != nil {
+	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.VariantName, vr.VariantType, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.StartHour, vr.EndHour, vr.ValidVoucherStart, vr.ValidVoucherEnd, vr.VoucherLifetime, vr.ValidityDays, vr.DiscountValue, vr.MaxQuantityVoucher, vr.MaxUsageVoucher, vr.RedeemtionMethod, vr.ImgUrl, vr.VariantTnc, vr.VariantDescription, user, StatusCreated); err != nil {
 		fmt.Println(err.Error(), "(insert variant)")
 		return ErrServerInternal
 	}
@@ -251,6 +265,12 @@ func UpdateVariant(d Variant) error {
 			, voucher_price = ?
 			, start_date = ?
 			, end_date = ?
+			, start_hour = ?
+			, end_hour = ?
+			, valid_voucher_start = ?
+			, valid_voucher_end = ?
+			, voucher_lifetime = ?
+			, validity_days = ?
 			, discount_value = ?
 			, max_quantity_voucher = ?
 			, max_usage_voucher = ?
@@ -265,7 +285,7 @@ func UpdateVariant(d Variant) error {
 			AND status = ?
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), d.VariantName, d.VariantType, d.VoucherType, d.VoucherPrice, d.StartDate, d.EndDate, d.DiscountValue, d.MaxQuantityVoucher, d.MaxUsageVoucher, d.RedeemtionMethod, d.ImgUrl, d.VariantTnc, d.VariantDescription, d.CreatedBy, time.Now(), d.Id, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), d.VariantName, d.VariantType, d.VoucherType, d.VoucherPrice, d.StartDate, d.EndDate, d.StartHour, d.EndHour, d.ValidVoucherStart, d.ValidVoucherEnd, d.VoucherLifetime, d.ValidityDays, d.DiscountValue, d.MaxQuantityVoucher, d.MaxUsageVoucher, d.RedeemtionMethod, d.ImgUrl, d.VariantTnc, d.VariantDescription, d.CreatedBy, time.Now(), d.Id, StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
@@ -578,6 +598,12 @@ func FindVariantDetailsById(id string) (Variant, error) {
 			, allow_accumulative
 			, start_date
 			, end_date
+			, start_hour
+			, end_hour
+			, valid_voucher_start
+			, valid_voucher_end
+			, voucher_lifetime
+			, validity_days
 			, discount_value
 			, max_quantity_voucher
 			, max_usage_voucher
@@ -619,6 +645,12 @@ func FindVariantDetailsCustomParam(param map[string]string) ([]Variant, error) {
 			, allow_accumulative
 			, start_date
 			, end_date
+			, start_hour
+			, end_hour
+			, valid_voucher_start
+			, valid_voucher_end
+			, voucher_lifetime
+			, validity_days
 			, discount_value
 			, max_quantity_voucher
 			, max_usage_voucher
