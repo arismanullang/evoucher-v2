@@ -211,7 +211,7 @@ func GetTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tx, err := model.FindTransactionByID(accountID)
+	tx, err := model.FindTransactionDetailsById(accountID)
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}
@@ -227,7 +227,7 @@ func GetTransactionByDate(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	variant, err := model.FindTransactionByDate(rd.Start, rd.End)
+	variant, err := model.FindTransactionDetailsByDate(rd.Start, rd.End)
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}

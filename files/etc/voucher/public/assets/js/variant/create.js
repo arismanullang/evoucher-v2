@@ -1,9 +1,34 @@
-$( window ).ready(function() {
+$( document ).ready(function() {
   getPartner();
-  $("#image-url").change(function() {
-    readURL(this);
-    $("#image-value").html($("#image-url").val());
+
+  $("#voucher-validity-type").change(function() {
+    if(this.value == "lifetime"){
+      $("#validity-lifetime").attr("style","display:block");
+      $("#validity-date").attr("style","display:none");
+      $("#voucher-valid-from").val("");
+      $("#voucher-valid-to").val("");
+    } else if(this.value == "period"){
+      $("#validity-lifetime").attr("style","display:none");
+      $("#validity-date").attr("style","display:block");
+      $("#voucher-lifetime").val("");
+    } else {
+      $("#validity-lifetime").attr("style","display:none");
+      $("#validity-date").attr("style","display:none");
+      $("#voucher-valid-from").val("");
+      $("#voucher-valid-to").val("");
+      $("#voucher-lifetime").val("");
+    }
   });
+  $("#redeem-validity-type").change(function() {
+    if(this.value == "all"){
+      $("#validity-day").attr("style","display:none");
+    } else if(this.value == "selected"){
+      $("#validity-day").attr("style","display:block");
+    } else {
+      $("#validity-day").attr("style","display:none");
+    }
+  });
+
 });
 
 function readURL(input) {
@@ -25,7 +50,7 @@ function addRule(){
   var li = $("<tr class='msg-display clickable'></tr>");
   li.html(body);
   li.appendTo('#list-rule');
-
+  $('#input-term-condition').val('');
 }
 
 function toTwoDigit(val){
@@ -40,20 +65,49 @@ function toTwoDigit(val){
 function send() {
   error = false;
   var i;
+  var listDay = "";
+  if($("#redeem-validity-type").val() == "all"){
+    listDay = "all";
+  } else if($("#redeem-validity-type").val() == "selected"){
+    var li = $( "ul.select2-selection__rendered" ).find( "li" );
+
+    if(li.length == 0 || parseInt($("#length").val()) < 8){
+      error = true;
+    }
+
+    for (i = 0; i < li.length-1; i++) {
+        var text = li[i].getAttribute("title");
+        var value = $("option").filter(function() {
+          return $(this).text() === text;
+        }).first().attr("value");
+
+        listDay = listDay + value+";";
+    }
+  }
+
   var listPartner = [];
-  var li = $( "ul.select2-selection__rendered" ).find( "li" );
+  var li = $( "input[type=checkbox]:checked" );
 
   if(li.length == 0 || parseInt($("#length").val()) < 8){
     error = true;
   }
 
   for (i = 0; i < li.length-1; i++) {
-      var text = li[i].getAttribute("title");
-      var value = $("option").filter(function() {
-        return $(this).text() === text;
-      }).first().attr("value");
+      listPartner[i] = li[i].value;
+  }
 
-      listPartner[i] = value;
+  var lifetime = 0;
+  var periodStart = "";
+  var periodEnd = "";
+
+  if($("#voucher-validity-type").val() == "period"){
+    lifetime = 0;
+    periodStart = $("#voucher-valid-from").val();
+    periodEnd = $("#voucher-valid-to").val();
+  }else if($("#voucher-validity-type").val() == "lifetime"){
+    lifetime = $("#voucher-lifetime").val();
+    periodStart = "";
+    periodEnd = "";
   }
 
   var voucherFormat = {
@@ -93,57 +147,59 @@ function send() {
   }
 
   var formData = new FormData();
-  console.log($('#image-url')[0].files[0]);
   formData.append('image-url', $('#image-url')[0].files[0]);
-  console.log(formData);
+
   var img = "";
-  jQuery.ajax({
-      url:'/file/upload',
-      type:"POST",
-      processData: false,
-      contentType: false,
-      data: formData,
-      success: function(data){
-        console.log(data);
-        img = data.data;
+  // jQuery.ajax({
+  //     url:'/file/upload',
+  //     type:"POST",
+  //     processData: false,
+  //     contentType: false,
+  //     data: formData,
+  //     success: function(data){
+  //       console.log(data);
+  //       img = data;
+  //     }
+  // });
 
 
-        console.log(img);
-        var variant = {
-            variant_name: $("#variant-name").val(),
-            variant_type: $("#variant-type").find(":selected").val(),
-            voucher_format: voucherFormat,
-            voucher_type: $("#voucher-type").find(":selected").val(),
-            voucher_price: parseInt($("#voucher-price").val()),
-            max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
-            max_usage_voucher: parseInt($("#max-usage-voucher").val()),
-            allowAccumulative: $("#allow-accumulative").is(":checked"),
-            redeemtion_method: $("#redeemtion-method").find(":selected").val(),
-            start_date: $("#start-date").val(),
-            end_date: $("#end-date").val(),
-            start_hour: $("#start-hour").val(),
-            end_hour: $("#end-hour").val(),
-            discount_value: parseInt($("#voucher-value").val()),
-            image_url: img,
-            variant_tnc: tnc,
-            variant_description: $("#variant-description").val(),
-            valid_partners: listPartner
-          };
-          console.log(variant);
+  var variant = {
+      variant_name: $("#variant-name").val(),
+      variant_type: $("#variant-type").find(":selected").val(),
+      voucher_format: voucherFormat,
+      voucher_type: $("#voucher-type").find(":selected").val(),
+      voucher_price: parseInt($("#voucher-price").val()),
+      max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
+      max_usage_voucher: parseInt($("#max-usage-voucher").val()),
+      allowAccumulative: $("#allow-accumulative").is(":checked"),
+      redeemtion_method: $("#redeemtion-method").find(":selected").val(),
+      start_date: $("#variant-valid-from").val(),
+      end_date: $("#variant-valid-to").val(),
+      start_hour: $("#start-hour").val(),
+      end_hour: $("#end-hour").val(),
+      discount_value: parseInt($("#voucher-value").val()),
+      image_url: img,
+      variant_tnc: tnc,
+      variant_description: $("#variant-description").val(),
+      valid_day: listDay,
+      valid_partners: listPartner,
+      vaild_voucher_start: periodStart,
+      valid_voucher_end: periodEnd,
+      voucher_lifetime: lifetime
+    };
+    console.log(variant);
 
-          $.ajax({
-             url: '/v1/create/variant?token='+token,
-             type: 'post',
-             dataType: 'json',
-             contentType: "application/json",
-             data: JSON.stringify(variant),
-             success: function () {
-                 alert("Program created.");
-                 //window.location = "/variant/search";
-             }
-         });
-      }
-  });
+  //   $.ajax({
+  //      url: '/v1/create/variant?token='+token,
+  //      type: 'post',
+  //      dataType: 'json',
+  //      contentType: "application/json",
+  //      data: JSON.stringify(variant),
+  //      success: function () {
+  //          alert("Program created.");
+  //          window.location = "/variant/search";
+  //      }
+  //  });
 }
 
 function getPartner() {
@@ -159,8 +215,13 @@ function getPartner() {
 
         var i;
         for (i = 0; i < arrData.length; i++){
-          var li = $("<option value='"+arrData[i].id+"'>"+arrData[i].partner_name+"</option>");
-          li.appendTo('#variant-partners');
+          var li = $("<div class='col-sm-4'></div>");
+          var html = "<label class='checkbox-inline c-checkbox'>"
+                    + "<input type='checkbox' value='"+arrData[i].id+"'>"
+                    + "<span class='ion-checkmark-round'></span>" + arrData[i].partner_name
+                    + "</label>";
+          li.html(html);
+          li.appendTo('#partner-list');
         }
       }
   });
@@ -178,9 +239,18 @@ function removeElem(elem){
 
     function formAdvanced() {
         $('.select2').select2();
-
+        $("#validity-day").attr("style","display:none");
+        $("#collapseThree").removeClass("in");
+        $("#collapseTwo").removeClass("in");
         $('.datepicker4').datepicker({
                 container:'#example-datepicker-container-4',
+                autoclose: true,
+                startDate: 'd',
+                setDate: new Date()
+            });
+
+        $('.datepicker3').datepicker({
+                container:'#example-datepicker-container-3',
                 autoclose: true,
                 startDate: 'd',
                 setDate: new Date()

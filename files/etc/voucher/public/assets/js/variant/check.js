@@ -106,6 +106,7 @@ function getVariant(id, voucher) {
           $('#period').html(period);
           $('#variantTnc').html(result.VariantTnc);
           $('#remainingVoucher').html(remainingVoucher);
+          $('#variant-image').attr("src",result.ImgUrl);
         }
     });
 }

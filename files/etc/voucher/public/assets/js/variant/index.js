@@ -9,41 +9,53 @@ function getVariant() {
         type: 'get',
         success: function (data) {
           console.log(data.data);
+          var programList = [];
           var result = data.data;
           var limit = 5;
 
           var totalVoucher = 0;
+          var totalUsedVoucher = 0;
           var totalGeneratedVoucher = 0;
-
+          var totalProgram = 0;
           for ( i = 0; i < result.length; i++){
-            if( i < 5){
+            if( totalProgram < 5){
 
-              var date = result[i].EndDate.substring(0, 10).split("-");
+              var date = result[i].end_date.substring(0, 10).split("-");
               var dateEnd  = new Date(date[0], date[1]-1, date[2]);
               var dateEnd_ms = dateEnd.getTime();
               var dateNow_ms  = Date.now();
               var one_day = 1000*60*60*24;
               var diffNow = Math.round((dateEnd_ms-dateNow_ms)/one_day);
 
-              var html = "<h5 class='mb-sm'><a href='/variant/check?id='"+result[i].Id+">"+result[i].VariantName+"</a></h5>"
+              var html = "<h5 class='mb-sm'><a href='/variant/check?id='"+result[i].Id+">"+result[i].variant_name+"</a></h5>"
               + "<p class='text-muted'>End in "+diffNow+" days</p>";
-              console.log(result[i].MaxVoucher);
-              if(parseInt(result[i].Voucher) == 0){
+              if(parseInt(result[i].voucher) == 0){
                 html += "<p>No voucher generated</p>";
               } else {
-                html += "<p>"+parseInt(result[i].Voucher)+" vouchers have generated. "+(result[i].MaxVoucher - parseInt(result[i].Voucher))+" vouchers left.</p>";
+                html += "<p>"+parseInt(result[i].voucher)+" vouchers have generated. "+(result[i].max_quantity_voucher - parseInt(result[i].voucher))+" vouchers left.</p>";
               }
               var li = $("<li class='list-group-item'></li>").html(html);
-              li.appendTo('#upcomming-variant');
+              if(dateEnd_ms > dateNow_ms){
+                  li.appendTo('#upcomming-variant');
+                  totalProgram++;
+              }
             }
 
-            totalVoucher += parseInt(result[i].MaxVoucher);
-            totalGeneratedVoucher += parseInt(result[i].Voucher);
+            if(!(programList.includes(result[i].id))){
+              programList.push(result[i].id);
+              totalVoucher += parseInt(result[i].max_quantity_voucher);
+            }
+            if(result[i].state.String == "used"){
+              totalUsedVoucher += parseInt(result[i].voucher);
+            }
+
+            totalGeneratedVoucher += parseInt(result[i].voucher);
           }
 
           $("#total-variant").html(result.length);
           $("#total-voucher").html(totalVoucher);
           $("#total-generated").html(totalGeneratedVoucher);
+          $("#total-used").html(totalUsedVoucher);
         },
         error: function (data) {
           alert("Variant Not Found.");
