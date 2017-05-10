@@ -92,6 +92,7 @@ func setRoutes() http.Handler {
 	// r.PostFunc("/v1/voucher/pay", controller.PayVoucher)
 	r.PostFunc("/v1/voucher/generate/bulk", controller.GenerateVoucher)
 	r.PostFunc("/v1/voucher/generate/single", controller.GenerateVoucherOnDemand)
+	r.GetFunc("/v1/voucher/redeem", controller.RedeemPage)
 
 	r.GetFunc("/v1/token", controller.GetToken)
 	r.GetFunc("/v1/token/check", controller.CheckToken)
@@ -102,7 +103,9 @@ func setRoutes() http.Handler {
 
 	// r.NotFoundFunc(errorHandler)
 
-	// http.HandleFunc("/test", controller.UploadFormTest)
+	// r.GetFunc("/test", controller.UploadFormTest)
+	r.PostFunc("/file/upload", controller.UploadFile)
+	r.GetFunc("/file/delete", controller.DeleteFile)
 	// r.GetFunc("/listfile/", controller.GetListFile)
 
 	return r

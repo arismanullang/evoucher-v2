@@ -111,6 +111,15 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 			status = http.StatusBadRequest
 			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, "variant")
 			render.JSON(w, res, status)
+		case model.ErrCodeRedeemNotValidDay:
+			status = http.StatusBadRequest
+			res.AddError(its(status), err.Error(), model.ErrMessageRedeemNotValidDay, "variant")
+			render.JSON(w, res, status)
+		case model.ErrCodeRedeemNotValidHour:
+			status = http.StatusBadRequest
+			res.AddError(its(status), err.Error(), model.ErrMessageRedeemNotValidHour, "variant")
+			render.JSON(w, res, status)
+
 		default:
 			status = http.StatusInternalServerError
 			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "variant")
@@ -129,15 +138,19 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 				render.JSON(w, res, status)
 			case model.ErrResourceNotFound.Error():
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
+				res.AddError(its(status), model.ErrCodeResourceNotFound, err.Error(), "voucher")
 				render.JSON(w, res, status)
 			case model.ErrMessageVoucherAlreadyUsed:
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeVoucherDisabled, model.ErrMessageVoucherAlreadyUsed, "voucher")
+				res.AddError(its(status), model.ErrCodeVoucherDisabled, err.Error(), "voucher")
 				render.JSON(w, res, status)
 			case model.ErrMessageVoucherAlreadyPaid:
 				status = http.StatusBadRequest
 				res.AddError(its(status), model.ErrCodeVoucherDisabled, model.ErrMessageVoucherAlreadyUsed, "voucher")
+				render.JSON(w, res, status)
+			case model.ErrMessageVoucherExpired:
+				status = http.StatusBadRequest
+				res.AddError(its(status), model.ErrCodeVoucherExpired, err.Error(), "voucher")
 				render.JSON(w, res, status)
 			default:
 				status = http.StatusInternalServerError
