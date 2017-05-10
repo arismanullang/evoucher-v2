@@ -50,10 +50,10 @@ func UploadFileFromForm(r *http.Request) (url string, err error) {
 	}
 
 	ext := path.Ext(fh.Filename)
-	switch ext {
-	case ".jpg", ".jpeg", ".png":
-		return "We do not allow files of type " + ext + ". We only allow jpg, jpeg, png extensions.", nil
-	}
+	//switch ext {
+	//case ".jpg", ".jpeg", ".png":
+	//	return "We do not allow files of type " + ext + ". We only allow jpg, jpeg, png extensions.", nil
+	//}
 
 	// random filename, retaining existing extension.
 	name := randStr(32, "Alphanumeric") + ext
