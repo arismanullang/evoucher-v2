@@ -1,14 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="Bootstrap Admin Template">
+    <meta name="keywords" content="app, responsive, jquery, bootstrap, dashboard, admin">
+    <title>Elys eVoucher - Redeem</title>
 
-<form method="POST" enctype="multipart/form-data" action="/upload">
-    <div>
+    <link rel="stylesheet" href="/assets/vendor/animate.css/animate.css">
+    <link rel="stylesheet" href="/assets/vendor/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/vendor/ionicons/css/ionicons.css">
+    <link rel="stylesheet" href="/assets/vendor/material-colors/dist/colors.css">
+    <link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/app.css">
+
+  </head>
+  <body>
+    <div class="layout-container">
+      <div class="page-container bg-white-grey">
+        <div class="container-full">
+          <div class="container container-xs"><img src="/assets/img/elys.png" class="mv-lg block-center img-responsive thumb">
+            <form id="user-login" name="loginForm" novalidate="" class="card b0 form-validate">
+              <div class="card-heading">
+                <div class="card-title text-center">E - VOUCHER</div>
+              </div>
+              <div class="card-body">
+                <div class="mda-form-group float-label mda-input-group">
+                  <div class="mda-form-control">
+                    <input type="text" id="partner" name="partner" required="" class="form-control">
+                    <div class="mda-form-control-line"></div>
+                    <label>Partner</label>
+                  </div><span class="mda-input-group-addon"><em class="ion-ios-person-outline icon-lg"></em></span>
+                </div>
+                <div class="form-group">
+                    <label class="col-lg-2 control-label"></label>
+                    <div class="col-lg-10">
+                      <input type="text" placeholder="Disabled input here..." disabled="" class="form-control">
+                    </div>
+                </div>
+                <div class="mda-form-group float-label mda-input-group">
+                  <div class="mda-form-control">
+                    <input type="text" id="password" name="password" required="" class="form-control">
+                    <div class="mda-form-control-line"></div>
+                    <label>TOKEN</label>
+                  </div><span class="mda-input-group-addon"><em class="ion-ios-locked-outline icon-lg"></em></span>
+                </div>
+              </div>
+              <button onclick="login()" class="btn btn-primary btn-flat">REDEEM</button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
-</form>
-</body>
+    <!-- build:js(../app) js/vendor-user.js-->
+    <script src="/assets/vendor/modernizr/modernizr.custom.js"></script>
+    <script src="/assets/vendor/jquery/dist/jquery.js"></script>
+    <script src="/assets/vendor/select2/dist/js/select2.js"></script>
+    <script src="/assets/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="/assets/vendor/jquery.browser/dist/jquery.browser.js"></script>
+    <script src="/assets/vendor/material-colors/dist/colors.js"></script>
+    <script src="/assets/vendor/jquery-validation/dist/jquery.validate.js"></script>
+    <script src="/assets/vendor/jquery-validation/dist/additional-methods.js"></script>
+    <script src="/assets/js/user/index.js"></script>
+  </body>
 </html>

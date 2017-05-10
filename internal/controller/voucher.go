@@ -148,12 +148,15 @@ type (
 func (r *TransactionRequest) CheckVoucherRedeemtion(voucherID string) (bool, error) {
 
 	voucher, err := model.FindVoucher(map[string]string{"id": voucherID})
+
 	if err != nil {
 		return false, err
 	} else if voucher.VoucherData[0].State == model.VoucherStateUsed {
 		return false, errors.New(model.ErrMessageVoucherAlreadyUsed)
 	} else if voucher.VoucherData[0].State == model.VoucherStatePaid {
 		return false, errors.New(model.ErrMessageVoucherAlreadyPaid)
+	} else if !voucher.VoucherData[0].ExpiredAt.After(time.Now()) {
+		return false, errors.New(model.ErrMessageVoucherExpired)
 	}
 
 	return true, nil
@@ -647,6 +650,16 @@ func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model
 		return ret, err
 	}
 
+	tsd, err := time.Parse(time.RFC3339Nano, v.StartDate)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	ted, err := time.Parse(time.RFC3339Nano, v.EndDate)
+	if err != nil {
+		log.Panic(err)
+	}
+
 	for i := 0; i <= vr.Quantity-1; i++ {
 		switch {
 		case v.VoucherFormat == 0:
@@ -658,14 +671,6 @@ func (vr *GenerateVoucherRequest) generateVoucherBulk(v *model.Variant) ([]model
 		}
 		rt = append(rt, code)
 
-		tsd, err := time.Parse(time.RFC3339Nano, v.StartDate)
-		if err != nil {
-			log.Panic(err)
-		}
-		ted, err := time.Parse(time.RFC3339Nano, v.EndDate)
-		if err != nil {
-			log.Panic(err)
-		}
 		// fmt.Println("generate data =>", vr.Holder)
 		rd := model.Voucher{
 			VoucherCode:   rt[i],

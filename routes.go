@@ -18,6 +18,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/variant/:page", viewVariant)
 	r.GetFunc("/user/:page", viewUser)
 	r.GetFunc("/partner/:page", viewPartner)
+	r.GetFunc("/tag/:page", viewTag)
 	r.GetFunc("/voucher/:page", viewVoucher)
 	r.GetFunc("/report/:page", viewReport)
 	r.GetFunc("/", login)
@@ -68,6 +69,10 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/api/get/partner", controller.GetAllPartnersCustomParam)
 	r.PostFunc("/v1/create/partner", controller.AddPartner)
 
+	r.GetFunc("/v1/get/tag", controller.GetAllTags)
+	r.PostFunc("/v1/create/tag", controller.AddTag)
+	r.GetFunc("/v1/delete/tag", controller.DeleteTag)
+
 	//account
 	r.GetFunc("/v1/api/get/account", controller.GetAccount)
 	r.GetFunc("/v1/api/get/accountsDetail", controller.GetAccountDetailByUser)
@@ -87,6 +92,7 @@ func setRoutes() http.Handler {
 	// r.PostFunc("/v1/voucher/pay", controller.PayVoucher)
 	r.PostFunc("/v1/voucher/generate/bulk", controller.GenerateVoucher)
 	r.PostFunc("/v1/voucher/generate/single", controller.GenerateVoucherOnDemand)
+	r.GetFunc("/v1/voucher/redeem", controller.RedeemPage)
 
 	r.GetFunc("/v1/token", controller.GetToken)
 	r.GetFunc("/v1/token/check", controller.CheckToken)
@@ -97,7 +103,7 @@ func setRoutes() http.Handler {
 
 	// r.NotFoundFunc(errorHandler)
 
-	r.GetFunc("/test", controller.UploadFormTest)
+	// r.GetFunc("/test", controller.UploadFormTest)
 	r.PostFunc("/file/upload", controller.UploadFile)
 	r.GetFunc("/file/delete", controller.DeleteFile)
 	// r.GetFunc("/listfile/", controller.GetListFile)
@@ -175,6 +181,18 @@ func viewPartner(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func viewTag(w http.ResponseWriter, r *http.Request) {
+	page := bone.GetValue(r, "page")
+
+	if page == "create" {
+		render.FileInLayout(w, "layout.html", "tag/create.html", nil)
+	} else if page == "search" {
+		render.FileInLayout(w, "layout.html", "tag/search.html", nil)
+	} else if page == "" || page == "index" {
+		render.FileInLayout(w, "layout.html", "tag/index.html", nil)
+	}
+}
+
 func viewVoucher(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
@@ -196,6 +214,8 @@ func viewReport(w http.ResponseWriter, r *http.Request) {
 
 	if page == "variant" {
 		render.FileInLayout(w, "layout.html", "report/variant.html", nil)
+	} else if page == "transaction" {
+		render.FileInLayout(w, "layout.html", "report/transaction.html", nil)
 	} else if page == "" || page == "index" {
 		render.FileInLayout(w, "layout.html", "report/test.html", nil)
 	}
