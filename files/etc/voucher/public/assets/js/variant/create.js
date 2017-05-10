@@ -215,8 +215,6 @@ function getPartner() {
 
         var i;
         for (i = 0; i < arrData.length; i++){
-<<<<<<< HEAD
-
           var li = $("<div class='col-sm-4'></div>");
           var html = "<label class='checkbox-inline c-checkbox'>"
                     + "<input type='checkbox' value='"+arrData[i].id+"'>"
@@ -224,10 +222,6 @@ function getPartner() {
                     + "</label>";
           li.html(html);
           li.appendTo('#partner-list');
-=======
-          var li = $("<option value='"+arrData[i].id+"'>"+arrData[i].partner_name+"</option>");
-          li.appendTo('#variant-partners');
->>>>>>> 426cf88e479efed6b200a540d5a7650212a0fef9
         }
       }
   });
