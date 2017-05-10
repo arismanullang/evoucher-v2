@@ -92,10 +92,37 @@ footer{
   width: 160px;
 }
 
+.dropdown-partner{
+  padding-top: 25px;
+}
+
+.dropdown-menu-partner{
+  min-width: 100px;
+  top: 90%;
+}
+
+.dropdown-menu-partner > li{
+  height: 30px;
+}
+
 .image-preview{
   width: 200px;
   height: 110px;
   padding: 10px;
+}
+
+.border{
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 3px;
+  padding-left: 8px !important;
+  padding-right: 0px !important;
+  padding-bottom: 4px;
+  margin-left: -12px;
+  margin-right: 0px;
+}
+
+.no-border{
+  border: none;
 }
 
 .no-border-bottom{
@@ -122,4 +149,15 @@ div.dt-buttons {
 th {
   text-align: center;
   vertical-align: middle !important;
+}
+
+.control-label {
+  padding-top: 12px !important;
+  margin-bottom: 35px !important;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.checkbox-add-padding {
+  padding-top: 6px;
 }

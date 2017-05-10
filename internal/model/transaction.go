@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -19,6 +20,15 @@ type (
 	DeleteTransactionRequest struct {
 		Id   string `db:"id"`
 		User string `db:"deleted_by"`
+	}
+	TransactionList struct {
+		TransactionCode string `db:"transaction_code" json:"transaction_code"`
+		VariantName     string `db:"variant_name" json:"variant_name"`
+		Voucher         int    `db:"voucher" json:"voucher"`
+		VoucherValue    int    `db:"discount_value" json:"discount_value"`
+		PartnerName     string `db:"partner_name" json:"partner_name"`
+		CreatedAt       string `db:"created_at" json:"created_at"`
+		CreatedBy       string `db:"created_by" json:"created_by"`
 	}
 )
 
@@ -180,7 +190,7 @@ func (d *DeleteTransactionRequest) Delete() error {
 	return nil
 }
 
-func FindTransactionByID(id string) ([]Transaction, error) {
+func FindTransactionDetailsById(id string) ([]Transaction, error) {
 	q := `
 		SELECT
 			id
@@ -229,7 +239,7 @@ func FindTransactionByID(id string) ([]Transaction, error) {
 	return resv, nil
 }
 
-func FindTransactionByDate(start, end string) ([]Transaction, error) {
+func FindTransactionDetailsByDate(start, end string) ([]Transaction, error) {
 	q := `
 		SELECT
 			transaction_code
@@ -255,6 +265,118 @@ func FindTransactionByDate(start, end string) ([]Transaction, error) {
 	}
 	if len(resv) < 1 {
 		return []Transaction{}, ErrResourceNotFound
+	}
+
+	return resv, nil
+}
+
+func FindAllTransaction() ([]TransactionList, error) {
+	q := `
+		SELECT
+			t.transaction_code, va.variant_name, Count(dt.voucher_id) as voucher, vo.discount_value, p.partner_name, t.created_at, t.created_by
+		FROM
+			transactions as t
+		JOIN
+			transaction_details as dt
+			ON t.id = dt.transaction_id
+		JOIN
+			vouchers as vo
+			ON dt.voucher_id = vo.id
+		JOIN
+			variants as va
+			ON va.id = vo.variant_id
+		JOIN
+			partners as p
+			ON p.id = t.partner_id
+		WHERE
+			t.status = ?
+		GROUP BY 1, 2, 4, 5, 6, 7
+		ORDER BY t.created_at DESC;
+	`
+
+	var resv []TransactionList
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+		fmt.Println(err.Error())
+		return resv, ErrServerInternal
+	}
+	if len(resv) < 1 {
+		return resv, ErrResourceNotFound
+	}
+
+	return resv, nil
+}
+
+func FindAllTransactionByVariant(variantId string) ([]TransactionList, error) {
+	q := `
+		SELECT
+			t.transaction_code, va.variant_name, Count(dt.voucher_id) as voucher, vo.discount_value, p.partner_name, t.created_at, t.created_by
+		FROM
+			transactions as t
+		JOIN
+			transaction_details as dt
+			ON t.id = dt.transaction_id
+		JOIN
+			vouchers as vo
+			ON dt.voucher_id = vo.id
+		JOIN
+			variants as va
+			ON va.id = vo.variant_id
+		JOIN
+			partners as p
+			ON p.id = t.partner_id
+		WHERE
+			t.status = ?
+			AND va.id = ?
+		GROUP BY 1, 2, 4, 5, 6, 7
+		ORDER BY t.created_at DESC;
+	`
+
+	var resv []TransactionList
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, variantId); err != nil {
+		fmt.Println(err.Error())
+		return resv, ErrServerInternal
+	}
+	if len(resv) < 1 {
+		return resv, ErrResourceNotFound
+	}
+
+	return resv, nil
+}
+
+func FindAllTransactionByPartner(partnerId, startDate, endDate string) ([]TransactionList, error) {
+	q := `
+		SELECT
+			t.transaction_code, va.variant_name, Count(dt.voucher_id) as voucher, vo.discount_value, p.partner_name, t.created_at, t.created_by
+		FROM
+			transactions as t
+		JOIN
+			transaction_details as dt
+			ON t.id = dt.transaction_id
+		JOIN
+			vouchers as vo
+			ON dt.voucher_id = vo.id
+		JOIN
+			variants as va
+			ON va.id = vo.variant_id
+		JOIN
+			partners as p
+			ON p.id = t.partner_id
+		WHERE
+			t.status = ?
+			AND p.id = ?
+			AND (t.created_at > ? AND t.created_at < ?)
+
+		GROUP BY 1, 2, 4, 5, 6, 7
+		ORDER BY t.created_at DESC;
+	`
+
+	var resv []TransactionList
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, partnerId, startDate, endDate); err != nil {
+		fmt.Println(err.Error())
+		return resv, ErrServerInternal
+	}
+	if len(resv) < 1 {
+		return resv, ErrResourceNotFound
 	}
 
 	return resv, nil

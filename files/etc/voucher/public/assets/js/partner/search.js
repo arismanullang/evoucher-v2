@@ -15,12 +15,20 @@ function getPartner() {
         console.log(arrData);
         var i;
         for (i = 0; i < arrData.length; i++){
-          var html = "<div class='mda-list-item-icon'><em class='ion-home icon-2x'></em></div>"
+          var html = "<div class='mda-list-item-icon bg-info'><em class='ion-home icon-2x'></em></div>"
           + "<div class='mda-list-item-text'>"
-          + "<h3><button type='button' onclick='edit(\""+arrData[i].id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>"+arrData[i].partner_name+"</h3>"
-          + "<p class='text-muted'> Serial Number : "+arrData[i].serial_number.String+"</p>"
+          + "<h3>"+arrData[i].partner_name+"</h3>"
+          + "<h4 class='text-muted'> Serial Number : "+arrData[i].serial_number.String+"</h4>"
+          + "<h4 class='text-muted'> Serial Number : "+arrData[i].serial_number.String+"</h4>"
+          + "</div>"
+          + "<div class='pull-right dropdown dropdown-partner'>"
+          + "<button type='button' data-toggle='dropdown' class='btn btn-default btn-flat btn-flat-icon'><em class='ion-android-more-vertical'></em></button>"
+          + "<ul role='menu' class='dropdown-menu dropdown-menu-partner md-dropdown-menu dropdown-menu-right'>"
+          + "<li><button type='button' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em> Edit</button>"
+          + "<li><button type='button' class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em> Delete</button></li>"
+          + "</ul>"
           + "</div>";
-          var li = $("<div class='mda-list-item'></div>").html(html);
+          var li = $("<div class='mda-list-item col-sm-6'></div>").html(html);
           li.appendTo('#listPartner');
         }
       }
@@ -46,7 +54,7 @@ function addPartner() {
             console.log(e.target.value);
             swal({
                     title: 'Are you sure?',
-                    text: 'Do you want delete variant?',
+                    text: 'Do you want insert new partner?',
                     type: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#DD6B55',

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"strconv"
@@ -61,17 +62,18 @@ type (
 		User string `db:"deleted_by"`
 	}
 	SearchVariant struct {
-		Id            string  `db:"id"`
-		AccountId     string  `db:"account_id"`
-		VariantName   string  `db:"variant_name"`
-		VoucherType   string  `db:"voucher_type"`
-		VoucherPrice  float64 `db:"voucher_price"`
-		DiscountValue float64 `db:"discount_value"`
-		MaxVoucher    float64 `db:"max_quantity_voucher"`
-		ImgUrl        string  `db:"img_url"`
-		StartDate     string  `db:"start_date"`
-		EndDate       string  `db:"end_date"`
-		Voucher       string  `db:"voucher"`
+		Id            string         `db:"id" json:"id"`
+		AccountId     string         `db:"account_id" json:"account_id"`
+		VariantName   string         `db:"variant_name" json:"variant_name"`
+		VoucherType   string         `db:"voucher_type" json:"voucher_type"`
+		VoucherPrice  float64        `db:"voucher_price" json:"voucher_price"`
+		DiscountValue float64        `db:"discount_value" json:"discount_value"`
+		MaxVoucher    float64        `db:"max_quantity_voucher" json:"max_quantity_voucher"`
+		ImgUrl        string         `db:"img_url" json:"image_url"`
+		StartDate     string         `db:"start_date" json:"start_date"`
+		EndDate       string         `db:"end_date" json:"end_date"`
+		Voucher       string         `db:"voucher" json:"voucher"`
+		State         sql.NullString `db:"state" json:"state"`
 	}
 	UpdateVariantUsersRequest struct {
 		VariantId string   `db:"variant_id"`
@@ -478,6 +480,7 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 			, va.start_date
 			, va.end_date
 			, count (vo.id) as voucher
+			, vo.state
 		FROM
 			variants as va
 		LEFT JOIN
@@ -488,13 +491,14 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 			va.account_id = ?
 			AND va.status = ?
 		GROUP BY
-			va.id
+			va.id, vo.state
 		ORDER BY
-			va.end_date DESC
+			va.end_date ASC
 	`
 
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
+		fmt.Println(err.Error())
 		return resv, ErrServerInternal
 	}
 	if len(resv) < 1 {
