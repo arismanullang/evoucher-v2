@@ -50,6 +50,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/transaction/:id/", controller.GetTransaction)
 	r.PostFunc("/transaction/:id/update", controller.UpdateTransaction)
 	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)
+	r.GetFunc("/v1/get/transaction", controller.GetAllTransactions)
 
 	//user
 	r.PostFunc("/v1/create/user", controller.RegisterUser)

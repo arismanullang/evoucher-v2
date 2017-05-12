@@ -1,6 +1,7 @@
 package model
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 )
@@ -22,13 +23,14 @@ type (
 		User string `db:"deleted_by"`
 	}
 	TransactionList struct {
-		TransactionCode string `db:"transaction_code" json:"transaction_code"`
-		VariantName     string `db:"variant_name" json:"variant_name"`
-		Voucher         int    `db:"voucher" json:"voucher"`
-		VoucherValue    int    `db:"discount_value" json:"discount_value"`
-		PartnerName     string `db:"partner_name" json:"partner_name"`
-		CreatedAt       string `db:"created_at" json:"created_at"`
-		CreatedBy       string `db:"created_by" json:"created_by"`
+		PartnerName  string         `db:"partner_name" json:"partner_name"`
+		Voucher      string         `db:"voucher" json:"voucher"`
+		VoucherValue float32        `db:"discount_value" json:"discount_value"`
+		Issued       string         `db:"issued" json:"issued"`
+		Redeem       string         `db:"redeemed" json:"redeemed"`
+		CashOut      sql.NullString `db:"cashout" json:"cashout"`
+		Username     sql.NullString `db:"username" json:"username"`
+		State        string         `db:"state" json:"state"`
 	}
 )
 
@@ -270,32 +272,34 @@ func FindTransactionDetailsByDate(start, end string) ([]Transaction, error) {
 	return resv, nil
 }
 
-func FindAllTransaction() ([]TransactionList, error) {
+func FindAllTransaction(accountId string) ([]TransactionList, error) {
 	q := `
 		SELECT
-			t.transaction_code, va.variant_name, Count(dt.voucher_id) as voucher, vo.discount_value, p.partner_name, t.created_at, t.created_by
-		FROM
-			transactions as t
-		JOIN
-			transaction_details as dt
-			ON t.id = dt.transaction_id
-		JOIN
-			vouchers as vo
-			ON dt.voucher_id = vo.id
-		JOIN
-			variants as va
-			ON va.id = vo.variant_id
-		JOIN
-			partners as p
-			ON p.id = t.partner_id
+			p.partner_name, dt.voucher_id as voucher, vo.discount_value, va.created_at as issued, t.created_at as redeemed, vo.updated_at as cashout, u.username, vo.state
+		FROM transactions as t
+		JOIN transaction_details as dt
+		ON
+			t.id = dt.transaction_id
+		JOIN vouchers as vo
+		ON
+			dt.voucher_id = vo.id
+		JOIN users as u
+		ON
+			vo.created_by = u.id
+		JOIN variants as va
+		ON
+			va.id = vo.variant_id
+		JOIN partners as p
+		ON
+			p.id = t.partner_id
 		WHERE
 			t.status = ?
-		GROUP BY 1, 2, 4, 5, 6, 7
+			AND t.account_id = ?
 		ORDER BY t.created_at DESC;
 	`
 
 	var resv []TransactionList
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId); err != nil {
 		fmt.Println(err.Error())
 		return resv, ErrServerInternal
 	}
