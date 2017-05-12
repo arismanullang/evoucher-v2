@@ -85,6 +85,9 @@ type (
 		EndDate       string         `db:"end_date" json:"end_date"`
 		Voucher       string         `db:"voucher" json:"voucher"`
 		State         sql.NullString `db:"state" json:"state"`
+		Status        string         `db:"status" json:"status"`
+		CreatedAt     string         `db:"created_at" json:"created_at"`
+		UpdatedAt     sql.NullString `db:"updated_at" json:"updated_at"`
 	}
 	UpdateVariantUsersRequest struct {
 		VariantId string   `db:"variant_id"`
@@ -508,7 +511,10 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 			, va.img_url
 			, va.start_date
 			, va.end_date
+			, va.created_at
+			, va.updated_at
 			, count (vo.id) as voucher
+			, va.status
 			, vo.state
 		FROM
 			variants as va
@@ -518,7 +524,6 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 			va.id = vo.variant_id
 		WHERE
 			va.account_id = ?
-			AND va.status = ?
 		GROUP BY
 			va.id, vo.state
 		ORDER BY
@@ -526,7 +531,7 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 	`
 
 	var resv []SearchVariant
-	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), accountId); err != nil {
 		fmt.Println(err.Error())
 		return resv, ErrServerInternal
 	}
