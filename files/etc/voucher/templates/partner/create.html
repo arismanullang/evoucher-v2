@@ -30,9 +30,32 @@
           <div class="col-sm-12">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input id="serial-umber" name="serial-number" tabindex="0" aria-invalid="false" class="form-control">
+                <input id="serial-number" name="serial-number" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Serial Number</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <select id="tags" name="days" multiple="multiple" class="form-control select2" tabindex="0">
+                </select>
+                <div class="mda-form-control-line"></div>
+                <label>Tag</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <textarea id="description" name="variant-description" rows="6" aria-multiline="true" tabindex="0" class="form-control"></textarea>
+                <div class="mda-form-control-line"></div>
+                <label>Description</label>
               </div>
             </div>
           </div>
@@ -52,8 +75,10 @@
 {{ define "scripts" }}
 <script type="text/javascript" src="/assets/vendor/sweetalert/dist/sweetalert-dev.js"></script>
 <script type="text/javascript" src="/assets/js/partner/create.js"></script>
+<script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
 {{ end }}
 
 {{ define "stylesheets" }}
 <link rel="stylesheet" href="/assets/vendor/sweetalert/dist/sweetalert.css">
+<link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
 {{ end }}

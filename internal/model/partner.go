@@ -312,7 +312,7 @@ func InsertTag(tag, user string) error {
 	return nil
 }
 
-func DeleteTag(tagId, user string) error {
+func DeleteTag(tagValue, user string) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -327,9 +327,43 @@ func DeleteTag(tagId, user string) error {
 			, updated_at = ?
 			, status = ?
 		WHERE
-			id = ?;
+			tag_value = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), user, time.Now(), StatusDeleted, tagId)
+	_, err = tx.Exec(tx.Rebind(q), user, time.Now(), StatusDeleted, tagValue)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
+}
+
+func DeleteTagBulk(tagValue []string, user string) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE tags
+		SET
+			updated_by = ?
+			, updated_at = ?
+			, status = ?
+		WHERE
+			tag_value = ?
+	`
+	for i := 1; i < len(tagValue); i++ {
+		q += " OR tag_value = '" + tagValue[i] + "'"
+	}
+	fmt.Println(q)
+	_, err = tx.Exec(tx.Rebind(q), user, time.Now(), StatusDeleted, tagValue[0])
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal

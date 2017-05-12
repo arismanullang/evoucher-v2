@@ -37,6 +37,9 @@ type (
 	Tag struct {
 		Value string `json:"tag"`
 	}
+	Tags struct {
+		Value []string `json:"tags"`
+	}
 )
 
 func GetAllPartners(w http.ResponseWriter, r *http.Request) {
@@ -261,6 +264,14 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 				String: user,
 				Valid:  true,
 			},
+			Tag: sql.NullString{
+				String: rd.Tag,
+				Valid:  true,
+			},
+			Description: sql.NullString{
+				String: rd.Description,
+				Valid:  true,
+			},
 		}
 		err := model.InsertPartner(param)
 		if err != nil {
@@ -347,6 +358,39 @@ func DeleteTag(w http.ResponseWriter, r *http.Request) {
 	if valid {
 		status = http.StatusOK
 		err := model.DeleteTag(id, user)
+		if err != nil {
+			status = http.StatusInternalServerError
+			errorTitle = model.ErrCodeInternalError
+			if err == model.ErrResourceNotFound {
+				status = http.StatusNotFound
+				errorTitle = model.ErrCodeResourceNotFound
+			}
+
+			res.AddError(its(status), errorTitle, err.Error(), "Get tag")
+		} else {
+			res = NewResponse("Success")
+		}
+	}
+	render.JSON(w, res, status)
+}
+
+func DeleteTagBulk(w http.ResponseWriter, r *http.Request) {
+	var rd Tags
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	errorTitle := model.ErrCodeInvalidToken
+	res := NewResponse(nil)
+	res.AddError(its(status), errorTitle, err.Error(), "Get Tag")
+
+	_, user, _, valid := AuthToken(w, r)
+	if valid {
+		status = http.StatusOK
+		err := model.DeleteTagBulk(rd.Value, user)
 		if err != nil {
 			status = http.StatusInternalServerError
 			errorTitle = model.ErrCodeInternalError

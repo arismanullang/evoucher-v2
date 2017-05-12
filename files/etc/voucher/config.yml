@@ -5,7 +5,7 @@ server:
 
 database:
     # endpoint: "postgres://evoucher:IufA0Ayj8F0p6Iuwg@35.185.131.77:5432/evoucher?sslmode=disable"
-    endpoint: "postgres://elys:elys@127.0.0.1:5432/evoucher?sslmode=disable"
+    endpoint: "postgres://evoucher:IuA0Ayj8F0p6Iuwg@127.0.0.1:5432/evoucher?sslmode=disable"
     redis: "127.0.0.1:6379"
 
 mailgun:

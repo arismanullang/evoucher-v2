@@ -22,8 +22,8 @@ type (
 		EndDate            string  `db:"end_date"`
 		StartHour          string  `db:"start_hour"`
 		EndHour            string  `db:"end_hour"`
-		ValidVoucherStart  string  `db:"Valid_voucher_start"`
-		ValidVoucherEnd    string  `db:"Valid_voucher_end"`
+		ValidVoucherStart  string  `db:"valid_voucher_start"`
+		ValidVoucherEnd    string  `db:"valid_voucher_end"`
 		VoucherLifetime    int     `db:"voucher_lifetime"`
 		ValidityDays       string  `db:"validity_days"`
 		DiscountValue      float64 `db:"discount_value"`
@@ -47,8 +47,8 @@ type (
 		EndDate            string   `db:"end_date"`
 		StartHour          string   `db:"start_hour"`
 		EndHour            string   `db:"end_hour"`
-		ValidVoucherStart  string   `db:"Valid_voucher_start"`
-		ValidVoucherEnd    string   `db:"Valid_voucher_end"`
+		ValidVoucherStart  string   `db:"valid_voucher_start"`
+		ValidVoucherEnd    string   `db:"valid_voucher_end"`
 		VoucherLifetime    int      `db:"voucher_lifetime"`
 		ValidityDays       string   `db:"validity_days"`
 		DiscountValue      float64  `db:"discount_value"`
@@ -184,6 +184,7 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 		return ErrServerInternal
 	}
 
+	fmt.Println(vr)
 	q2 := `
 		INSERT INTO variants(
 			account_id

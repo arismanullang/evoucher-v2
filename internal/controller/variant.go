@@ -31,8 +31,8 @@ type (
 		EndDate            string    `json:"end_date"`
 		StartHour          string    `json:"start_hour"`
 		EndHour            string    `json:"end_hour"`
-		ValidVoucherStart  string    `json:"Valid_voucher_start"`
-		ValidVoucherEnd    string    `json:"Valid_voucher_end"`
+		ValidVoucherStart  string    `json:"valid_voucher_start"`
+		ValidVoucherEnd    string    `json:"valid_voucher_end"`
 		VoucherLifetime    int       `json:"voucher_lifetime"`
 		ValidityDays       string    `json:"validity_days"`
 		DiscountValue      float64   `json:"discount_value"`
@@ -417,6 +417,15 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Panic(err)
 		}
+		fmt.Println(rd.ValidVoucherStart)
+		tvs, err := time.Parse("01/02/2006", rd.ValidVoucherStart)
+		if err != nil {
+			log.Panic(err)
+		}
+		tve, err := time.Parse("01/02/2006", rd.ValidVoucherEnd)
+		if err != nil {
+			log.Panic(err)
+		}
 
 		vr := model.VariantReq{
 			AccountId:          accountId,
@@ -433,8 +442,8 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			EndDate:            te.Format("2006-01-02 15:04:05.000"),
 			StartHour:          rd.StartHour,
 			EndHour:            rd.EndHour,
-			ValidVoucherStart:  rd.ValidVoucherStart,
-			ValidVoucherEnd:    rd.ValidVoucherEnd,
+			ValidVoucherStart:  tvs.Format("2006-01-02 15:04:05.000"),
+			ValidVoucherEnd:    tve.Format("2006-01-02 15:04:05.000"),
 			VoucherLifetime:    rd.VoucherLifetime,
 			ValidityDays:       rd.ValidityDays,
 			ImgUrl:             rd.ImgUrl,

@@ -1,7 +1,46 @@
+$( document ).ready(function() {
+  getTag();
+});
+
+function getTag() {
+    console.log("Get Tag List");
+
+    $.ajax({
+      url: '/v1/get/tag',
+      type: 'get',
+      success: function (data) {
+        console.log("Render Data");
+        var arrData = [];
+        arrData = data.data;
+        console.log(arrData);
+        var i;
+        for (i = 0; i < arrData.length; i++){
+          var li = $("<option></option>").html(arrData[i]);
+          li.appendTo('#tags');
+        }
+      }
+  });
+}
+
 function send() {
+
+  var listTag = "";
+  var li = $( "ul.select2-selection__rendered" ).find( "li" );
+  if(li.length == 0 || parseInt($("#length").val()) < 8){
+    error = true;
+  }
+
+  for (i = 0; i < li.length-1; i++) {
+    var text = li[i].getAttribute("title");
+
+    listTag = listTag+"#"+text;
+  }
+
   var partner = {
     partner_name: $("#partner-name").val(),
     serial_number: $("#serial-number").val(),
+    tag: listTag,
+    description: $("#description").val(),
   };
 
   console.log(partner);
@@ -23,6 +62,7 @@ function send() {
     $(runSweetAlert);
     //onclick='deleteVariant(\""+arrData[i].Id+"\")'
     function runSweetAlert() {
+    	$('.select2').select2();
         $(document).on('click', '.swal-demo4', function(e) {
             e.preventDefault();
             var html;
