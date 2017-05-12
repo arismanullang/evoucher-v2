@@ -161,3 +161,15 @@ th {
 .checkbox-add-padding {
   padding-top: 6px;
 }
+
+.up-5px {
+  margin-top: -5px;
+}
+
+.down-5px {
+  margin-top: 5px;
+}
+
+button.color-red {
+  color: red !important;
+}

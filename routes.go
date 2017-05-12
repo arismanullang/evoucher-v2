@@ -71,7 +71,8 @@ func setRoutes() http.Handler {
 
 	r.GetFunc("/v1/get/tag", controller.GetAllTags)
 	r.PostFunc("/v1/create/tag", controller.AddTag)
-	r.GetFunc("/v1/delete/tag", controller.DeleteTag)
+	r.GetFunc("/v1/delete/tag/:id", controller.DeleteTag)
+	r.PostFunc("/v1/delete/tag", controller.DeleteTagBulk)
 
 	//account
 	r.GetFunc("/v1/api/get/account", controller.GetAccount)

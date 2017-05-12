@@ -106,8 +106,8 @@ function send() {
     periodEnd = $("#voucher-valid-to").val();
   }else if($("#voucher-validity-type").val() == "lifetime"){
     lifetime = $("#voucher-lifetime").val();
-    periodStart = "";
-    periodEnd = "";
+    periodStart = "01/01/0001";
+    periodEnd = "01/01/0001";
   }
 
   var voucherFormat = {
@@ -181,25 +181,26 @@ function send() {
       image_url: img,
       variant_tnc: tnc,
       variant_description: $("#variant-description").val(),
-      valid_day: listDay,
+      validity_day: listDay,
       valid_partners: listPartner,
-      vaild_voucher_start: periodStart,
+      valid_voucher_start: periodStart,
       valid_voucher_end: periodEnd,
-      voucher_lifetime: lifetime
+      voucher_lifetime: parseInt(lifetime)
     };
+
     console.log(variant);
 
-  //   $.ajax({
-  //      url: '/v1/create/variant?token='+token,
-  //      type: 'post',
-  //      dataType: 'json',
-  //      contentType: "application/json",
-  //      data: JSON.stringify(variant),
-  //      success: function () {
-  //          alert("Program created.");
-  //          window.location = "/variant/search";
-  //      }
-  //  });
+    $.ajax({
+       url: '/v1/create/variant?token='+token,
+       type: 'post',
+       dataType: 'json',
+       contentType: "application/json",
+       data: JSON.stringify(variant),
+       success: function () {
+           alert("Program created.");
+           window.location = "/variant/search";
+       }
+   });
 }
 
 function getPartner() {
