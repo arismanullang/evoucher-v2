@@ -461,13 +461,14 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("variant insert ", vr)
 		fmt.Println("voucher format insert ", fr)
 		fmt.Println("user ", user)
-		if err := model.InsertVariant(vr, fr, user); err != nil {
+		if id, err := model.InsertVariant(vr, fr, user); err != nil {
 			//log.Panic(err)
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
 			res.AddError(its(status), errTitle, err.Error(), "Create Variant")
+		} else {
+			res = NewResponse(id)
 		}
-
 	}
 
 	render.JSON(w, res, status)

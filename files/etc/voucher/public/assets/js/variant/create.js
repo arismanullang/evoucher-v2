@@ -1,6 +1,43 @@
 $( document ).ready(function() {
   getPartner();
 
+      if($("#voucher-validity-type").val() == "lifetime"){
+        $("#validity-lifetime").attr("style","display:block");
+        $("#validity-date").attr("style","display:none");
+        $("#voucher-valid-from").val("");
+        $("#voucher-valid-to").val("");
+      } else if($("#voucher-validity-type").val() == "period"){
+        $("#validity-lifetime").attr("style","display:none");
+        $("#validity-date").attr("style","display:block");
+        $("#voucher-lifetime").val("");
+      } else {
+        $("#validity-lifetime").attr("style","display:none");
+        $("#validity-date").attr("style","display:none");
+        $("#voucher-valid-from").val("");
+        $("#voucher-valid-to").val("");
+        $("#voucher-lifetime").val("");
+      }
+
+      if( $("#redeem-validity-type").val() == "all"){
+        $("#validity-day").attr("style","display:none");
+      } else if( $("#redeem-validity-type").value == "selected"){
+        $("#validity-day").attr("style","display:block");
+      } else {
+        $("#validity-day").attr("style","display:none");
+      }
+
+      if($("#variant-type").val() == "bulk"){
+        $("#target").attr("style","display:block");
+        $("#max-quantity-voucher").attr("disabled","");
+        $("#max-usage-voucher").attr("disabled","");
+        $("#voucher-price").attr("disabled","");
+      } else{
+        $("#target").attr("style","display:none");
+        $("#max_quantity_voucher").removeAttr("disabled","");
+        $("#max_usage_voucher").removeAttr("disabled","");
+        $("#voucher_price").removeAttr("disabled","");
+      }
+
   $("#voucher-validity-type").change(function() {
     if(this.value == "lifetime"){
       $("#validity-lifetime").attr("style","display:block");
@@ -28,7 +65,19 @@ $( document ).ready(function() {
       $("#validity-day").attr("style","display:none");
     }
   });
-
+  $("#variant-type").change(function() {
+    if(this.value == "bulk"){
+      $("#target").attr("style","display:block");
+      $("#max-quantity-voucher").attr("disabled","");
+      $("#max-usage-voucher").attr("disabled","");
+      $("#voucher-price").attr("disabled","");
+    } else{
+      $("#target").attr("style","display:none");
+      $("#max_quantity_voucher").removeAttr("disabled","");
+      $("#max_usage_voucher").removeAttr("disabled","");
+      $("#voucher_price").removeAttr("disabled","");
+    }
+  });
 });
 
 function readURL(input) {
@@ -127,40 +176,43 @@ function send() {
     }
   }
 
-  $('input[check="true"]').each(function() {
-    if($(this).val() == ""){
-      $(this).addClass("error");
-      $(this).parent().closest('div').addClass("input-error");
-      error = true;
-    }
-
-    if($(this).attr("id") == "length"){
-      if(parseInt($(this).val()) < 8){
-        error = true;
-      }
-    }
-  });
-
-  if(error){
-    alert("Please check your input.");
-    return
-  }
+  // $('input[check="true"]').each(function() {
+  //   if($(this).val() == ""){
+  //     $(this).addClass("error");
+  //     $(this).parent().closest('div').addClass("input-error");
+  //     error = true;
+  //   }
+  //
+  //   if($(this).attr("id") == "length"){
+  //     if(parseInt($(this).val()) < 8){
+  //       error = true;
+  //     }
+  //   }
+  // });
+  //
+  // if(error){
+  //   alert("Please check your input.");
+  //   return
+  // }
 
   var formData = new FormData();
-  formData.append('image-url', $('#image-url')[0].files[0]);
-
-  var img = "";
-  // jQuery.ajax({
-  //     url:'/file/upload',
-  //     type:"POST",
-  //     processData: false,
-  //     contentType: false,
-  //     data: formData,
-  //     success: function(data){
-  //       console.log(data);
-  //       img = data;
-  //     }
-  // });
+  var img = "https://doc-0c-a4-docs.googleusercontent.com/docs/securesc/sc12615q4ko8msf2dedhl593nleqt5j1/avok2btg9ahc2o4sgl7rkf94d1sid386/1494835200000/13128089554283971367/12844612768135798791/0B78NvTUyzKzONmNldTFlOVNsclE?e=download&h=09793589947049611553&nonce=53r3v5s7o8odc&user=12844612768135798791&hash=rugs3fgkhi7fhvvl5nc1rurrtdm57raq";
+  // if($('#image-url')[0].files[0] != null){
+  //
+  //  formData.append('image-url', $('#image-url')[0].files[0]);
+  //
+  //  jQuery.ajax({
+  //      url:'/file/upload',
+  //      type:"POST",
+  //      processData: false,
+  //      contentType: false,
+  //      data: formData,
+  //      success: function(data){
+  //        console.log(data);
+  //        img = data;
+  //      }
+  //  });
+  // }
 
 
   var variant = {
@@ -196,9 +248,26 @@ function send() {
        dataType: 'json',
        contentType: "application/json",
        data: JSON.stringify(variant),
-       success: function () {
+       success: function (data) {
+	   if($("#variant-type").find(":selected").val() == "bulk"){
+
+		     var targets = new FormData();
+		     targets.append('list-target', $("#list-target")[0].files[0]);
+
+		     jQuery.ajax({
+		         url:'/v1/upload/user?token='+token+'&variant-id='+data.data,
+		         type:"POST",
+		         processData: false,
+		         contentType: false,
+		         data: targets,
+		         success: function(data){
+		           console.log(data);
+		         }
+		     });
+
+	   }
            alert("Program created.");
-           window.location = "/variant/search";
+           //window.location = "/variant/search";
        }
    });
 }

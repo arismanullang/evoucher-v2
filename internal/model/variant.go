@@ -159,11 +159,11 @@ func CustomQuery(q string) (map[int][]map[string]interface{}, error) {
 	return result, nil
 }
 
-func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
+func InsertVariant(vr VariantReq, fr FormatReq, user string) (string, error) {
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err.Error())
-		return ErrServerInternal
+		return "", ErrServerInternal
 	}
 	defer tx.Rollback()
 
@@ -184,7 +184,7 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 	var res []string
 	if err := tx.Select(&res, tx.Rebind(q), fr.Prefix, fr.Postfix, fr.Body, fr.FormatType, fr.Length, user, StatusCreated); err != nil {
 		fmt.Println(err.Error(), "(insert voucher format)")
-		return ErrServerInternal
+		return "", ErrServerInternal
 	}
 
 	fmt.Println(vr)
@@ -222,7 +222,7 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 	var res2 []string
 	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.VariantName, vr.VariantType, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.StartHour, vr.EndHour, vr.ValidVoucherStart, vr.ValidVoucherEnd, vr.VoucherLifetime, vr.ValidityDays, vr.DiscountValue, vr.MaxQuantityVoucher, vr.MaxUsageVoucher, vr.RedeemtionMethod, vr.ImgUrl, vr.VariantTnc, vr.VariantDescription, user, StatusCreated); err != nil {
 		fmt.Println(err.Error(), "(insert variant)")
-		return ErrServerInternal
+		return "", ErrServerInternal
 	}
 
 	if len(vr.ValidPartners) > 0 {
@@ -241,7 +241,7 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 			if err != nil {
 				fmt.Println("data :", res2[0], v, user)
 				fmt.Println(err.Error(), "(insert variant_partner)")
-				return ErrServerInternal
+				return "", ErrServerInternal
 			}
 		}
 	}
@@ -249,9 +249,9 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 	if err := tx.Commit(); err != nil {
 
 		fmt.Println(err.Error())
-		return ErrServerInternal
+		return "", ErrServerInternal
 	}
-	return nil
+	return res2[0], nil
 }
 
 func UpdateVariant(d Variant) error {
