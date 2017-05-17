@@ -116,8 +116,8 @@ function getVariant() {
               , dataEnd[i]
 	      , dataStatus[i]
 	      , dataModified[i]
-              , (dataMax[i] - dataVoucher[i])
 	      , dataMax[i]
+              , (dataMax[i] - dataVoucher[i])
               , button
             ];
           }

@@ -37,7 +37,6 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/api/get/totalVariant", controller.GetTotalVariant)
 	r.GetFunc("/v1/api/get/variantByDate", controller.GetVariantDetailsByDate)
 	r.GetFunc("/v1/api/get/variantDetails/custom", controller.GetVariantDetailsCustom)
-	r.PostFunc("/file/upload", controller.UploadFile)
 
 	r.GetFunc("/v1/api/get/variant/:id", controller.GetVariantDetailsById)
 	r.PostFunc("/v1/update/variant/:id", controller.UpdateVariant)
@@ -51,6 +50,7 @@ func setRoutes() http.Handler {
 	r.PostFunc("/transaction/:id/update", controller.UpdateTransaction)
 	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)
 	r.GetFunc("/v1/get/transaction", controller.GetAllTransactions)
+	r.GetFunc("/v1/get/transaction/partner", controller.GetAllTransactionsByPartner)
 
 	//user
 	r.PostFunc("/v1/create/user", controller.RegisterUser)
@@ -61,6 +61,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/api/get/userDetails", controller.GetUserDetails)
 	r.GetFunc("/v1/api/mail", controller.ForgotPassword)
 	r.PostFunc("/v1/password", controller.UpdatePassword)
+	r.PostFunc("/v1/upload/user", controller.InsertBroadcastUser)
 
 	//partner
 	r.GetFunc("/v1/get/partner", controller.GetAllPartners)

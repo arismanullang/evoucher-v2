@@ -79,13 +79,24 @@
                     </div>
                   </div>
                   <div class="row">
-                    <div class="col-sm-12">
+                    <div class="col-sm-6">
                       <div class="mda-form-group">
                         <div class="mda-form-control no-border-bottom">
                           <span><img id="image-preview" class="image-preview" src="/assets/img/card.jpg"></img></span>
                           <input id="image-url" name="image-url" type="file" tabindex="0" aria-invalid="false" class="form-control">
                           <div class="mda-form-control-line"></div>
                           <label>Voucher Image</label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div id="target" class="col-sm-6 form-horizontal" style="display:none">
+                      <div class="col-sm-4">
+                        <label class="control-label">List Target</label>
+                      </div>
+                      <div class="col-sm-8">
+                        <div class="form-group">
+                          <input id="list-target" name="list-target" type="file" tabindex="0" aria-invalid="false" class="no-border form-control">
                         </div>
                       </div>
                     </div>
@@ -404,6 +415,7 @@
 <script type="text/javascript" src="/assets/vendor/clockpicker/dist/bootstrap-clockpicker.js"></script>
 <script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
 <script type="text/javascript" src="/assets/js/variant/create.js"></script>
+
 {{ end }}
 
 {{ define "stylesheets" }}
