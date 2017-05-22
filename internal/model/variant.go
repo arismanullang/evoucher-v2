@@ -21,8 +21,8 @@ type (
 		EndDate            string  `db:"end_date"`
 		StartHour          string  `db:"start_hour"`
 		EndHour            string  `db:"end_hour"`
-		ValidVoucherStart  string  `db:"Valid_voucher_start"`
-		ValidVoucherEnd    string  `db:"Valid_voucher_end"`
+		ValidVoucherStart  string  `db:"valid_voucher_start"`
+		ValidVoucherEnd    string  `db:"valid_voucher_end"`
 		VoucherLifetime    int     `db:"voucher_lifetime"`
 		ValidityDays       string  `db:"validity_days"`
 		DiscountValue      float64 `db:"discount_value"`
@@ -46,8 +46,8 @@ type (
 		EndDate            string   `db:"end_date"`
 		StartHour          string   `db:"start_hour"`
 		EndHour            string   `db:"end_hour"`
-		ValidVoucherStart  string   `db:"Valid_voucher_start"`
-		ValidVoucherEnd    string   `db:"Valid_voucher_end"`
+		ValidVoucherStart  string   `db:"valid_voucher_start"`
+		ValidVoucherEnd    string   `db:"valid_voucher_end"`
 		VoucherLifetime    int      `db:"voucher_lifetime"`
 		ValidityDays       string   `db:"validity_days"`
 		DiscountValue      float64  `db:"discount_value"`
@@ -576,7 +576,7 @@ func FindVariantsCustomParam(param map[string]string) ([]SearchVariant, error) {
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
 		fmt.Println(err.Error())
-		return []SearchVariant{}, ErrServerInternal
+		return []SearchVariant{}, err
 	}
 	if len(resv) < 1 {
 		return []SearchVariant{}, ErrResourceNotFound
@@ -616,15 +616,15 @@ func FindVariantDetailsById(id string) (Variant, error) {
 		FROM
 			variants
 		WHERE
-			id = ?
-			AND status = ?
+			status = ?
 	`
 
 	var resv []Variant
-	if err := db.Select(&resv, db.Rebind(q), id, StatusCreated); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
 		fmt.Println(err.Error())
 		return Variant{}, ErrServerInternal
 	}
+	fmt.Println("variant data :",id , StatusCreated , resv)
 	if len(resv) < 1 {
 		return Variant{}, ErrResourceNotFound
 	}

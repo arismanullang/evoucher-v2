@@ -63,6 +63,10 @@ func AuthToken(w http.ResponseWriter, r *http.Request) (string, string, time.Tim
 			render.JSON(w, res, http.StatusUnauthorized)
 		}
 		return "", "", time.Now(), false
+	} else if !model.IsExistToken(token) {
+		res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, "token")
+		render.JSON(w, res, http.StatusUnauthorized)
+		return "", "", time.Now(), false
 	}
 
 	return s.AccountID, s.UserId, s.ExpiredAt, true

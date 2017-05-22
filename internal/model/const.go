@@ -69,6 +69,7 @@ const (
 	ErrMessageInvalidUser              string = "Invalid Username and Password."
 	ErrMessageRedeemNotValidDay        string = "Voucher cannot be used today."
 	ErrMessageRedeemNotValidHour       string = "voucher cannot be used at current time."
+	ErrMessageVariantHasBeenUsed       string = "Variant Has been Used"
 
 	StatusCreated string = "created"
 	StatusDeleted string = "deleted"
@@ -105,4 +106,7 @@ const (
 	GCS_BUCKET     string = "e-voucher"
 	GCS_PROJECT_ID string = "shared-project-159515"
 	PublicURL      string = "https://storage.googleapis.com/%s/%s"
+
+	//Voucber link
+	VOUCHER_URL string = "https://voucher.elys.id/redeem"
 )

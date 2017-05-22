@@ -291,3 +291,33 @@ func CountVoucher(varID string) int {
 	}
 	return resd[0]
 }
+
+func HardDelete(variant string) error {
+	vc, err := db.Beginx()
+	if err != nil {
+		return err
+	}
+	defer vc.Rollback()
+
+	q := `
+		DELETE 	vouchers
+		WHERE
+			variant_id = ?
+		AND
+			status = ?
+		RETURNING id
+      `
+	var result []string
+	if err := vc.Select(&result, vc.Rebind(q), variant, StatusCreated); err != nil {
+		return err
+	}
+
+	if len(result) < 1 {
+		return ErrNotModified
+	}
+
+	if err := vc.Commit(); err != nil {
+		return err
+	}
+	return nil
+}

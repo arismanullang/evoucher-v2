@@ -31,8 +31,8 @@ type (
 		EndDate            string    `json:"end_date"`
 		StartHour          string    `json:"start_hour"`
 		EndHour            string    `json:"end_hour"`
-		ValidVoucherStart  string    `json:"Valid_voucher_start"`
-		ValidVoucherEnd    string    `json:"Valid_voucher_end"`
+		ValidVoucherStart  string    `json:"valid_voucher_start"`
+		ValidVoucherEnd    string    `json:"valid_voucher_end"`
 		VoucherLifetime    int       `json:"voucher_lifetime"`
 		ValidityDays       string    `json:"validity_days"`
 		DiscountValue      float64   `json:"discount_value"`
