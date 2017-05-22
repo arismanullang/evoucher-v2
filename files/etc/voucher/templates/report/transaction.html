@@ -1,19 +1,24 @@
 {{ template "layout" . }}
 
-{{ define "title" }}List Program{{ end }}
-{{ define "header-title" }}List Program{{ end }}
+{{ define "title" }}List Transaction{{ end }}
+{{ define "header-title" }}List Transaction{{ end }}
 
 {{ define "content" }}
 <section>
 <div class="container-overlap bg-white">
+  <div class="mda-form-group">
+    <div class="mda-form-control">
+      <select id="partner-id" name="partner-id" check="true" class="form-control select2" tabindex="0">
+      </select>
+      <div class="mda-form-control-line"></div>
+      <label>Program Type</label>
+    </div>
+  </div>
 </div>
 <div class="container-fluid">
   <div class="card">
     <div class="card-heading bg-amber-500">
-      <div class="pull-right">
-        <button type="button" onclick="addVariant()" class="btn btn-default btn-flat btn-flat-icon"><em class="ion-plus-circled"></em></button>
-      </div>
-      <div class="card-title text-center">Program</div>
+      <div class="card-title text-center">Transaction</div>
     </div>
     <div class="card-body">
       <table id="datatable1" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
@@ -21,25 +26,43 @@
           <tr>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_program_name" placeholder="Program Name" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_partner_name" placeholder="Partner Name" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_conversion" placeholder="Conversion" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_voucher_code" placeholder="Voucher Code" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_start_date" placeholder="Start Date" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_voucher_value" placeholder="Voucher Value" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_end_date" placeholder="End Date" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_issued_date" placeholder="Issued" class="form-control input-sm datatable_input_col_search">
+                <div class="mda-form-control-line"></div>
+              </div>
+            </th>
+            <th>
+              <div class="mda-form-control pt0">
+                <input type="text" name="filter_redeemed_date" placeholder="Redeemed" class="form-control input-sm datatable_input_col_search">
+                <div class="mda-form-control-line"></div>
+              </div>
+            </th>
+            <th>
+              <div class="mda-form-control pt0">
+                <input type="text" name="filter_cashout_date" placeholder="Cashout" class="form-control input-sm datatable_input_col_search">
+                <div class="mda-form-control-line"></div>
+              </div>
+            </th>
+            <th>
+              <div class="mda-form-control pt0">
+                <input type="text" name="filter_cashier" placeholder="Cashier" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
@@ -49,35 +72,16 @@
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <input type="text" name="filter_last_modified" placeholder="Last Modified" class="form-control input-sm datatable_input_col_search">
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <input type="text" name="filter_total_voucher" placeholder="Total" class="form-control input-sm datatable_input_col_search">
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <input type="text" name="filter_available_voucher" placeholder="Available" class="form-control input-sm datatable_input_col_search">
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
           </tr>
           <tr role="row">
-            <th>Program Name</th>
-            <th>Conversion</th>
-            <th>Start Date</th>
-            <th>End Date</th>
+            <th>Partner Name</th>
+            <th>Voucher Code</th>
+            <th>Voucher Value</th>
+            <th>Issued Date</th>
+            <th>Redeemed Date</th>
+            <th>Cashout Date</th>
+            <th>Cashier</th>
             <th>Status</th>
-            <th>Last Modified</th>
-            <th>Available</th>
-            <th>Total</th>
-            <th class="center-text"></th>
           </tr>
         </thead>
       </table>
@@ -98,11 +102,13 @@
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.html5.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.print.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/nouislider/distribute/nouislider.js"></script>
-<script type="text/javascript" src="/assets/js/variant/search.js"></script>
+<script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
+<script type="text/javascript" src="/assets/js/report/transaction.js"></script>
 {{ end }}
 
 
 {{ define "stylesheets" }}
+<link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
 <link rel="stylesheet" href="/assets/vendor/sweetalert/dist/sweetalert.css">
 <link rel="stylesheet" href="/assets/vendor/nouislider/distribute/nouislider.min.css">
 <link rel="stylesheet" href="/assets/vendor/datatables/media/css/jquery.dataTables.css">

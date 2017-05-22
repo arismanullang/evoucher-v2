@@ -1,6 +1,7 @@
 package model
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"strconv"
@@ -72,17 +73,21 @@ type (
 		Img_url string `db:"img_url"`
 	}
 	SearchVariant struct {
-		Id            string  `db:"id"`
-		AccountId     string  `db:"account_id"`
-		VariantName   string  `db:"variant_name"`
-		VoucherType   string  `db:"voucher_type"`
-		VoucherPrice  float64 `db:"voucher_price"`
-		DiscountValue float64 `db:"discount_value"`
-		MaxVoucher    float64 `db:"max_quantity_voucher"`
-		ImgUrl        string  `db:"img_url"`
-		StartDate     string  `db:"start_date"`
-		EndDate       string  `db:"end_date"`
-		Voucher       string  `db:"voucher"`
+		Id            string         `db:"id" json:"id"`
+		AccountId     string         `db:"account_id" json:"account_id"`
+		VariantName   string         `db:"variant_name" json:"variant_name"`
+		VoucherType   string         `db:"voucher_type" json:"voucher_type"`
+		VoucherPrice  float64        `db:"voucher_price" json:"voucher_price"`
+		DiscountValue float64        `db:"discount_value" json:"discount_value"`
+		MaxVoucher    float64        `db:"max_quantity_voucher" json:"max_quantity_voucher"`
+		ImgUrl        string         `db:"img_url" json:"image_url"`
+		StartDate     string         `db:"start_date" json:"start_date"`
+		EndDate       string         `db:"end_date" json:"end_date"`
+		Voucher       string         `db:"voucher" json:"voucher"`
+		State         sql.NullString `db:"state" json:"state"`
+		Status        string         `db:"status" json:"status"`
+		CreatedAt     string         `db:"created_at" json:"created_at"`
+		UpdatedAt     sql.NullString `db:"updated_at" json:"updated_at"`
 	}
 	UpdateVariantUsersRequest struct {
 		VariantId string   `db:"variant_id"`
@@ -154,11 +159,11 @@ func CustomQuery(q string) (map[int][]map[string]interface{}, error) {
 	return result, nil
 }
 
-func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
+func InsertVariant(vr VariantReq, fr FormatReq, user string) (string, error) {
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err.Error())
-		return ErrServerInternal
+		return "", ErrServerInternal
 	}
 	defer tx.Rollback()
 
@@ -179,9 +184,10 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 	var res []string
 	if err := tx.Select(&res, tx.Rebind(q), fr.Prefix, fr.Postfix, fr.Body, fr.FormatType, fr.Length, user, StatusCreated); err != nil {
 		fmt.Println(err.Error(), "(insert voucher format)")
-		return ErrServerInternal
+		return "", ErrServerInternal
 	}
 
+	fmt.Println(vr)
 	q2 := `
 		INSERT INTO variants(
 			account_id
@@ -216,7 +222,7 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 	var res2 []string
 	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.VariantName, vr.VariantType, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.StartHour, vr.EndHour, vr.ValidVoucherStart, vr.ValidVoucherEnd, vr.VoucherLifetime, vr.ValidityDays, vr.DiscountValue, vr.MaxQuantityVoucher, vr.MaxUsageVoucher, vr.RedeemtionMethod, vr.ImgUrl, vr.VariantTnc, vr.VariantDescription, user, StatusCreated); err != nil {
 		fmt.Println(err.Error(), "(insert variant)")
-		return ErrServerInternal
+		return "", ErrServerInternal
 	}
 
 	if len(vr.ValidPartners) > 0 {
@@ -235,7 +241,7 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 			if err != nil {
 				fmt.Println("data :", res2[0], v, user)
 				fmt.Println(err.Error(), "(insert variant_partner)")
-				return ErrServerInternal
+				return "", ErrServerInternal
 			}
 		}
 	}
@@ -243,9 +249,9 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) error {
 	if err := tx.Commit(); err != nil {
 
 		fmt.Println(err.Error())
-		return ErrServerInternal
+		return "", ErrServerInternal
 	}
-	return nil
+	return res2[0], nil
 }
 
 func UpdateVariant(d Variant) error {
@@ -505,7 +511,11 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 			, va.img_url
 			, va.start_date
 			, va.end_date
+			, va.created_at
+			, va.updated_at
 			, count (vo.id) as voucher
+			, va.status
+			, vo.state
 		FROM
 			variants as va
 		LEFT JOIN
@@ -514,15 +524,15 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 			va.id = vo.variant_id
 		WHERE
 			va.account_id = ?
-			AND va.status = ?
 		GROUP BY
-			va.id
+			va.id, vo.state
 		ORDER BY
-			va.end_date DESC
+			va.end_date ASC
 	`
 
 	var resv []SearchVariant
-	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), accountId); err != nil {
+		fmt.Println(err.Error())
 		return resv, ErrServerInternal
 	}
 	if len(resv) < 1 {

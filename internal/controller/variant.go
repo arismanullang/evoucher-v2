@@ -417,6 +417,15 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Panic(err)
 		}
+		fmt.Println(rd.ValidVoucherStart)
+		tvs, err := time.Parse("01/02/2006", rd.ValidVoucherStart)
+		if err != nil {
+			log.Panic(err)
+		}
+		tve, err := time.Parse("01/02/2006", rd.ValidVoucherEnd)
+		if err != nil {
+			log.Panic(err)
+		}
 
 		vr := model.VariantReq{
 			AccountId:          accountId,
@@ -433,8 +442,8 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			EndDate:            te.Format("2006-01-02 15:04:05.000"),
 			StartHour:          rd.StartHour,
 			EndHour:            rd.EndHour,
-			ValidVoucherStart:  rd.ValidVoucherStart,
-			ValidVoucherEnd:    rd.ValidVoucherEnd,
+			ValidVoucherStart:  tvs.Format("2006-01-02 15:04:05.000"),
+			ValidVoucherEnd:    tve.Format("2006-01-02 15:04:05.000"),
 			VoucherLifetime:    rd.VoucherLifetime,
 			ValidityDays:       rd.ValidityDays,
 			ImgUrl:             rd.ImgUrl,
@@ -452,13 +461,14 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("variant insert ", vr)
 		fmt.Println("voucher format insert ", fr)
 		fmt.Println("user ", user)
-		if err := model.InsertVariant(vr, fr, user); err != nil {
+		if id, err := model.InsertVariant(vr, fr, user); err != nil {
 			//log.Panic(err)
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
 			res.AddError(its(status), errTitle, err.Error(), "Create Variant")
+		} else {
+			res = NewResponse(id)
 		}
-
 	}
 
 	render.JSON(w, res, status)

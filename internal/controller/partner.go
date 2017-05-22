@@ -24,6 +24,8 @@ type (
 		ID           string `json:"id"`
 		PartnerName  string `json:"partner_name"`
 		SerialNumber string `json:"serial_number"`
+		Tag          string `json:"tag"`
+		Description  string `json:"description"`
 	}
 	PartnerResponseDetails []PartnerResponse
 	PartnerResponse        struct {
@@ -31,6 +33,12 @@ type (
 		SerialNumber string `json:"serial_number"`
 		VariantID    string `json:"variant_id"`
 		CreatedBy    string `json:"created_by"`
+	}
+	Tag struct {
+		Value string `json:"tag"`
+	}
+	Tags struct {
+		Value []string `json:"tags"`
 	}
 )
 
@@ -256,6 +264,14 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 				String: user,
 				Valid:  true,
 			},
+			Tag: sql.NullString{
+				String: rd.Tag,
+				Valid:  true,
+			},
+			Description: sql.NullString{
+				String: rd.Description,
+				Valid:  true,
+			},
 		}
 		err := model.InsertPartner(param)
 		if err != nil {
@@ -267,6 +283,125 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 			}
 
 			res.AddError(its(status), errorTitle, err.Error(), "Add Partner")
+		}
+	}
+	render.JSON(w, res, status)
+}
+
+// ------------------------------------------------------------------------------
+// Tag
+
+func GetAllTags(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusOK
+	res := NewResponse(nil)
+	tag, err := model.FindAllTags()
+	if err != nil {
+		fmt.Println(err.Error())
+		status = http.StatusInternalServerError
+		errorTitle := model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errorTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errorTitle, err.Error(), "Get Tags")
+	} else {
+		res = NewResponse(tag)
+	}
+
+	render.JSON(w, res, status)
+}
+
+func AddTag(w http.ResponseWriter, r *http.Request) {
+	fmt.Print("Add")
+	var rd Tag
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	errorTitle := model.ErrCodeInvalidToken
+	res := NewResponse(nil)
+	res.AddError(its(status), errorTitle, err.Error(), "Add Tag")
+
+	fmt.Println("Check Session")
+	_, user, _, valid := AuthToken(w, r)
+	if valid {
+		status = http.StatusCreated
+		err := model.InsertTag(rd.Value, user)
+		if err != nil {
+			status = http.StatusInternalServerError
+			errorTitle = model.ErrCodeInternalError
+			if err == model.ErrResourceNotFound {
+				status = http.StatusNotFound
+				errorTitle = model.ErrCodeResourceNotFound
+			}
+
+			res.AddError(its(status), errorTitle, err.Error(), "Add Tag")
+		}
+	}
+	render.JSON(w, res, status)
+}
+
+func DeleteTag(w http.ResponseWriter, r *http.Request) {
+	id := bone.GetValue(r, "id")
+
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	errorTitle := model.ErrCodeInvalidToken
+	res := NewResponse(nil)
+	res.AddError(its(status), errorTitle, err.Error(), "Get Tag")
+
+	_, user, _, valid := AuthToken(w, r)
+	if valid {
+		status = http.StatusOK
+		err := model.DeleteTag(id, user)
+		if err != nil {
+			status = http.StatusInternalServerError
+			errorTitle = model.ErrCodeInternalError
+			if err == model.ErrResourceNotFound {
+				status = http.StatusNotFound
+				errorTitle = model.ErrCodeResourceNotFound
+			}
+
+			res.AddError(its(status), errorTitle, err.Error(), "Get tag")
+		} else {
+			res = NewResponse("Success")
+		}
+	}
+	render.JSON(w, res, status)
+}
+
+func DeleteTagBulk(w http.ResponseWriter, r *http.Request) {
+	var rd Tags
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	errorTitle := model.ErrCodeInvalidToken
+	res := NewResponse(nil)
+	res.AddError(its(status), errorTitle, err.Error(), "Get Tag")
+
+	_, user, _, valid := AuthToken(w, r)
+	if valid {
+		status = http.StatusOK
+		err := model.DeleteTagBulk(rd.Value, user)
+		if err != nil {
+			status = http.StatusInternalServerError
+			errorTitle = model.ErrCodeInternalError
+			if err == model.ErrResourceNotFound {
+				status = http.StatusNotFound
+				errorTitle = model.ErrCodeResourceNotFound
+			}
+
+			res.AddError(its(status), errorTitle, err.Error(), "Get tag")
+		} else {
+			res = NewResponse("Success")
 		}
 	}
 	render.JSON(w, res, status)

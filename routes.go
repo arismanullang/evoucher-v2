@@ -18,6 +18,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/variant/:page", viewVariant)
 	r.GetFunc("/user/:page", viewUser)
 	r.GetFunc("/partner/:page", viewPartner)
+	r.GetFunc("/tag/:page", viewTag)
 	r.GetFunc("/voucher/:page", viewVoucher)
 	r.GetFunc("/report/:page", viewReport)
 	r.GetFunc("/", login)
@@ -36,7 +37,6 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/api/get/totalVariant", controller.GetTotalVariant)
 	r.GetFunc("/v1/api/get/variantByDate", controller.GetVariantDetailsByDate)
 	r.GetFunc("/v1/api/get/variantDetails/custom", controller.GetVariantDetailsCustom)
-	r.PostFunc("/file/upload", controller.UploadFile)
 
 	r.GetFunc("/v1/api/get/variant/:id", controller.GetVariantDetailsById)
 	r.PostFunc("/v1/update/variant/:id", controller.UpdateVariant)
@@ -49,6 +49,8 @@ func setRoutes() http.Handler {
 	r.GetFunc("/transaction/:id/", controller.GetTransaction)
 	r.PostFunc("/transaction/:id/update", controller.UpdateTransaction)
 	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)
+	r.GetFunc("/v1/get/transaction", controller.GetAllTransactions)
+	r.GetFunc("/v1/get/transaction/partner", controller.GetAllTransactionsByPartner)
 
 	//user
 	r.PostFunc("/v1/create/user", controller.RegisterUser)
@@ -59,6 +61,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/api/get/userDetails", controller.GetUserDetails)
 	r.GetFunc("/v1/api/mail", controller.ForgotPassword)
 	r.PostFunc("/v1/password", controller.UpdatePassword)
+	r.PostFunc("/v1/upload/user", controller.InsertBroadcastUser)
 
 	//partner
 	r.GetFunc("/v1/get/partner", controller.GetAllPartners)
@@ -67,6 +70,11 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/delete/partner/:id", controller.DeletePartner)
 	r.GetFunc("/v1/api/get/partner", controller.GetAllPartnersCustomParam)
 	r.PostFunc("/v1/create/partner", controller.AddPartner)
+
+	r.GetFunc("/v1/get/tag", controller.GetAllTags)
+	r.PostFunc("/v1/create/tag", controller.AddTag)
+	r.GetFunc("/v1/delete/tag/:id", controller.DeleteTag)
+	r.PostFunc("/v1/delete/tag", controller.DeleteTagBulk)
 
 	//account
 	r.GetFunc("/v1/api/get/account", controller.GetAccount)
@@ -178,6 +186,18 @@ func viewPartner(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func viewTag(w http.ResponseWriter, r *http.Request) {
+	page := bone.GetValue(r, "page")
+
+	if page == "create" {
+		render.FileInLayout(w, "layout.html", "tag/create.html", nil)
+	} else if page == "search" {
+		render.FileInLayout(w, "layout.html", "tag/search.html", nil)
+	} else if page == "" || page == "index" {
+		render.FileInLayout(w, "layout.html", "tag/index.html", nil)
+	}
+}
+
 func viewVoucher(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
@@ -199,6 +219,8 @@ func viewReport(w http.ResponseWriter, r *http.Request) {
 
 	if page == "variant" {
 		render.FileInLayout(w, "layout.html", "report/variant.html", nil)
+	} else if page == "transaction" {
+		render.FileInLayout(w, "layout.html", "report/transaction.html", nil)
 	} else if page == "" || page == "index" {
 		render.FileInLayout(w, "layout.html", "report/test.html", nil)
 	}

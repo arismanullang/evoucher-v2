@@ -13,6 +13,12 @@ type (
 		SerialNumber sql.NullString `db:"serial_number" json:"serial_number"`
 		CreatedBy    sql.NullString `db:"created_by" json:"created_by"`
 		VariantID    string         `db:"variant_id" json:"variant_id"`
+		Tag          sql.NullString `db:"tag" json:"tag"`
+		Description  sql.NullString `db:"description" json:"description"`
+	}
+
+	Tag struct {
+		Value string `db:"tag_value" json:"tag_value"`
 	}
 )
 
@@ -36,13 +42,15 @@ func InsertPartner(p Partner) error {
 			INSERT INTO partners(
 				partner_name
 				, serial_number
+				, tag
+				, description
 				, created_by
 				, status
 			)
-			VALUES (?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q), p.PartnerName, p.SerialNumber, p.CreatedBy, StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q), p.PartnerName, p.SerialNumber, p.Tag, p.Description, p.CreatedBy, StatusCreated)
 		if err != nil {
 			fmt.Println(err.Error())
 			return ErrServerInternal
@@ -83,6 +91,8 @@ func FindAllPartners() ([]Partner, error) {
 			id
 			, partner_name
 			, serial_number
+			, tag
+			, description
 		FROM partners
 		WHERE status = ?
 	`
@@ -131,6 +141,8 @@ func FindPartnerDetails(param string) (Partner, error) {
 		SELECT
 			partner_name
 			, serial_number
+			, tag
+			, description
 		FROM
 			partners
 		WHERE 	id = ?
@@ -243,4 +255,123 @@ func FindVariantPartner(param map[string]string) ([]Partner, error) {
 		return []Partner{}, ErrResourceNotFound
 	}
 	return resv, nil
+}
+
+// ------------------------------------------------------------------------------
+// Tag
+
+func FindAllTags() ([]string, error) {
+	fmt.Println("Select partner")
+	q := `
+		SELECT
+			tag_value
+		FROM tags
+		WHERE status = ?
+	`
+
+	var resv []string
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+		fmt.Println(err.Error())
+		return []string{}, ErrServerInternal
+	}
+	if len(resv) < 1 {
+		return []string{}, ErrResourceNotFound
+	}
+
+	return resv, nil
+}
+
+func InsertTag(tag, user string) error {
+	fmt.Println("Add")
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		INSERT INTO tags(
+			tag_value
+			, created_by
+			, status
+		)
+		VALUES (?, ?, ?)
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), tag, user, StatusCreated)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
+}
+
+func DeleteTag(tagValue, user string) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE tags
+		SET
+			updated_by = ?
+			, updated_at = ?
+			, status = ?
+		WHERE
+			tag_value = ?;
+	`
+	_, err = tx.Exec(tx.Rebind(q), user, time.Now(), StatusDeleted, tagValue)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
+}
+
+func DeleteTagBulk(tagValue []string, user string) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE tags
+		SET
+			updated_by = ?
+			, updated_at = ?
+			, status = ?
+		WHERE
+			tag_value = ?
+	`
+	for i := 1; i < len(tagValue); i++ {
+		q += " OR tag_value = '" + tagValue[i] + "'"
+	}
+	fmt.Println(q)
+	_, err = tx.Exec(tx.Rebind(q), user, time.Now(), StatusDeleted, tagValue[0])
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
 }

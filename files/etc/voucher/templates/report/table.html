@@ -1,13 +1,13 @@
 {{ template "layout" . }}
 
-{{ define "title" }}List Program{{ end }}
-{{ define "header-title" }}List Program{{ end }}
+{{ define "title" }}Table Report{{ end }}
+{{ define "header-title" }}Table Report{{ end }}
 
 {{ define "content" }}
 <section>
 <div class="container-overlap bg-white">
 </div>
-<div class="container-fluid">
+<div class="container container-md">
   <div class="card">
     <div class="card-heading bg-amber-500">
       <div class="pull-right">
@@ -27,56 +27,35 @@
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_conversion" placeholder="Conversion" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_convention_rate" placeholder="Conversion Rate" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_start_date" placeholder="Start Date" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_voucher_value" placeholder="Voucher Value" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_end_date" placeholder="End Date" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_remaining_voucher" placeholder="Remaining Voucher" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_status" placeholder="Status" class="form-control input-sm datatable_input_col_search">
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <input type="text" name="filter_last_modified" placeholder="Last Modified" class="form-control input-sm datatable_input_col_search">
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <input type="text" name="filter_total_voucher" placeholder="Total" class="form-control input-sm datatable_input_col_search">
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <input type="text" name="filter_available_voucher" placeholder="Available" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_period" placeholder="Period" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
           </tr>
           <tr role="row">
+            <th>Id</th>
             <th>Program Name</th>
-            <th>Conversion</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Status</th>
-            <th>Last Modified</th>
-            <th>Available</th>
-            <th>Total</th>
+            <th>Voucher Price</th>
+            <th>Voucher Value</th>
+            <th>Voucher Remains</th>
             <th class="center-text"></th>
           </tr>
         </thead>
