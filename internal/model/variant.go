@@ -586,7 +586,7 @@ func FindVariantsCustomParam(param map[string]string) ([]SearchVariant, error) {
 	var resv []SearchVariant
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
 		fmt.Println(err.Error())
-		return []SearchVariant{}, ErrServerInternal
+		return []SearchVariant{}, err
 	}
 	if len(resv) < 1 {
 		return []SearchVariant{}, ErrResourceNotFound
@@ -626,15 +626,15 @@ func FindVariantDetailsById(id string) (Variant, error) {
 		FROM
 			variants
 		WHERE
-			id = ?
-			AND status = ?
+			status = ?
 	`
 
 	var resv []Variant
-	if err := db.Select(&resv, db.Rebind(q), id, StatusCreated); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
 		fmt.Println(err.Error())
 		return Variant{}, ErrServerInternal
 	}
+	fmt.Println("variant data :",id , StatusCreated , resv)
 	if len(resv) < 1 {
 		return Variant{}, ErrResourceNotFound
 	}

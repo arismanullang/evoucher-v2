@@ -120,3 +120,16 @@ func stringInSlice(str string, list []string) bool {
 	}
 	return false
 }
+
+func StrEncode(s string) string{
+	base64.StdEncoding.DecodedLen(32)
+	return base64.StdEncoding.EncodeToString([]byte(s))
+}
+
+func StrDecode(s string) string{
+	data, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		log.Panic(err)
+	}
+	return string(data)
+}
