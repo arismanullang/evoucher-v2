@@ -678,6 +678,11 @@ func CheckVariant(rm, id string, qty int) (bool, error) {
 
 func validdays(s string) bool {
 	ret := false
+
+	if s == "" || strings.ToUpper(s) == "ALL" {
+		return true
+	}
+
 	vd := strings.Split(s, ";")
 
 	if s == "all" {

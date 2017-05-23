@@ -65,7 +65,7 @@ const (
 	ErrMessageNilVariant               string = "Account doesn't have any Variant."
 	ErrMessageNilPartner               string = " doesn't have any Partner."
 	ErrMessageOTPFailed                string = "Doesn't match OTP"
-	ErrMessageInvalidQr                string = "Invalid parner QR"
+	ErrMessageInvalidQr                string = "Invalid partner QR"
 	ErrMessageInvalidRedeemMethod      string = "Invalid Redeemtion Method"
 	ErrMessageInvalidUser              string = "Invalid Username and Password."
 	ErrMessageRedeemNotValidDay        string = "Voucher cannot be used today."
