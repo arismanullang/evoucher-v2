@@ -19,6 +19,9 @@
 			  <h1>
 				  SEDAYU ONE E-VOUCHER
 			  </h1>
+        <h3>
+          Kepada <span id="holdername"></span>
+        </h3>
 		  </div>
 		  <div class="col-lg-12 padding5">
 			  <img src="/assets/img/voucher_50.000-02.jpg" class="img-responsive center-block">
@@ -29,7 +32,7 @@
 				  <div class="panel panel-default">
 					  <div class="panel-heading">
 						  <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">REDEEM VOUCHER (<span id="holdername"></span>)</a>
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">REDEEM VOUCHER</a>
 						  </h4>
 					  </div>
 					  <div id="collapseOne" class="panel-collapse collapse in">
@@ -39,9 +42,9 @@
 									  <div class="col-lg-3">
 										  <div class="form-row">
 											  <label>
-												  <select name="dropdown" class="select2">
+												  <select id="tenant" name="dropdown" class="select2">
 													  <option>Pilih Tenant</option>
-													  <option value="">Shigeru</option>
+													  <option value="ETjIRKrO">Shigeru</option>
 													  <option value="">Pojok Minuman</option>
 													  <option value="">Coffee Shop</option>
 												  </select>
@@ -51,13 +54,15 @@
 
 									  <div class="col-lg-3">
 										  <div class="form-row">
-											  <p class="form-elem pd-top10">----</p>
+											  <p id="challange-code" class="form-elem pd-top10">----</p>
 										  </div>
 									  </div>
 
 									  <div class="col-lg-3">
 										  <div class="form-row">
-											  <input type="text" name="token" class="form-elem" placeholder="Form Response" style="color: #5f5f5f">
+											  <input id="response-code" type="text" name="token" class="form-elem" placeholder="Form Response" style="color: #5f5f5f">
+											  <input id="variant-id" type="hidden" name="variant-id">
+											  <input id="discount-value" type="hidden" name="discount-value">
 										  </div>
 									  </div>
 
