@@ -347,35 +347,35 @@ func FindAllTransactionByVariant(variantId string) ([]TransactionList, error) {
 	return resv, nil
 }
 
-func FindAllTransactionByPartner(partnerId, startDate, endDate string) ([]TransactionList, error) {
+func FindAllTransactionByPartner(accountId, partnerId string) ([]TransactionList, error) {
 	q := `
 		SELECT
-			t.transaction_code, va.variant_name, Count(dt.voucher_id) as voucher, vo.discount_value, p.partner_name, t.created_at, t.created_by
-		FROM
-			transactions as t
-		JOIN
-			transaction_details as dt
-			ON t.id = dt.transaction_id
-		JOIN
-			vouchers as vo
-			ON dt.voucher_id = vo.id
-		JOIN
-			variants as va
-			ON va.id = vo.variant_id
-		JOIN
-			partners as p
-			ON p.id = t.partner_id
+			p.partner_name, dt.voucher_id as voucher, vo.discount_value, va.created_at as issued, t.created_at as redeemed, vo.updated_at as cashout, u.username, vo.state
+		FROM transactions as t
+		JOIN transaction_details as dt
+		ON
+			t.id = dt.transaction_id
+		JOIN vouchers as vo
+		ON
+			dt.voucher_id = vo.id
+		JOIN users as u
+		ON
+			vo.created_by = u.id
+		JOIN variants as va
+		ON
+			va.id = vo.variant_id
+		JOIN partners as p
+		ON
+			p.id = t.partner_id
 		WHERE
 			t.status = ?
-			AND p.id = ?
-			AND (t.created_at > ? AND t.created_at < ?)
-
-		GROUP BY 1, 2, 4, 5, 6, 7
+			AND t.account_id = ?
+			AND t.partner_id = ?
 		ORDER BY t.created_at DESC;
 	`
 
 	var resv []TransactionList
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated, partnerId, startDate, endDate); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId, partnerId); err != nil {
 		fmt.Println(err.Error())
 		return resv, ErrServerInternal
 	}

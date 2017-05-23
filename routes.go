@@ -21,6 +21,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/tag/:page", viewTag)
 	r.GetFunc("/voucher/:page", viewVoucher)
 	r.GetFunc("/report/:page", viewReport)
+	r.GetFunc("/public/:page", viewPublic)
 	r.GetFunc("/", login)
 	r.PostFunc("/v1/query", controller.CustomQuery)
 
@@ -37,7 +38,6 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/api/get/totalVariant", controller.GetTotalVariant)
 	r.GetFunc("/v1/api/get/variantByDate", controller.GetVariantDetailsByDate)
 	r.GetFunc("/v1/api/get/variantDetails/custom", controller.GetVariantDetailsCustom)
-	r.PostFunc("/file/upload", controller.UploadFile)
 
 	r.GetFunc("/v1/api/get/variant/:id", controller.GetVariantDetailsById)
 	r.PostFunc("/v1/update/variant/:id", controller.UpdateVariant)
@@ -46,11 +46,12 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/delete/variant/:id", controller.DeleteVariant)
 
 	//transaction
-	r.PostFunc("/v1/transaction/redeem", controller.CreateTransaction)
+	r.PostFunc("/v1/transaction/redeem", controller.MobileCreateTransaction)
 	r.GetFunc("/transaction/:id/", controller.GetTransaction)
 	r.PostFunc("/transaction/:id/update", controller.UpdateTransaction)
 	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)
 	r.GetFunc("/v1/get/transaction", controller.GetAllTransactions)
+	r.GetFunc("/v1/get/transaction/partner", controller.GetAllTransactionsByPartner)
 
 	//user
 	r.PostFunc("/v1/create/user", controller.RegisterUser)
@@ -61,6 +62,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/api/get/userDetails", controller.GetUserDetails)
 	r.GetFunc("/v1/api/mail", controller.ForgotPassword)
 	r.PostFunc("/v1/password", controller.UpdatePassword)
+	r.PostFunc("/v1/upload/user", controller.InsertBroadcastUser)
 
 	//partner
 	r.GetFunc("/v1/get/partner", controller.GetAllPartners)
@@ -92,10 +94,16 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/vouchers/:id", controller.GetVoucherDetails)
 	// r.PostFunc("/v1/voucher/delete", controller.DeleteVoucher)
 	// r.PostFunc("/v1/voucher/pay", controller.PayVoucher)
-	r.PostFunc("/v1/voucher/generate/bulk", controller.GenerateVoucher)
+	r.GetFunc("/v1/voucher/generate/bulk", controller.GenerateVoucherBulk)
 	r.PostFunc("/v1/voucher/generate/single", controller.GenerateVoucherOnDemand)
-	r.GetFunc("/v1/voucher/redeem", controller.RedeemPage)
+	r.GetFunc("/v1/voucher/link", controller.GetVoucherlink)
 
+	//public
+	r.GetFunc("/v1/public/challenge", controller.GetChallenge)
+	r.GetFunc("/v1/public/redeem/profile", controller.GetRedeemData)
+	r.PostFunc("/v1/public/transaction", controller.WebCreateTransaction)
+
+	//
 	r.GetFunc("/v1/token", controller.GetToken)
 	r.GetFunc("/v1/token/check", controller.CheckToken)
 
@@ -220,6 +228,20 @@ func viewReport(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "report/transaction.html", nil)
 	} else if page == "" || page == "index" {
 		render.FileInLayout(w, "layout.html", "report/test.html", nil)
+	}
+}
+
+func viewPublic(w http.ResponseWriter, r *http.Request) {
+	page := bone.GetValue(r, "page")
+
+	if page == "fail" {
+		render.File(w, "public/fail.html", nil)
+	} else if page == "success" {
+		render.File(w, "public/success.html", nil)
+	} else if page == "redeem" {
+		render.File(w, "public/index.html", nil)
+	} else if page == "" || page == "index" {
+		render.File(w, "public/index.html", nil)
 	}
 }
 

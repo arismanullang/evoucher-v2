@@ -392,3 +392,42 @@ func FindAllRole() ([]Role, error) {
 
 	return resv, nil
 }
+
+// Broadcast User
+
+func InsertBroadcastUser(variantId, user string, target, description []string) error {
+	fmt.Println("Add")
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err)
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+	q := ""
+	for i, v := range target {
+		q = q + `
+			INSERT INTO broadcast_users(
+				variant_id
+				, broadcast_target
+				, description
+				, state
+				, created_by
+				, status
+			)
+			VALUES ('` + variantId + `', '` + v + `', '` + description[i] + `', 'pending', '` + user + `', 'created');
+		`
+	}
+	fmt.Println(q)
+	_, err = tx.Exec(tx.Rebind(q))
+	if err != nil {
+		fmt.Println(err)
+		return ErrServerInternal
+	}
+
+	if err = tx.Commit(); err != nil {
+
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
+}

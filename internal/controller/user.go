@@ -1,10 +1,14 @@
 package controller
 
 import (
+	"bufio"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	//"github.com/go-zoo/bone"
@@ -51,6 +55,64 @@ type (
 		Password string `json:"password"`
 	}
 )
+
+func InsertBroadcastUser(w http.ResponseWriter, r *http.Request) {
+	var listTarget []string
+	var listDescription []string
+	variantId := r.FormValue("variant-id")
+
+	r.ParseMultipartForm(32 << 20)
+	f, _, err := r.FormFile("list-target")
+	if err == http.ErrMissingFile {
+		err = model.ErrResourceNotFound
+	}
+	if err != nil {
+		err = model.ErrServerInternal
+	}
+	//	fmt.Println(r)
+	fmt.Println("f : ")
+	fmt.Println(f)
+
+	read := csv.NewReader(bufio.NewReader(f))
+	for {
+		record, err := read.Read()
+		// Stop at EOF.
+		if err == io.EOF {
+			break
+		}
+
+		for value := range record {
+			temp := strings.Split(record[value], ";")
+			listTarget = append(listTarget, temp[1])
+			listDescription = append(listDescription, temp[2])
+			fmt.Println(temp)
+		}
+	}
+
+	res := NewResponse(nil)
+	status := http.StatusUnauthorized
+	err = model.ErrTokenNotFound
+	errTitle := model.ErrCodeInvalidToken
+	res.AddError(its(status), errTitle, err.Error(), "Insert Broadcast")
+	_, user, _, valid := AuthToken(w, r)
+	if valid {
+		status = http.StatusCreated
+
+		if err := model.InsertBroadcastUser(variantId, user, listTarget, listDescription); err != nil {
+			//log.Panic(err)
+			status = http.StatusInternalServerError
+			errTitle = model.ErrCodeInternalError
+			res.AddError(its(status), errTitle, err.Error(), "Insert Broadcast")
+		} else {
+			res = NewResponse(nil)
+
+		}
+
+	}
+
+	render.JSON(w, res, status)
+
+}
 
 func FindUserByRole(w http.ResponseWriter, r *http.Request) {
 	role := r.FormValue("role")
