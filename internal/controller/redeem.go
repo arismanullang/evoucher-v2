@@ -68,6 +68,10 @@ func GetRedeemData(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
+	vcr := make([]VoucerResponse,1)
+	vcr[0].VoucherID = voucher.VoucherData[0].ID
+	vcr[0].VoucherNo =voucher.VoucherData[0].VoucherCode
+	vcr[0].State = voucher.VoucherData[0].State
 
 	d := GetVoucherOfVariatListDetails{
 		VariantID:          variant.Id,
@@ -88,6 +92,7 @@ func GetRedeemData(w http.ResponseWriter, r *http.Request) {
 		State: 		    voucher.VoucherData[0].State,
 		Holder:  	    voucher.VoucherData[0].Holder.String,
 		HolderDescription:  voucher.VoucherData[0].HolderDescription.String,
+		Voucher:	    vcr,
 	}
 
 	d.Partners = make([]Partner, len(partner))
