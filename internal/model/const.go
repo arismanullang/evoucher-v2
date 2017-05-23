@@ -107,6 +107,12 @@ const (
 	GCS_PROJECT_ID string = "shared-project-159515"
 	PublicURL      string = "https://storage.googleapis.com/%s/%s"
 
-	//Voucber link
+	//Voucher link
 	VOUCHER_URL string = "https://voucher.elys.id/v1/redeem"
+
+	//Challenge code config
+	CHALLENGE_FORMAT string = "Numerals"
+	CHALLENGE_LENGTH int = 4
+	TIMEOUT_DURATION int = 120 //in Second
+
 )
