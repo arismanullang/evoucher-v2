@@ -122,7 +122,7 @@ function generateLink() {
 			console.log(data);
 			if(data.data == "success"){
 				$.ajax({
-					url: '/v1/voucher/link?variant='+id,
+					url: '/v1/voucher/link?variant='+id+"&token="+token,
 					type: 'get',
 					success: function (data) {
 						console.log(data);

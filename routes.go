@@ -234,6 +234,8 @@ func viewPublic(w http.ResponseWriter, r *http.Request) {
 		render.File(w, "public/fail.html", nil)
 	} else if page == "success" {
 		render.File(w, "public/success.html", nil)
+	} else if page == "redeem" {
+		render.File(w, "public/index.html", nil)
 	} else if page == "" || page == "index" {
 		render.File(w, "public/index.html", nil)
 	}
