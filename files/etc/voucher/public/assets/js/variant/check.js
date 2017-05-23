@@ -93,15 +93,21 @@ function getVariant(id, voucher) {
           var period = startDate + " to " + endDate;
 
           var remainingVoucher = result.max_quantity_voucher;
-          if( voucher != null)
-            remainingVoucher = result.max_quantity_voucher - voucher;
+	  var maxVoucher = result.max_quantity_voucher;
+          if( voucher != null){
+			remainingVoucher = result.max_quantity_voucher - voucher;
+	  	if(result.variant_type == 'bulk'){
+			remainingVoucher = 0;
+			maxVoucher = voucher;
+		}
+	  }
 
           $('#variantName').html(result.variant_name);
           $('#variantDescription').html(result.variant_description);
           $('#variantType').html(result.variant_type);
           $('#voucherType').html(result.voucher_type);
           $('#conversionRate').html(result.voucher_price);
-          $('#maxQuantityVoucher').html(result.max_quantity_voucher);
+          $('#maxQuantityVoucher').html(maxVoucher);
           $('#voucherValue').html(result.discount_value);
           $('#period').html(period);
           $('#variantTnc').html(result.variant_tnc);
@@ -111,24 +117,26 @@ function getVariant(id, voucher) {
     });
 }
 
-function generateLink() {
+function generateVoucher() {
 	var id = $('#variant-id').val();
 	console.log("Get Variant Data");
-	var arrData = [];
 	$.ajax({
 		url: '/v1/voucher/generate/bulk?variant='+id+'&token='+token,
 		type: 'get',
 		success: function (data) {
 			console.log(data);
-			if(data.data == "success"){
-				$.ajax({
-					url: '/v1/voucher/link?variant='+id+"&token="+token,
-					type: 'get',
-					success: function (data) {
-						console.log(data);
-					}
-				});
-			}
+			alert("Success");
+		}
+	});
+}
+
+function generateLink() {
+	var id = $('#variant-id').val();
+	$.ajax({
+		url: '/v1/voucher/link?variant='+id+"&token="+token,
+		type: 'get',
+		success: function (data) {
+			console.log(data);
 		}
 	});
 }

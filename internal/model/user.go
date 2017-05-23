@@ -409,7 +409,7 @@ func InsertBroadcastUser(variantId, user string, target, description []string) e
 			INSERT INTO broadcast_users(
 				variant_id
 				, broadcast_target
-				, broadcast_description
+				, description
 				, state
 				, created_by
 				, status

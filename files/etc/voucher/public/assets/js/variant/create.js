@@ -180,6 +180,11 @@ function send() {
   }
 
   $('input[check="true"]').each(function() {
+    if($("#variant-type").val() == "bulk"){
+    	if(this.getAttribute("id") == "max-quantity-voucher" || this.getAttribute("id") == "max-usage-voucher" || this.getAttribute("id") == "voucher-price"){
+		return true;
+	}
+    }
     if($(this).val() == ""){
       $(this).addClass("error");
       $(this).parent().closest('div').addClass("input-error");
@@ -260,12 +265,12 @@ function send() {
 				       data: targets,
 				       success: function(data){
 					       console.log(data);
+					       alert("Program created.");
+					       window.location = "/variant/search";
 				       }
 			       });
 
 		       }
-		       alert("Program created.");
-		       window.location = "/variant/search";
 	       }
          });
        }
