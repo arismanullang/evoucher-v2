@@ -108,5 +108,5 @@ const (
 	PublicURL      string = "https://storage.googleapis.com/%s/%s"
 
 	//Voucber link
-	VOUCHER_URL string = "https://voucher.elys.id/redeem"
+	VOUCHER_URL string = "https://voucher.elys.id/v1/redeem"
 )

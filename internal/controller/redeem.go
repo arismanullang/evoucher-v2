@@ -14,9 +14,9 @@ func RedeemPage(w http.ResponseWriter, r *http.Request) {
 func GetRedeemData(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	res := NewResponse(nil)
-	VcID := r.FormValue("key")
+	VcID := r.FormValue("x")
 
-	voucher, err := model.FindVoucher(map[string]string{"id": VcID})
+	voucher, err := model.FindVoucher(map[string]string{"id": StrDecode(VcID)})
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidHolder, "voucher")
