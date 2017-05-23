@@ -84,8 +84,11 @@ type (
 		CreatedAt          string           `json:"created_at"`
 		Used               int              `json:"used"`
 		State 		   string	    `json:"state"`
+		Holder		   string	    `json:"holder"`
+		HolderDescription  string	    `json:"holder_description"`
 		Partners           []Partner        `json:"Partners"`
 		Voucher            []VoucerResponse `json:"Vouchers"`
+
 	}
 
 	// VoucerResponse represent list of voucher data
