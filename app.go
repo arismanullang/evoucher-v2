@@ -28,7 +28,7 @@ var (
 
 	fversion = flag.Bool("version", false, "print the version.")
 	fconfig  = flag.String("config", "files/etc/voucher/config.yml", "set the config file path.")
-	//fconfig  = flag.String("config", "files/etc/ocra/config.yml", "set the config file path.")
+	//fconfig  = flag.String("config", "/etc/evoucher/config.yml", "set the config file path.")
 	fprofile = flag.String("profile", "", "enable profiler, value either one of [cpu, mem, block].")
 
 	configDir = ""

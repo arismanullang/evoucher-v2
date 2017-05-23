@@ -51,6 +51,12 @@
 			"revisionTime": "2017-04-17T19:34:08Z"
 		},
 		{
+			"checksumSHA1": "nd8R/vvAuXAtxUfdldWCggnrd5M=",
+			"path": "github.com/dghubble/sling",
+			"revision": "bbfb8293bd33a6baad33d718aacf66ef73a29f30",
+			"revisionTime": "2017-03-22T05:06:59Z"
+		},
+		{
 			"checksumSHA1": "2UmMbNHc8FBr98mJFN1k8ISOIHk=",
 			"path": "github.com/garyburd/redigo/internal",
 			"revision": "0d253a66e6e1349f4581d6d2b300ee434ee2da9f",
@@ -79,6 +85,12 @@
 			"path": "github.com/golang/protobuf/ptypes/any",
 			"revision": "2bba0603135d7d7f5cb73b2125beeda19c09f4ef",
 			"revisionTime": "2017-03-31T03:19:02Z"
+		},
+		{
+			"checksumSHA1": "p3IB18uJRs4dL2K5yx24MrLYE9A=",
+			"path": "github.com/google/go-querystring/query",
+			"revision": "53e6ce116135b80d037921a7fdd5138cf32d7a8a",
+			"revisionTime": "2017-01-11T10:11:55Z"
 		},
 		{
 			"checksumSHA1": "0x0CoHbgoWngucjKSDPFodeL8ek=",

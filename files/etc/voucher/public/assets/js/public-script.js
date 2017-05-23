@@ -1,13 +1,17 @@
 $( document ).ready(function() {
 
+	var x = findGetParameter('x')+"=";
+	console.log(x);
+	getProfile(x);
 });
 
-function getProfile(key){
+function getProfile(x){
 	$.ajax({
-		url: '/v1/redeem/profile?key='+key,
+		url: '/v1/public/redeem/profile?x='+x,
 		type: 'get',
 		success: function (data) {
 			console.log(data);
+			$("#holdername").html("");
 		}
 	});
 }

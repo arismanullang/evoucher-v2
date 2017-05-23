@@ -29,7 +29,7 @@
 				  <div class="panel panel-default">
 					  <div class="panel-heading">
 						  <h4 class="panel-title">
-							  <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">REDEEM VOUCHER</a>
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">REDEEM VOUCHER (<span id="holdername"></span>)</a>
 						  </h4>
 					  </div>
 					  <div id="collapseOne" class="panel-collapse collapse in">
@@ -41,10 +41,9 @@
 											  <label>
 												  <select name="dropdown" class="select2">
 													  <option>Pilih Tenant</option>
-													  <option>Shigeru</option>
-													  <option>Pojok Minuman</option>
-													  <option>Option Three</option>
-													  <option>Option Four</option>
+													  <option value="">Shigeru</option>
+													  <option value="">Pojok Minuman</option>
+													  <option value="">Coffee Shop</option>
 												  </select>
 											  </label>
 										  </div>
@@ -136,6 +135,7 @@
 
     <script src="/assets/js/jquery.min.js"></script>
     <script src="/assets/js/bootstrap.min.js"></script>
+    <script src="/assets/js/onload.js"></script>
     <script src="/assets/js/public-script.js"></script>
     <script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
   </body>
