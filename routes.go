@@ -21,6 +21,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/tag/:page", viewTag)
 	r.GetFunc("/voucher/:page", viewVoucher)
 	r.GetFunc("/report/:page", viewReport)
+	r.GetFunc("/public/:page", viewPublic)
 	r.GetFunc("/", login)
 	r.PostFunc("/v1/query", controller.CustomQuery)
 
@@ -227,6 +228,20 @@ func viewReport(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "report/transaction.html", nil)
 	} else if page == "" || page == "index" {
 		render.FileInLayout(w, "layout.html", "report/test.html", nil)
+	}
+}
+
+func viewPublic(w http.ResponseWriter, r *http.Request) {
+	page := bone.GetValue(r, "page")
+
+	if page == "fail" {
+		render.File(w, "public/fail.html", nil)
+	} else if page == "success" {
+		render.File(w, "public/success.html", nil)
+	} else if page == "redeem" {
+		render.File(w, "public/index.html", nil)
+	} else if page == "" || page == "index" {
+		render.File(w, "public/index.html", nil)
 	}
 }
 

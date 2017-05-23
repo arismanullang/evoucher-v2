@@ -84,7 +84,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			return
 		} else {
 			fmt.Println("panrner data : ", p[0].SerialNumber.String)
-			if !OTPAuth(p[0].Id, rd.Challenge,rd.Response) {
+			if !OTPAuth(p[0].Id, rd.Challenge, rd.Response) {
 				status = http.StatusBadRequest
 				res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, "voucher")
 				render.JSON(w, res, status)
@@ -248,7 +248,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			return
 		} else {
 			fmt.Println("panrner data : ", p[0].SerialNumber.String)
-			if !OTPAuth(p[0].Id, rd.Challenge,rd.Response) {
+			if !OTPAuth(p[0].Id, rd.Challenge, rd.Response) {
 				status = http.StatusBadRequest
 				res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, "voucher")
 				render.JSON(w, res, status)
@@ -328,7 +328,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	txCode := randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
 
-	variant,_ := model.FindVariantDetailsById(rd.VariantID)
+	variant, _ := model.FindVariantDetailsById(rd.VariantID)
 
 	d := model.Transaction{
 		AccountId:       variant.AccountId,
@@ -370,7 +370,6 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	res = NewResponse(TransactionResponse{TransactionCode: txCode})
 	render.JSON(w, res, status)
 }
-
 
 func GetAllTransactions(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Get Transaction")

@@ -61,7 +61,7 @@ const (
 	ErrMessageTokenExpired             string = "Token has been expired"
 	ErrMessageInvalidVariant           string = "Invalid Variant ID."
 	ErrMessageInvalidHolder            string = "Invalid Holder."
-	ErrMessageInvalidPaerner            string = "Invalid Patner."
+	ErrMessageInvalidPaerner           string = "Invalid Patner."
 	ErrMessageNilVariant               string = "Account doesn't have any Variant."
 	ErrMessageNilPartner               string = " doesn't have any Partner."
 	ErrMessageOTPFailed                string = "Doesn't match OTP"
@@ -113,10 +113,9 @@ const (
 
 	//Challenge code config
 	CHALLENGE_FORMAT string = "Numerals"
-	CHALLENGE_LENGTH int = 4
-	TIMEOUT_DURATION int = 120 //in Second
+	CHALLENGE_LENGTH int    = 4
+	TIMEOUT_DURATION int    = 120 //in Second
 
 	//OCRA config
-	OCRA_URL string = "https://ocra-staging.elys.id"
-
+	OCRA_URL string = "http://ocra-staging.elys.id"
 )

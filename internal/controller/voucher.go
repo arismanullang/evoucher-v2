@@ -83,12 +83,11 @@ type (
 		CreatedBy          string           `json:"created_by"`
 		CreatedAt          string           `json:"created_at"`
 		Used               int              `json:"used"`
-		State 		   string	    `json:"state"`
-		Holder		   string	    `json:"holder"`
-		HolderDescription  string	    `json:"holder_description"`
+		State              string           `json:"state"`
+		Holder             string           `json:"holder"`
+		HolderDescription  string           `json:"holder_description"`
 		Partners           []Partner        `json:"Partners"`
 		Voucher            []VoucerResponse `json:"Vouchers"`
-
 	}
 
 	// VoucerResponse represent list of voucher data
@@ -148,9 +147,9 @@ type (
 	}
 
 	GetVoucherlinkResponse []GetVoucherlinkdata
-	GetVoucherlinkdata struct {
-		Url string `json:"url"`
-		VoucherID  string `json:"voucher_id"`
+	GetVoucherlinkdata     struct {
+		Url         string `json:"url"`
+		VoucherID   string `json:"voucher_id"`
 		VoucherCode string `json:"voucher_code"`
 	}
 )
@@ -715,7 +714,6 @@ func (vr *GenerateVoucherRequest) generateVoucher(v *model.Variant) ([]model.Vou
 	return ret, nil
 }
 
-
 func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	res := NewResponse(nil)
@@ -726,7 +724,7 @@ func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	v,err := model.FindVoucher(map[string]string{"variant_id":varID})
+	v, err := model.FindVoucher(map[string]string{"variant_id": varID})
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidHolder, "voucher")
@@ -740,7 +738,7 @@ func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vl := make(GetVoucherlinkResponse, len(v.VoucherData))
-	for k,v := range v.VoucherData{
+	for k, v := range v.VoucherData {
 		vl[k].Url = generateLink(v.ID)
 		vl[k].VoucherID = v.ID
 		vl[k].VoucherCode = v.VoucherCode
@@ -760,6 +758,6 @@ func rollback(vr string) {
 	_ = model.HardDelete(vr)
 }
 
-func generateLink(id string) string{
-	return model.VOUCHER_URL+"?x="+StrEncode(id)
+func generateLink(id string) string {
+	return model.VOUCHER_URL + "?x=" + StrEncode(id)
 }

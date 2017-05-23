@@ -236,7 +236,7 @@ func FindVariantPartner(param map[string]string) ([]Partner, error) {
 		ON
 			a.partner_id = b.id
  		WHERE
-			b.status = ?
+			a.status = ?
 	`
 	for k, v := range param {
 		table := "b"

@@ -8,22 +8,23 @@ import (
 	"time"
 )
 
-type(
+type (
 	ChallengeResponse struct {
 		Challenge string `json:"challenge"`
 		Timeout   string `json:"timeout"`
-		Duration  int	 `json:"duration"`
+		Duration  int    `json:"duration"`
 	}
 )
+
 func GetChallenge(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 
-	c := randStr(model.CHALLENGE_LENGTH , model.CHALLENGE_FORMAT)
+	c := randStr(model.CHALLENGE_LENGTH, model.CHALLENGE_FORMAT)
 	d := model.TIMEOUT_DURATION
 	t := time.Now().Add(time.Second * time.Duration(d))
 
-	res := NewResponse(ChallengeResponse{Challenge:c,Timeout:t.Format("2006-01-02 15:04:05.000"), Duration: d})
-	render.JSON(w,res,status)
+	res := NewResponse(ChallengeResponse{Challenge: c, Timeout: t.Format("2006-01-02 15:04:05.000"), Duration: d})
+	render.JSON(w, res, status)
 }
 
 func GetRedeemData(w http.ResponseWriter, r *http.Request) {
@@ -89,8 +90,8 @@ func GetRedeemData(w http.ResponseWriter, r *http.Request) {
 		ImgUrl:             variant.ImgUrl,
 		VariantTnc:         variant.VariantTnc,
 		VariantDescription: variant.VariantDescription,
-		State: 		    voucher.VoucherData[0].State,
-		Holder:  	    voucher.VoucherData[0].Holder.String,
+		State:              voucher.VoucherData[0].State,
+		Holder:             voucher.VoucherData[0].Holder.String,
 		HolderDescription:  voucher.VoucherData[0].HolderDescription.String,
 		Voucher:	    vcr,
 	}

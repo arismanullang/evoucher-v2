@@ -51,7 +51,7 @@
 			"revisionTime": "2017-04-17T19:34:08Z"
 		},
 		{
-			"checksumSHA1": "Fwv6HeTPcUxQ7aAXK8vfwthWUsY=",
+			"checksumSHA1": "nd8R/vvAuXAtxUfdldWCggnrd5M=",
 			"path": "github.com/dghubble/sling",
 			"revision": "bbfb8293bd33a6baad33d718aacf66ef73a29f30",
 			"revisionTime": "2017-03-22T05:06:59Z"
@@ -87,7 +87,7 @@
 			"revisionTime": "2017-03-31T03:19:02Z"
 		},
 		{
-			"checksumSHA1": "ZXja1pB/YvDYcNpkp7AtOm1mhgk=",
+			"checksumSHA1": "p3IB18uJRs4dL2K5yx24MrLYE9A=",
 			"path": "github.com/google/go-querystring/query",
 			"revision": "53e6ce116135b80d037921a7fdd5138cf32d7a8a",
 			"revisionTime": "2017-01-11T10:11:55Z"
