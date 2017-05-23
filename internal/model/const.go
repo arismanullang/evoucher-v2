@@ -117,5 +117,5 @@ const (
 	TIMEOUT_DURATION int    = 120 //in Second
 
 	//OCRA config
-	OCRA_URL string = "https://ocra-staging.elys.id"
+	OCRA_URL string = "http://ocra-staging.elys.id"
 )

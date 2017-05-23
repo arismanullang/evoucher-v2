@@ -12,10 +12,12 @@ import (
 
 type (
 	AuthResponse struct {
-		Code        string `json:"code"`
-		State       string `json:"state"`
-		Description string `json:"description"`
-		Name        string `json:"name"`
+		Data struct {
+			Code        string `json:"code"`
+			Description string `json:"description"`
+			Name        string `json:"name"`
+			State       string `json:"state"`
+		} `json:"data"`
 	}
 
 	ReqParams struct {
@@ -30,7 +32,7 @@ func OTPAuth(key, challenge, response string) bool {
 	req := ReqParams{Key: key, Challenge: challenge, Response: response}
 	d, r, err := ocra(req)
 
-	if r.StatusCode == 200 && d.State == "success" {
+	if r.StatusCode == 200 && d.Data.State == "success" {
 		return true
 	} else if err != nil {
 		return false

@@ -627,14 +627,15 @@ func FindVariantDetailsById(id string) (Variant, error) {
 			variants
 		WHERE
 			status = ?
+			AND id = ?
 	`
 
 	var resv []Variant
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, id); err != nil {
 		fmt.Println(err.Error())
 		return Variant{}, ErrServerInternal
 	}
-	fmt.Println("variant data :",id , StatusCreated , resv)
+	fmt.Println("variant data :", id, StatusCreated, resv)
 	if len(resv) < 1 {
 		return Variant{}, ErrResourceNotFound
 	}

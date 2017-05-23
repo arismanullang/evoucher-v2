@@ -680,6 +680,10 @@ func validdays(s string) bool {
 	ret := false
 	vd := strings.Split(s, ";")
 
+	if s == "all" {
+		return true
+	}
+
 	for i := range vd {
 		if strings.ToUpper(vd[i]) == strings.ToUpper(time.Now().Weekday().String()) {
 			ret = true
@@ -691,7 +695,7 @@ func validdays(s string) bool {
 
 func validhours(s, e string) bool {
 	st := sti(strings.Replace(s, ":", "", 1))
-	en := sti(strings.Replace(s, ":", "", 1))
+	en := sti(strings.Replace(e, ":", "", 1))
 	th, tm, _ := time.Now().Clock()
 	tnow := sti(its(th) + its(tm))
 	if tnow < st || tnow > en {

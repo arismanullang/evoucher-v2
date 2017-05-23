@@ -1,7 +1,15 @@
 $( document ).ready(function() {
+	var transactioncode = findGetParameter('transactioncode');
+	$('#transactioncode').html(transactioncode);
+
 	var x = findGetParameter('x')+"=";
 	console.log(x);
 	getProfile(x);
+
+	$('#formsubmit').submit(function(e) {
+		e.preventDefault();
+		return false;
+	});
 
 	$("#tenant").change(function() {
 
@@ -21,11 +29,11 @@ function getProfile(x){
 		url: '/v1/public/redeem/profile?x='+x,
 		type: 'get',
 		success: function (data) {
-			console.log(data);
+			console.log(data.data.Vouchers[0].voucher_id);
 			$("#holdername").html(data.data.holder);
-			$("#variant-id").html(data.data.variant_id);
+			$("#variant-id").val(data.data.variant_id);
 			$("#discount-value").val(data.data.discount_value);
-			$("#voucher").val(data.data.Vouchers[0]);
+			$("#voucher").val(data.data.Vouchers[0].voucher_id);
 		}
 	});
 }
@@ -34,12 +42,13 @@ function send(){
 	var variant = {
 		variant_id:$("#variant-id").val(),
 		redeem_method:"token",
-		partner:$("#partner-id").val(),
+		partner:$("#tenant").val(),
 		challenge:$("#challange-code").html(),
-		response:$("#response-code").html(),
-		discount_value:$("#discount-value").val(),
-		vouchers:[$("voucher").val()]
+		response:$("#response-code").val(),
+		discount_value:parseInt($("#discount-value").val()),
+		vouchers:[$("#voucher").val()]
 	};
+	console.log(variant);
 	$.ajax({
 		url: '/v1/public/transaction',
 		type: 'post',
@@ -48,6 +57,11 @@ function send(){
 		data: JSON.stringify(variant),
 		success: function (data) {
 			console.log(data);
+			window.location = '/public/success?transactioncode='+data.data.transaction_code;
+		},
+		error: function (data) {
+			console.log(data);
+			window.location = '/public/fail';
 		}
 	});
 }
