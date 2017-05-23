@@ -86,6 +86,8 @@ func GetRedeemData(w http.ResponseWriter, r *http.Request) {
 		VariantTnc:         variant.VariantTnc,
 		VariantDescription: variant.VariantDescription,
 		State: 		    voucher.VoucherData[0].State,
+		Holder:  	    voucher.VoucherData[0].Holder.String,
+		HolderDescription:  voucher.VoucherData[0].HolderDescription.String,
 	}
 
 	d.Partners = make([]Partner, len(partner))
