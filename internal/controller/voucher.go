@@ -710,6 +710,11 @@ func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	varID := r.FormValue("variant")
 
+	_, _, _, ok := AuthToken(w, r)
+	if !ok {
+		return
+	}
+
 	v,err := model.FindVoucher(map[string]string{"variant_id":varID})
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
@@ -745,5 +750,5 @@ func rollback(vr string) {
 }
 
 func generateLink(id string) string{
-	return model.VOUCHER_URL+"?key="+StrEncode(id)
+	return model.VOUCHER_URL+"?x="+StrEncode(id)
 }
