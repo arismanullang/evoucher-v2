@@ -120,6 +120,15 @@ function generateLink() {
 		type: 'get',
 		success: function (data) {
 			console.log(data);
+			if(data.data == "success"){
+				$.ajax({
+					url: '/v1/voucher/link?variant='+id,
+					type: 'get',
+					success: function (data) {
+						console.log(data);
+					}
+				});
+			}
 		}
 	});
 }
