@@ -83,6 +83,7 @@ type (
 		CreatedBy          string           `json:"created_by"`
 		CreatedAt          string           `json:"created_at"`
 		Used               int              `json:"used"`
+		State 		   string	    `json:"state"`
 		Partners           []Partner        `json:"Partners"`
 		Voucher            []VoucerResponse `json:"Vouchers"`
 	}

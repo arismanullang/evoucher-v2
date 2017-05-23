@@ -39,6 +39,7 @@ const (
 	ErrCodeInvalidToken             string = "invalid_token"
 	ErrCodeOTPFailed                string = "OTP_Failed"
 	ErrCodeInvalidPartnerQr         string = "invalid_partner_qr"
+	ErrCodeInvalidPartner           string = "invalid_partner"
 	ErrCodeInvalidVariant           string = "invalid_variant"
 	ErrCodeInvalidUser              string = "invalid_username_and_password"
 	ErrCodeRedeemNotValidDay        string = "voucher_cannot_be_used_today"
@@ -58,9 +59,9 @@ const (
 	ErrMessageMissingOrderItem         string = "order items was not specified"
 	ErrMessageTokenNotFound            string = "Token not found"
 	ErrMessageTokenExpired             string = "Token has been expired"
-	ErrMessageInvalidMerchant          string = "vouchers can not be used in this Partner."
 	ErrMessageInvalidVariant           string = "Invalid Variant ID."
 	ErrMessageInvalidHolder            string = "Invalid Holder."
+	ErrMessageInvalidPaerner            string = "Invalid Patner."
 	ErrMessageNilVariant               string = "Account doesn't have any Variant."
 	ErrMessageNilPartner               string = " doesn't have any Partner."
 	ErrMessageOTPFailed                string = "Doesn't match OTP"
@@ -114,5 +115,8 @@ const (
 	CHALLENGE_FORMAT string = "Numerals"
 	CHALLENGE_LENGTH int = 4
 	TIMEOUT_DURATION int = 120 //in Second
+
+	//OCRA config
+	OCRA_URL string = "https://ocra-staging.elys.id"
 
 )

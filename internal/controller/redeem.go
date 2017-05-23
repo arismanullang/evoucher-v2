@@ -8,9 +8,6 @@ import (
 	"time"
 )
 
-func RedeemPage(w http.ResponseWriter, r *http.Request) {
-	render.FileInLayout(w, "layout.html", "redeem.html", nil)
-}
 type(
 	ChallengeResponse struct {
 		Challenge string `json:"challenge"`
@@ -88,6 +85,7 @@ func GetRedeemData(w http.ResponseWriter, r *http.Request) {
 		ImgUrl:             variant.ImgUrl,
 		VariantTnc:         variant.VariantTnc,
 		VariantDescription: variant.VariantDescription,
+		State: 		    voucher.VoucherData[0].State,
 	}
 
 	d.Partners = make([]Partner, len(partner))
