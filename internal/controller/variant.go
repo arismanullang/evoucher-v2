@@ -667,6 +667,11 @@ func CheckVariant(rm, id string, qty int) (bool, error) {
 
 func validdays(s string) bool {
 	ret := false
+
+	if s == "" || strings.ToUpper(s) == "ALL" {
+		return true
+	}
+
 	vd := strings.Split(s, ";")
 
 	for i := range vd {
@@ -680,7 +685,7 @@ func validdays(s string) bool {
 
 func validhours(s, e string) bool {
 	st := sti(strings.Replace(s, ":", "", 1))
-	en := sti(strings.Replace(s, ":", "", 1))
+	en := sti(strings.Replace(e, ":", "", 1))
 	th, tm, _ := time.Now().Clock()
 	tnow := sti(its(th) + its(tm))
 	if tnow < st || tnow > en {

@@ -655,21 +655,28 @@ func (vr *GenerateVoucherRequest) generateVoucher(v *model.Variant) ([]model.Vou
 	var rt []string
 	var vcf model.VoucherCodeFormat
 	var code string
+	var tsd , ted time.Time
 
 	vcf, err := model.GetVoucherCodeFormat(v.VoucherFormat)
 	if err != nil {
 		return ret, err
 	}
+	if v.VoucherLifetime > 0 {
+		tsd = time.Now()
+		ted = time.Now().AddDate(0,0,v.VoucherLifetime)
+	}else {
+		tsd, err = time.Parse(time.RFC3339Nano, v.ValidVoucherStart)
+		if err != nil {
+			log.Panic(err)
+		}
 
-	tsd, err := time.Parse(time.RFC3339Nano, v.StartDate)
-	if err != nil {
-		log.Panic(err)
+		ted, err = time.Parse(time.RFC3339Nano, v.ValidVoucherEnd)
+		if err != nil {
+			log.Panic(err)
+		}
 	}
 
-	ted, err := time.Parse(time.RFC3339Nano, v.EndDate)
-	if err != nil {
-		log.Panic(err)
-	}
+
 
 	for i := 0; i <= vr.Quantity-1; i++ {
 		switch {
