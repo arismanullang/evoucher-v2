@@ -10,31 +10,31 @@ import (
 
 type (
 	Variant struct {
-		Id                 string  `db:"id"`
-		AccountId          string  `db:"account_id"`
-		VariantName        string  `db:"variant_name"`
-		VariantType        string  `db:"variant_type"`
-		VoucherFormat      int     `db:"voucher_format_id"`
-		VoucherType        string  `db:"voucher_type"`
-		VoucherPrice       float64 `db:"voucher_price"`
-		AllowAccumulative  bool    `db:"allow_accumulative"`
-		StartDate          string  `db:"start_date"`
-		EndDate            string  `db:"end_date"`
-		StartHour          string  `db:"start_hour"`
-		EndHour            string  `db:"end_hour"`
-		ValidVoucherStart  string  `db:"valid_voucher_start"`
-		ValidVoucherEnd    string  `db:"valid_voucher_end"`
-		VoucherLifetime    int     `db:"voucher_lifetime"`
-		ValidityDays       string  `db:"validity_days"`
-		DiscountValue      float64 `db:"discount_value"`
-		MaxQuantityVoucher float64 `db:"max_quantity_voucher"`
-		MaxUsageVoucher    float64 `db:"max_usage_voucher"`
-		RedeemtionMethod   string  `db:"redeemtion_method"`
-		ImgUrl             string  `db:"img_url"`
-		VariantTnc         string  `db:"variant_tnc"`
-		VariantDescription string  `db:"variant_description"`
-		CreatedBy          string  `db:"created_by"`
-		CreatedAt          string  `db:"created_at"`
+		Id                 string  `db:"id" json:"id"`
+		AccountId          string  `db:"account_id" json:"account_id"`
+		VariantName        string  `db:"variant_name" json:"variant_name"`
+		VariantType        string  `db:"variant_type" json:"variant_type"`
+		VoucherFormat      int     `db:"voucher_format_id" json:"voucher_format"`
+		VoucherType        string  `db:"voucher_type" json:"voucher_type"`
+		VoucherPrice       float64 `db:"voucher_price" json:"voucher_price"`
+		AllowAccumulative  bool    `db:"allow_accumulative" json:"allow_accumulative"`
+		StartDate          string  `db:"start_date" json:"start_date"`
+		EndDate            string  `db:"end_date" json:"end_date"`
+		StartHour          string  `db:"start_hour" json:"start_hour"`
+		EndHour            string  `db:"end_hour" json:"end_hour"`
+		ValidVoucherStart  string  `db:"valid_voucher_start" json:"valid_voucher_start"`
+		ValidVoucherEnd    string  `db:"valid_voucher_end" json:"valid_voucher_end"`
+		VoucherLifetime    int     `db:"voucher_lifetime" json:"voucher_lifetime"`
+		ValidityDays       string  `db:"validity_days" json:"validity_days"`
+		DiscountValue      float64 `db:"discount_value" json:"discount_value"`
+		MaxQuantityVoucher float64 `db:"max_quantity_voucher" json:"max_quantity_voucher"`
+		MaxUsageVoucher    float64 `db:"max_usage_voucher" json:"max_usage_voucher"`
+		RedeemtionMethod   string  `db:"redeemtion_method" json:"redeem_method"`
+		ImgUrl             string  `db:"img_url" json:"image_url"`
+		VariantTnc         string  `db:"variant_tnc" json:"variant_tnc"`
+		VariantDescription string  `db:"variant_description" json:"variant_description"`
+		CreatedBy          string  `db:"created_by" json:"created_by"`
+		CreatedAt          string  `db:"created_at" json:"created_at"`
 	}
 	VariantReq struct {
 		AccountId          string   `db:"account_id"`
@@ -89,7 +89,7 @@ type (
 		CreatedAt     string         `db:"created_at" json:"created_at"`
 		UpdatedAt     sql.NullString `db:"updated_at" json:"updated_at"`
 	}
-	UpdateVariantUsersRequest struct {
+	UpdateVariantArrayRequest struct {
 		VariantId string   `db:"variant_id"`
 		User      string   `db:"updated_by"`
 		Data      []string `db:"-"`
@@ -304,7 +304,7 @@ func UpdateVariant(d Variant) error {
 	return nil
 }
 
-func UpdateVariantBroadcasts(user UpdateVariantUsersRequest) error {
+func UpdateVariantBroadcasts(user UpdateVariantArrayRequest) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -353,7 +353,7 @@ func UpdateVariantBroadcasts(user UpdateVariantUsersRequest) error {
 	return nil
 }
 
-func UpdateVariantPartners(param UpdateVariantUsersRequest) error {
+func UpdateVariantPartners(param UpdateVariantArrayRequest) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err.Error())

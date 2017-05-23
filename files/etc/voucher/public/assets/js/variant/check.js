@@ -1,5 +1,6 @@
 $( document ).ready(function() {
-  var id = findGetParameter('id')
+  var id = findGetParameter('id');
+  $("#variant-id").val(id);
   getVoucher(id);
   getPartner(id);
 
@@ -76,7 +77,6 @@ function getPartner(id) {
     });
 }
 
-
 function getVariant(id, voucher) {
     console.log("Get Variant Data");
     console.log(voucher);
@@ -88,27 +88,40 @@ function getVariant(id, voucher) {
           console.log(data.data);
           var result = data.data;
 
-          var startDate = result.StartDate.substr(0,10);
-          var endDate = result.EndDate.substr(0,10);
+          var startDate = result.start_date.substr(0,10);
+          var endDate = result.end_date.substr(0,10);
           var period = startDate + " to " + endDate;
 
-          var remainingVoucher = result.MaxQuantityVoucher;
+          var remainingVoucher = result.max_quantity_voucher;
           if( voucher != null)
-            remainingVoucher = result.MaxQuantityVoucher - voucher;
+            remainingVoucher = result.max_quantity_voucher - voucher;
 
-          $('#variantName').html(result.VariantName);
-          $('#variantDescription').html(result.VariantDescription);
-          $('#variantType').html(result.VariantType);
-          $('#voucherType').html(result.VoucherType);
-          $('#conversionRate').html(result.VoucherPrice);
-          $('#maxQuantityVoucher').html(result.MaxQuantityVoucher);
-          $('#voucherValue').html(result.DiscountValue);
+          $('#variantName').html(result.variant_name);
+          $('#variantDescription').html(result.variant_description);
+          $('#variantType').html(result.variant_type);
+          $('#voucherType').html(result.voucher_type);
+          $('#conversionRate').html(result.voucher_price);
+          $('#maxQuantityVoucher').html(result.max_quantity_voucher);
+          $('#voucherValue').html(result.discount_value);
           $('#period').html(period);
-          $('#variantTnc').html(result.VariantTnc);
+          $('#variantTnc').html(result.variant_tnc);
           $('#remainingVoucher').html(remainingVoucher);
-          $('#variant-image').attr("src",result.ImgUrl);
+        //   $('#variant-image').attr("src",result.image_url);
         }
     });
+}
+
+function generateLink() {
+	var id = $('#variant-id').val();
+	console.log("Get Variant Data");
+	var arrData = [];
+	$.ajax({
+		url: '/v1/voucher/generate/bulk?variant='+id+'&token='+token,
+		type: 'get',
+		success: function (data) {
+			console.log(data);
+		}
+	});
 }
 
 function editVariant(){

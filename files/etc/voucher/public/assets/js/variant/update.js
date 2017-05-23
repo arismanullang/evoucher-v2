@@ -1,8 +1,23 @@
 $( window ).ready(function() {
   var id = findGetParameter("id");
   searchById(id);
+  getPartner(id);
+  $("#image-url").change(function() {
+	readURL(this);
+  });
   // getPartner();
 });
+
+function readURL(input) {
+	if (input.files && input.files[0]) {
+		var reader = new FileReader();
+		reader.onload = function (e) {
+			$('#image-preview').attr('src', e.target.result);
+		}
+
+		reader.readAsDataURL(input.files[0]);
+	}
+}
 
 function searchById(id) {
 
@@ -14,24 +29,81 @@ function searchById(id) {
         success: function (data) {
           console.log(data);
           var variant = data.data;
+	  $("#variant-id").val(id);
+          $("#variant-name").val(variant.variant_name);
+          $("#variant-type").val(variant.variant_type);
+          $("#voucher-type").val(variant.voucher_type);
+          $("#voucher-price").val(variant.voucher_price);
+          $("#max-quantity-voucher").val(variant.max_quantity_voucher);
+          $("#max-usage-voucher").val(variant.max_usage_voucher);
+          $("#redemption-method").val(variant.redeemtion_method);
+          $("#variant-valid-from").val(convertToDate(variant.start_date));
+          $("#variant-valid-to").val(convertToDate(variant.end_date));
+          $("#voucher-value").val(variant.discount_value);
+          $("#variant-tnc").val(variant.variant_tnc);
+          $("#variant-description").val(variant.variant_description);
+          $("#start-hour").val(variant.start_hour);
+          $("#end-hour").val(variant.end_hour);
+	  $("#image-url").val(variant.image_url);
 
-          $("#variant-id").val(id);
-          $("#variant-name").val(variant.VariantName);
-          $("#variant-type").val(variant.VariantType);
-          $("#select2-variant-type-container").html(convcertToUpperCase(variant.VariantType));
-          $("#voucher-type").val(variant.VoucherType);
-          $("#select2-voucher-type-container").html(convcertToUpperCase(variant.VoucherType));
-          $("#voucher-price").val(variant.VoucherPrice);
-          $("#max-quantity-voucher").val(variant.MaxQuantityVoucher);
-          $("#max-usage-voucher").val(variant.MaxUsageVoucher);
-          $("#redemption-method").val(variant.RedeemtionMethod);
-          $("#select2-redemption-method-container").html(convcertToUpperCase(variant.RedeemtionMethod));
-          $("#start-date").val(convertToDate(variant.StartDate));
-          $("#end-date").val(convertToDate(variant.EndDate));
-          $("#voucher-value").val(variant.DiscountValue);
-          $("#image-url").val(variant.ImgUrl);
-          $("#variant-tnc").val(variant.VariantTnc);
-          $("#variant-description").val(variant.VariantDescription);
+	  $("#voucher-price").attr("disabled","");
+	  $("#max-quantity-voucher").attr("disabled","");
+	  $("#max-usage-voucher").attr("disabled","");
+          $("#voucher-value").attr("disabled","");
+          $("#start-hour").attr("disabled","");
+          $("#end-hour").attr("disabled","");
+          $("#variant-valid-from").attr("disabled","");
+          $("#variant-valid-to").attr("disabled","");
+	  $("#voucher-validity-type").attr("disabled","");
+
+	  if(variant.voucher_lifetime != 0){
+		$("#voucher-lifetime").attr("disabled","");
+		$("#voucher-lifetime").val(variant.voucher_lifetime);
+		$("#validity-lifetime").attr("style","display:block");
+		$("#validity-date").attr("style","display:none");
+		$("#voucher-valid-from").val("");
+		$("#voucher-valid-to").val("");
+	  	$("#voucher-validity-type").selectedIndex = 1;
+	  	$("#voucher-validity-type").val("lifetime");
+	  }
+	  if($("#voucher-validity-type").val() == "lifetime"){
+	    $("#validity-lifetime").attr("style","display:block");
+	    $("#validity-date").attr("style","display:none");
+	    $("#voucher-valid-from").val("");
+	    $("#voucher-valid-to").val("");
+	  } else if($("#voucher-validity-type").val() == "period"){
+	    $("#validity-lifetime").attr("style","display:none");
+	    $("#validity-date").attr("style","display:block");
+	    $("#voucher-lifetime").val("");
+	  } else {
+	    $("#validity-lifetime").attr("style","display:none");
+	    $("#validity-date").attr("style","display:none");
+	    $("#voucher-valid-from").val("");
+	    $("#voucher-valid-to").val("");
+	    $("#voucher-lifetime").val("");
+	  }
+
+	  $("#redeem-validity-type").attr("disabled","");
+	  if( $("#redeem-validity-type").val() == "all"){
+	    $("#validity-day").attr("style","display:none");
+	  } else if( $("#redeem-validity-type").value == "selected"){
+	    $("#validity-day").attr("style","display:block");
+	  } else {
+	    $("#validity-day").attr("style","display:none");
+	  }
+
+	  $("#variant-type").attr("disabled","");
+	  if($("#variant-type").val() == "bulk"){
+	    $("#target").attr("style","display:block");
+	    $("#max-quantity-voucher").attr("disabled","");
+	    $("#max-usage-voucher").attr("disabled","");
+	    $("#voucher-price").attr("disabled","");
+	  } else{
+	    $("#target").attr("style","display:none");
+	    $("#max_quantity_voucher").removeAttr("disabled","");
+	    $("#max_usage_voucher").removeAttr("disabled","");
+	    $("#voucher_price").removeAttr("disabled","");
+	  }
 
         }
     });
@@ -39,6 +111,50 @@ function searchById(id) {
 
 function send() {
   error = false;
+  if($("#redeem-validity-type").val() == "all"){
+    listDay = "all";
+  } else if($("#redeem-validity-type").val() == "selected"){
+    var li = $( "ul.select2-selection__rendered" ).find( "li" );
+
+    if(li.length == 0 || parseInt($("#length").val()) < 8){
+      error = true;
+    }
+
+    for (i = 0; i < li.length-1; i++) {
+        var text = li[i].getAttribute("title");
+        var value = $("option").filter(function() {
+          return $(this).text() === text;
+        }).first().attr("value");
+
+        listDay = listDay + value+";";
+    }
+  }
+
+  var listPartner = [];
+  var li = $( "input[type=checkbox]:checked" );
+
+  if(li.length == 0 || parseInt($("#length").val()) < 8){
+    error = true;
+  }
+
+  for (i = 0; i < li.length-1; i++) {
+      listPartner[i] = li[i].value;
+  }
+
+  var lifetime = 0;
+  var periodStart = "";
+  var periodEnd = "";
+
+  if($("#voucher-validity-type").val() == "period"){
+    lifetime = 0;
+    periodStart = $("#voucher-valid-from").val();
+    periodEnd = $("#voucher-valid-to").val();
+  }else if($("#voucher-validity-type").val() == "lifetime"){
+    lifetime = $("#voucher-lifetime").val();
+    periodStart = "01/01/0001";
+    periodEnd = "01/01/0001";
+  }
+
     $('input[check="true"]').each(function() {
       if($(this).val() == ""){
         $(this).addClass("error");
@@ -52,38 +168,132 @@ function send() {
       alert("Please check your input.");
       return
     }
-    var id = $("#variant-id").val();
-    var variant = {
-      variant_name: $("#variant-name").val(),
-      variant_type: $("#variant-type").val(),
-      voucher_type: $("#voucher-type").val(),
-      voucher_price: parseInt($("#voucher-price").val()),
-      max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
-      max_usage_voucher: parseInt($("#max-usage-voucher").val()),
-      redeemtion_method: $("#redemption-method").val(),
-      start_date: $("#start-date").val(),
-      end_date: $("#end-date").val(),
-      discount_value: parseInt($("#voucher-value").val()),
-      image_url: $("#image-url").val(),
-      variant_tnc: $("#variant-tnc").val(),
-      variant_description: $("#variant-description").val()
-    };
 
-    console.log(variant);
+    var formData = new FormData();
+    var img = $('#image-url').val();
+    if($('#image-url')[0].files[0] != null){
 
-    $.ajax({
-        url: '/v1/update/variant/'+id+'?token='+token,
-        type: 'post',
-        dataType: 'json',
-        contentType: "application/json",
-        data: JSON.stringify(variant),
-        success: function () {
-            window.location = "/variant/search";
-        }
-    });
+     formData.append('image-url', $('#image-url')[0].files[0]);
+
+     jQuery.ajax({
+         url:'/file/upload',
+         type:"POST",
+         processData: false,
+         contentType: false,
+         data: formData,
+         success: function(data){
+           console.log(data.data);
+           img = data.data;
+
+  	   var id = $("#variant-id").val();
+	   var variant = {
+		 variant_name: $("#variant-name").val(),
+		 variant_type: $("#variant-type").find(":selected").val(),
+		 voucher_type: $("#voucher-type").find(":selected").val(),
+		 voucher_price: parseInt($("#voucher-price").val()),
+		 max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
+		 max_usage_voucher: parseInt($("#max-usage-voucher").val()),
+		 allowAccumulative: $("#allow-accumulative").is(":checked"),
+		 redeemtion_method: $("#redeemtion-method").find(":selected").val(),
+		 start_date: $("#variant-valid-from").val(),
+		 end_date: $("#variant-valid-to").val(),
+		 start_hour: $("#start-hour").val(),
+		 end_hour: $("#end-hour").val(),
+		 discount_value: parseInt($("#voucher-value").val()),
+		 image_url: img,
+		 variant_tnc: $("#variant-tnc").val(),
+		 variant_description: $("#variant-description").val(),
+		 validity_days: listDay,
+		 valid_voucher_start: periodStart,
+		 valid_voucher_end: periodEnd,
+		 voucher_lifetime: parseInt(lifetime)
+	   };
+
+	   console.log(variant);
+
+	   $.ajax({
+		 url: '/v1/update/variant/'+id+'?token='+token,
+		 type: 'post',
+		 dataType: 'json',
+		 contentType: "application/json",
+		 data: JSON.stringify(variant),
+		 success: function () {
+			 var partner = {
+				 user: "user",
+				 data: listPartner
+			 };
+
+			 $.ajax({
+				 url: '/v1/update/variant/'+id+'/tenant?token='+token,
+				 type: 'post',
+				 dataType: 'json',
+				 contentType: "application/json",
+				 data: JSON.stringify(partner),
+				 success: function () {
+					 var id = findGetParameter("id");
+					 //window.location = "/variant/check?id="+id;
+				 }
+			 });
+		 }
+	   });
+         }
+     });
+    }else {
+	    var id = $("#variant-id").val();
+	    var variant = {
+		    variant_name: $("#variant-name").val(),
+		    variant_type: $("#variant-type").find(":selected").val(),
+		    voucher_type: $("#voucher-type").find(":selected").val(),
+		    voucher_price: parseInt($("#voucher-price").val()),
+		    max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
+		    max_usage_voucher: parseInt($("#max-usage-voucher").val()),
+		    allowAccumulative: $("#allow-accumulative").is(":checked"),
+		    redeemtion_method: $("#redeemtion-method").find(":selected").val(),
+		    start_date: $("#variant-valid-from").val(),
+		    end_date: $("#variant-valid-to").val(),
+		    start_hour: $("#start-hour").val(),
+		    end_hour: $("#end-hour").val(),
+		    discount_value: parseInt($("#voucher-value").val()),
+		    image_url: img,
+		    variant_tnc: $("#variant-tnc").val(),
+		    variant_description: $("#variant-description").val(),
+		    validity_days: listDay,
+		    valid_voucher_start: periodStart,
+		    valid_voucher_end: periodEnd,
+		    voucher_lifetime: parseInt(lifetime)
+	    };
+
+	    console.log(variant);
+
+	    $.ajax({
+		    url: '/v1/update/variant/'+id+'?token='+token,
+		    type: 'post',
+		    dataType: 'json',
+		    contentType: "application/json",
+		    data: JSON.stringify(variant),
+		    success: function () {
+			    var partner = {
+				    user: "user",
+				    data: listPartner
+			    };
+
+			    $.ajax({
+				    url: '/v1/update/variant/'+id+'/tenant?token='+token,
+				    type: 'post',
+				    dataType: 'json',
+				    contentType: "application/json",
+				    data: JSON.stringify(partner),
+				    success: function () {
+					    var id = findGetParameter("id");
+					    //window.location = "/variant/check?id="+id;
+				    }
+			    });
+		    }
+	    });
+    }
 }
 
-function getPartner() {
+function getPartner(id) {
     console.log("Get Partner Data");
 
     $.ajax({
@@ -96,11 +306,45 @@ function getPartner() {
 
         var i;
         for (i = 0; i < arrData.length; i++){
-          var li = $("<option value='"+arrData[i].Id+"'>"+arrData[i].PartnerName+"</option>");
-          li.appendTo('#variantPartners');
+          var li = $("<div class='col-sm-4'></div>");
+          var html = "<label class='checkbox-inline c-checkbox'>"
+                    + "<input type='checkbox' value='"+arrData[i].id+"' text='"+arrData[i].partner_name+"'>"
+                    + "<span class='ion-checkmark-round'></span>" + arrData[i].partner_name
+                    + "</label>";
+          li.html(html);
+          li.appendTo('#partner-list');
         }
+
+	$.ajax({
+            url: '/v1/api/get/partner?variant_id='+id+'&token='+token,
+            type: 'get',
+            success: function (data) {
+              var i;
+   	      var y;
+   	      var li = $( "input[type=checkbox]" );
+
+      	      for (i = 0; i < li.length; i++) {
+
+   	          var tempElem = li[i];
+                  var arrData = data.data;
+                  var limit = arrData.length;
+                  for ( y = 0; y < limit; y++){
+   		       if(tempElem.getAttribute("text") == arrData[y].partner_name){
+   			       tempElem.checked = true;
+   		       }
+                  }
+   	      }
+            },
+            error: function (data) {
+              console.log(data.data);
+              $("<div class='card-body text-center'>No Partner Found</div>").appendTo('#cardPartner');
+            }
+        });
       }
-  });
+     });
+
+
+
 }
 
 function convertToDate(date){
@@ -111,7 +355,7 @@ function convertToDate(date){
   return result;
 }
 
-function convcertToUpperCase(upperCase){
+function convertToUpperCase(upperCase){
   var result = "";
   var firstChar = upperCase.charAt(0);
   upperCase = upperCase.replace(firstChar, firstChar.toUpperCase());
@@ -127,11 +371,30 @@ function convcertToUpperCase(upperCase){
 
     function formAdvanced() {
         $('.select2').select2();
-
-        $('.datepicker4')
-            .datepicker({
-                container:'#example-datepicker-container-4'
+        $("#validity-day").attr("style","display:none");
+        $("#collapseThree").removeClass("in");
+        $("#collapseTwo").removeClass("in");
+        $('.datepicker4').datepicker({
+                container:'#example-datepicker-container-4',
+                autoclose: true,
+                startDate: 'd',
+                setDate: new Date()
             });
+
+        $('.datepicker3').datepicker({
+                container:'#example-datepicker-container-3',
+                autoclose: true,
+                startDate: 'd',
+                setDate: new Date()
+            });
+        $('#startDate').datepicker('update', new Date());
+        $('#endDate').datepicker('update', '+1d');
+
+        var cpInput = $('.clockpicker').clockpicker();
+        // auto close picker on scroll
+        $('main').scroll(function() {
+            cpInput.clockpicker('hide');
+        });
     }
 
 })();

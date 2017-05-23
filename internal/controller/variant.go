@@ -491,11 +491,21 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 			log.Panic(err)
 		}
 
+		fmt.Println(rd)
 		ts, err := time.Parse("01/02/2006", rd.StartDate)
 		if err != nil {
 			log.Panic(err)
 		}
 		te, err := time.Parse("01/02/2006", rd.EndDate)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		tvs, err := time.Parse("01/02/2006", rd.ValidVoucherStart)
+		if err != nil {
+			log.Panic(err)
+		}
+		tve, err := time.Parse("01/02/2006", rd.ValidVoucherEnd)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -514,8 +524,8 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 			EndDate:            te.Format("2006-01-02 15:04:05.000"),
 			StartHour:          rd.StartHour,
 			EndHour:            rd.EndHour,
-			ValidVoucherStart:  rd.ValidVoucherStart,
-			ValidVoucherEnd:    rd.ValidVoucherEnd,
+			ValidVoucherStart:  tvs.Format("2006-01-02 15:04:05.000"),
+			ValidVoucherEnd:    tve.Format("2006-01-02 15:04:05.000"),
 			VoucherLifetime:    rd.VoucherLifetime,
 			ValidityDays:       rd.ValidityDays,
 			ImgUrl:             rd.ImgUrl,
@@ -523,6 +533,7 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 			VariantDescription: rd.VariantDescription,
 			CreatedBy:          user,
 		}
+		fmt.Println(vr)
 		if err := model.UpdateVariant(vr); err != nil {
 			//log.Panic(err)
 			status = http.StatusInternalServerError
@@ -550,7 +561,7 @@ func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {
 	_, user, _, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
-		d := model.UpdateVariantUsersRequest{
+		d := model.UpdateVariantArrayRequest{
 			VariantId: id,
 			User:      user,
 			Data:      rd.Data,
@@ -586,7 +597,7 @@ func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
 
 	if valid {
 		status = http.StatusOK
-		d := model.UpdateVariantUsersRequest{
+		d := model.UpdateVariantArrayRequest{
 			VariantId: id,
 			User:      user,
 			Data:      rd.Data,

@@ -6,25 +6,16 @@
 {{ define "content" }}
 <!-- Page content-->
 <section>
-  <div class="content-heading bg-white">
-    <div class="row">
-      <div class="media m0 pv">
-        <div class="media-left"><a href="#"><img id="variant-image" src="/assets/img/card.jpg" alt="User" class="media-object img-circle thumb64"></a></div>
-        <div class="media-body media-middle">
-          <h4 id="variantName" class="media-heading"></h4>
-          <span id="variantDescription" class="text-muted"></span>
-        </div>
-      </div>
-    </div>
-  </div>
   <div class="container-fluid">
     <div class="row">
       <!-- Left column-->
       <div class="col-md-7 col-lg-8">
         <form editable-form="" id="profileForm" name="user.profileForm" class="card">
+          <input type="hidden" id="variant-id">
           <h5 class="card-heading">
             <div class="pull-right">
-              <button onclick="editVariant()" class="btn btn-default btn-flat btn-flat-icon"><em class="ion-edit"></em></button>
+              <button onclick="editVariant()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Edit"><em class="ion-edit"></em ></button>
+              <button onclick="generateLink()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Export to csv"><em class="ion-archive"></em></button>
             </div>
             Program Details
           </h5>
@@ -32,7 +23,11 @@
             <table class="table table-striped">
               <tbody>
                 <tr>
-                  <td><em class="ion-document-text icon-fw mr"></em>Program Type</td>
+                  <td><em class="ion-document-text icon-fw mr"></em>Program Name</td>
+                  <td id="variantName"></td>
+                </tr>
+                <tr>
+                  <td><em class="icon-fw mr"></em>Program Type</td>
                   <td id="variantType"></td>
                 </tr>
                 <tr>
@@ -96,6 +91,7 @@
 <script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
 <script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
 <script type="text/javascript" src="/assets/js/variant/check.js"></script>
+<script src="/assets/vendor/flot.tooltip/js/jquery.flot.tooltip.js"></script>
 {{ end }}
 
 {{ define "stylesheets" }}
