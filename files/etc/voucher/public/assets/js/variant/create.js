@@ -31,14 +31,12 @@ $( document ).ready(function() {
   $("#variant-type").change(function() {
     if(this.value == "bulk"){
       $("#target").attr("style","display:block");
-      $("#max-quantity-voucher").attr("disabled","");
-      $("#max-usage-voucher").attr("disabled","");
-      $("#voucher-price").attr("disabled","");
+      $("#max-row").attr("style","display:none");
+      $("#conversion-row").attr("style","display:none");
     } else{
       $("#target").attr("style","display:none");
-      $("#max-quantity-voucher").removeAttr("disabled","");
-      $("#max-usage-voucher").removeAttr("disabled","");
-      $("#voucher-price").removeAttr("disabled","");
+      $("#max-row").attr("style","display:block");
+      $("#conversion-row").attr("style","display:block");
     }
   });
   $("#image-url").change(function() {
@@ -64,7 +62,7 @@ $( document ).ready(function() {
 
   if( $("#redeem-validity-type").val() == "all"){
    $("#validity-day").attr("style","display:none");
-  } else if( $("#redeem-validity-type").value == "selected"){
+  } else if( $("#redeem-validity-type").val() == "selected"){
    $("#validity-day").attr("style","display:block");
   } else {
    $("#validity-day").attr("style","display:none");
@@ -72,14 +70,12 @@ $( document ).ready(function() {
 
   if($("#variant-type").val() == "bulk"){
    $("#target").attr("style","display:block");
-   $("#max-quantity-voucher").attr("disabled","");
-   $("#max-usage-voucher").attr("disabled","");
-   $("#voucher-price").attr("disabled","");
+   $("#max-row").attr("style","display:none");
+   $("#conversion-row").attr("style","display:none");
   } else{
    $("#target").attr("style","display:none");
-   $("#max_quantity_voucher").removeAttr("disabled","");
-   $("#max_usage_voucher").removeAttr("disabled","");
-   $("#voucher_price").removeAttr("disabled","");
+   $("#max-row").attr("style","display:block");
+   $("#conversion-row").attr("style","display:block");
   }
 });
 
@@ -179,6 +175,11 @@ function send() {
     }
   }
 
+  var maxUsage = parseInt($("#max-usage-voucher").val());
+  if($("#variant-type").val() == "bulk"){
+	maxUsage = 1;
+  }
+
   $('input[check="true"]').each(function() {
     if($("#variant-type").val() == "bulk"){
     	if(this.getAttribute("id") == "max-quantity-voucher" || this.getAttribute("id") == "max-usage-voucher" || this.getAttribute("id") == "voucher-price"){
@@ -225,7 +226,7 @@ function send() {
 	       voucher_type: $("#voucher-type").find(":selected").val(),
 	       voucher_price: parseInt($("#voucher-price").val()),
 	       max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
-	       max_usage_voucher: parseInt($("#max-usage-voucher").val()),
+	       max_usage_voucher: maxUsage,
 	       allowAccumulative: $("#allow-accumulative").is(":checked"),
 	       redeemtion_method: $("#redeemtion-method").find(":selected").val(),
 	       start_date: $("#variant-valid-from").val(),
@@ -270,6 +271,9 @@ function send() {
 				       }
 			       });
 
+		       }else{
+			       alert("Program created.");
+			       window.location = "/variant/search";
 		       }
 	       }
          });
@@ -282,7 +286,7 @@ function send() {
 		  voucher_format: voucherFormat,
 		  voucher_type: $("#voucher-type").find(":selected").val(),
 		  voucher_price: parseInt($("#voucher-price").val()),
-		  max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
+		  max_quantity_voucher: maxUsage,
 		  max_usage_voucher: parseInt($("#max-usage-voucher").val()),
 		  allowAccumulative: $("#allow-accumulative").is(":checked"),
 		  redeemtion_method: $("#redeemtion-method").find(":selected").val(),
@@ -300,7 +304,6 @@ function send() {
 		  valid_voucher_end: periodEnd,
 		  voucher_lifetime: parseInt(lifetime)
 	  };
-
 	  console.log(variant);
 
 	  $.ajax({
@@ -323,12 +326,15 @@ function send() {
 					  data: targets,
 					  success: function(data){
 						  console.log(data);
+						  alert("Program created.");
+						  window.location = "/variant/search";
 					  }
 				  });
 
+			  }else{
+				  alert("Program created.");
+				  window.location = "/variant/search";
 			  }
-			  alert("Program created.");
-			  window.location = "/variant/search";
 		  }
 	  });
   }
@@ -371,7 +377,6 @@ function removeElem(elem){
 
     function formAdvanced() {
         $('.select2').select2();
-        $("#validity-day").attr("style","display:none");
         $("#collapseThree").removeClass("in");
         $("#collapseTwo").removeClass("in");
         $('.datepicker4').datepicker({

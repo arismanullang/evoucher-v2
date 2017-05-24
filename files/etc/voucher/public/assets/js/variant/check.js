@@ -80,6 +80,7 @@ function getPartner(id) {
 function getVariant(id, voucher) {
     console.log("Get Variant Data");
     console.log(voucher);
+    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     var arrData = [];
     $.ajax({
         url: '/v1/api/get/variant/'+id+'?token='+token,
@@ -88,10 +89,13 @@ function getVariant(id, voucher) {
           console.log(data.data);
           var result = data.data;
 
-          var startDate = result.start_date.substr(0,10);
-          var endDate = result.end_date.substr(0,10);
-          var period = startDate + " to " + endDate;
+	  var date1 = result.start_date.substring(0, 10).split("-");
+	  var date2 = result.end_date.substring(0, 10).split("-");
+          var startDate = date1[2] + " " + months[parseInt(date1[1])-1] + " " + date1[0];
+          var endDate = date2[2] + " " + months[parseInt(date2[1])-1] + " " + date2[0];
 
+          var period = startDate + " - " + endDate;
+	  var variantType = "Email Blast"
           var remainingVoucher = result.max_quantity_voucher;
 	  var maxVoucher = result.max_quantity_voucher;
           if( voucher != null){
@@ -102,9 +106,15 @@ function getVariant(id, voucher) {
 		}
 	  }
 
+	  if(result.variant_type != 'bulk'){
+	        variantType = "Mobile App"
+		$("#button-link").attr("style","display:none");
+		$("#button-voucher").attr("style","display:none");
+	  }
+
           $('#variantName').html(result.variant_name);
           $('#variantDescription').html(result.variant_description);
-          $('#variantType').html(result.variant_type);
+          $('#variantType').html(variantType);
           $('#voucherType').html(result.voucher_type);
           $('#conversionRate').html(result.voucher_price);
           $('#maxQuantityVoucher').html(maxVoucher);
@@ -115,6 +125,28 @@ function getVariant(id, voucher) {
         //   $('#variant-image').attr("src",result.image_url);
         }
     });
+}
+
+// $("#btnExport").click(function (e) {
+//
+// });
+
+function ConvertToCSV(objArray) {
+	var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+	var str = '';
+
+	for (var i = 0; i < array.length; i++) {
+		var line = '';
+		for (var index in array[i]) {
+			if (line != '') line += ','
+
+			line += array[i][index];
+		}
+
+		str += line + '\n';
+	}
+
+	return str;
 }
 
 function generateVoucher() {
@@ -137,8 +169,13 @@ function generateLink() {
 		type: 'get',
 		success: function (data) {
 			console.log(data);
+			var csv = ConvertToCSV(data.data);
+			alert(csv);
+			console.log(csv);
+			window.open(encodeURI('data:text/csv;charset=utf-8,' + csv));
 		}
 	});
+
 }
 
 function editVariant(){
