@@ -574,6 +574,13 @@ func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 		}
 
+		if err := model.UpdateBulkVariant(id, len(rd.Data)); err != nil {
+			//log.Panic(err)
+			status = http.StatusInternalServerError
+			errTitle = model.ErrCodeInternalError
+			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
+		}
+
 	}
 
 	render.JSON(w, res, status)

@@ -44,7 +44,7 @@
                       <div class="mda-form-group">
                         <div class="mda-form-control">
                           <select id="variant-type" name="variant-type" check="true" class="form-control select2" tabindex="0">
-                            <option value="on-demand">Mobile Apps</option>
+                            <option value="on-demand">Mobile App</option>
                             <option value="bulk">Email Blast</option>
                           </select>
                           <div class="mda-form-control-line"></div>
@@ -129,8 +129,8 @@
                       <div class="form-group">
                         <div class="form-control no-border">
                           <select id="voucher-validity-type" name="voucher-type" class="form-control select2" tabindex="0">
-                            <option value="period">Period</option>
                             <option value="lifetime">Lifetime</option>
+                            <option value="period">Period</option>
                           </select>
                         </div>
                       </div>
@@ -169,7 +169,7 @@
                     </div>
                   </div>
                   <div class="row">
-                    <div class="col-sm-12">
+                    <div class="col-sm-6">
                       <div class="mda-form-group">
                         <div class="mda-form-control">
                           <select id="voucher-type" name="voucher-type" class="form-control select2" tabindex="0">
@@ -181,8 +181,17 @@
                         </div>
                       </div>
                     </div>
+                    <div class="col-sm-6">
+                      <div class="mda-form-group">
+                        <div class="mda-form-control">
+                          <input id="voucher-value" name="voucher-value" placeholder="Min 1" check="true" tabindex="0" aria-invalid="false" class="form-control">
+                          <div class="mda-form-control-line"></div>
+                          <label>Voucher Value</label>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div class="row">
+                  <div id="max-row" class="row">
                     <div class="col-sm-6">
                       <div class="mda-form-group">
                         <div class="mda-form-control">
@@ -202,24 +211,13 @@
                       </div>
                     </div>
                   </div>
-                  <div class="row">
+                  <div id="conversion-row"  class="row">
                     <div class="col-sm-12">
                       <div class="mda-form-group">
                         <div class="mda-form-control">
                           <input id="voucher-price" name="voucher-price" placeholder="0" check="true" tabindex="0" aria-invalid="false" class="form-control">
                           <div class="mda-form-control-line"></div>
                           <label>Conversion Rate from Currency or Poin to Voucher</label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-sm-12">
-                      <div class="mda-form-group">
-                        <div class="mda-form-control">
-                          <input id="voucher-value" name="voucher-value" placeholder="Min 1" check="true" tabindex="0" aria-invalid="false" class="form-control">
-                          <div class="mda-form-control-line"></div>
-                          <label>Voucher Value</label>
                         </div>
                       </div>
                     </div>
@@ -335,8 +333,8 @@
                       <div class="form-group">
                         <div class="form-control no-border">
                           <select id="redeem-validity-type" name="voucher-type" class="form-control select2" tabindex="0">
-                            <option value="all">All Day</option>
                             <option value="selected">Select</option>
+                            <option value="all">All Day</option>
                           </select>
                         </div>
                       </div>

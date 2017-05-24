@@ -304,6 +304,36 @@ func UpdateVariant(d Variant) error {
 	return nil
 }
 
+func UpdateBulkVariant(id string, voucher int) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE variants
+		SET
+			max_quantity_voucher = ?
+		WHERE
+			id = ?
+			AND status = ?
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), voucher, id, StatusCreated)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
+}
+
 func UpdateVariantBroadcasts(user UpdateVariantArrayRequest) error {
 	tx, err := db.Beginx()
 	if err != nil {
