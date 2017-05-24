@@ -4,13 +4,8 @@ server:
   template_directory: "files/etc/voucher/templates"
 
 database:
-<<<<<<< HEAD
     endpoint: "postgres://evoucher:IuA0Ayj8F0p6Iuwg@35.185.131.77:5432/evoucher?sslmode=disable"
     # endpoint: "postgres://elys:elys@127.0.0.1:5432/evoucher?sslmode=disable"
-=======
-    #endpoint: "postgres://evoucher:IuA0Ayj8F0p6Iuwg@35.185.131.77:5432/evoucher?sslmode=disable"
-    endpoint: "postgres://evoucher:IuA0Ayj8F0p6Iuwg@127.0.0.1:5432/evoucher?sslmode=disable"
->>>>>>> dc287b733183e4449fb72eada5a2eeee43edb696
     redis: "127.0.0.1:6379"
 
 mailgun:
