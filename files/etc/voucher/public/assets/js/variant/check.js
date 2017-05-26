@@ -100,10 +100,6 @@ function getVariant(id, voucher) {
 	  var maxVoucher = result.max_quantity_voucher;
           if( voucher != null){
 			remainingVoucher = result.max_quantity_voucher - voucher;
-	  	if(result.variant_type == 'bulk'){
-			remainingVoucher = 0;
-			maxVoucher = voucher;
-		}
 	  }
 
 	  if(result.variant_type != 'bulk'){
