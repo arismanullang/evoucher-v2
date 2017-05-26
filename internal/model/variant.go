@@ -449,18 +449,13 @@ func (d *DeleteVariantRequest) Delete() error {
 		WHERE
 			id = ?
 			AND status = ?
-		RETURNING
-			id
-			, deleted_by
-			, img_url
+
 	`
-	var res []DeleteVariantRequest
 	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.Id, StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
-	*d = res[0]
 
 	q = `
 		UPDATE variant_partners
@@ -482,6 +477,28 @@ func (d *DeleteVariantRequest) Delete() error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	q = `
+		SELECT
+			id
+			, deleted_by
+			, img_url
+		FROM
+			variants as va
+		WHERE
+			va.id = ?
+	`
+
+	var resv []DeleteVariantRequest
+	if err = db.Select(&resv, db.Rebind(q), d.Id); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	if len(resv) < 1 {
+		return ErrResourceNotFound
+	}
+	*d = resv[0]
+
 	return nil
 }
 
@@ -554,6 +571,7 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 			va.id = vo.variant_id
 		WHERE
 			va.account_id = ?
+			AND va.status = ?
 		GROUP BY
 			va.id, vo.state
 		ORDER BY
@@ -561,7 +579,7 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 	`
 
 	var resv []SearchVariant
-	if err := db.Select(&resv, db.Rebind(q), accountId); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
 		fmt.Println(err.Error())
 		return resv, ErrServerInternal
 	}
