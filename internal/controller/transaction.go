@@ -417,7 +417,7 @@ func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 		status = http.StatusOK
 		transaction, _ := model.FindAllTransactionByPartner(accountId, partnerId)
 		// transaction, err := model.FindAllTransactionByPartner(accountId, partnerId)
-		fmt.Println(err)
+		// fmt.Println(err)
 		// if err != nil {
 		// 	status = http.StatusInternalServerError
 		// 	errTitle = model.ErrCodeInternalError

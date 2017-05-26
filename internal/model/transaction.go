@@ -24,6 +24,7 @@ type (
 	}
 	TransactionList struct {
 		PartnerName  string         `db:"partner_name" json:"partner_name"`
+		Transaction  string         `db:"transaction" json:"transaction_id"`
 		Voucher      string         `db:"voucher" json:"voucher"`
 		VoucherValue float32        `db:"discount_value" json:"discount_value"`
 		Issued       string         `db:"issued" json:"issued"`
@@ -350,7 +351,7 @@ func FindAllTransactionByVariant(variantId string) ([]TransactionList, error) {
 func FindAllTransactionByPartner(accountId, partnerId string) ([]TransactionList, error) {
 	q := `
 		SELECT
-			p.partner_name, dt.voucher_id as voucher, vo.discount_value, va.created_at as issued, t.created_at as redeemed, vo.updated_at as cashout, u.username, vo.state
+			p.partner_name, t.id as transaction, vo.voucher_code as voucher, vo.discount_value, va.created_at as issued, t.created_at as redeemed, vo.updated_at as cashout, u.username, vo.state
 		FROM transactions as t
 		JOIN transaction_details as dt
 		ON
@@ -370,12 +371,11 @@ func FindAllTransactionByPartner(accountId, partnerId string) ([]TransactionList
 		WHERE
 			t.status = ?
 			AND t.account_id = ?
-			AND t.partner_id = ?
-		ORDER BY t.created_at DESC;
 	`
-
+	q += `AND p.partner_name LIKE '%` + partnerId + `%'`
+	q += `ORDER BY t.created_at ASC;`
 	var resv []TransactionList
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId, partnerId); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId); err != nil {
 		fmt.Println(err.Error())
 		return resv, ErrServerInternal
 	}

@@ -1,5 +1,5 @@
 $( document ).ready(function() {
-  getTransaction();
+  getTransactionByPartner("");
   getPartner();
 
   $("#partner-id").change(function() {
@@ -22,7 +22,7 @@ function getPartner() {
 
         var i;
         for (i = 0; i < arrData.length; i++){
-          var li = $("<option value='"+arrData[i].id+"'>"+arrData[i].partner_name+"</div>");
+          var li = $("<option value='"+arrData[i].partner_name+"'>"+arrData[i].partner_name+"</div>");
           li.appendTo('#partner-id');
         }
       }
@@ -144,7 +144,7 @@ function getTransactionByPartner(partnerId) {
 	    }
             dataSet[i] = [
               arrData[i].partner_name
-              , arrData[i].voucher
+              , arrData[i].transaction_id
               , addDecimalPoints(arrData[i].discount_value)
               , date1[2] + " " + months[parseInt(date1[1])-1] + " " + date1[0]
 	      , date2[2] + " " + months[parseInt(date2[1])-1] + " " + date2[0]
@@ -164,7 +164,7 @@ function getTransactionByPartner(partnerId) {
               "order": [[ 0, "asc" ]],
               columns: [
                   { title: "Partner Name" },
-                  { title: "Voucher Code" },
+                  { title: "Transaction Id" },
                   { title: "Voucher Value" },
                   { title: "Issued Date" },
                   { title: "Redeem Date" },
