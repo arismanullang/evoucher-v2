@@ -34,6 +34,7 @@ function getProfile(x){
 			$("#variant-id").val(data.data.variant_id);
 			$("#discount-value").val(data.data.discount_value);
 			$("#voucher").val(data.data.Vouchers[0].voucher_id);
+			$("#tnc").html(data.data.variant_tnc);
 		}
 	});
 }
