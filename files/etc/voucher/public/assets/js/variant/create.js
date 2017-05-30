@@ -1,6 +1,7 @@
 $( document ).ready(function() {
   getPartner();
 
+  $("#token").val(token);
   $("#voucher-validity-type").change(function() {
     if(this.value == "lifetime"){
       $("#validity-lifetime").attr("style","display:block");

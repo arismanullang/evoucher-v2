@@ -10,14 +10,15 @@
     <div class="row">
       <!-- Left column-->
       <div class="col-md-7 col-lg-8">
-        <form editable-form="" id="profileForm" name="user.profileForm" class="card">
-          <input type="hidden" id="variant-id">
+        <form editable-form="" id="profileForm" method="post" action="/v1/voucher/link" name="user.profileForm" class="card">
           <h5 class="card-heading">
             <div class="pull-right">
-              <button onclick="editVariant()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Edit"><em class="ion-edit"></em ></button>
-              <button id="button-voucher" onclick="generateVoucher()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Generate Voucher"><em class="ion-flash"></em></button>
-              <button id="button-link" onclick="generateLink()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Download CSV"><em class="ion-archive"></em></button>
+              <button type="button" onclick="editVariant()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Edit"><em class="ion-edit"></em ></button>
+              <button type="button" id="button-voucher" onclick="generateVoucher()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Generate Voucher"><em class="ion-flash"></em></button>
+              <button type="submit" id="button-link" name="button-voucher" value="generate" onclick="generateLink()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Download CSV"><em class="ion-archive"></em></button>
             </div>
+            <input type="hidden" name="variant" id="variant-id">
+            <input type="hidden" name="token" id="token">
             Program Details
           </h5>
           <div class="card-body">

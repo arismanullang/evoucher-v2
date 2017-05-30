@@ -1,13 +1,14 @@
 $( document ).ready(function() {
   var id = findGetParameter('id');
   $("#variant-id").val(id);
+  $("#token").val(token);
   getVoucher(id);
   getPartner(id);
 
-  $('#profileForm').submit(function(e) {
-       e.preventDefault();
-       e.returnValue = false;
-  });
+  // $('#profileForm').submit(function(e) {
+	//   e.preventDefault();
+	//   e.returnValue = false;
+  // });
 });
 
 function getVoucher(id) {
@@ -156,22 +157,6 @@ function generateVoucher() {
 			alert("Success");
 		}
 	});
-}
-
-function generateLink() {
-	var id = $('#variant-id').val();
-	$.ajax({
-		url: '/v1/voucher/link?variant='+id+"&token="+token,
-		type: 'get',
-		success: function (data) {
-			console.log(data);
-			var csv = ConvertToCSV(data.data);
-			alert(csv);
-			console.log(csv);
-			window.open(encodeURI('data:text/csv;charset=utf-8,' + csv));
-		}
-	});
-
 }
 
 function editVariant(){
