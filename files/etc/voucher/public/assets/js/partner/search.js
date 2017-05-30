@@ -17,7 +17,7 @@ function getPartner() {
         var dataSet = [];
         for (i = 0; i < arrData.length; i++){
 	  var button = "<button type='button' class='btn btn-flat btn-sm btn-info' onclick='edit(\""+arrData[i].id+"\")'><em class='ion-edit'></em></button>"+
-		"<button type='button' class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button></li>"
+		"<button type='button' class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>";
 
 	  dataSet[i] = [
 		arrData[i].partner_name

@@ -9,7 +9,7 @@
 <div class="container-overlap bg-white">
 </div>
 <div class="container container-md">
-  <form id="create-variant" name="create-variant" novalidate="" class="card b0 form-validate redeem-rules-form">
+  <form id="create-variant" name="create-variant" novalidate="" class="card b0 form-validate redeem-rules-form" action="/v1/sample/link" method="get">
     <div class="row">
       <div class="card">
         <!-- Nav tabs-->
@@ -82,7 +82,7 @@
                     <div class="col-sm-6">
                       <div class="mda-form-group">
                         <div class="mda-form-control no-border-bottom">
-                          <span><img id="image-preview" class="image-preview" src="https://storage.googleapis.com/e-voucher/Nd3QxH8El2Zuy12QhXs5Y305vPL4VZJJ.jpg"></img></span>
+                          <span><img id="image-preview" class="image-preview" src="/assets/img/Default_image_blank_voucher.jpg"></img></span>
                           <input id="image-url" name="image-url" type="file" tabindex="0" aria-invalid="false" class="form-control">
                           <div class="mda-form-control-line"></div>
                           <label>Voucher Image</label>
@@ -91,13 +91,19 @@
                     </div>
 
                     <div id="target" class="col-sm-6 form-horizontal" style="display:none">
-                      <div class="col-sm-4">
-                        <label class="control-label">List Target</label>
-                      </div>
-                      <div class="col-sm-8">
-                        <div class="form-group">
-                          <input id="list-target" name="list-target" type="file" tabindex="0" aria-invalid="false" class="no-border form-control">
+                      <div class="row">
+                        <div class="col-sm-4">
+                          <label class="control-label">List Target</label>
                         </div>
+                        <div class="col-sm-8">
+                          <div class="form-group">
+                            <input id="list-target" name="list-target" type="file" tabindex="0" aria-invalid="false" class="no-border form-control">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <button type="submit" class="btn btn-raised btn-primary ripple">Download Sample CSV</button>
+                        <input type="hidden" id="token" name="token">
                       </div>
                     </div>
                   </div>
