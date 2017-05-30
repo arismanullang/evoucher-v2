@@ -1,0 +1,69 @@
+{{ template "layout" . }}
+
+{{ define "title" }}Edit Partner{{ end }}
+{{ define "header-title" }}Edit Partner{{ end }}
+
+{{ define "content" }}
+<!-- Page content-->
+<section>
+  <div class="container-fluid">
+    <form id="create-variant" name="create-variant" novalidate="" class="card b0 form-validate">
+      <div class="col-sm-4">
+        <div class="card">
+          <div class="card-heading bg-amber-500">
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-sm-12">
+                <div class="mda-form-group">
+                  <div class="mda-form-control">
+                    <input id="transaction-code" name="transaction-code" check="true" tabindex="0" aria-invalid="false" class="form-control">
+                    <div class="mda-form-control-line"></div>
+                    <label>Transaction Code</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class=" pull-right pr">
+                <button type="button" onclick="addElem()" class="btn btn-raised btn-primary ripple">Submit</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-8">
+        <div class="card">
+          <div class="card-heading bg-amber-500">
+            <div class="card-title text-center">Transaction List</div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-sm-12">
+                <table class="table table-hover table-fixed va-middle">
+                  <tbody id="list-transaction">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="row">
+              <div class=" pull-right pr">
+                <button type="button" onclick="cashout()" class="btn btn-raised btn-primary ripple">Print</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+{{ end }}
+
+{{ define "scripts" }}
+<script type="text/javascript" src="/assets/vendor/sweetalert/dist/sweetalert-dev.js"></script>
+<script type="text/javascript" src="/assets/js/voucher/cashout.js"></script>
+{{ end }}
+
+{{ define "stylesheets" }}
+<link rel="stylesheet" href="/assets/vendor/sweetalert/dist/sweetalert.css">
+{{ end }}
