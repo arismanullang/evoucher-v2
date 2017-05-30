@@ -99,7 +99,8 @@ func setRoutes() http.Handler {
 	// r.PostFunc("/v1/voucher/pay", controller.PayVoucher)
 	r.GetFunc("/v1/voucher/generate/bulk", controller.GenerateVoucherBulk)
 	r.PostFunc("/v1/voucher/generate/single", controller.GenerateVoucherOnDemand)
-	r.GetFunc("/v1/voucher/link", controller.GetVoucherlink)
+	r.PostFunc("/v1/voucher/link", controller.GetVoucherlink)
+	r.GetFunc("/v1/sample/link", controller.GetCsvSample)
 
 	//public
 	r.GetFunc("/v1/public/challenge", controller.GetChallenge)

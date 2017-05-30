@@ -1,5 +1,9 @@
 $( document ).ready(function() {
-
+	$('#transaction').submit(function(e) {
+		e.preventDefault();
+		addElem();
+		return false;
+	});
 });
 
 function cashout(){
@@ -52,6 +56,11 @@ function addElem(){
 			li.html(body);
 			li.appendTo('#list-transaction');
 			$('#transaction-code').val('');
+			$("#error").html('');
+		},
+		error: function (data) {
+			console.log(data.responseJSON.errors.detail);
+			$("#error").html(data.responseJSON.errors.detail);
 		}
 	});
 }

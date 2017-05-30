@@ -21,11 +21,11 @@ function cashout(partner){
 			console.log(data.data);
 			var result = data.data;
 			for ( i = 0; i < result.length; i++){
-				var tempDate = new Date(result[i].redeemed)
+				var date = new Date(result[i].redeemed)
 				var body = "<td>"+result[i].partner_name+"</td>"
 					+ "<td>"+result[i].transaction_id+"</td>"
-					+ "<td>"+tempDate+"</td>"
-				var li = $("<tr></tr>");
+					+ "<td>"+date.toDateString() + ", " + date.getHours() + ":" + date.getMinutes()+"</td>"
+				var li = $("<tr class='text-center'></tr>");
 				li.html(body);
 				li.appendTo('#list-transaction');
 
