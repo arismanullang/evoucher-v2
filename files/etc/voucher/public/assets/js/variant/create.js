@@ -93,7 +93,7 @@ function readURL(input) {
 function addRule(){
   console.log("add");
   var body = "<td class='text-ellipsis td-index'>*</td>"
-            + "<td class='text-ellipsis tnc'><div>"+$("#input-term-condition").val()+"</td>"
+            + "<td class='text-ellipsis tnc'><div>"+$("#input-term-condition").val()+"</div></td>"
             + "<td><button type='button' onclick='removeElem(this)' class='btn btn-flat btn-sm btn-info pull-right'><em class='ion-close-circled'></em></button></td>";
   var li = $("<tr class='msg-display clickable'></tr>");
   li.html(body);
@@ -140,7 +140,7 @@ function send() {
     error = true;
   }
 
-  for (i = 0; i < li.length-1; i++) {
+  for (i = 0; i < li.length; i++) {
       listPartner[i] = li[i].value;
   }
 
