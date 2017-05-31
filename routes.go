@@ -47,7 +47,7 @@ func setRoutes() http.Handler {
 
 	//transaction
 	r.PostFunc("/v1/transaction/redeem", controller.MobileCreateTransaction)
-	r.GetFunc("/v1/get/transaction/:id", controller.GetTransaction)
+	r.GetFunc("/v1/get/transaction/details/:id", controller.GetTransaction)
 	//r.PostFunc("/v1/update/transaction/:id", controller.UpdateTransaction)
 	r.PostFunc("/v1/delete/transaction/:id", controller.DeleteTransaction)
 	r.GetFunc("/v1/get/transaction", controller.GetAllTransactions)
