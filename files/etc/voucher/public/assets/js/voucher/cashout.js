@@ -41,7 +41,7 @@ function cashout(){
 function addElem(){
 	var id = $('#transaction-code').val();
 	$.ajax({
-		url: '/v1/get/transaction/'+id+'?token='+token,
+		url: '/v1/get/transaction/details/'+id+'?token='+token,
 		type: 'get',
 		success: function (data) {
 			console.log("Render Data");
