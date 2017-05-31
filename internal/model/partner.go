@@ -254,6 +254,7 @@ func FindVariantPartner(param map[string]string) ([]Partner, error) {
 	if len(resv) < 1 {
 		return []Partner{}, ErrResourceNotFound
 	}
+	fmt.Println(resv)
 	return resv, nil
 }
 
