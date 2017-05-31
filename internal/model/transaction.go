@@ -452,6 +452,7 @@ func FindAllTransactionByPartner(accountId, partnerId string) ([]TransactionList
 	`
 	q += `AND p.partner_name LIKE '%` + partnerId + `%'`
 	q += `ORDER BY t.created_at DESC;`
+	fmt.Println(q)
 	var resv []TransactionList
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId); err != nil {
 		fmt.Println(err.Error())
