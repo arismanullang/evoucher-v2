@@ -75,6 +75,7 @@ function send(){
 		},
 		error: function (data) {
 			console.log(data);
+                        alert(data);
 			window.location = '/public/fail';
 		}
 	});

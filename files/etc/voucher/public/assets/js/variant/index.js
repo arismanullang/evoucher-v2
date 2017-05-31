@@ -58,7 +58,7 @@ function getVariant() {
           $("#total-used").html(totalUsedVoucher);
         },
         error: function (data) {
-          alert("Variant Not Found.");
+          //alert("Variant Not Found.");
         }
     });
 }

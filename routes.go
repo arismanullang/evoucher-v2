@@ -51,7 +51,7 @@ func setRoutes() http.Handler {
 	//r.PostFunc("/v1/update/transaction/:id", controller.UpdateTransaction)
 	r.PostFunc("/v1/delete/transaction/:id", controller.DeleteTransaction)
 	r.GetFunc("/v1/get/transaction", controller.GetAllTransactions)
-	r.GetFunc("/v1/get/transaction/partner", controller.GetAllTransactionsByPartner)
+	//r.GetFunc("/v1/get/transaction/partner", controller.GetAllTransactionsByPartner)
 	r.GetFunc("/v1/update/transaction/cashout/:id", controller.CashoutTransaction)
 	r.PostFunc("/v1/update/transaction/cashout", controller.CashoutTransactions)
 	r.GetFunc("/v1/print/transaction/cashout", controller.PrintCashoutTransaction)
