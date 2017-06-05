@@ -148,9 +148,11 @@ type (
 
 	GetVoucherlinkResponse []GetVoucherlinkdata
 	GetVoucherlinkdata     struct {
-		Url         string `json:"url"`
-		VoucherID   string `json:"voucher_id"`
-		VoucherCode string `json:"voucher_code"`
+		Url         		string `json:"url"`
+		VoucherID   		string `json:"voucher_id"`
+		VoucherCode 		string `json:"voucher_code"`
+		Holder  		string `json:"holder,omitempty"`
+		HolderDescription	string `json:"holder_description,omitempty"`
 	}
 )
 
@@ -742,6 +744,8 @@ func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 		vl[k].Url = generateLink(v.ID)
 		vl[k].VoucherID = v.ID
 		vl[k].VoucherCode = v.VoucherCode
+		vl[k].Holder = v.Holder.String
+		vl[k].HolderDescription = v.HolderDescription.String
 	}
 
 	res = NewResponse(vl)

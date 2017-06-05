@@ -451,21 +451,21 @@ func GetTransaction(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
-func GetTransactionByDate(w http.ResponseWriter, r *http.Request) {
-	var rd DateTransactionRequest
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
-	}
-
-	variant, err := model.FindTransactionDetailsByDate(rd.Start, rd.End)
-	if err != nil && err != model.ErrResourceNotFound {
-		log.Panic(err)
-	}
-
-	res := NewResponse(variant)
-	render.JSON(w, res)
-}
+//func GetTransactionByDate(w http.ResponseWriter, r *http.Request) {
+//	var rd DateTransactionRequest
+//	decoder := json.NewDecoder(r.Body)
+//	if err := decoder.Decode(&rd); err != nil {
+//		log.Panic(err)
+//	}
+//
+//	variant, err := model.FindTransactionDetailsByDate(rd.Start, rd.End)
+//	if err != nil && err != model.ErrResourceNotFound {
+//		log.Panic(err)
+//	}
+//
+//	res := NewResponse(variant)
+//	render.JSON(w, res)
+//}
 
 func UpdateTransaction(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
