@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
@@ -31,6 +32,9 @@ type (
 	}
 	TransactionResponse struct {
 		TransactionCode string `json:"transaction_code"`
+	}
+	TransactionCodeBulk struct {
+		TransactionCode []string `json:"transaction_code"`
 	}
 )
 
@@ -417,7 +421,7 @@ func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 		status = http.StatusOK
 		transaction, _ := model.FindAllTransactionByPartner(accountId, partnerId)
 		// transaction, err := model.FindAllTransactionByPartner(accountId, partnerId)
-		fmt.Println(err)
+		// fmt.Println(err)
 		// if err != nil {
 		// 	status = http.StatusInternalServerError
 		// 	errTitle = model.ErrCodeInternalError
@@ -435,19 +439,32 @@ func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetTransaction(w http.ResponseWriter, r *http.Request) {
-	status := http.StatusOK
+	transactionCode := bone.GetValue(r, "id")
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	errTitle := model.ErrCodeInvalidToken
+	res := NewResponse(nil)
+	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
 
-	accountID, _, _, ok := AuthToken(w, r)
-	if !ok {
-		return
+	fmt.Println("Check Session")
+	_, _, _, valid := AuthToken(w, r)
+	if valid {
+		status = http.StatusOK
+		variant, err := model.FindTransactionDetailsByTransactionCode(transactionCode)
+		fmt.Println(err)
+		if err != nil {
+			status = http.StatusInternalServerError
+			errTitle = model.ErrCodeInternalError
+			if err == model.ErrResourceNotFound {
+				status = http.StatusNotFound
+				errTitle = model.ErrCodeResourceNotFound
+			}
+
+			res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
+		} else {
+			res = NewResponse(variant)
+		}
 	}
-
-	tx, err := model.FindTransactionDetailsById(accountID)
-	if err != nil && err != model.ErrResourceNotFound {
-		log.Panic(err)
-	}
-
-	res := NewResponse(tx)
 	render.JSON(w, res, status)
 }
 
@@ -495,6 +512,61 @@ func UpdateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	res := NewResponse(nil)
 	render.JSON(w, res, http.StatusOK)
+}
+
+func CashoutTransaction(w http.ResponseWriter, r *http.Request) {
+	transactionCode := bone.GetValue(r, "id")
+
+	_, userID, _, ok := AuthToken(w, r)
+	if !ok {
+		return
+	}
+	if err := model.UpdateCashoutTransaction(transactionCode, userID); err != nil {
+		log.Panic(err)
+	}
+
+	res := NewResponse(nil)
+	render.JSON(w, res, http.StatusOK)
+}
+
+func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
+	var rd TransactionCodeBulk
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	_, userID, _, ok := AuthToken(w, r)
+	if !ok {
+		return
+	}
+	if err := model.UpdateCashoutTransactions(rd.TransactionCode, userID); err != nil {
+		log.Panic(err)
+	}
+
+	res := NewResponse(nil)
+	render.JSON(w, res, http.StatusOK)
+}
+
+func PrintCashoutTransaction(w http.ResponseWriter, r *http.Request) {
+	partnerId := r.FormValue("partner")
+	partnerId = strings.Replace(partnerId, "*", "&", -1)
+
+	fmt.Println("Get Transaction")
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	errTitle := model.ErrCodeInvalidToken
+	res := NewResponse(nil)
+	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
+
+	fmt.Println("Check Session")
+	accountId, _, _, valid := AuthToken(w, r)
+	if valid {
+		status = http.StatusOK
+		transaction, _ := model.PrintCashout(accountId, partnerId)
+		res = NewResponse(transaction)
+	}
+	render.JSON(w, res, status)
 }
 
 func DeleteTransaction(w http.ResponseWriter, r *http.Request) {

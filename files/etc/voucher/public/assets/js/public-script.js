@@ -34,8 +34,22 @@ function getProfile(x){
 			$("#variant-id").val(data.data.variant_id);
 			$("#discount-value").val(data.data.discount_value);
 			$("#voucher").val(data.data.Vouchers[0].voucher_id);
+			$("#tnc").html(data.data.variant_tnc);
 		}
 	});
+}
+
+function findGetParameter(parameterName) {
+	var result = null,
+		tmp = [];
+	location.search
+		.substr(1)
+		.split("&")
+		.forEach(function (item) {
+			tmp = item.split("=");
+			if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+		});
+	return result;
 }
 
 function send(){

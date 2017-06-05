@@ -109,7 +109,7 @@ const (
 	PublicURL      string = "https://storage.googleapis.com/%s/%s"
 
 	//Voucher link
-	VOUCHER_URL string = "https://voucher.elys.id/v1/redeem"
+	VOUCHER_URL string = "voucher.elys.id/public/redeem"
 
 	//Challenge code config
 	CHALLENGE_FORMAT string = "Numerals"

@@ -81,11 +81,18 @@ func InsertBroadcastUser(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		for value := range record {
-			temp := strings.Split(record[value], ";")
-			listTarget = append(listTarget, temp[1])
-			listDescription = append(listDescription, temp[2])
-			fmt.Println(temp)
+		fmt.Println(record)
+		if len(record) > 0 {
+			listTarget = append(listTarget, strings.Replace(record[1], "'", "", -1))
+			listDescription = append(listDescription, strings.Replace(record[2], "'", "", -1))
+		} else {
+			for value := range record {
+				fmt.Println(record[value])
+				temp := strings.Split(record[value], ";")
+				listTarget = append(listTarget, strings.Replace(temp[1], "'", "", -1))
+				listDescription = append(listDescription, strings.Replace(temp[2], "'", "", -1))
+				fmt.Println(temp)
+			}
 		}
 	}
 
@@ -106,6 +113,13 @@ func InsertBroadcastUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(nil)
 
+		}
+
+		if err := model.UpdateBulkVariant(variantId, len(listTarget)); err != nil {
+			//log.Panic(err)
+			status = http.StatusInternalServerError
+			errTitle = model.ErrCodeInternalError
+			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 		}
 
 	}

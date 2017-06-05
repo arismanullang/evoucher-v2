@@ -36,7 +36,6 @@ function getVariant() {
               dataId.push(arrData[i].id);
               dataStart.push(date1[2] + " " + months[parseInt(date1[1])-1] + " " + date1[0]);
               dataEnd.push(date2[2] + " " + months[parseInt(date2[1])-1] + " " + date2[0]);
-	      dataModified.push(date3[2] + " " + months[parseInt(date3[1])-1] + " " + date3[0]);
               dataName.push(arrData[i].variant_name);
               dataPrice.push(arrData[i].voucher_price);
               dataValue.push(arrData[i].discount_value);
@@ -59,6 +58,8 @@ function getVariant() {
 
 	      if(arrData[i].updated_at.String != ""){
 		      dataModified.push(date4[2] + " " + months[parseInt(date4[1])-1] + " " + date4[0]);
+	      }else{
+		      dataModified.push(date3[2] + " " + months[parseInt(date3[1])-1] + " " + date3[0]);
 	      }
             }
             else{

@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -148,11 +150,9 @@ type (
 
 	GetVoucherlinkResponse []GetVoucherlinkdata
 	GetVoucherlinkdata     struct {
-		Url         		string `json:"url"`
-		VoucherID   		string `json:"voucher_id"`
-		VoucherCode 		string `json:"voucher_code"`
-		Holder  		string `json:"holder,omitempty"`
-		HolderDescription	string `json:"holder_description,omitempty"`
+		Url         string `json:"url"`
+		VoucherID   string `json:"voucher_id"`
+		VoucherCode string `json:"voucher_code"`
 	}
 )
 
@@ -656,7 +656,7 @@ func (vr *GenerateVoucherRequest) generateVoucher(v *model.Variant) ([]model.Vou
 	var rt []string
 	var vcf model.VoucherCodeFormat
 	var code string
-	var tsd , ted time.Time
+	var tsd, ted time.Time
 
 	vcf, err := model.GetVoucherCodeFormat(v.VoucherFormat)
 	if err != nil {
@@ -664,8 +664,8 @@ func (vr *GenerateVoucherRequest) generateVoucher(v *model.Variant) ([]model.Vou
 	}
 	if v.VoucherLifetime > 0 {
 		tsd = time.Now()
-		ted = time.Now().AddDate(0,0,v.VoucherLifetime)
-	}else {
+		ted = time.Now().AddDate(0, 0, v.VoucherLifetime)
+	} else {
 		tsd, err = time.Parse(time.RFC3339Nano, v.ValidVoucherStart)
 		if err != nil {
 			log.Panic(err)
@@ -676,8 +676,6 @@ func (vr *GenerateVoucherRequest) generateVoucher(v *model.Variant) ([]model.Vou
 			log.Panic(err)
 		}
 	}
-
-
 
 	for i := 0; i <= vr.Quantity-1; i++ {
 		switch {
@@ -739,17 +737,70 @@ func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vl := make(GetVoucherlinkResponse, len(v.VoucherData))
-	for k, v := range v.VoucherData {
-		vl[k].Url = generateLink(v.ID)
-		vl[k].VoucherID = v.ID
-		vl[k].VoucherCode = v.VoucherCode
-		vl[k].Holder = v.Holder.String
-		vl[k].HolderDescription = v.HolderDescription.String
+	//vl := make(GetVoucherlinkResponse, len(v.VoucherData))
+	//for k, v := range v.VoucherData {
+	//	vl[k].Url = generateLink(v.ID)
+	//	vl[k].VoucherID = v.ID
+	//	vl[k].VoucherCode = v.VoucherCode
+	//}
+
+	//res = NewResponse(vl)
+	//render.JSON(w, res, status)
+
+	vl := [][]string{}
+	for _, v := range v.VoucherData {
+		tempName := v.Holder.String
+		tempEmail := v.HolderEmail.String
+		if v.HolderEmail.String == "" {
+			tempEmail = v.HolderDescription.String
+		}
+		tempArray := []string{generateLink(v.ID), tempEmail, tempName}
+		vl = append(vl, tempArray)
 	}
 
-	res = NewResponse(vl)
-	render.JSON(w, res, status)
+	b := &bytes.Buffer{}   // creates IO Writer
+	wr := csv.NewWriter(b) // creates a csv writer that uses the io buffer.
+	for _, value := range vl {
+		err := wr.Write(value) // converts array of string to comma seperated values for 1 row.
+		if err != nil {
+			log.Fatal("", err)
+		}
+	}
+	wr.Flush() // writes the csv writer data to  the buffered data io writer(b(bytes.buffer))
+
+	w.Header().Set("Content-Type", "text/csv") // setting the content type header to text/csv
+
+	w.Header().Set("Content-Disposition", "attachment;filename=Report.csv")
+	w.Write(b.Bytes())
+	return
+}
+
+func GetCsvSample(w http.ResponseWriter, r *http.Request) {
+	_, _, _, ok := AuthToken(w, r)
+	if !ok {
+		return
+	}
+
+	vl := [][]string{}
+	for i := 0; i < 3; i++ {
+		tempArray := []string{"index", "Email", "Name"}
+		vl = append(vl, tempArray)
+	}
+
+	b := &bytes.Buffer{}   // creates IO Writer
+	wr := csv.NewWriter(b) // creates a csv writer that uses the io buffer.
+	for _, value := range vl {
+		err := wr.Write(value) // converts array of string to comma seperated values for 1 row.
+		if err != nil {
+			log.Fatal("", err)
+		}
+	}
+	wr.Flush() // writes the csv writer data to  the buffered data io writer(b(bytes.buffer))
+
+	w.Header().Set("Content-Type", "text/csv") // setting the content type header to text/csv
+
+	w.Header().Set("Content-Disposition", "attachment;filename=Sample.csv")
+	w.Write(b.Bytes())
 	return
 }
 

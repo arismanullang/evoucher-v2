@@ -47,11 +47,14 @@ func setRoutes() http.Handler {
 
 	//transaction
 	r.PostFunc("/v1/transaction/redeem", controller.MobileCreateTransaction)
-	r.GetFunc("/transaction/:id/", controller.GetTransaction)
-	r.PostFunc("/transaction/:id/update", controller.UpdateTransaction)
-	r.PostFunc("/transaction/:id/delete", controller.DeleteTransaction)
+	r.GetFunc("/v1/get/transaction/details/:id", controller.GetTransaction)
+	//r.PostFunc("/v1/update/transaction/:id", controller.UpdateTransaction)
+	r.PostFunc("/v1/delete/transaction/:id", controller.DeleteTransaction)
 	r.GetFunc("/v1/get/transaction", controller.GetAllTransactions)
 	r.GetFunc("/v1/get/transaction/partner", controller.GetAllTransactionsByPartner)
+	r.GetFunc("/v1/update/transaction/cashout/:id", controller.CashoutTransaction)
+	r.PostFunc("/v1/update/transaction/cashout", controller.CashoutTransactions)
+	r.GetFunc("/v1/print/transaction/cashout", controller.PrintCashoutTransaction)
 
 	//user
 	r.PostFunc("/v1/create/user", controller.RegisterUser)
@@ -96,7 +99,8 @@ func setRoutes() http.Handler {
 	// r.PostFunc("/v1/voucher/pay", controller.PayVoucher)
 	r.GetFunc("/v1/voucher/generate/bulk", controller.GenerateVoucherBulk)
 	r.PostFunc("/v1/voucher/generate/single", controller.GenerateVoucherOnDemand)
-	r.GetFunc("/v1/voucher/link", controller.GetVoucherlink)
+	r.PostFunc("/v1/voucher/link", controller.GetVoucherlink)
+	r.GetFunc("/v1/sample/link", controller.GetCsvSample)
 
 	//public
 	r.GetFunc("/v1/public/challenge", controller.GetChallenge)
@@ -214,6 +218,10 @@ func viewVoucher(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "voucher/check.html", nil)
 	} else if page == "update" {
 		render.FileInLayout(w, "layout.html", "voucher/update.html", nil)
+	} else if page == "cashout" {
+		render.FileInLayout(w, "layout.html", "voucher/cashout.html", nil)
+	} else if page == "print" {
+		render.FileInLayout(w, "layout.html", "voucher/print.html", nil)
 	} else if page == "" || page == "index" {
 		render.FileInLayout(w, "layout.html", "voucher/index.html", nil)
 	}

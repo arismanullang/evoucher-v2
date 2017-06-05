@@ -14,24 +14,54 @@ function getPartner() {
         arrData = data.data;
         console.log(arrData);
         var i;
+        var dataSet = [];
         for (i = 0; i < arrData.length; i++){
-          var html = "<div class='mda-list-item-icon bg-info'><em class='ion-home icon-2x'></em></div>"
-          + "<div class='mda-list-item-text'>"
-          + "<h3>"+arrData[i].partner_name+"</h3>"
-          + "<h4 class='text-muted'> Serial Number : "+arrData[i].serial_number.String+"</h4>"
-          + "<h4 class='text-muted'>"+arrData[i].tag.String+"</h4>"
-          + "</div>"
-          + "<div class='pull-right dropdown dropdown-partner'>"
-          + "<button type='button' data-toggle='dropdown' class='btn btn-default btn-flat btn-flat-icon'><em class='ion-android-more-vertical'></em></button>"
-          + "<ul role='menu' class='dropdown-menu dropdown-menu-partner md-dropdown-menu dropdown-menu-right'>"
-          + "<li><button type='button' class='btn btn-flat btn-sm btn-info' onclick='edit(\""+arrData[i].id+"\")'><em class='ion-edit'></em> Edit</button>"
-          + "<li><button type='button' class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em> Delete</button></li>"
-          + "</ul>"
-          + "</div>";
-          var li = $("<div class='mda-list-item col-sm-6'></div>").html(html);
-          li.appendTo('#listPartner');
+	  var button = "<button type='button' class='btn btn-flat btn-sm btn-info' onclick='edit(\""+arrData[i].id+"\")'><em class='ion-edit'></em></button>"+
+		"<button type='button' class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>";
+
+	  dataSet[i] = [
+		arrData[i].partner_name
+		, arrData[i].serial_number.String
+		, arrData[i].tag.String
+		, button
+	  ];
         }
-      }
+
+      	if ($.fn.DataTable.isDataTable("#datatable1")) {
+	      $('#datatable1').DataTable().clear().destroy();
+      	}
+
+      	var table = $('#datatable1').dataTable({
+	      data: dataSet,
+	      dom: 'rtip',
+	      "order": [[ 1, "desc" ]],
+	      columns: [
+		      { title: "Partner Name" },
+		      { title: "Serial Number" },
+		      { title: "Tag" },
+		      { title: "Action"}
+	      ],
+	      oLanguage: {
+		      sSearch: '<em class="ion-search"></em>',
+		      sLengthMenu: '_MENU_ records per page',
+		      info: 'Showing page _PAGE_ of _PAGES_',
+		      zeroRecords: 'Nothing found - sorry',
+		      infoEmpty: 'No records available',
+		      infoFiltered: '(filtered from _MAX_ total records)',
+		      oPaginate: {
+			      sNext: '<em class="ion-ios-arrow-right"></em>',
+			      sPrevious: '<em class="ion-ios-arrow-left"></em>'
+		      }
+	      }
+      	});
+      	var inputSearchClass = 'datatable_input_col_search';
+      	var columnInputs = $('thead .' + inputSearchClass);
+
+      	columnInputs
+	      .keyup(function() {
+		      table.fnFilter(this.value, columnInputs.index(this));
+	      });
+      	}
   });
 }
 
