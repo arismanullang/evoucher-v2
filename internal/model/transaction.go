@@ -19,6 +19,21 @@ type (
 		User            string    `db:"created_by" json:"user"`
 		Vouchers        []string  `db:"-" json:"vouchers"`
 	}
+	Cashout struct {
+		Id              string           `db:"id" json:"id"`
+		PartnerId       string           `db:"partner_id" json:"partner_id"`
+		PartnerName     string           `db:"partner_name" json:"partner_name"`
+		TransactionCode string           `db:"transaction_code" json:"transaction_code"`
+		State           string           `db:"state" json:"state"`
+		DiscountValue   float64          `db:"discount_value" json:"discount_value"`
+		CreatedAt       time.Time        `db:"created_at" json:"created_at"`
+		Vouchers        []CashoutVoucher `db:"-" json:"vouchers"`
+	}
+	CashoutVoucher struct {
+		Id           string `db:"id" json:"id"`
+		VoucherCode  string `db:"voucher_code" json"voucher_code"`
+		VoucherState string `db:"state" json"state"`
+	}
 	DeleteTransactionRequest struct {
 		Id   string `db:"id"`
 		User string `db:"deleted_by"`
@@ -26,6 +41,7 @@ type (
 	TransactionList struct {
 		PartnerName  string         `db:"partner_name" json:"partner_name"`
 		Transaction  string         `db:"transaction" json:"transaction_id"`
+		VariantName  string         `db:"variant_name" json:"variant_name"`
 		Voucher      string         `db:"voucher" json:"voucher"`
 		VoucherValue float32        `db:"discount_value" json:"discount_value"`
 		Issued       string         `db:"issued" json:"issued"`
@@ -288,35 +304,55 @@ func FindTransactionDetailsByTransactionCode(transactionCode string) (Transactio
 	return resv[0], nil
 }
 
-func FindTransactionDetailsByTransactionCodes(transactionCode []string) ([]Transaction, error) {
+func FindCashoutTransactionDetails(transactionCode string) (Cashout, error) {
 	q := `
 		SELECT
 			t.id
-			, t.account_id
 			, p.partner_name
 			, t.transaction_code
 			, t.discount_value
-			, t.created_by
 			, t.created_at
 		FROM transactions as t
 		JOIN partners as p
 		ON
 			p.id = t.partner_id
 		WHERE
-			t.status = ?
+			t.transaction_code = ?
+			AND t.status = ?
 	`
-	for _, v := range transactionCode {
-		q += `OR t.transaction_code = ` + v
-	}
-	var resv []Transaction
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
-		return []Transaction{}, err
+
+	var resv []Cashout
+	if err := db.Select(&resv, db.Rebind(q), transactionCode, StatusCreated); err != nil {
+		return Cashout{}, err
 	}
 	if len(resv) < 1 {
-		return []Transaction{}, ErrResourceNotFound
+		return Cashout{}, ErrResourceNotFound
 	}
 
-	return resv, nil
+	q = `
+		SELECT
+			v.id, v.voucher_code, v.state
+		FROM
+			transaction_details as td
+		JOIN
+			vouchers as v
+		ON
+			v.id = td.voucher_id
+		WHERE
+			td.transaction_id = ?
+			AND td.status = ?
+	`
+	var resd []CashoutVoucher
+	if err := db.Select(&resd, db.Rebind(q), resv[0].Id, StatusCreated); err != nil {
+		return Cashout{}, err
+	}
+	if len(resd) < 1 {
+		return Cashout{}, ErrResourceNotFound
+	}
+	resv[0].Vouchers = resd
+	resv[0].State = resd[0].VoucherState
+
+	return resv[0], nil
 }
 
 func FindTransactionDetailsByDate(start, end string) ([]Transaction, error) {
@@ -429,7 +465,7 @@ func FindAllTransactionByVariant(variantId string) ([]TransactionList, error) {
 func FindAllTransactionByPartner(accountId, partnerId string) ([]TransactionList, error) {
 	q := `
 		SELECT
-			p.partner_name, t.transaction_code as transaction, vo.voucher_code as voucher, vo.discount_value, va.created_at as issued, t.created_at as redeemed, vo.updated_at as cashout, u.username, vo.state
+			p.partner_name, va.variant_name, t.transaction_code as transaction, vo.voucher_code as voucher, vo.discount_value, va.created_at as issued, t.created_at as redeemed, vo.updated_at as cashout, u.username, vo.state
 		FROM transactions as t
 		JOIN transaction_details as dt
 		ON
@@ -452,7 +488,7 @@ func FindAllTransactionByPartner(accountId, partnerId string) ([]TransactionList
 	`
 	q += `AND p.partner_name LIKE '%` + partnerId + `%'`
 	q += `ORDER BY t.created_at DESC;`
-	fmt.Println(q)
+	//fmt.Println(q)
 	var resv []TransactionList
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId); err != nil {
 		fmt.Println(err.Error())
@@ -532,7 +568,7 @@ func UpdateCashoutTransactions(transactionCode []string, user string) error {
 		q += `t.transaction_code = '` + v + `'`
 	}
 	q += `)`
-	fmt.Println(q)
+	//fmt.Println(q)
 	var resv []string
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
 		return err
@@ -558,7 +594,7 @@ func UpdateCashoutTransactions(transactionCode []string, user string) error {
 		q += `id = '` + v + `'`
 	}
 	q += `)`
-	fmt.Println(q)
+	//fmt.Println(q)
 	_, err = tx.Exec(tx.Rebind(q), VoucherStatePaid, user, time.Now(), StatusCreated)
 	if err != nil {
 		return err
@@ -570,9 +606,7 @@ func UpdateCashoutTransactions(transactionCode []string, user string) error {
 	return nil
 }
 
-func PrintCashout(accountId, partnerName string) ([]TransactionList, error) {
-	now := time.Now()
-	add := now.AddDate(0, 0, 1)
+func PrintCashout(accountId string, transactionCode []string) ([]TransactionList, error) {
 	q := `
 		SELECT
 			p.partner_name, t.transaction_code as transaction, vo.voucher_code as voucher, vo.discount_value, va.created_at as issued, t.created_at as redeemed, vo.updated_at as cashout, u.username, vo.state
@@ -595,14 +629,19 @@ func PrintCashout(accountId, partnerName string) ([]TransactionList, error) {
 		WHERE
 			t.status = ?
 			AND t.account_id = ?
-			AND vo.updated_at > ?
-			AND vo.updated_at < ?
 			AND vo.state = ?
+			AND (
 	`
-	q += `AND p.partner_name LIKE '%` + partnerName + `%'`
-	q += `ORDER BY t.created_at DESC;`
+
+	for i, v := range transactionCode {
+		if i != 0 {
+			q += ` OR `
+		}
+		q += `t.transaction_code = '` + v + `'`
+	}
+	q += `) ORDER BY t.created_at DESC;`
 	var resv []TransactionList
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId, now.Format("2006-01-02"), add.Format("2006-01-02"), VoucherStatePaid); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId, VoucherStatePaid); err != nil {
 		fmt.Println(err.Error())
 		return resv, ErrServerInternal
 	}

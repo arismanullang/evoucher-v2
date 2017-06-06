@@ -23,6 +23,8 @@ function getVoucher(id) {
           var i;
           var arrData = data.data;
           var limit = arrData.length;
+          var used = 0;
+          var paid = 0;
           if (arrData.length > 4){
             limit = 4;
             $("<div class='card-body pv0 text-right'><a href='/voucher/search?variant_id="+id+"' class='btn btn-flat btn-info'>View all</a></div>").appendTo('#cardVoucher');
@@ -34,16 +36,21 @@ function getVoucher(id) {
             +  "<h3><a href='/voucher/check?id="+arrData[i].id+"'>"+arrData[i].voucher_code+"</a></h3>"
             +  "<div class='text-muted text-ellipsis'>Status "+arrData[i].state+"</div>"
             +"</div>";
+            if( arrData[i].state == "used"){
+            	used++;
+	    } else if( arrData[i].state == "paid"){
+            	paid++;
+	    }
             var li = $("<div class='mda-list-item'></div>").html(html);
             li.appendTo('#listVoucher');
           }
 
-          getVariant(id, arrData.length);
+          getVariant(id, arrData.length, used, paid);
         },
         error: function (data) {
           console.log(data.data);
           $("<div class='card-body text-center'>No Voucher Yet</div>").appendTo('#cardVoucher');
-          getVariant(id, 0);
+          getVariant(id, 0, 0, 0);
         }
     });
 }
@@ -78,7 +85,7 @@ function getPartner(id) {
     });
 }
 
-function getVariant(id, voucher) {
+function getVariant(id, voucher, used, paid) {
     console.log("Get Variant Data");
     console.log(voucher);
     var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -98,7 +105,6 @@ function getVariant(id, voucher) {
           var period = startDate + " - " + endDate;
 	  var variantType = "Email Blast"
           var remainingVoucher = result.max_quantity_voucher;
-	  var maxVoucher = result.max_quantity_voucher;
           if( voucher != null){
 			remainingVoucher = result.max_quantity_voucher - voucher;
 	  }
@@ -114,11 +120,14 @@ function getVariant(id, voucher) {
           $('#variantType').html(variantType);
           $('#voucherType').html(result.voucher_type);
           $('#conversionRate').html(result.voucher_price);
-          $('#maxQuantityVoucher').html(maxVoucher);
+          $('#maxQuantityVoucher').html(result.max_quantity_voucher);
           $('#voucherValue').html(result.discount_value);
           $('#period').html(period);
           $('#variantTnc').html(result.variant_tnc);
           $('#remainingVoucher').html(remainingVoucher);
+          $('#createdVoucher').html(voucher);
+          $('#usedVoucher').html(used);
+          $('#paidVoucher').html(paid);
         //   $('#variant-image').attr("src",result.image_url);
         }
     });

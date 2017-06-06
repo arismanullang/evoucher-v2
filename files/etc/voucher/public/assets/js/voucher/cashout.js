@@ -8,10 +8,12 @@ $( document ).ready(function() {
 
 function cashout(){
 	var transactionCode = [];
+	var transactions = "";
 	var elem = $("*[name='list-transaction-code']");
 	var i = 0;
 	for ( i = 0; i < elem.length; i++){
 		transactionCode[i] = elem[i].innerHTML;
+		transactions += elem[i].innerHTML + ';';
 	}
 
 
@@ -33,7 +35,9 @@ function cashout(){
 		contentType: "application/json",
 		data: JSON.stringify(transaction),
 		success: function () {
-			window.location = "/voucher/print?partner="+encodeURIComponent(textArea.value);
+			localStorage.setItem("transaction_cashout", "");
+			localStorage.setItem("transaction_cashout", transactions);
+			window.location = "/voucher/print";
 		}
 	});
 }
@@ -41,25 +45,40 @@ function cashout(){
 function addElem(){
 	var id = $('#transaction-code').val();
 	$.ajax({
-		url: '/v1/get/transaction/details/'+id+'?token='+token,
+		url: '/v1/get/transaction/cashout/'+id+'?token='+token,
 		type: 'get',
 		success: function (data) {
 			console.log("Render Data");
 			var result = data.data;
-			var date = new Date(result.created_at);
-
-			var body = "<td name='list-transaction-code' class='text-ellipsis'>"+result.transaction_code+"</td>"
-				+ "<td name='list-transaction-partner' class='text-ellipsis'>"+result.partner_name+"</td>"
-				+ "<td name='list-transaction-date' class='text-ellipsis'>"+date.toDateString() + ", " + date.getHours() + ":" + date.getMinutes()+"</td>"
-				+ "<td><button type='button' onclick='removeElem(this)' class='btn btn-flat btn-sm btn-info pull-right'><em class='ion-close-circled'></em></button></td>";
-			var li = $("<tr class='msg-display clickable'></tr>");
-			li.html(body);
-			li.appendTo('#list-transaction');
 			$('#transaction-code').val('');
-			$("#error").html('');
+			var elem = $("*[name='list-transaction-code']");
+			var i = 0;
+			for ( i = 0; i < elem.length; i++){
+				if(id == elem[i].innerHTML){
+					$("#error").html('Voucher Already Added');
+					return
+				}
+			}
+
+			if(result.state == "paid"){
+				$("#error").html('Voucher Already Used');
+			}else{
+				var date = new Date(result.created_at);
+
+				var body = "<td name='list-transaction-code' class='text-ellipsis'>"+result.transaction_code+"</td>"
+					+ "<td name='list-transaction-partner' class='text-ellipsis'>"+result.partner_name+"</td>"
+					+ "<td name='list-transaction-value' class='text-ellipsis'>"+result.discount_value+"</td>"
+					+ "<td name='list-transaction-date' class='text-ellipsis'>"+date.toDateString() + ", " + date.getHours() + ":" + date.getMinutes()+"</td>"
+					+ "<td name='list-transaction-action'><button type='button' onclick='removeElem(this)' class='btn btn-flat btn-sm btn-info pull-right'><em class='ion-close-circled'></em></button></td>";
+				var li = $("<tr class='msg-display clickable'></tr>");
+				li.html(body);
+				li.appendTo('#list-transaction');
+				$("#error").html('');
+
+			}
 		},
 		error: function (data) {
-			console.log(data.responseJSON.errors.detail);
+			$('#transaction-code').val('');
 			$("#error").html(data.responseJSON.errors.detail);
 		}
 	});
