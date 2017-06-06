@@ -52,6 +52,7 @@ func setRoutes() http.Handler {
 	r.PostFunc("/v1/delete/transaction/:id", controller.DeleteTransaction)
 	r.GetFunc("/v1/get/transaction", controller.GetAllTransactions)
 	r.GetFunc("/v1/get/transaction/partner", controller.GetAllTransactionsByPartner)
+	r.GetFunc("/v1/get/transaction/cashout/:id", controller.CashoutTransactionDetails)
 	r.GetFunc("/v1/update/transaction/cashout/:id", controller.CashoutTransaction)
 	r.PostFunc("/v1/update/transaction/cashout", controller.CashoutTransactions)
 	r.GetFunc("/v1/print/transaction/cashout", controller.PrintCashoutTransaction)
@@ -106,6 +107,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/public/challenge", controller.GetChallenge)
 	r.GetFunc("/v1/public/redeem/profile", controller.GetRedeemData)
 	r.PostFunc("/v1/public/transaction", controller.WebCreateTransaction)
+	r.GetFunc("/v1/public/transaction/:id", controller.PublicCashoutTransactionDetails)
 
 	//
 	r.GetFunc("/v1/token", controller.GetToken)
@@ -248,6 +250,8 @@ func viewPublic(w http.ResponseWriter, r *http.Request) {
 		render.File(w, "public/success.html", nil)
 	} else if page == "redeem" {
 		render.File(w, "public/index.html", nil)
+	} else if page == "check" {
+		render.FileInLayout(w, "layout.html", "public/check.html", nil)
 	} else if page == "" || page == "index" {
 		render.File(w, "public/index.html", nil)
 	}
