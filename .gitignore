@@ -82,3 +82,6 @@ $RECYCLE.BIN/
 #binary file
 files/etc/voucher/config.yml
 evoucher*
+
+#IDE config
+.idea/*
