@@ -142,10 +142,13 @@ function getTransactionByPartner(partnerId) {
 		    cashoutCashier = "-";
 		    status = "Pending";
 	    }
+
             dataSet[i] = [
               arrData[i].partner_name
               , arrData[i].transaction_id
-              , addDecimalPoints(arrData[i].discount_value)
+              , arrData[i].variant_name
+              , arrData[i].voucher
+              //, addDecimalPoints(arrData[i].discount_value)
               , date1[2] + " " + months[parseInt(date1[1])-1] + " " + date1[0]
 	      , date2[2] + " " + months[parseInt(date2[1])-1] + " " + date2[0]
 	      , cashoutDate
@@ -165,7 +168,9 @@ function getTransactionByPartner(partnerId) {
               columns: [
                   { title: "Partner Name" },
                   { title: "Transaction Id" },
-                  { title: "Voucher Value" },
+                  { title: "Program Name" },
+                  { title: "Voucher Code" },
+                  //{ title: "Voucher Value" },
                   { title: "Issued Date" },
                   { title: "Redeem Date" },
                   { title: "Cashout Date" },

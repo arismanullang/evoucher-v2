@@ -66,6 +66,10 @@ footer{
   display: none;
 }
 
+.table-datatable{
+  font-size: 12px;
+}
+
 .select2-container--default .select2-selection--single .select2-selection__rendered{
   opacity: 0.7;
 }
@@ -193,4 +197,16 @@ button.color-red {
 .header-button {
   width: 100%;
   display: block;
+}
+
+[name=list-transaction-code] {
+  width: 120px;
+}
+
+[name=list-transaction-value] {
+  width: 120px;
+}
+
+[name=list-transaction-action] {
+  width: 50px;
 }

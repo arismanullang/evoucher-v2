@@ -468,21 +468,78 @@ func GetTransaction(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
-//func GetTransactionByDate(w http.ResponseWriter, r *http.Request) {
-//	var rd DateTransactionRequest
-//	decoder := json.NewDecoder(r.Body)
-//	if err := decoder.Decode(&rd); err != nil {
-//		log.Panic(err)
-//	}
-//
-//	variant, err := model.FindTransactionDetailsByDate(rd.Start, rd.End)
-//	if err != nil && err != model.ErrResourceNotFound {
-//		log.Panic(err)
-//	}
-//
-//	res := NewResponse(variant)
-//	render.JSON(w, res)
-//}
+func CashoutTransactionDetails(w http.ResponseWriter, r *http.Request) {
+	transactionCode := bone.GetValue(r, "id")
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	errTitle := model.ErrCodeInvalidToken
+	res := NewResponse(nil)
+	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
+
+	fmt.Println("Check Session")
+	_, _, _, valid := AuthToken(w, r)
+	if valid {
+		status = http.StatusOK
+		variant, err := model.FindCashoutTransactionDetails(transactionCode)
+		fmt.Println(err)
+		if err != nil {
+			status = http.StatusInternalServerError
+			errTitle = model.ErrCodeInternalError
+			if err == model.ErrResourceNotFound {
+				status = http.StatusNotFound
+				errTitle = model.ErrCodeResourceNotFound
+			}
+
+			res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
+		} else {
+			res = NewResponse(variant)
+		}
+	}
+	render.JSON(w, res, status)
+}
+
+func PublicCashoutTransactionDetails(w http.ResponseWriter, r *http.Request) {
+	transactionCode := bone.GetValue(r, "id")
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	errTitle := model.ErrCodeInvalidToken
+	res := NewResponse(nil)
+	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
+
+	status = http.StatusOK
+	variant, err := model.FindCashoutTransactionDetails(transactionCode)
+	fmt.Println(err)
+	if err != nil {
+		status = http.StatusInternalServerError
+		errTitle = model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
+	} else {
+		res = NewResponse(variant)
+	}
+
+	render.JSON(w, res, status)
+}
+
+func GetTransactionByDate(w http.ResponseWriter, r *http.Request) {
+	var rd DateTransactionRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	variant, err := model.FindTransactionDetailsByDate(rd.Start, rd.End)
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
+	}
+
+	res := NewResponse(variant)
+	render.JSON(w, res)
+}
 
 func UpdateTransaction(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
@@ -549,8 +606,8 @@ func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
 }
 
 func PrintCashoutTransaction(w http.ResponseWriter, r *http.Request) {
-	partnerId := r.FormValue("partner")
-	partnerId = strings.Replace(partnerId, "*", "&", -1)
+	transactionCode := r.FormValue("transcation_code")
+	transactionCodeArr := strings.Split(transactionCode, ";")
 
 	fmt.Println("Get Transaction")
 	status := http.StatusUnauthorized
@@ -563,7 +620,7 @@ func PrintCashoutTransaction(w http.ResponseWriter, r *http.Request) {
 	accountId, _, _, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
-		transaction, _ := model.PrintCashout(accountId, partnerId)
+		transaction, _ := model.PrintCashout(accountId, transactionCodeArr)
 		res = NewResponse(transaction)
 	}
 	render.JSON(w, res, status)
