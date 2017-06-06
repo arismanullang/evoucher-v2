@@ -95,6 +95,8 @@ const (
 	// defaut config Voucher format
 	DEFAULT_CODE   string = "Numerals"
 	DEFAULT_LENGTH int    = 8
+	DEFAULT_SEED_CODE string = "Numerals"
+	DEFAULT_SEED_LENGTH int  = 4
 
 	//default config tx code
 	DEFAULT_TXCODE   string = "Numerals"
