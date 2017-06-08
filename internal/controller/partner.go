@@ -6,9 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	//"time"
 
-	//"github.com/go-zoo/bone"
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
 
@@ -70,7 +68,7 @@ func GetAllPartnersCustomParam(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	//Token Authentocation
-	accountID, userID, _, ok := AuthToken(w, r)
+	accountID, userID, _, _, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
@@ -123,7 +121,7 @@ func GetPartnerSerialName(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
 
-	_, _, _, valid := AuthToken(w, r)
+	_, _, _,_, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
 		partner, err := model.FindPartnerSerialNumber(param)
@@ -151,7 +149,7 @@ func GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
 
-	_, _, _, valid := AuthToken(w, r)
+	_, _, _,_, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
 		partner, err := model.FindPartnerDetails(id)
@@ -186,7 +184,7 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
 
-	_, user, _, valid := AuthToken(w, r)
+	_, user, _,_, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
 		err := model.UpdatePartner(id, rd.SerialNumber, user)
@@ -215,7 +213,7 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
 
-	_, user, _, valid := AuthToken(w, r)
+	_, user, _,_, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
 		err := model.DeletePartner(id, user)
@@ -251,7 +249,7 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errorTitle, err.Error(), "Add Partner")
 
 	fmt.Println("Check Session")
-	_, user, _, valid := AuthToken(w, r)
+	_, user, _,_, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusCreated
 		param := model.Partner{
@@ -327,7 +325,7 @@ func AddTag(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errorTitle, err.Error(), "Add Tag")
 
 	fmt.Println("Check Session")
-	_, user, _, valid := AuthToken(w, r)
+	_, user, _,_, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusCreated
 		err := model.InsertTag(rd.Value, user)
@@ -354,7 +352,7 @@ func DeleteTag(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	res.AddError(its(status), errorTitle, err.Error(), "Get Tag")
 
-	_, user, _, valid := AuthToken(w, r)
+	_, user, _,_, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
 		err := model.DeleteTag(id, user)
@@ -387,7 +385,7 @@ func DeleteTagBulk(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	res.AddError(its(status), errorTitle, err.Error(), "Get Tag")
 
-	_, user, _, valid := AuthToken(w, r)
+	_, user, _,_, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
 		err := model.DeleteTagBulk(rd.Value, user)

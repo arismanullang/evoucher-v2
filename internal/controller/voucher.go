@@ -201,7 +201,7 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 	var status int
 
 	//Token Authentocation
-	_, _, _, ok := AuthToken(w, r)
+	_, _, _,_, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
@@ -265,7 +265,7 @@ func GetVoucherOfVariantDetails(w http.ResponseWriter, r *http.Request) {
 	var status int
 
 	//Token Authentocation
-	_, _, _, ok := AuthToken(w, r)
+	_, _, _,_, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
@@ -365,7 +365,7 @@ func GetVoucherList(w http.ResponseWriter, r *http.Request) {
 	var status int
 
 	//Token Authentocation
-	accountID, userID, _, ok := AuthToken(w, r)
+	accountID, userID, _,_, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
@@ -429,7 +429,7 @@ func GetVoucherDetails(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	var status int
 
-	_, _, _, ok := AuthToken(w, r)
+	_, _, _,_, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
@@ -511,7 +511,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 
 	//Token Authentocation
-	accountID, userID, _, ok := AuthToken(w, r)
+	accountID, userID, _,_, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
@@ -585,7 +585,7 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 	vrID := r.FormValue("variant")
 	fmt.Println("variant id = ", vrID)
 	//Token Authentocation
-	accountID, userID, _, ok := AuthToken(w, r)
+	accountID, userID, _,_, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
@@ -711,7 +711,7 @@ func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	varID := r.FormValue("variant")
 
-	_, _, _, ok := AuthToken(w, r)
+	_, _, _,_, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}
@@ -768,7 +768,7 @@ func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetCsvSample(w http.ResponseWriter, r *http.Request) {
-	_, _, _, ok := AuthToken(w, r)
+	_, _, _,_, ok := AuthToken(w, r)
 	if !ok {
 		return
 	}

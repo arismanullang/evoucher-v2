@@ -101,7 +101,7 @@ func InsertBroadcastUser(w http.ResponseWriter, r *http.Request) {
 	err = model.ErrTokenNotFound
 	errTitle := model.ErrCodeInvalidToken
 	res.AddError(its(status), errTitle, err.Error(), "Insert Broadcast")
-	_, user, _, valid := AuthToken(w, r)
+	_, user, _,_, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusCreated
 
@@ -135,7 +135,7 @@ func FindUserByRole(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 
 	res.AddError(its(status), its(status), err.Error(), "user")
-	accountId, _, _, valid := AuthToken(w, r)
+	accountId, _, _,_, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
 		user, err := model.FindUsersByRole(role, accountId)
@@ -160,7 +160,7 @@ func GetUserDetails(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 
 	res.AddError(its(status), its(status), err.Error(), "user")
-	_, user, _, valid := AuthToken(w, r)
+	_, user, _,_, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
 		user, err := model.FindUserDetail(user)
@@ -186,7 +186,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), its(status), err.Error(), "user")
 
-	accountId, _, _, valid := AuthToken(w, r)
+	accountId, _, _,_, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
 		user, err := model.FindAllUsers(accountId)
@@ -214,7 +214,7 @@ func GetUserCustomParam(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), its(status), err.Error(), "user")
 
-	_, _, _, valid := AuthToken(w, r)
+	_, _, _,_, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
 		user, err := model.FindUsersCustomParam(param)
@@ -240,7 +240,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), its(status), err.Error(), "user")
 
-	accountId, user, _, valid := AuthToken(w, r)
+	accountId, user, _,_, valid := AuthToken(w, r)
 
 	var rd User
 	decoder := json.NewDecoder(r.Body)
@@ -284,7 +284,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), its(status), err.Error(), "user")
 
-	_, user, _, valid := AuthToken(w, r)
+	_, user, _,_, valid := AuthToken(w, r)
 
 	var rd User
 	decoder := json.NewDecoder(r.Body)
@@ -354,7 +354,7 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), its(status), err.Error(), "user")
 
-	_, user, _, valid := AuthToken(w, r)
+	_, user, _,_, valid := AuthToken(w, r)
 
 	var rd ChangePasswordReq
 	decoder := json.NewDecoder(r.Body)

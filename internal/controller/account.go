@@ -64,7 +64,7 @@ func GetAccountDetailByUser(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), errTitle, err.Error(), "Get Account")
 
-	_, user, _, valid := AuthToken(w, r)
+	_, user, _, _, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
 		account, err := model.GetAccountDetailByUser(user)
@@ -92,7 +92,7 @@ func GetAccountsByUser(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), errTitle, err.Error(), "Get ccount")
 
-	_, user, _, valid := AuthToken(w, r)
+	_, user, _, _, valid := AuthToken(w, r)
 	if valid {
 		status = http.StatusOK
 		account, err := model.GetAccountsByUser(user)

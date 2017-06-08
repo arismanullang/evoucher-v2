@@ -11,45 +11,51 @@ import (
 	"github.com/ruizu/render"
 )
 
-func basicAuth(w http.ResponseWriter, r *http.Request) (string, string, bool) {
+func basicAuth(r *http.Request) (string, string,string, bool) {
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 	if len(s) != 2 {
-		return "", "", false
+		return "", "", "",false
 	}
 
 	b, err := base64.StdEncoding.DecodeString(s[1])
 	if err != nil {
-		return "", "", false
+		return "", "", "",false
 	}
 
 	pair := strings.SplitN(string(b), ":", 2)
 	if len(pair) != 2 {
-		return "", "", false
+		return "", "", "", false
 	}
 
 	login, err := model.Login(pair[0], hash(pair[1]))
 	if login == "" || err != nil {
-		return "", "", false
+		return "", "", "",false
 	}
-	fmt.Println(login)
+
+	user, err := model.FindUserDetail(login)
+	if user.Username == "" || err != nil {
+		return "", "", "",false
+	}
 
 	ac, err := model.GetAccountsByUser(login)
 	if err != nil {
-		return "", "", false
+		return "", "", "" ,false
 	}
 	fmt.Println("a")
 
-	return ac[0], login, true
+
+
+	return ac[0], login,user.RoleId[0], true
 }
 
-func AuthToken(w http.ResponseWriter, r *http.Request) (string, string, time.Time, bool) {
+func AuthToken(w http.ResponseWriter, r *http.Request) (string, string,string, time.Time, bool) {
 	res := NewResponse(nil)
 	token := r.FormValue("token")
 
 	if len(token) < 1 {
 		res.AddError(its(http.StatusUnauthorized), model.ErrCodeMissingToken, model.ErrMessageTokenNotFound, "token")
 		render.JSON(w, res, http.StatusUnauthorized)
-		return "", "", time.Now(), false
+		return "", "", "", time.Now(), false
 	}
 	// Return : SessionData{ user_id, account_id, expired} , error
 	s, err := model.GetSession(token)
@@ -62,14 +68,14 @@ func AuthToken(w http.ResponseWriter, r *http.Request) (string, string, time.Tim
 			res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, "token")
 			render.JSON(w, res, http.StatusUnauthorized)
 		}
-		return "", "", time.Now(), false
+		return "", "", "", time.Now(), false
 	} else if !model.IsExistToken(token) {
 		res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, "token")
 		render.JSON(w, res, http.StatusUnauthorized)
-		return "", "", time.Now(), false
+		return "", "", "", time.Now(), false
 	}
 
-	return s.AccountID, s.UserId, s.ExpiredAt, true
+	return s.AccountID, s.UserId,s.RoleID, s.ExpiredAt, true
 	//return "NNJs3Nfo", "IEC1cL77", time.Now().Add(time.Duration(model.TOKENLIFE) * time.Minute), true
 }
 
@@ -77,7 +83,7 @@ func GetToken(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	status := http.StatusOK
 
-	ac, ui, ok := basicAuth(w, r)
+	ac, ui, role_id, ok := basicAuth(r)
 	if !ok {
 		status = http.StatusUnauthorized
 		res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidUser, model.ErrMessageInvalidUser, "token")
@@ -85,7 +91,7 @@ func GetToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	d := model.GenerateToken(ac, ui)
+	d := model.GenerateToken(ac, ui, role_id)
 	res = NewResponse(d)
 	render.JSON(w, res, status)
 }
