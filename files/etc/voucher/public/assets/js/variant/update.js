@@ -44,7 +44,7 @@ function searchById(id) {
           $("#variant-description").val(variant.variant_description);
           $("#start-hour").val(variant.start_hour);
           $("#end-hour").val(variant.end_hour);
-	  $("#image-url").val(variant.image_url);
+	  //$("#image-url").val(variant.image_url);
 
 	  $("#voucher-price").attr("disabled","");
 	  $("#max-quantity-voucher").attr("disabled","");
@@ -134,11 +134,11 @@ function send() {
   var li = $( "input[type=checkbox]:checked" );
 
   if(li.length == 0 || parseInt($("#length").val()) < 8){
-    error = true;
+	error = true;
   }
 
-  for (i = 0; i < li.length-1; i++) {
-      listPartner[i] = li[i].value;
+  for (i = 0; i < li.length; i++) {
+	listPartner[i] = li[i].value;
   }
 
   var lifetime = 0;
@@ -231,7 +231,7 @@ function send() {
 				 data: JSON.stringify(partner),
 				 success: function () {
 					 var id = findGetParameter("id");
-					 //window.location = "/variant/check?id="+id;
+					 window.location = "/variant/check?id="+id;
 				 }
 			 });
 		 }
@@ -285,7 +285,7 @@ function send() {
 				    data: JSON.stringify(partner),
 				    success: function () {
 					    var id = findGetParameter("id");
-					    //window.location = "/variant/check?id="+id;
+					    window.location = "/variant/check?id="+id;
 				    }
 			    });
 		    }
