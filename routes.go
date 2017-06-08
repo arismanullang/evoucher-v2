@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-zoo/bone"
@@ -161,24 +160,27 @@ func viewNoLayoutHandler(w http.ResponseWriter, r *http.Request) {
 func viewVariant(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	valid := false
-	userRole := []string{}
-	_, user, _, _ := controller.AuthToken(w, r)
-	fmt.Println(user)
-	if user != "" {
-		userDetail, err := model.FindUserDetail(user)
-		if err == nil {
-			userRole = userDetail.RoleId
-		}
-		for _, valueRole := range userRole {
-			features := model.UiFeatures[valueRole]
-			for _, valueFeature := range features {
-				if r.URL.Path == valueFeature {
-					valid = true
-				}
-			}
-		}
-	}
+	valid := true
+	//userRole := []string{}
+	//_, user, _, _ := controller.AuthToken(w, r)
+
+	//if user != "" {
+	//	userDetail, err := model.FindUserDetail(user)
+	//	if err == nil {
+	//		userRole = userDetail.RoleId
+	//		fmt.Println(userRole)
+	//	}
+	//	for _, valueRole := range userRole {
+	//		features := model.UiFeatures[valueRole]
+	//		fmt.Println(features)
+	//		fmt.Println(r.URL.Path)
+	//		for _, valueFeature := range features {
+	//			if r.URL.Path == valueFeature {
+	//				valid = true
+	//			}
+	//		}
+	//	}
+	//}
 
 	if valid {
 		if page == "create" {
@@ -205,23 +207,23 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 	if page == "login" {
 		render.FileInLayout(w, "layout.html", "user/login.html", nil)
 	} else {
-		valid := false
-		userRole := []string{}
-		_, user, _, _ := controller.AuthToken(w, r)
-		if user != "" {
-			userDetail, err := model.FindUserDetail(user)
-			if err == nil {
-				userRole = userDetail.RoleId
-			}
-			for _, valueRole := range userRole {
-				features := model.UiFeatures[valueRole]
-				for _, valueFeature := range features {
-					if r.URL.Path == valueFeature {
-						valid = true
-					}
-				}
-			}
-		}
+		valid := true
+		//userRole := []string{}
+		//_, user, _, _ := controller.AuthToken(w, r)
+		//if user != "" {
+		//	userDetail, err := model.FindUserDetail(user)
+		//	if err == nil {
+		//		userRole = userDetail.RoleId
+		//	}
+		//	for _, valueRole := range userRole {
+		//		features := model.UiFeatures[valueRole]
+		//		for _, valueFeature := range features {
+		//			if r.URL.Path == valueFeature {
+		//				valid = true
+		//			}
+		//		}
+		//	}
+		//}
 		if valid {
 			if page == "register" {
 				render.FileInLayout(w, "layout.html", "user/create.html", nil)
@@ -252,23 +254,23 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 func viewPartner(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	valid := false
-	userRole := []string{}
-	_, user, _, _ := controller.AuthToken(w, r)
-	if user != "" {
-		userDetail, err := model.FindUserDetail(user)
-		if err == nil {
-			userRole = userDetail.RoleId
-		}
-		for _, valueRole := range userRole {
-			features := model.UiFeatures[valueRole]
-			for _, valueFeature := range features {
-				if r.URL.Path == valueFeature {
-					valid = true
-				}
-			}
-		}
-	}
+	valid := true
+	//userRole := []string{}
+	//_, user, _, _ := controller.AuthToken(w, r)
+	//if user != "" {
+	//	userDetail, err := model.FindUserDetail(user)
+	//	if err == nil {
+	//		userRole = userDetail.RoleId
+	//	}
+	//	for _, valueRole := range userRole {
+	//		features := model.UiFeatures[valueRole]
+	//		for _, valueFeature := range features {
+	//			if r.URL.Path == valueFeature {
+	//				valid = true
+	//			}
+	//		}
+	//	}
+	//}
 	if valid {
 		if page == "create" {
 			render.FileInLayout(w, "layout.html", "partner/create.html", nil)
@@ -287,23 +289,23 @@ func viewPartner(w http.ResponseWriter, r *http.Request) {
 func viewTag(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	valid := false
-	userRole := []string{}
-	_, user, _, _ := controller.AuthToken(w, r)
-	if user != "" {
-		userDetail, err := model.FindUserDetail(user)
-		if err == nil {
-			userRole = userDetail.RoleId
-		}
-		for _, valueRole := range userRole {
-			features := model.UiFeatures[valueRole]
-			for _, valueFeature := range features {
-				if r.URL.Path == valueFeature {
-					valid = true
-				}
-			}
-		}
-	}
+	valid := true
+	//userRole := []string{}
+	//_, user, _, _ := controller.AuthToken(w, r)
+	//if user != "" {
+	//	userDetail, err := model.FindUserDetail(user)
+	//	if err == nil {
+	//		userRole = userDetail.RoleId
+	//	}
+	//	for _, valueRole := range userRole {
+	//		features := model.UiFeatures[valueRole]
+	//		for _, valueFeature := range features {
+	//			if r.URL.Path == valueFeature {
+	//				valid = true
+	//			}
+	//		}
+	//	}
+	//}
 	if valid {
 		if page == "search" {
 			render.FileInLayout(w, "layout.html", "tag/search.html", nil)
@@ -318,23 +320,23 @@ func viewTag(w http.ResponseWriter, r *http.Request) {
 func viewVoucher(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	valid := false
-	userRole := []string{}
-	_, user, _, _ := controller.AuthToken(w, r)
-	if user != "" {
-		userDetail, err := model.FindUserDetail(user)
-		if err == nil {
-			userRole = userDetail.RoleId
-		}
-		for _, valueRole := range userRole {
-			features := model.UiFeatures[valueRole]
-			for _, valueFeature := range features {
-				if r.URL.Path == valueFeature {
-					valid = true
-				}
-			}
-		}
-	}
+	valid := true
+	//userRole := []string{}
+	//_, user, _, _ := controller.AuthToken(w, r)
+	//if user != "" {
+	//	userDetail, err := model.FindUserDetail(user)
+	//	if err == nil {
+	//		userRole = userDetail.RoleId
+	//	}
+	//	for _, valueRole := range userRole {
+	//		features := model.UiFeatures[valueRole]
+	//		for _, valueFeature := range features {
+	//			if r.URL.Path == valueFeature {
+	//				valid = true
+	//			}
+	//		}
+	//	}
+	//}
 	if valid {
 		if page == "search" {
 			render.FileInLayout(w, "layout.html", "voucher/search.html", nil)
@@ -355,23 +357,23 @@ func viewVoucher(w http.ResponseWriter, r *http.Request) {
 func viewReport(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	valid := false
-	userRole := []string{}
-	_, user, _, _ := controller.AuthToken(w, r)
-	if user != "" {
-		userDetail, err := model.FindUserDetail(user)
-		if err == nil {
-			userRole = userDetail.RoleId
-		}
-		for _, valueRole := range userRole {
-			features := model.UiFeatures[valueRole]
-			for _, valueFeature := range features {
-				if r.URL.Path == valueFeature {
-					valid = true
-				}
-			}
-		}
-	}
+	valid := true
+	//userRole := []string{}
+	//_, user, _, _ := controller.AuthToken(w, r)
+	//if user != "" {
+	//	userDetail, err := model.FindUserDetail(user)
+	//	if err == nil {
+	//		userRole = userDetail.RoleId
+	//	}
+	//	for _, valueRole := range userRole {
+	//		features := model.UiFeatures[valueRole]
+	//		for _, valueFeature := range features {
+	//			if r.URL.Path == valueFeature {
+	//				valid = true
+	//			}
+	//		}
+	//	}
+	//}
 	if valid {
 		if page == "variant" {
 			render.FileInLayout(w, "layout.html", "report/variant.html", nil)
