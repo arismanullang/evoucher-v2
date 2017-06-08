@@ -7,6 +7,7 @@ import (
 	"github.com/ruizu/render"
 
 	"github.com/gilkor/evoucher/internal/controller"
+	"github.com/gilkor/evoucher/internal/model"
 )
 
 func setRoutes() http.Handler {
@@ -23,27 +24,44 @@ func setRoutes() http.Handler {
 	r.GetFunc("/report/:page", viewReport)
 	r.GetFunc("/public/:page", viewPublic)
 	r.GetFunc("/", login)
-	r.PostFunc("/v1/query", controller.CustomQuery)
+	//r.PostFunc("/v1/query", controller.CustomQuery)
 
 	//report
-	r.GetFunc("/v1/report", controller.MakeReport)
-	r.GetFunc("/v1/report/variant", controller.MakeReportVariant)
-	r.GetFunc("/v1/report/voucher/variant", controller.MakeCompleteReportVoucherByUser)
-	r.GetFunc("/v1/report/vouchers/variant", controller.MakeReportVoucherByUser)
+	//r.GetFunc("/v1/api/report", controller.MakeReport)
+	//r.GetFunc("/v1/api/report/variant", controller.MakeReportVariant)
+	//r.GetFunc("/v1/api/report/voucher/variant", controller.MakeCompleteReportVoucherByUser)
+	//r.GetFunc("/v1/api/report/vouchers/variant", controller.MakeReportVoucherByUser)
 
 	//variant
 	r.PostFunc("/v1/create/variant", controller.CreateVariant)
+	//r.PostFunc("/v1/variant/create", controller.CreateVariant)
+
 	r.GetFunc("/v1/api/get/allVariant", controller.GetAllVariants)
+	//r.GetFunc("/v1/variant/all", controller.GetAllVariants)
+
 	r.GetFunc("/v1/api/get/variant", controller.GetVariants)
+	//r.GetFunc("/v1/variant", controller.GetVariants)
+
 	r.GetFunc("/v1/api/get/totalVariant", controller.GetTotalVariant)
 	r.GetFunc("/v1/api/get/variantByDate", controller.GetVariantDetailsByDate)
+	r.GetFunc("/v1/api/get/variantByDate", controller.GetVariantDetailsByDate)
 	r.GetFunc("/v1/api/get/variantDetails/custom", controller.GetVariantDetailsCustom)
+	//r.GetFunc("/v1/variant/detail", controller.GetVariantDetailsCustom)
 
 	r.GetFunc("/v1/api/get/variant/:id", controller.GetVariantDetailsById)
+	//r.GetFunc("/v1/variant/:id", controller.GetVariantDetailsById)
+
 	r.PostFunc("/v1/update/variant/:id", controller.UpdateVariant)
+	//r.PostFunc("/v1/variant/update/:id", controller.UpdateVariant)
+
 	r.PostFunc("/v1/update/variant/:id/broadcastUser", controller.UpdateVariantBroadcast)
+	//r.PostFunc("/v1/variant/update/:id/broadcast", controller.UpdateVariantBroadcast)
+
 	r.PostFunc("/v1/update/variant/:id/tenant", controller.UpdateVariantTenant)
+	//r.PostFunc("/v1/variant/update/:id/tenant", controller.UpdateVariantTenant)
+
 	r.GetFunc("/v1/delete/variant/:id", controller.DeleteVariant)
+	//r.GetFunc("/v1/variant/delete/:id", controller.DeleteVariant)
 
 	//transaction
 	r.PostFunc("/v1/transaction/redeem", controller.MobileCreateTransaction)
@@ -142,102 +160,221 @@ func viewNoLayoutHandler(w http.ResponseWriter, r *http.Request) {
 func viewVariant(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	if page == "create" {
-		render.FileInLayout(w, "layout.html", "variant/create.html", nil)
-	} else if page == "search" {
-		render.FileInLayout(w, "layout.html", "variant/search.html", nil)
-	} else if page == "check" {
-		render.FileInLayout(w, "layout.html", "variant/check.html", nil)
-	} else if page == "update" {
-		render.FileInLayout(w, "layout.html", "variant/update.html", nil)
-	} else if page == "" || page == "index" {
-		render.FileInLayout(w, "layout.html", "variant/index.html", nil)
+	valid := false
+	userRole := []string{}
+	_, user, _, _ := controller.AuthToken(w, r)
+	userDetail, err := model.FindUserDetail(user)
+	if err == nil {
+		userRole = userDetail.RoleId
+	}
+	for _, valueRole := range userRole {
+		features := model.UiFeatures[valueRole]
+		for _, valueFeature := range features {
+			if r.URL.Path == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if valid {
+		if page == "create" {
+			render.FileInLayout(w, "layout.html", "variant/create.html", nil)
+		} else if page == "search" {
+			render.FileInLayout(w, "layout.html", "variant/search.html", nil)
+		} else if page == "check" {
+			render.FileInLayout(w, "layout.html", "variant/check.html", nil)
+		} else if page == "update" {
+			render.FileInLayout(w, "layout.html", "variant/update.html", nil)
+		} else if page == "" || page == "index" {
+			render.FileInLayout(w, "layout.html", "variant/index.html", nil)
+		} else {
+			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+		}
+	} else {
+		render.FileInLayout(w, "layout.html", "notfound.html", nil)
 	}
 }
 
 func viewUser(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	if page == "register" {
-		render.FileInLayout(w, "layout.html", "user/create.html", nil)
-	} else if page == "search" {
-		render.FileInLayout(w, "layout.html", "user/check.html", nil)
-	} else if page == "update" {
-		render.FileInLayout(w, "layout.html", "user/update.html", nil)
-	} else if page == "change-password" {
-		render.FileInLayout(w, "layout.html", "user/change_pass.html", nil)
-	} else if page == "login" {
+	if page == "login" {
 		render.FileInLayout(w, "layout.html", "user/login.html", nil)
-	} else if page == "profile" {
-		render.FileInLayout(w, "layout.html", "user/profile.html", nil)
-	} else if page == "forgot-password" {
-		render.File(w, "user/forgot.html", nil)
-	} else if page == "mail-send" {
-		render.File(w, "user/forgot_succ.html", nil)
-		//render.FileInLayout(w, "layout.html", "user/forgot.html", nil)
-	} else if page == "recover" {
-		render.File(w, "user/recover.html", nil)
-		//render.FileInLayout(w, "layout.html", "user/recover.html", nil)
-	} else if page == "" || page == "index" {
-		render.FileInLayout(w, "layout.html", "user/index.html", nil)
+	} else {
+		valid := false
+		userRole := []string{}
+		_, user, _, _ := controller.AuthToken(w, r)
+		userDetail, err := model.FindUserDetail(user)
+		if err == nil {
+			userRole = userDetail.RoleId
+		}
+		for _, valueRole := range userRole {
+			features := model.UiFeatures[valueRole]
+			for _, valueFeature := range features {
+				if r.URL.Path == valueFeature {
+					valid = true
+				}
+			}
+		}
+
+		if valid {
+			if page == "register" {
+				render.FileInLayout(w, "layout.html", "user/create.html", nil)
+			} else if page == "search" {
+				render.FileInLayout(w, "layout.html", "user/check.html", nil)
+			} else if page == "update" {
+				render.FileInLayout(w, "layout.html", "user/update.html", nil)
+			} else if page == "change-password" {
+				render.FileInLayout(w, "layout.html", "user/change_pass.html", nil)
+			} else if page == "profile" {
+				render.FileInLayout(w, "layout.html", "user/profile.html", nil)
+			} else if page == "forgot-password" {
+				render.File(w, "user/forgot.html", nil)
+			} else if page == "mail-send" {
+				render.File(w, "user/forgot_succ.html", nil)
+			} else if page == "recover" {
+				render.File(w, "user/recover.html", nil)
+			} else {
+				render.FileInLayout(w, "layout.html", "notfound.html", nil)
+			}
+		} else {
+			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+		}
 	}
+
 }
 
 func viewPartner(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	if page == "create" {
-		render.FileInLayout(w, "layout.html", "partner/create.html", nil)
-	} else if page == "search" {
-		render.FileInLayout(w, "layout.html", "partner/search.html", nil)
-	} else if page == "update" {
-		render.FileInLayout(w, "layout.html", "partner/update.html", nil)
-	} else if page == "" || page == "index" {
-		render.FileInLayout(w, "layout.html", "partner/index.html", nil)
+	valid := false
+	userRole := []string{}
+	_, user, _, _ := controller.AuthToken(w, r)
+	userDetail, err := model.FindUserDetail(user)
+	if err == nil {
+		userRole = userDetail.RoleId
+	}
+	for _, valueRole := range userRole {
+		features := model.UiFeatures[valueRole]
+		for _, valueFeature := range features {
+			if r.URL.Path == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if valid {
+		if page == "create" {
+			render.FileInLayout(w, "layout.html", "partner/create.html", nil)
+		} else if page == "search" {
+			render.FileInLayout(w, "layout.html", "partner/search.html", nil)
+		} else if page == "update" {
+			render.FileInLayout(w, "layout.html", "partner/update.html", nil)
+		} else {
+			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+		}
+	} else {
+		render.FileInLayout(w, "layout.html", "notfound.html", nil)
 	}
 }
 
 func viewTag(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	if page == "create" {
-		render.FileInLayout(w, "layout.html", "tag/create.html", nil)
-	} else if page == "search" {
-		render.FileInLayout(w, "layout.html", "tag/search.html", nil)
-	} else if page == "" || page == "index" {
-		render.FileInLayout(w, "layout.html", "tag/index.html", nil)
+	valid := false
+	userRole := []string{}
+	_, user, _, _ := controller.AuthToken(w, r)
+	userDetail, err := model.FindUserDetail(user)
+	if err == nil {
+		userRole = userDetail.RoleId
+	}
+	for _, valueRole := range userRole {
+		features := model.UiFeatures[valueRole]
+		for _, valueFeature := range features {
+			if r.URL.Path == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if valid {
+		if page == "search" {
+			render.FileInLayout(w, "layout.html", "tag/search.html", nil)
+		} else {
+			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+		}
+	} else {
+		render.FileInLayout(w, "layout.html", "notfound.html", nil)
 	}
 }
 
 func viewVoucher(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	if page == "create" {
-		render.FileInLayout(w, "layout.html", "voucher/create.html", nil)
-	} else if page == "search" {
-		render.FileInLayout(w, "layout.html", "voucher/search.html", nil)
-	} else if page == "check" {
-		render.FileInLayout(w, "layout.html", "voucher/check.html", nil)
-	} else if page == "update" {
-		render.FileInLayout(w, "layout.html", "voucher/update.html", nil)
-	} else if page == "cashout" {
-		render.FileInLayout(w, "layout.html", "voucher/cashout.html", nil)
-	} else if page == "print" {
-		render.FileInLayout(w, "layout.html", "voucher/print.html", nil)
-	} else if page == "" || page == "index" {
-		render.FileInLayout(w, "layout.html", "voucher/index.html", nil)
+	valid := false
+	userRole := []string{}
+	_, user, _, _ := controller.AuthToken(w, r)
+	userDetail, err := model.FindUserDetail(user)
+	if err == nil {
+		userRole = userDetail.RoleId
+	}
+	for _, valueRole := range userRole {
+		features := model.UiFeatures[valueRole]
+		for _, valueFeature := range features {
+			if r.URL.Path == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if valid {
+		if page == "search" {
+			render.FileInLayout(w, "layout.html", "voucher/search.html", nil)
+		} else if page == "check" {
+			render.FileInLayout(w, "layout.html", "voucher/check.html", nil)
+		} else if page == "cashout" {
+			render.FileInLayout(w, "layout.html", "voucher/cashout.html", nil)
+		} else if page == "print" {
+			render.FileInLayout(w, "layout.html", "voucher/print.html", nil)
+		} else {
+			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+		}
+	} else {
+		render.FileInLayout(w, "layout.html", "notfound.html", nil)
 	}
 }
 
 func viewReport(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	if page == "variant" {
-		render.FileInLayout(w, "layout.html", "report/variant.html", nil)
-	} else if page == "transaction" {
-		render.FileInLayout(w, "layout.html", "report/transaction.html", nil)
-	} else if page == "" || page == "index" {
-		render.FileInLayout(w, "layout.html", "report/test.html", nil)
+	valid := false
+	userRole := []string{}
+	_, user, _, _ := controller.AuthToken(w, r)
+	userDetail, err := model.FindUserDetail(user)
+	if err == nil {
+		userRole = userDetail.RoleId
+	}
+	for _, valueRole := range userRole {
+		features := model.UiFeatures[valueRole]
+		for _, valueFeature := range features {
+			if r.URL.Path == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if valid {
+		if page == "variant" {
+			render.FileInLayout(w, "layout.html", "report/variant.html", nil)
+		} else if page == "transaction" {
+			render.FileInLayout(w, "layout.html", "report/transaction.html", nil)
+		} else if page == "" || page == "index" {
+			render.FileInLayout(w, "layout.html", "report/test.html", nil)
+		} else {
+			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+		}
+	} else {
+		render.FileInLayout(w, "layout.html", "notfound.html", nil)
 	}
 }
 
@@ -254,6 +391,8 @@ func viewPublic(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "public/check.html", nil)
 	} else if page == "" || page == "index" {
 		render.File(w, "public/index.html", nil)
+	} else {
+		render.FileInLayout(w, "layout.html", "notfound.html", nil)
 	}
 }
 
@@ -261,6 +400,6 @@ func login(w http.ResponseWriter, r *http.Request) {
 	render.FileInLayout(w, "layout.html", "user/login.html", nil)
 }
 
-func errorHandler(w http.ResponseWriter, r *http.Request) {
+func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
 	render.FileInLayout(w, "layout.html", "notfound.html", nil)
 }

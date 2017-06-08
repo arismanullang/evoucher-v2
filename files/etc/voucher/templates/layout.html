@@ -67,14 +67,14 @@
         <div class="sidebar-content">
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="/variant/search" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="/assets/img/icons/connection-bars.svg" alt="MenuItem" class="hidden"></span><span>Program</span></a></li>
-                    <li><a href="/partner/search" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="/assets/img/icons/aperture.svg" alt="MenuItem" class="hidden"></span><span>Partner</span></a></li>
-                    <li><a href="/report/transaction" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Report</span></a></li>
-                    <li><a href="/voucher/cashout" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Cashout</span></a></li>
+                    <li><a href="/variant/search" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="/assets/img/icons/connection-bars.svg" alt="MenuItem" class="hidden"></span><span>Program</span></a></li>
+                    <li><a href="/partner/search" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="/assets/img/icons/aperture.svg" alt="MenuItem" class="hidden"></span><span>Partner</span></a></li>
+                    <li><a href="/report/transaction" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Report</span></a></li>
+                    <li><a href="/voucher/cashout" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Cashout</span></a></li>
                     <li><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/planet.svg" alt="MenuItem" class="hidden"></span><span>Setting</span></a>
                         <ul class="sidebar-subnav">
-                          <li><a href="/user/register" class="ripple"><span class="pull-right nav-label"></span><span>User</span></a></li>
-                          <li><a href="/tag/search" class="ripple"><span class="pull-right nav-label"></span><span>Tag</span></a></li>
+                          <li><a href="/user/register" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="pull-right nav-label"></span><span>User</span></a></li>
+                          <li><a href="/tag/search" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="pull-right nav-label"></span><span>Tag</span></a></li>
                         </ul>
                     </li>
                 </ul>
@@ -82,7 +82,6 @@
         </div>
     </aside>
     <div class="sidebar-layout-obfuscator"></div>
-
     <main class="main-container">
       {{ template "content" . }}
       <footer><span>E-Voucher. 2017 - &copy;Gilkor</span></footer>
