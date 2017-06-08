@@ -483,6 +483,8 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	errTitle := model.ErrCodeInvalidToken
 	res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 	_, user, _,_, valid := AuthToken(w, r)
+	fmt.Println("Update")
+	fmt.Println(user)
 	if valid {
 		status = http.StatusOK
 		var rd Variant
@@ -540,6 +542,7 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 			errTitle = model.ErrCodeInternalError
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 		}
+		res = NewResponse("")
 	}
 	render.JSON(w, res, status)
 }
@@ -573,7 +576,7 @@ func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {
 			errTitle = model.ErrCodeInternalError
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 		}
-
+		res = NewResponse("")
 	}
 
 	render.JSON(w, res, status)
@@ -608,6 +611,7 @@ func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
 			errTitle = model.ErrCodeInternalError
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 		}
+		res = NewResponse("")
 	}
 
 	render.JSON(w, res, status)
