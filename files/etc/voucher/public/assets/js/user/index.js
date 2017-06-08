@@ -24,7 +24,7 @@ function login(){
           localStorage.setItem("token", token);
         }
 
-        window.location = "/variant/";
+        window.location = "/variant/index?token="+token;
       },
       error: function (data){
         alert("Invalid Username or Password");
