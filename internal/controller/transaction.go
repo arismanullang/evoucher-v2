@@ -44,8 +44,9 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 
 	//Token Authentocation
-	accountID, userID, _, ok := AuthToken(w, r)
-	if !ok {
+	a := AuthToken(w, r)
+	if !a.Valid {
+		render.JSON(w, a.res, status)
 		return
 	}
 
@@ -168,12 +169,12 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	txCode := randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
 	d := model.Transaction{
-		AccountId:       accountID,
+		AccountId:       a.User.AccountID,
 		PartnerId:       rd.Partner,
 		TransactionCode: txCode,
 		DiscountValue:   rd.DiscountValue,
 		Token:           rd.Response,
-		User:            userID,
+		User:            a.User.ID,
 		Vouchers:        rd.Vouchers,
 	}
 	fmt.Println(d)
@@ -185,8 +186,8 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rv := RedeemVoucherRequest{
-		AccountID: accountID,
-		User:      userID,
+		AccountID: a.User.AccountID,
+		User:      a.User.ID,
 		State:     model.VoucherStateUsed,
 		Vouchers:  rd.Vouchers,
 	}
@@ -384,10 +385,10 @@ func GetAllTransactions(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
 
 	fmt.Println("Check Session")
-	accountId, _, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
-		transaction, err := model.FindAllTransaction(accountId)
+		transaction, err := model.FindAllTransaction(a.User.AccountID)
 		fmt.Println(err)
 		if err != nil {
 			status = http.StatusInternalServerError
@@ -401,6 +402,9 @@ func GetAllTransactions(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(transaction)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -416,10 +420,10 @@ func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
 
 	fmt.Println("Check Session")
-	accountId, _, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
-		transaction, _ := model.FindAllTransactionByPartner(accountId, partnerId)
+		transaction, _ := model.FindAllTransactionByPartner(a.User.AccountID, partnerId)
 		// transaction, err := model.FindAllTransactionByPartner(accountId, partnerId)
 		// fmt.Println(err)
 		// if err != nil {
@@ -434,6 +438,9 @@ func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 		// } else {
 		res = NewResponse(transaction)
 		// }
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -447,8 +454,8 @@ func GetTransaction(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
 
 	fmt.Println("Check Session")
-	_, _, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
 		variant, err := model.FindTransactionDetailsByTransactionCode(transactionCode)
 		fmt.Println(err)
@@ -464,6 +471,9 @@ func GetTransaction(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(variant)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -477,8 +487,9 @@ func CashoutTransactionDetails(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
 
 	fmt.Println("Check Session")
-	_, _, _, valid := AuthToken(w, r)
-	if valid {
+
+	a :=  AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
 		variant, err := model.FindCashoutTransactionDetails(transactionCode)
 		fmt.Println(err)
@@ -494,7 +505,11 @@ func CashoutTransactionDetails(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(variant)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
+
 	render.JSON(w, res, status)
 }
 
@@ -549,18 +564,20 @@ func UpdateTransaction(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	accountID, userID, _, ok := AuthToken(w, r)
-	if !ok {
+	a := AuthToken(w, r)
+	if !a.Valid {
+		render.JSON(w, a.res , http.StatusUnauthorized)
 		return
 	}
 
+
 	d := &model.Transaction{
 		Id:              id,
-		AccountId:       accountID,
+		AccountId:       a.User.AccountID,
 		PartnerId:       rd.Partner,
 		TransactionCode: "",
 		DiscountValue:   0,
-		User:            userID,
+		User:            a.User.ID,
 		Vouchers:        rd.Vouchers,
 	}
 	if err := d.Update(); err != nil {
@@ -574,11 +591,12 @@ func UpdateTransaction(w http.ResponseWriter, r *http.Request) {
 func CashoutTransaction(w http.ResponseWriter, r *http.Request) {
 	transactionCode := bone.GetValue(r, "id")
 
-	_, userID, _, ok := AuthToken(w, r)
-	if !ok {
+	a := AuthToken(w, r)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
 		return
 	}
-	if err := model.UpdateCashoutTransaction(transactionCode, userID); err != nil {
+	if err := model.UpdateCashoutTransaction(transactionCode, a.User.ID); err != nil {
 		log.Panic(err)
 	}
 
@@ -593,11 +611,12 @@ func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	_, userID, _, ok := AuthToken(w, r)
-	if !ok {
+	a := AuthToken(w, r)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
 		return
 	}
-	if err := model.UpdateCashoutTransactions(rd.TransactionCode, userID); err != nil {
+	if err := model.UpdateCashoutTransactions(rd.TransactionCode, a.User.ID); err != nil {
 		log.Panic(err)
 	}
 
@@ -617,10 +636,10 @@ func PrintCashoutTransaction(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
 
 	fmt.Println("Check Session")
-	accountId, _, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
-		transaction, _ := model.PrintCashout(accountId, transactionCodeArr)
+		transaction, _ := model.PrintCashout(a.User.AccountID, transactionCodeArr)
 		res = NewResponse(transaction)
 	}
 	render.JSON(w, res, status)

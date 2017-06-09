@@ -16,6 +16,7 @@ import (
 	"github.com/ruizu/render"
 
 	"github.com/gilkor/evoucher/internal/model"
+	"golang.org/x/tools/go/gcimporter15/testdata"
 )
 
 type (
@@ -101,11 +102,11 @@ func InsertBroadcastUser(w http.ResponseWriter, r *http.Request) {
 	err = model.ErrTokenNotFound
 	errTitle := model.ErrCodeInvalidToken
 	res.AddError(its(status), errTitle, err.Error(), "Insert Broadcast")
-	_, user, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusCreated
 
-		if err := model.InsertBroadcastUser(variantId, user, listTarget, listDescription); err != nil {
+		if err := model.InsertBroadcastUser(variantId, a.User.ID, listTarget, listDescription); err != nil {
 			//log.Panic(err)
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
@@ -122,6 +123,9 @@ func InsertBroadcastUser(w http.ResponseWriter, r *http.Request) {
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 		}
 
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -135,10 +139,10 @@ func FindUserByRole(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 
 	res.AddError(its(status), its(status), err.Error(), "user")
-	accountId, _, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
-		user, err := model.FindUsersByRole(role, accountId)
+		user, err := model.FindUsersByRole(role, a.User.AccountID)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
@@ -149,6 +153,9 @@ func FindUserByRole(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(user)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -160,10 +167,10 @@ func GetUserDetails(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 
 	res.AddError(its(status), its(status), err.Error(), "user")
-	_, user, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
-		user, err := model.FindUserDetail(user)
+		user, err := model.FindUserDetail(a.User.AccountID)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
@@ -174,6 +181,9 @@ func GetUserDetails(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(user)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -186,10 +196,10 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), its(status), err.Error(), "user")
 
-	accountId, _, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
-		user, err := model.FindAllUsers(accountId)
+		user, err := model.FindAllUsers(a.User.AccountID)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
@@ -200,6 +210,9 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(user)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -214,8 +227,8 @@ func GetUserCustomParam(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), its(status), err.Error(), "user")
 
-	_, _, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
 		user, err := model.FindUsersCustomParam(param)
 		if err != nil {
@@ -240,7 +253,6 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), its(status), err.Error(), "user")
 
-	accountId, user, _, valid := AuthToken(w, r)
 
 	var rd User
 	decoder := json.NewDecoder(r.Body)
@@ -248,17 +260,18 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		fmt.Println("Valid")
 		status = http.StatusOK
 		param := model.User{
-			AccountId: accountId,
+			AccountID: a.User.AccountID,
 			Username:  rd.Username,
 			Password:  hash(rd.Password),
 			Email:     rd.Email,
 			Phone:     rd.Phone,
-			RoleId:    rd.RoleId,
-			CreatedBy: user,
+			Role:      a.User.Role,
+			CreatedBy: a.User.ID,
 		}
 
 		if err := model.AddUser(param); err != nil {
@@ -270,8 +283,11 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 			res.AddError(its(status), its(status), err.Error(), "user")
 		} else {
-			res = NewResponse(user)
+			res = NewResponse(a.User.ID)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -284,7 +300,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), its(status), err.Error(), "user")
 
-	_, user, _, valid := AuthToken(w, r)
 
 	var rd User
 	decoder := json.NewDecoder(r.Body)
@@ -292,14 +307,15 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		fmt.Println("Valid")
 		status = http.StatusOK
 		param := model.User{
 			Username:  rd.Username,
 			Email:     rd.Email,
 			Phone:     rd.Phone,
-			CreatedBy: user,
+			CreatedBy: a.User.ID,
 		}
 
 		if err := model.UpdateUser(param); err != nil {
@@ -311,8 +327,11 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 			res.AddError(its(status), its(status), err.Error(), "user")
 		} else {
-			res = NewResponse(user)
+			res = NewResponse(a.User.ID)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -339,7 +358,7 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	err = model.UpdatePassword(user.UserId, hash(rd.Password))
+	err = model.UpdatePassword(user.User.ID, hash(rd.Password))
 	if err != nil {
 		log.Panic(err)
 	}
@@ -354,7 +373,6 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), its(status), err.Error(), "user")
 
-	_, user, _, valid := AuthToken(w, r)
 
 	var rd ChangePasswordReq
 	decoder := json.NewDecoder(r.Body)
@@ -362,11 +380,12 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		fmt.Println("Valid")
 		status = http.StatusOK
 
-		if err := model.ChangePassword(user, hash(rd.OldPassword), hash(rd.NewPassword)); err != nil {
+		if err := model.ChangePassword(a.User.ID, hash(rd.OldPassword), hash(rd.NewPassword)); err != nil {
 			fmt.Print(err.Error())
 			status = http.StatusInternalServerError
 			if err == model.ErrResourceNotFound {
@@ -375,8 +394,11 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 
 			res.AddError(its(status), its(status), err.Error(), "user")
 		} else {
-			res = NewResponse(user)
+			res = NewResponse(a.User.ID)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)

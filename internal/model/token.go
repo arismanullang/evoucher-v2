@@ -14,13 +14,12 @@ type Token struct {
 }
 
 type SessionData struct {
-	UserId    string    `json:"user_id"`
-	AccountID string    `json:"account_id"`
+	User	  User
 	ExpiredAt time.Time `json:"expired_at"`
 }
 
-func GenerateToken(AccountID, userId string) Token {
-	DeleteSession(AccountID, userId)
+func GenerateToken(u User) Token {
+	DeleteSession(u)
 
 	r := getNewTokenString()
 	now := time.Now()
@@ -33,24 +32,23 @@ func GenerateToken(AccountID, userId string) Token {
 	c := redisPool.Get()
 	defer c.Close()
 
-	if _, err := c.Do("SET", "TOKENS"+AccountID+userId, t.Token); err != nil {
+	if _, err := c.Do("SET", "TOKENS"+u.AccountID+u.ID, t.Token); err != nil {
 		c.Close()
 		panic(err)
 	}
 	c.Close()
 
-	setSession(AccountID, userId, t)
+	setSession(u, t)
 
 	return t
 }
 
-func setSession(AccountID string, userId string, token Token) {
+func setSession(u User, token Token) {
 	c := redisPool.Get()
 	defer c.Close()
 
 	sd := SessionData{
-		UserId:    userId,
-		AccountID: AccountID,
+		User: u,
 		ExpiredAt: token.ExpiredAt,
 	}
 
@@ -82,10 +80,10 @@ func IsExistToken(token string) bool {
 	return bool(exists)
 }
 
-func getToken(AccountID, userId string) (string, error) {
+func getToken(u User) (string, error) {
 	c := redisPool.Get()
 	defer c.Close()
-	t, err := redis.String(c.Do("GET", "TOKENS"+AccountID+userId))
+	t, err := redis.String(c.Do("GET", "TOKENS"+u.AccountID+u.ID))
 	if err != nil {
 		c.Close()
 		return "", ErrTokenNotFound
@@ -147,8 +145,8 @@ func UpdateTokenExpireTime(token string) {
 	c.Close()
 }
 
-func DeleteSession(AccountID, userId string) {
-	t, _ := getToken(AccountID, userId)
+func DeleteSession(u User) {
+	t, _ := getToken(u)
 
 	c := redisPool.Get()
 	defer c.Close()
@@ -158,7 +156,7 @@ func DeleteSession(AccountID, userId string) {
 		panic(err)
 	}
 
-	if _, err := c.Do("DEL", "TOKENS"+AccountID+userId); err != nil {
+	if _, err := c.Do("DEL", "TOKENS"+u.AccountID+u.ID); err != nil {
 		c.Close()
 		panic(err)
 	}
