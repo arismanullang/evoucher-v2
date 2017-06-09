@@ -16,6 +16,7 @@ import (
 	"github.com/ruizu/render"
 
 	"github.com/gilkor/evoucher/internal/model"
+	"golang.org/x/tools/go/gcimporter15/testdata"
 )
 
 type (
@@ -122,6 +123,9 @@ func InsertBroadcastUser(w http.ResponseWriter, r *http.Request) {
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 		}
 
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -149,6 +153,9 @@ func FindUserByRole(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(user)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -174,6 +181,9 @@ func GetUserDetails(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(user)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -200,6 +210,9 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(user)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -240,7 +253,6 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), its(status), err.Error(), "user")
 
-	a := AuthToken(w, r)
 
 	var rd User
 	decoder := json.NewDecoder(r.Body)
@@ -248,6 +260,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
+	a := AuthToken(w, r)
 	if a.Valid {
 		fmt.Println("Valid")
 		status = http.StatusOK
@@ -272,6 +285,9 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(a.User.ID)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -284,7 +300,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), its(status), err.Error(), "user")
 
-	a := AuthToken(w, r)
 
 	var rd User
 	decoder := json.NewDecoder(r.Body)
@@ -292,6 +307,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
+	a := AuthToken(w, r)
 	if a.Valid {
 		fmt.Println("Valid")
 		status = http.StatusOK
@@ -313,6 +329,9 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(a.User.ID)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -354,7 +373,6 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), its(status), err.Error(), "user")
 
-	a := AuthToken(w, r)
 
 	var rd ChangePasswordReq
 	decoder := json.NewDecoder(r.Body)
@@ -362,6 +380,7 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
+	a := AuthToken(w, r)
 	if a.Valid {
 		fmt.Println("Valid")
 		status = http.StatusOK
@@ -377,6 +396,9 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(a.User.ID)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)

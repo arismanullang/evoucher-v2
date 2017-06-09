@@ -80,6 +80,9 @@ func GetAccountDetailByUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(account)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -108,6 +111,9 @@ func GetAccountsByUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(account)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }

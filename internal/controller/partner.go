@@ -122,7 +122,8 @@ func GetPartnerSerialName(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
 
-	if AuthToken(w, r).Valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
 		partner, err := model.FindPartnerSerialNumber(param)
 		if err != nil {
@@ -137,7 +138,11 @@ func GetPartnerSerialName(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(partner)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
+
 	render.JSON(w, res, status)
 }
 
@@ -149,7 +154,8 @@ func GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
 
-	if AuthToken(w, r).Valid {
+	a :=  AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
 		partner, err := model.FindPartnerDetails(id)
 		if err != nil {
@@ -164,7 +170,11 @@ func GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(partner)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
+
 	render.JSON(w, res, status)
 }
 
@@ -199,7 +209,11 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse("Success")
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
+
 	render.JSON(w, res, status)
 }
 
@@ -228,6 +242,9 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse("Success")
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -281,6 +298,9 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 
 			res.AddError(its(status), errorTitle, err.Error(), "Add Partner")
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -338,6 +358,9 @@ func AddTag(w http.ResponseWriter, r *http.Request) {
 
 			res.AddError(its(status), errorTitle, err.Error(), "Add Tag")
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -367,6 +390,9 @@ func DeleteTag(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse("Success")
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -400,6 +426,9 @@ func DeleteTagBulk(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse("Success")
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }

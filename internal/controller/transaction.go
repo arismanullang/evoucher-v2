@@ -402,6 +402,9 @@ func GetAllTransactions(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(transaction)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -435,6 +438,9 @@ func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 		// } else {
 		res = NewResponse(transaction)
 		// }
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -448,8 +454,8 @@ func GetTransaction(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
 
 	fmt.Println("Check Session")
-
-	if AuthToken(w, r).Valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
 		variant, err := model.FindTransactionDetailsByTransactionCode(transactionCode)
 		fmt.Println(err)
@@ -465,6 +471,9 @@ func GetTransaction(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(variant)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -479,7 +488,8 @@ func CashoutTransactionDetails(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("Check Session")
 
-	if AuthToken(w, r).Valid {
+	a :=  AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
 		variant, err := model.FindCashoutTransactionDetails(transactionCode)
 		fmt.Println(err)
@@ -495,7 +505,11 @@ func CashoutTransactionDetails(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(variant)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
+
 	render.JSON(w, res, status)
 }
 
@@ -579,6 +593,7 @@ func CashoutTransaction(w http.ResponseWriter, r *http.Request) {
 
 	a := AuthToken(w, r)
 	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
 		return
 	}
 	if err := model.UpdateCashoutTransaction(transactionCode, a.User.ID); err != nil {
@@ -598,6 +613,7 @@ func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
 
 	a := AuthToken(w, r)
 	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
 		return
 	}
 	if err := model.UpdateCashoutTransactions(rd.TransactionCode, a.User.ID); err != nil {

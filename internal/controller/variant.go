@@ -104,6 +104,7 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 
 	a := AuthToken(w, r)
 	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
 		return
 	}
 	param := getUrlParam(r.URL.String())
@@ -296,6 +297,9 @@ func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(variant)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -326,6 +330,9 @@ func GetVariants(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(variant)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -356,6 +363,9 @@ func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 			res = NewResponse(variant)
 
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -389,6 +399,9 @@ func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(variant)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -471,6 +484,9 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(id)
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -546,6 +562,9 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 		}
 		res = NewResponse("")
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -581,6 +600,9 @@ func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 		}
 		res = NewResponse("")
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -616,6 +638,9 @@ func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 		}
 		res = NewResponse("")
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -645,6 +670,9 @@ func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 		if deleteFile(w, r, objName[4]) {
 			return
 		}
+	}else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
