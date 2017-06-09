@@ -7,7 +7,6 @@ import (
 	"github.com/ruizu/render"
 
 	"github.com/gilkor/evoucher/internal/controller"
-	"github.com/gilkor/evoucher/internal/model"
 )
 
 func setRoutes() http.Handler {

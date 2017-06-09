@@ -16,7 +16,7 @@ type (
 	}
 )
 
-func GetChallenge(w http.ResponseWriter) {
+func GetChallenge(w http.ResponseWriter , r *http.Request) {
 	status := http.StatusOK
 
 	c := randStr(model.CHALLENGE_LENGTH, model.CHALLENGE_FORMAT)
