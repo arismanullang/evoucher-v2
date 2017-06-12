@@ -93,10 +93,10 @@ const (
 	ALPHANUMERIC = ALPHABET + NUMERALS
 
 	// defaut config Voucher format
-	DEFAULT_CODE   string = "Numerals"
-	DEFAULT_LENGTH int    = 8
-	DEFAULT_SEED_CODE string = "Numerals"
-	DEFAULT_SEED_LENGTH int  = 4
+	DEFAULT_CODE        string = "Numerals"
+	DEFAULT_LENGTH      int    = 8
+	DEFAULT_SEED_CODE   string = "Numerals"
+	DEFAULT_SEED_LENGTH int    = 4
 
 	//default config tx code
 	DEFAULT_TXCODE   string = "Numerals"
@@ -119,5 +119,6 @@ const (
 	TIMEOUT_DURATION int    = 120 //in Second
 
 	//OCRA config
-	OCRA_URL string = "http://ocra-staging.elys.id"
+	OCRA_URL               string = "http://ocra-staging.elys.id"
+	OCRA_EVOUCHER_APPS_KEY string = "uuvdqHUa5VHXOGxrMHYvym1OUBETZwT4r2S7YfxmQOSL9dgIhxJAH8vTrNNVwGxi"
 )

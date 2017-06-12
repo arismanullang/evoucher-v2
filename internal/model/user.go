@@ -4,22 +4,24 @@ import "fmt"
 
 type (
 	User struct {
-		AccountId string   `db:"account_id"`
-		Username  string   `db:"username"`
-		Password  string   `db:"password"`
-		Email     string   `db:"email"`
-		Phone     string   `db:"phone"`
-		RoleId    []string `db:"-"`
-		CreatedBy string   `db:"created_by"`
-		CreatedAt string   `db:"created_at"`
-	}
-	UserRes struct {
-		Id       string `db:"id"`
-		Username string `db:"username"`
+		ID        string `db:"id"`
+		AccountID string `db:"account_id"`
+		Username  string `db:"username"`
+		Password  string `db:"password"`
+		Email     string `db:"email"`
+		Phone     string `db:"phone"`
+		Role      []Role `db:"-"`
+		CreatedBy string `db:"created_by"`
+		CreatedAt string `db:"created_at"`
 	}
 	Role struct {
 		Id         string `db:"id"`
 		RoleDetail string `db:"role_detail"`
+	}
+
+	UserRes struct {
+		Id       string `db:"id"`
+		Username string `db:"username"`
 	}
 )
 
@@ -54,7 +56,7 @@ func AddUser(u User) error {
 			return ErrServerInternal
 		}
 
-		for _, v := range u.RoleId {
+		for _, v := range u.Role {
 			q := `
 				INSERT INTO user_roles(
 					user_id
@@ -82,7 +84,7 @@ func AddUser(u User) error {
 			VALUES (?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q2), res[0], u.AccountId, u.CreatedBy, StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q2), res[0], u.AccountID, u.CreatedBy, StatusCreated)
 		if err != nil {
 			fmt.Println(err)
 			return ErrServerInternal
@@ -192,7 +194,8 @@ func FindUsersCustomParam(usr map[string]string) ([]UserRes, error) {
 func FindUserDetail(userId string) (User, error) {
 	q := `
 		SELECT
-			username
+			id
+			, username
 			, email
 			, phone
 			, created_at
@@ -210,27 +213,33 @@ func FindUserDetail(userId string) (User, error) {
 
 	q1 := `
 		SELECT
-			roles.role_detail
+		  	u.id id,
+		  	r.role_detail role_detail
 		FROM
-			users
+		  	users u
 		JOIN
-			user_roles
-		ON
-			users.id = user_roles.user_id
+			user_roles ur
+		ON  	u.id = ur.user_id
 		JOIN
-			roles
-		ON
-			user_roles.role_id = roles.id
+			roles r
+		    ON  ur.role_id = r.id
 		WHERE
-			users.id = ?
-			AND users.status = ?
+		  	u.id = ?
+		  AND
+		  	u.status = ?
+
 	`
-	var role []string
+	var role []Role
 	if err := db.Select(&role, db.Rebind(q1), userId, StatusCreated); err != nil {
 		fmt.Println(err)
 		return User{}, ErrServerInternal
 	}
-	res[0].RoleId = role
+
+	res[0].Role = make([]Role, len(role))
+	for k, v := range role {
+		res[0].Role[k].Id = v.Id
+		res[0].Role[k].RoleDetail = v.RoleDetail
+	}
 
 	return res[0], nil
 }

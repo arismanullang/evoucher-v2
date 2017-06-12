@@ -188,16 +188,10 @@ func viewVariant(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
 	valid := false
-	userRole := []string{}
-	_, user, _, _ := controller.AuthToken(w, r)
-
-	if user != "" {
-		userDetail, err := model.FindUserDetail(user)
-		if err == nil {
-			userRole = userDetail.RoleId
-		}
-		for _, valueRole := range userRole {
-			features := model.UiFeatures[valueRole]
+	a := controller.AuthToken(w, r)
+	if a.Valid {
+		for _, valueRole := range a.User.Role {
+			features := model.UiFeatures[valueRole.RoleDetail]
 			for _, valueFeature := range features {
 				if r.URL.Path == valueFeature {
 					valid = true
@@ -238,15 +232,10 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 		render.File(w, "user/recover.html", nil)
 	} else {
 		valid := false
-		userRole := []string{}
-		_, user, _, _ := controller.AuthToken(w, r)
-		if user != "" {
-			userDetail, err := model.FindUserDetail(user)
-			if err == nil {
-				userRole = userDetail.RoleId
-			}
-			for _, valueRole := range userRole {
-				features := model.UiFeatures[valueRole]
+		a := controller.AuthToken(w, r)
+		if a.Valid {
+			for _, valueRole := range a.User.Role {
+				features := model.UiFeatures[valueRole.RoleDetail]
 				for _, valueFeature := range features {
 					if r.URL.Path == valueFeature {
 						valid = true
@@ -279,15 +268,10 @@ func viewPartner(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
 	valid := false
-	userRole := []string{}
-	_, user, _, _ := controller.AuthToken(w, r)
-	if user != "" {
-		userDetail, err := model.FindUserDetail(user)
-		if err == nil {
-			userRole = userDetail.RoleId
-		}
-		for _, valueRole := range userRole {
-			features := model.UiFeatures[valueRole]
+	a := controller.AuthToken(w, r)
+	if a.Valid {
+		for _, valueRole := range a.User.Role {
+			features := model.UiFeatures[valueRole.RoleDetail]
 			for _, valueFeature := range features {
 				if r.URL.Path == valueFeature {
 					valid = true
@@ -314,15 +298,10 @@ func viewTag(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
 	valid := false
-	userRole := []string{}
-	_, user, _, _ := controller.AuthToken(w, r)
-	if user != "" {
-		userDetail, err := model.FindUserDetail(user)
-		if err == nil {
-			userRole = userDetail.RoleId
-		}
-		for _, valueRole := range userRole {
-			features := model.UiFeatures[valueRole]
+	a := controller.AuthToken(w, r)
+	if a.Valid {
+		for _, valueRole := range a.User.Role {
+			features := model.UiFeatures[valueRole.RoleDetail]
 			for _, valueFeature := range features {
 				if r.URL.Path == valueFeature {
 					valid = true
@@ -345,19 +324,10 @@ func viewVoucher(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
 	valid := false
-	userRole := []string{}
-	_, user, _, _ := controller.AuthToken(w, r)
-	if user != "" {
-		userDetail, err := model.FindUserDetail(user)
-
-		if err == nil {
-			userRole = userDetail.RoleId
-			fmt.Println(userRole)
-		}
-		for _, valueRole := range userRole {
-			features := model.UiFeatures[valueRole]
-			fmt.Println(features)
-			fmt.Println(r.URL.Path)
+	a := controller.AuthToken(w, r)
+	if a.Valid {
+		for _, valueRole := range a.User.Role {
+			features := model.UiFeatures[valueRole.RoleDetail]
 			for _, valueFeature := range features {
 				if r.URL.Path == valueFeature {
 					valid = true
@@ -386,15 +356,10 @@ func viewReport(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
 	valid := false
-	userRole := []string{}
-	_, user, _, _ := controller.AuthToken(w, r)
-	if user != "" {
-		userDetail, err := model.FindUserDetail(user)
-		if err == nil {
-			userRole = userDetail.RoleId
-		}
-		for _, valueRole := range userRole {
-			features := model.UiFeatures[valueRole]
+	a := controller.AuthToken(w, r)
+	if a.Valid {
+		for _, valueRole := range a.User.Role {
+			features := model.UiFeatures[valueRole.RoleDetail]
 			for _, valueFeature := range features {
 				if r.URL.Path == valueFeature {
 					valid = true

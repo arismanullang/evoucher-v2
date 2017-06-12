@@ -6,9 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	//"time"
 
-	//"github.com/go-zoo/bone"
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
 
@@ -92,11 +90,11 @@ func GetAllPartnersCustomParam(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	//Token Authentocation
-	accountID, userID, _, ok := AuthToken(w, r)
-	if !ok {
+	a := AuthToken(w, r)
+	if !a.Valid {
+		render.JSON(w, a.res, status)
 		return
 	}
-	fmt.Println(accountID, userID)
 
 	param := getUrlParam(r.URL.String())
 	delete(param, "token")
@@ -151,10 +149,10 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
 
-	_, user, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
-		err := model.UpdatePartner(id, rd.SerialNumber, user)
+		err := model.UpdatePartner(id, rd.SerialNumber, a.User.ID)
 		if err != nil {
 			status = http.StatusInternalServerError
 			errorTitle = model.ErrCodeInternalError
@@ -167,7 +165,11 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse("Success")
 		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
+
 	render.JSON(w, res, status)
 }
 
@@ -180,10 +182,10 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
 
-	_, user, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
-		err := model.DeletePartner(id, user)
+		err := model.DeletePartner(id, a.User.ID)
 		if err != nil {
 			status = http.StatusInternalServerError
 			errorTitle = model.ErrCodeInternalError
@@ -196,6 +198,9 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse("Success")
 		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -216,8 +221,8 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errorTitle, err.Error(), "Add Partner")
 
 	fmt.Println("Check Session")
-	_, user, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusCreated
 		param := model.Partner{
 			PartnerName: rd.PartnerName,
@@ -226,7 +231,7 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 				Valid:  true,
 			},
 			CreatedBy: sql.NullString{
-				String: user,
+				String: a.User.ID,
 				Valid:  true,
 			},
 			Tag: sql.NullString{
@@ -249,6 +254,9 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 
 			res.AddError(its(status), errorTitle, err.Error(), "Add Partner")
 		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -292,10 +300,10 @@ func AddTag(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errorTitle, err.Error(), "Add Tag")
 
 	fmt.Println("Check Session")
-	_, user, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusCreated
-		err := model.InsertTag(rd.Value, user)
+		err := model.InsertTag(rd.Value, a.User.ID)
 		if err != nil {
 			status = http.StatusInternalServerError
 			errorTitle = model.ErrCodeInternalError
@@ -306,6 +314,9 @@ func AddTag(w http.ResponseWriter, r *http.Request) {
 
 			res.AddError(its(status), errorTitle, err.Error(), "Add Tag")
 		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -319,10 +330,10 @@ func DeleteTag(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	res.AddError(its(status), errorTitle, err.Error(), "Get Tag")
 
-	_, user, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
-		err := model.DeleteTag(id, user)
+		err := model.DeleteTag(id, a.User.ID)
 		if err != nil {
 			status = http.StatusInternalServerError
 			errorTitle = model.ErrCodeInternalError
@@ -335,6 +346,9 @@ func DeleteTag(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse("Success")
 		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -352,10 +366,10 @@ func DeleteTagBulk(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	res.AddError(its(status), errorTitle, err.Error(), "Get Tag")
 
-	_, user, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
-		err := model.DeleteTagBulk(rd.Value, user)
+		err := model.DeleteTagBulk(rd.Value, a.User.ID)
 		if err != nil {
 			status = http.StatusInternalServerError
 			errorTitle = model.ErrCodeInternalError
@@ -368,6 +382,9 @@ func DeleteTagBulk(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse("Success")
 		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }

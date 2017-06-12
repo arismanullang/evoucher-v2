@@ -102,14 +102,15 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	var status int
 
-	accountID, _, _, ok := AuthToken(w, r)
-	if !ok {
+	a := AuthToken(w, r)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
 		return
 	}
 	param := getUrlParam(r.URL.String())
 
 	param["variant_type"] = model.VariantTypeOnDemand
-	param["account_id"] = accountID
+	param["account_id"] = a.User.AccountID
 	delete(param, "token")
 
 	variant, err := model.FindVariantsCustomParam(param)
@@ -148,8 +149,9 @@ func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	var status int
 
-	_, _, _, ok := AuthToken(w, r)
-	if !ok {
+	a := AuthToken(w, r)
+	if a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
 		return
 	}
 
@@ -219,10 +221,10 @@ func GetAllVariants(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Get Variant")
 
 	fmt.Println("Check Session")
-	account, _, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
-		variant, err := model.FindAllVariants(account)
+		variant, err := model.FindAllVariants(a.User.AccountID)
 		fmt.Println(err)
 		if err != nil {
 			status = http.StatusInternalServerError
@@ -249,11 +251,11 @@ func GetTotalVariant(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Get Variant")
 
 	fmt.Println("Check Session")
-	accountId, _, _, valid := AuthToken(w, r)
+	a := AuthToken(w, r)
 
-	if valid {
+	if a.Valid {
 		status = http.StatusOK
-		variant, err := model.FindAllVariants(accountId)
+		variant, err := model.FindAllVariants(a.User.AccountID)
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
@@ -279,8 +281,8 @@ func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	res.AddError(its(status), errTitle, err.Error(), "Get Variant")
 
-	_, _, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
 		variant, err := model.FindVariantDetailsCustomParam(param)
 		if err != nil {
@@ -295,6 +297,9 @@ func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(variant)
 		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -309,8 +314,8 @@ func GetVariants(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	res.AddError(its(status), errTitle, err.Error(), "Get Variant")
 
-	_, _, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
 		variant, err := model.FindVariantsCustomParam(param)
 		if err != nil {
@@ -325,6 +330,9 @@ func GetVariants(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(variant)
 		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -338,8 +346,8 @@ func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	res.AddError(its(status), errTitle, err.Error(), "Get Variant")
 
-	_, _, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
 		variant, err := model.FindVariantDetailsById(id)
 		if err != nil {
@@ -355,6 +363,9 @@ func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
 			res = NewResponse(variant)
 
 		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -370,10 +381,10 @@ func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), errTitle, err.Error(), "Get Variant")
 
-	accountId, _, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
-		variant, err := model.FindVariantsByDate(start, end, accountId)
+		variant, err := model.FindVariantsByDate(start, end, a.User.AccountID)
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
@@ -388,6 +399,9 @@ func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(variant)
 		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -399,8 +413,9 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 	err := model.ErrTokenNotFound
 	errTitle := model.ErrCodeInvalidToken
 	res.AddError(its(status), errTitle, err.Error(), "Create Variant")
-	accountId, user, _, valid := AuthToken(w, r)
-	if valid {
+
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusCreated
 
 		var rd Variant
@@ -428,7 +443,7 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		}
 
 		vr := model.VariantReq{
-			AccountId:          accountId,
+			AccountId:          a.User.AccountID,
 			VariantName:        rd.VariantName,
 			VariantType:        rd.VariantType,
 			VoucherType:        rd.VoucherType,
@@ -452,7 +467,7 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			ValidPartners:      rd.ValidPartners,
 		}
 
-		accountDetail, err := model.GetAccountDetailByUser(user)
+		accountDetail, err := model.GetAccountDetailByUser(a.User.ID)
 		fr := model.FormatReq{
 			Prefix:     rd.VoucherFormat.Prefix,
 			Postfix:    accountDetail[0].Alias,
@@ -460,7 +475,7 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			FormatType: rd.VoucherFormat.FormatType,
 			Length:     rd.VoucherFormat.Length,
 		}
-		if id, err := model.InsertVariant(vr, fr, user); err != nil {
+		if id, err := model.InsertVariant(vr, fr, a.User.ID); err != nil {
 			//log.Panic(err)
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
@@ -468,6 +483,9 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(id)
 		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -505,8 +523,8 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	err := model.ErrTokenNotFound
 	errTitle := model.ErrCodeInvalidToken
 	res.AddError(its(status), errTitle, err.Error(), "Update Variant")
-	_, user, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
 		var rd Variant
 		decoder := json.NewDecoder(r.Body)
@@ -554,9 +572,8 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 			ImgUrl:             rd.ImgUrl,
 			VariantTnc:         rd.VariantTnc,
 			VariantDescription: rd.VariantDescription,
-			CreatedBy:          user,
+			CreatedBy:          a.User.ID,
 		}
-		fmt.Println(vr)
 		if err := model.UpdateVariant(vr); err != nil {
 			//log.Panic(err)
 			status = http.StatusInternalServerError
@@ -564,6 +581,9 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 		}
 		res = NewResponse("")
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
@@ -582,12 +602,13 @@ func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {
 	err := model.ErrTokenNotFound
 	errTitle := model.ErrCodeInvalidToken
 	res.AddError(its(status), errTitle, err.Error(), "Update Variant")
-	_, user, _, valid := AuthToken(w, r)
-	if valid {
+
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
 		d := model.UpdateVariantArrayRequest{
 			VariantId: id,
-			User:      user,
+			User:      a.User.ID,
 			Data:      rd.Data,
 		}
 
@@ -598,6 +619,9 @@ func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 		}
 		res = NewResponse("")
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -617,13 +641,13 @@ func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
 	err := model.ErrTokenNotFound
 	errTitle := model.ErrCodeInvalidToken
 	res.AddError(its(status), errTitle, err.Error(), "Update Variant")
-	_, user, _, valid := AuthToken(w, r)
+	a := AuthToken(w, r)
 
-	if valid {
+	if a.Valid {
 		status = http.StatusOK
 		d := model.UpdateVariantArrayRequest{
 			VariantId: id,
-			User:      user,
+			User:      a.User.ID,
 			Data:      rd.Data,
 		}
 
@@ -633,6 +657,9 @@ func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 		}
 		res = NewResponse("")
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
@@ -645,12 +672,12 @@ func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 
 	status := http.StatusUnauthorized
 	errTitle := model.ErrCodeInvalidToken
-	_, user, _, valid := AuthToken(w, r)
-	if valid {
+	a := AuthToken(w, r)
+	if a.Valid {
 		status = http.StatusOK
 		d := &model.DeleteVariantRequest{
 			Id:   id,
-			User: user,
+			User: a.User.ID,
 		}
 		if err := d.Delete(); err != nil {
 			status = http.StatusInternalServerError
@@ -662,6 +689,9 @@ func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 		if deleteFile(w, r, objName[4]) {
 			return
 		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
 	}
 	render.JSON(w, res, status)
 }
