@@ -63,7 +63,6 @@ func setRoutes() http.Handler {
 	//r.GetFunc("/v1/variant/delete/:id", controller.DeleteVariant)
 
 	//transaction
-	r.PostFunc("/v1/transaction/redeem", controller.MobileCreateTransaction)
 	r.GetFunc("/v1/get/transaction/details/:id", controller.GetTransaction)
 	//r.PostFunc("/v1/update/transaction/:id", controller.UpdateTransaction)
 	r.PostFunc("/v1/delete/transaction/:id", controller.DeleteTransaction)
@@ -104,29 +103,28 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/api/get/accountsByUser", controller.GetAccountsByUser)
 	r.GetFunc("/v1/api/get/role", controller.GetAllAccountRoles)
 
-	//open API
+	//voucher
+	r.GetFunc("/v1/vouchers", controller.GetVoucherList)
+	r.GetFunc("/v1/vouchers/:id", controller.GetVoucherDetails)
+	r.GetFunc("/v1/voucher/generate/bulk", controller.GenerateVoucherBulk)
+	r.PostFunc("/v1/voucher/link", controller.GetVoucherlink)
+	r.GetFunc("/v1/sample/link", controller.GetCsvSample)
+
+	//mobile API
 	r.GetFunc("/v1/variants", controller.ListVariants)
 	r.GetFunc("/v1/variants/:id", controller.ListVariantsDetails)
 	r.GetFunc("/v1/variant/vouchers", controller.GetVoucherOfVariant)
 	r.GetFunc("/v1/variant/vouchers/:id", controller.GetVoucherOfVariantDetails)
-
-	//voucher
-	r.GetFunc("/v1/vouchers", controller.GetVoucherList)
-	r.GetFunc("/v1/vouchers/:id", controller.GetVoucherDetails)
-	// r.PostFunc("/v1/voucher/delete", controller.DeleteVoucher)
-	// r.PostFunc("/v1/voucher/pay", controller.PayVoucher)
-	r.GetFunc("/v1/voucher/generate/bulk", controller.GenerateVoucherBulk)
 	r.PostFunc("/v1/voucher/generate/single", controller.GenerateVoucherOnDemand)
-	r.PostFunc("/v1/voucher/link", controller.GetVoucherlink)
-	r.GetFunc("/v1/sample/link", controller.GetCsvSample)
+	r.PostFunc("/v1/transaction/redeem", controller.MobileCreateTransaction)
 
-	//public
+	//public API
 	r.GetFunc("/v1/public/challenge", controller.GetChallenge)
 	r.GetFunc("/v1/public/redeem/profile", controller.GetRedeemData)
 	r.PostFunc("/v1/public/transaction", controller.WebCreateTransaction)
 	r.GetFunc("/v1/public/transaction/:id", controller.PublicCashoutTransactionDetails)
 
-	//
+	//auth
 	r.GetFunc("/v1/token", controller.GetToken)
 	r.GetFunc("/v1/token/check", controller.CheckToken)
 

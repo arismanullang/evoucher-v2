@@ -591,7 +591,6 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 }
 
 func FindVariantsCustomParam(param map[string]string) ([]SearchVariant, error) {
-	fmt.Println("Query start")
 	q := `
 		SELECT
 			va.id

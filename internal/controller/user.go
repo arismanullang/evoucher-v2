@@ -16,7 +16,6 @@ import (
 	"github.com/ruizu/render"
 
 	"github.com/gilkor/evoucher/internal/model"
-	"golang.org/x/tools/go/gcimporter15/testdata"
 )
 
 type (

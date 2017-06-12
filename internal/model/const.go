@@ -119,6 +119,7 @@ const (
 	TIMEOUT_DURATION int    = 120 //in Second
 
 	//OCRA config
-	OCRA_URL string = "http://ocra-staging.elys.id"
+	//OCRA_URL string = "http://ocra-staging.elys.id"
+	OCRA_URL string = "http://localhost:8887"
 	OCRA_EVOUCHER_APPS_KEY string = "uuvdqHUa5VHXOGxrMHYvym1OUBETZwT4r2S7YfxmQOSL9dgIhxJAH8vTrNNVwGxi"
 )
