@@ -10,7 +10,7 @@
     <div class="row">
       <!-- Left column-->
       <div class="col-md-7 col-lg-8">
-        <form editable-form="" id="profileForm" method="post" action="/v1/voucher/link" name="user.profileForm" class="card">
+        <form editable-form="" id="profileForm" method="post" action="/v1/ui/voucher/link" name="user.profileForm" class="card">
           <h5 class="card-heading">
             <div class="pull-right">
               <button type="button" onclick="editVariant()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Edit"><em class="ion-edit"></em ></button>
@@ -35,26 +35,6 @@
                 <tr>
                   <td><em class="icon-fw mr"></em>Voucher Type</td>
                   <td id="voucherType"></td>
-                </tr>
-                <tr>
-                  <td><em class="ion-pricetags icon-fw mr"></em>Limit Voucher</td>
-                  <td id="maxQuantityVoucher"></td>
-                </tr>
-                <tr>
-                  <td><em class="icon-fw mr"></em>Remaining Voucher</td>
-                  <td id="remainingVoucher"></td>
-                </tr>
-                <tr>
-                  <td><em class="icon-fw mr"></em>Created Voucher</td>
-                  <td id="createdVoucher"></td>
-                </tr>
-                <tr>
-                  <td><em class="icon-fw mr"></em>Used Voucher</td>
-                  <td id="usedVoucher"></td>
-                </tr>
-                <tr>
-                  <td><em class="icon-fw mr"></em>Paid Voucher</td>
-                  <td id="paidVoucher"></td>
                 </tr>
                 <tr>
                   <td><em class="ion-calculator icon-fw mr"></em>Conversion Rate</td>
@@ -84,15 +64,94 @@
             Vouchers
           </h5>
           <div id="listVoucher" class="mda-list">
-
+            <table class="table table-striped">
+              <tbody>
+              <tr>
+                <td><em class="ion-pricetags icon-fw mr"></em>Limit Voucher</td>
+                <td id="maxQuantityVoucher"></td>
+              </tr>
+              <tr>
+                <td><em class="icon-fw mr"></em>Remaining Voucher</td>
+                <td id="remainingVoucher"></td>
+              </tr>
+              <tr>
+                <td><em class="icon-fw mr"></em>Created Voucher</td>
+                <td id="createdVoucher"></td>
+              </tr>
+              <tr>
+                <td><em class="icon-fw mr"></em>Used Voucher</td>
+                <td id="usedVoucher"></td>
+              </tr>
+              <tr>
+                <td><em class="icon-fw mr"></em>Paid Voucher</td>
+                <td id="paidVoucher"></td>
+              </tr>
+            </table>
           </div>
-        </div>
-        <div id="cardPartner" class="card">
           <h5 class="card-heading">
             Partner
           </h5>
           <div id="listPartner" class="mda-list">
 
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-heading bg-amber-500">
+            <div class="card-title text-center">Voucher</div>
+          </div>
+          <div class="card-body">
+            <table id="datatable1" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
+              <thead>
+              <tr>
+                <th>
+                  <div class="mda-form-control pt0">
+                    <input type="text" name="filter_voucher_code" placeholder="Voucher" class="form-control input-sm datatable_input_col_search">
+                    <div class="mda-form-control-line"></div>
+                  </div>
+                </th>
+                <th>
+                  <div class="mda-form-control pt0">
+                    <input type="text" name="filter_holder_name" placeholder="Holder" class="form-control input-sm datatable_input_col_search">
+                    <div class="mda-form-control-line"></div>
+                  </div>
+                </th>
+                <th>
+                  <div class="mda-form-control pt0">
+                    <input type="text" name="filter_valid_from" placeholder="Valid" class="form-control input-sm datatable_input_col_search">
+                    <div class="mda-form-control-line"></div>
+                  </div>
+                </th>
+                <th>
+                  <div class="mda-form-control pt0">
+                    <input type="text" name="filter_expired" placeholder="Expired" class="form-control input-sm datatable_input_col_search">
+                    <div class="mda-form-control-line"></div>
+                  </div>
+                </th>
+                <th>
+                  <div class="mda-form-control pt0">
+                    <select name="filter_status" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
+                      <option value="">ALL</option>
+                      <option value="CREATED">CREATED</option>
+                      <option value="USED">USED</option>
+                      <option value="PAID">PAID</option>
+                    </select>
+                    <div class="mda-form-control-line"></div>
+                  </div>
+                </th>
+              </tr>
+              <tr role="row">
+                <th>Voucher</th>
+                <th>Holder</th>
+                <th>Valid</th>
+                <th>Expired</th>
+                <th>Status</th>
+              </tr>
+              </thead>
+            </table>
           </div>
         </div>
       </div>
@@ -103,12 +162,21 @@
 
 {{ define "scripts" }}
 <script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
-<script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/jquery.dataTables.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.flash.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/jszip.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/pdfmake.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/vfs_fonts.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.html5.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.print.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/nouislider/distribute/nouislider.js"></script>
 <script type="text/javascript" src="/assets/js/variant/check.js"></script>
-<script src="/assets/vendor/flot.tooltip/js/jquery.flot.tooltip.js"></script>
 {{ end }}
 
 {{ define "stylesheets" }}
 <link rel="stylesheet" href="/assets/vendor/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css">
+<link rel="stylesheet" href="/assets/vendor/datatables/media/css/jquery.dataTables.css">
+<link rel="stylesheet" href="/assets/vendor/datatables/media/css/buttons.dataTables.min.css">
 <link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
 {{ end }}

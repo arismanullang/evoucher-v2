@@ -161,25 +161,23 @@ function send() {
 
   var voucherFormat = {
     prefix: $("#prefix").val(),
-    postfix: $("#postfix").val(),
-    body: $("#body").val(),
+    postfix: "",
+    body: "",
     format_type: $("#voucher-format").find(":selected").val(),
-    length: parseInt($("#length").val())
+    length: 5
   }
 
   var tncTd = $('tr').find('td.tnc');
-  var tnc = "";
+  var tnc = "<p>";
   for (i = 0; i < tncTd.length; i++) {
     if(tncTd[i].innerHTML != ""){
       var decoded = $("<div/>").html((i+1) + ". " + tncTd[i].innerHTML).text();
       tnc += decoded + " <br>";
     }
   }
+  tnc += "</p>";
 
-  var maxUsage = parseInt($("#max-usage-voucher").val());
-  if($("#variant-type").val() == "bulk"){
-	maxUsage = 1;
-  }
+  var maxUsage = 1;
 
   $('input[check="true"]').each(function() {
     if($("#variant-type").val() == "bulk"){
@@ -248,7 +246,7 @@ function send() {
          console.log(variant);
 
          $.ajax({
-	       url: '/v1/create/variant?token='+token,
+	       url: '/v1/ui/variant/create?token='+token,
 	       type: 'post',
 	       dataType: 'json',
 	       contentType: "application/json",
@@ -260,7 +258,7 @@ function send() {
 			       targets.append('list-target', $("#list-target")[0].files[0]);
 
 			       jQuery.ajax({
-				       url:'/v1/upload/user?token='+token+'&variant-id='+data.data,
+				       url:'/v1/ui/user/create/broadcast?token='+token+'&variant-id='+data.data,
 				       type:"POST",
 				       processData: false,
 				       contentType: false,
@@ -268,13 +266,13 @@ function send() {
 				       success: function(data){
 					       console.log(data);
 					       alert("Program created.");
-					       window.location = "/variant/search";
+					       window.location = "/variant/search?token="+token;
 				       }
 			       });
 
 		       }else{
 			       alert("Program created.");
-			       window.location = "/variant/search";
+			       window.location = "/variant/search?token="+token;
 		       }
 	       }
          });
@@ -308,7 +306,7 @@ function send() {
 	  console.log(variant);
 
 	  $.ajax({
-		  url: '/v1/create/variant?token='+token,
+		  url: '/v1/ui/variant/create?token='+token,
 		  type: 'post',
 		  dataType: 'json',
 		  contentType: "application/json",
@@ -320,7 +318,7 @@ function send() {
 				  targets.append('list-target', $("#list-target")[0].files[0]);
 
 				  jQuery.ajax({
-					  url:'/v1/upload/user?token='+token+'&variant-id='+data.data,
+					  url:'/v1/ui/user/create/broadcast?token='+token+'&variant-id='+data.data,
 					  type:"POST",
 					  processData: false,
 					  contentType: false,
@@ -328,13 +326,13 @@ function send() {
 					  success: function(data){
 						  console.log(data);
 						  alert("Program created.");
-						  window.location = "/variant/search";
+						  window.location = "/variant/search?token="+token;
 					  }
 				  });
 
 			  }else{
 				  alert("Program created.");
-				  window.location = "/variant/search";
+				  window.location = "/variant/search?token="+token;
 			  }
 		  }
 	  });
@@ -345,7 +343,7 @@ function getPartner() {
     console.log("Get Partner Data");
 
     $.ajax({
-      url: '/v1/get/partner',
+      url: '/v1/ui/partner/all',
       type: 'get',
       success: function (data) {
         console.log("Render Data");

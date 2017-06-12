@@ -43,11 +43,11 @@ func basicAuth(w http.ResponseWriter, r *http.Request) (string, string, bool) {
 }
 
 func AuthToken(w http.ResponseWriter, r *http.Request) (string, string, time.Time, bool) {
-	//res := NewResponse(nil)
+	res := NewResponse(nil)
 	token := r.FormValue("token")
 
 	if len(token) < 1 {
-		//res.AddError(its(http.StatusUnauthorized), model.ErrCodeMissingToken, model.ErrMessageTokenNotFound, "token")
+		res.AddError(its(http.StatusUnauthorized), model.ErrCodeMissingToken, model.ErrMessageTokenNotFound, "token")
 		//render.JSON(w, res, http.StatusUnauthorized)
 		return "", "", time.Now(), false
 	}
@@ -56,15 +56,15 @@ func AuthToken(w http.ResponseWriter, r *http.Request) (string, string, time.Tim
 	if err != nil {
 		switch err {
 		case model.ErrTokenNotFound:
-			//res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound, "token")
+			res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound, "token")
 			//render.JSON(w, res, http.StatusUnauthorized)
 		case model.ErrTokenExpired:
-			//res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, "token")
+			res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, "token")
 			//render.JSON(w, res, http.StatusUnauthorized)
 		}
 		return "", "", time.Now(), false
 	} else if !model.IsExistToken(token) {
-		//res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, "token")
+		res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, "token")
 		//render.JSON(w, res, http.StatusUnauthorized)
 		return "", "", time.Now(), false
 	}

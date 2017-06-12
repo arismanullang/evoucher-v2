@@ -11,14 +11,15 @@ type (
 		AccountName string `db:"account_name"`
 	}
 	Account struct {
-		Id          string         `db:"id"`
-		AccountName string         `db:"account_name"`
-		Billing     sql.NullString `db:"billing"`
-		CreatedBy   string         `db:"created_by"`
+		Id          string         `db:"id" json:"id"`
+		AccountName string         `db:"account_name" json:"account_name"`
+		Billing     sql.NullString `db:"billing" json:"billing"`
+		Alias       string         `db:"alias" json:"alias"`
+		CreatedAt   string         `db:"created_at" json:"created_at"`
 	}
 )
 
-func AddAccount(a Account) error {
+func AddAccount(a Account, user string) error {
 	fmt.Println("Add")
 	tx, err := db.Beginx()
 	if err != nil {
@@ -33,12 +34,13 @@ func AddAccount(a Account) error {
 			INSERT INTO accounts(
 				account_name
 				, billing
+				, alias
 				, created_by
 				, status
 			)
-			VALUES (?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?)
 		`
-		if _, err := tx.Exec(tx.Rebind(q), a.AccountName, a.Billing, a.CreatedBy, StatusCreated); err != nil {
+		if _, err := tx.Exec(tx.Rebind(q), a.AccountName, a.Billing, a.Alias, user, StatusCreated); err != nil {
 			return err
 		}
 
@@ -100,6 +102,8 @@ func GetAccountDetailByUser(userID string) ([]Account, error) {
 			a.id
 			, a.account_name
 			, a.billing
+			, a.alias
+			, a.created_at
 		FROM
 			accounts as a
 		JOIN

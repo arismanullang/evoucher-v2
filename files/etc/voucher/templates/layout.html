@@ -50,8 +50,8 @@
                 <li><a id="header-search" href="#" class="ripple"><em class="ion-ios-search-strong"></em></a></li>
                 <li class="dropdown"><a href="#" data-toggle="dropdown" class="dropdown-toggle has-badge ripple"><em class="ion-person"></em></a>
                     <ul class="dropdown-menu dropdown-menu-right md-dropdown-menu">
-                        <li><a href="/user/profile"><em class="ion-ios-person icon-fw"></em>Profile</a></li>
-                        <li><a href="/user/change-password"><em class="ion-ios-locked-outline icon-fw"></em>Change Password</a></li>
+                        <li><a href="/user/profile" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;"><em class="ion-ios-person icon-fw"></em>Profile</a></li>
+                        <li><a href="/user/change-password" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;"><em class="ion-ios-locked-outline icon-fw"></em>Change Password</a></li>
                         <li role="presentation" class="divider"></li>
                         <li><a href="#" onclick="logOut()"><em class="ion-log-out icon-fw"></em>Logout</a></li>
                     </ul>

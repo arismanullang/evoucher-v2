@@ -1,25 +1,14 @@
 {{ template "layout" . }}
 
-{{ define "title" }}List Transaction{{ end }}
-{{ define "header-title" }}List Transaction{{ end }}
+{{ define "title" }}Transaction{{ end }}
+{{ define "header-title" }}Transaction{{ end }}
 
 {{ define "content" }}
 <section>
-<div class="container-overlap bg-white">
-  <div class="mda-form-group">
-    <div class="mda-form-control">
-      <select id="partner-id" name="partner-id" check="true" class="form-control select2" tabindex="0">
-        <option value="">All Partner</option>
-      </select>
-      <div class="mda-form-control-line"></div>
-      <label>Partner</label>
-    </div>
-  </div>
-</div>
 <div class="container-fluid">
   <div class="card">
     <div class="card-heading bg-amber-500">
-      <div class="card-title text-center">Transaction</div>
+      <div class="card-title text-center">Transaction Report</div>
     </div>
     <div class="card-body">
       <table id="datatable1" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
@@ -27,68 +16,76 @@
           <tr>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_partner_name" placeholder="Partner Name" class="form-control input-sm datatable_input_col_search">
+                <select id="partner-id" name="filter_partner_name" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
+                  <option value="">ALL</option>
+                </select>
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_transcation_id" placeholder="Transaction Id" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_transcation_id" placeholder="TRANSACTION ID" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_program_name" placeholder="Program Name" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_program_name" placeholder="PROGRAM" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_voucher_code" placeholder="Voucher Code" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_voucher_code" placeholder="VOUCHER" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_issued_date" placeholder="Issued" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_issued_date" placeholder="ISSUED" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_redeemed_date" placeholder="Redeemed" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_redeemed_date" placeholder="REDEEMED" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_cashout_date" placeholder="Cashout" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_cashout_date" placeholder="CASHOUT" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_cashier" placeholder="Cashier" class="form-control input-sm datatable_input_col_search">
+                <select id="username" name="filter_user" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
+                  <option value="">ALL</option>
+                </select>
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_status" placeholder="Status" class="form-control input-sm datatable_input_col_search">
+                <select name="filter_status" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
+                  <option value="">ALL</option>
+                  <option value="Paid">PAID</option>
+                  <option value="Pending">PENDING</option>
+                </select>
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
           </tr>
           <tr role="row">
-            <th>Partner Name</th>
+            <th>Partner</th>
             <th>Transaction Id</th>
-            <th>Program Name</th>
-            <th>Voucher Code</th>
-            <th>Issued Date</th>
-            <th>Redeemed Date</th>
-            <th>Cashout Date</th>
-            <th>Cashier</th>
+            <th>Program</th>
+            <th>Voucher</th>
+            <th>Issued</th>
+            <th>Redeemed</th>
+            <th>Cashout</th>
+            <th>User</th>
             <th>Status</th>
           </tr>
         </thead>

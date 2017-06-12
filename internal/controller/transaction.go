@@ -375,36 +375,6 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
-func GetAllTransactions(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Get Transaction")
-	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errTitle := model.ErrCodeInvalidToken
-	res := NewResponse(nil)
-	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
-
-	fmt.Println("Check Session")
-	accountId, _, _, valid := AuthToken(w, r)
-	if valid {
-		status = http.StatusOK
-		transaction, err := model.FindAllTransaction(accountId)
-		fmt.Println(err)
-		if err != nil {
-			status = http.StatusInternalServerError
-			errTitle = model.ErrCodeInternalError
-			if err == model.ErrResourceNotFound {
-				status = http.StatusNotFound
-				errTitle = model.ErrCodeResourceNotFound
-			}
-
-			res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
-		} else {
-			res = NewResponse(transaction)
-		}
-	}
-	render.JSON(w, res, status)
-}
-
 func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 	partnerId := r.FormValue("partner")
 
@@ -420,56 +390,13 @@ func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 	if valid {
 		status = http.StatusOK
 		transaction, _ := model.FindAllTransactionByPartner(accountId, partnerId)
-		// transaction, err := model.FindAllTransactionByPartner(accountId, partnerId)
-		// fmt.Println(err)
-		// if err != nil {
-		// 	status = http.StatusInternalServerError
-		// 	errTitle = model.ErrCodeInternalError
-		// 	if err == model.ErrResourceNotFound {
-		// 		status = http.StatusNotFound
-		// 		errTitle = model.ErrCodeResourceNotFound
-		// 	}
-		//
-		// 	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
-		// } else {
 		res = NewResponse(transaction)
-		// }
-	}
-	render.JSON(w, res, status)
-}
-
-func GetTransaction(w http.ResponseWriter, r *http.Request) {
-	transactionCode := bone.GetValue(r, "id")
-	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errTitle := model.ErrCodeInvalidToken
-	res := NewResponse(nil)
-	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
-
-	fmt.Println("Check Session")
-	_, _, _, valid := AuthToken(w, r)
-	if valid {
-		status = http.StatusOK
-		variant, err := model.FindTransactionDetailsByTransactionCode(transactionCode)
-		fmt.Println(err)
-		if err != nil {
-			status = http.StatusInternalServerError
-			errTitle = model.ErrCodeInternalError
-			if err == model.ErrResourceNotFound {
-				status = http.StatusNotFound
-				errTitle = model.ErrCodeResourceNotFound
-			}
-
-			res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
-		} else {
-			res = NewResponse(variant)
-		}
 	}
 	render.JSON(w, res, status)
 }
 
 func CashoutTransactionDetails(w http.ResponseWriter, r *http.Request) {
-	transactionCode := bone.GetValue(r, "id")
+	transactionCode := r.FormValue("id")
 	status := http.StatusUnauthorized
 	err := model.ErrTokenNotFound
 	errTitle := model.ErrCodeInvalidToken
@@ -525,22 +452,6 @@ func PublicCashoutTransactionDetails(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
-func GetTransactionByDate(w http.ResponseWriter, r *http.Request) {
-	var rd DateTransactionRequest
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
-	}
-
-	variant, err := model.FindTransactionDetailsByDate(rd.Start, rd.End)
-	if err != nil && err != model.ErrResourceNotFound {
-		log.Panic(err)
-	}
-
-	res := NewResponse(variant)
-	render.JSON(w, res)
-}
-
 func UpdateTransaction(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
 	var rd TransactionRequest
@@ -564,21 +475,6 @@ func UpdateTransaction(w http.ResponseWriter, r *http.Request) {
 		Vouchers:        rd.Vouchers,
 	}
 	if err := d.Update(); err != nil {
-		log.Panic(err)
-	}
-
-	res := NewResponse(nil)
-	render.JSON(w, res, http.StatusOK)
-}
-
-func CashoutTransaction(w http.ResponseWriter, r *http.Request) {
-	transactionCode := bone.GetValue(r, "id")
-
-	_, userID, _, ok := AuthToken(w, r)
-	if !ok {
-		return
-	}
-	if err := model.UpdateCashoutTransaction(transactionCode, userID); err != nil {
 		log.Panic(err)
 	}
 

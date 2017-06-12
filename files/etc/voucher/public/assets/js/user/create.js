@@ -54,7 +54,7 @@ function send() {
 
     console.log(userReq);
     $.ajax({
-       url: '/v1/create/user?token='+token,
+       url: '/v1/ui/user/create?token='+token,
        type: 'post',
        dataType: 'json',
        contentType: "application/json",
@@ -69,7 +69,7 @@ function getRole() {
     console.log("Get Role");
 
     $.ajax({
-      url: '/v1/api/get/role',
+      url: '/v1/ui/role/all',
       type: 'get',
       success: function (data) {
         console.log("Render Data");

@@ -331,7 +331,7 @@ func GetVariants(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetVariantDetailsById(w http.ResponseWriter, r *http.Request) {
-	id := bone.GetValue(r, "id")
+	id := r.FormValue("id")
 	status := http.StatusUnauthorized
 	err := model.ErrTokenNotFound
 	errTitle := model.ErrCodeInvalidToken
@@ -451,16 +451,15 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			VariantDescription: rd.VariantDescription,
 			ValidPartners:      rd.ValidPartners,
 		}
+
+		accountDetail, err := model.GetAccountDetailByUser(user)
 		fr := model.FormatReq{
 			Prefix:     rd.VoucherFormat.Prefix,
-			Postfix:    rd.VoucherFormat.Postfix,
+			Postfix:    accountDetail[0].Alias,
 			Body:       rd.VoucherFormat.Body,
 			FormatType: rd.VoucherFormat.FormatType,
 			Length:     rd.VoucherFormat.Length,
 		}
-		fmt.Println("variant insert ", vr)
-		fmt.Println("voucher format insert ", fr)
-		fmt.Println("user ", user)
 		if id, err := model.InsertVariant(vr, fr, user); err != nil {
 			//log.Panic(err)
 			status = http.StatusInternalServerError
@@ -474,8 +473,32 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
+func UpdateVariantRoute(w http.ResponseWriter, r *http.Request) {
+	types := r.FormValue("type")
+
+	res := NewResponse(nil)
+	status := http.StatusUnauthorized
+	err := model.ErrServerInternal
+	errTitle := model.ErrCodeInternalError
+	if types == "" {
+		res.AddError(its(status), errTitle, err.Error(), "Update type not found")
+		render.JSON(w, res, status)
+	} else {
+		if types == "detail" {
+			UpdateVariant(w, r)
+		} else if types == "tenant" {
+			UpdateVariantTenant(w, r)
+		} else if types == "broadcast" {
+			UpdateVariantBroadcast(w, r)
+		} else {
+			res.AddError(its(status), errTitle, err.Error(), "Update type not allowed")
+			render.JSON(w, res, status)
+		}
+	}
+}
+
 func UpdateVariant(w http.ResponseWriter, r *http.Request) {
-	id := bone.GetValue(r, "id")
+	id := r.FormValue("id")
 
 	res := NewResponse(nil)
 	status := http.StatusUnauthorized
@@ -483,8 +506,6 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	errTitle := model.ErrCodeInvalidToken
 	res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 	_, user, _, valid := AuthToken(w, r)
-	fmt.Println("Update")
-	fmt.Println(user)
 	if valid {
 		status = http.StatusOK
 		var rd Variant
@@ -503,11 +524,11 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 			log.Panic(err)
 		}
 
-		tvs, err := time.Parse("01/02/2006", rd.ValidVoucherStart)
+		tvs, err := time.Parse("2006-01-02T00:00:00Z", rd.ValidVoucherStart)
 		if err != nil {
 			log.Panic(err)
 		}
-		tve, err := time.Parse("01/02/2006", rd.ValidVoucherEnd)
+		tve, err := time.Parse("2006-01-02T00:00:00Z", rd.ValidVoucherEnd)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -548,7 +569,7 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {
-	id := bone.GetValue(r, "id")
+	id := r.FormValue("id")
 
 	var rd MultiUserVariantRequest
 	decoder := json.NewDecoder(r.Body)
@@ -583,7 +604,7 @@ func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
-	id := bone.GetValue(r, "id")
+	id := r.FormValue("id")
 
 	var rd MultiUserVariantRequest
 	decoder := json.NewDecoder(r.Body)
@@ -620,7 +641,7 @@ func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
 func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Delete Variant")
 	res := NewResponse(nil)
-	id := bone.GetValue(r, "id")
+	id := r.FormValue("id")
 
 	status := http.StatusUnauthorized
 	errTitle := model.ErrCodeInvalidToken

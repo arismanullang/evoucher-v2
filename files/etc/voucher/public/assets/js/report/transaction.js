@@ -2,18 +2,18 @@ $( document ).ready(function() {
   getTransactionByPartner("");
   getPartner();
 
-  $("#partner-id").change(function() {
-	  console.log($("#partner-id").value);
-	  console.log($("#partner-id").val());
-	  getTransactionByPartner($("#partner-id").val());
-  });
+  // $("#partner-id").change(function() {
+	//   console.log($("#partner-id").value);
+	//   console.log($("#partner-id").val());
+	//   getTransactionByPartner($("#partner-id").val());
+  // });
 });
 
 function getPartner() {
     console.log("Get Partner Data");
 
     $.ajax({
-      url: '/v1/get/partner',
+      url: '/v1/ui/partner/all',
       type: 'get',
       success: function (data) {
         console.log("Render Data");
@@ -29,96 +29,12 @@ function getPartner() {
   });
 }
 
-function getTransaction() {
-    console.log("Get Variant Data");
-
-    var arrData = [];
-    $.ajax({
-        url: '/v1/get/transaction?token='+token,
-        type: 'get',
-        success: function (data) {
-          console.log(data.data);
-	  var arrData = data.data;
-          var i;
-	  var dataSet = [];
-	  var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-          for ( i = 0; i < arrData.length; i++){
-	    var date1 = arrData[i].issued.substring(0, 10).split("-");
-	    var date2 = arrData[i].redeemed.substring(0, 10).split("-");
-	    var date3 = arrData[i].cashout.String.substring(0, 10).split("-");
-	    var cashoutDate = date3[2] + " " + months[parseInt(date3[1])-1] + " " + date3[0];
-	    var cashoutCashier = arrData[i].username.String;
-	    var status = "Paid"
-	    if( arrData[i].state == "used"){
-		    cashoutDate = "-";
-		    cashoutCashier = "-";
-		    status = "Pending";
-	    }
-            dataSet[i] = [
-              arrData[i].partner_name
-              , arrData[i].voucher
-              , addDecimalPoints(arrData[i].discount_value)
-              , date1[2] + " " + months[parseInt(date1[1])-1] + " " + date1[0]
-	      , date2[2] + " " + months[parseInt(date2[1])-1] + " " + date2[0]
-	      , cashoutDate
-              , cashoutCashier
-	      , status
-            ];
-          }
-          console.log(dataSet);
-
-          if ($.fn.DataTable.isDataTable("#datatable1")) {
-            $('#datatable1').DataTable().clear().destroy();
-          }
-
-          var table = $('#datatable1').dataTable({
-              data: dataSet,
-              dom: 'lBrtip',
-              buttons: [
-                  'copy', 'csv', 'excel', 'pdf', 'print'
-              ],
-              "order": [[ 0, "asc" ]],
-              columns: [
-                  { title: "Partner Name" },
-                  { title: "Voucher Code" },
-                  { title: "Voucher Value" },
-                  { title: "Issued Date" },
-                  { title: "Redeem Date" },
-                  { title: "Cashout Date" },
-                  { title: "Cashier" },
-                  { title: "Status" }
-              ],
-              oLanguage: {
-                  sSearch: '<em class="ion-search"></em>',
-                  sLengthMenu: '_MENU_ records per page',
-                  info: 'Showing page _PAGE_ of _PAGES_',
-                  zeroRecords: 'Nothing found - sorry',
-                  infoEmpty: 'No records available',
-                  infoFiltered: '(filtered from _MAX_ total records)',
-                  oPaginate: {
-                      sNext: '<em class="ion-ios-arrow-right"></em>',
-                      sPrevious: '<em class="ion-ios-arrow-left"></em>'
-                  }
-              }
-            });
-            var inputSearchClass = 'datatable_input_col_search';
-            var columnInputs = $('thead .' + inputSearchClass);
-
-            columnInputs.keyup(function() {
-                    table.fnFilter(this.value, columnInputs.index(this));
-                });
-
-        }
-    });
-}
-
 function getTransactionByPartner(partnerId) {
     console.log("Get Variant Data");
 
     var arrData = [];
     $.ajax({
-        url: '/v1/get/transaction/partner?token='+token+'&partner='+partnerId,
+        url: '/v1/ui/transaction/partner?token='+token+'&partner='+partnerId,
         type: 'get',
         success: function (data) {
           if ($.fn.DataTable.isDataTable("#datatable1")) {
@@ -129,8 +45,11 @@ function getTransactionByPartner(partnerId) {
           var i;
 	  var dataSet = [];
 	  var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+	  var username = [];
+	  var usernameExist = false;
 
           for ( i = 0; i < arrData.length; i++){
+	    usernameExist = false;
 	    var date1 = arrData[i].issued.substring(0, 10).split("-");
 	    var date2 = arrData[i].redeemed.substring(0, 10).split("-");
 	    var date3 = arrData[i].cashout.String.substring(0, 10).split("-");
@@ -143,20 +62,40 @@ function getTransactionByPartner(partnerId) {
 		    status = "Pending";
 	    }
 
+	    if(username.length == 0){
+		usernameExist = true;
+	    }else{
+	    	for( y = 0; y < username.length; y++){
+			if(username[y] != arrData[i].username.String.toUpperCase()){
+				usernameExist = true;
+			}
+		}
+	    }
+
+	    if(usernameExist){
+	    	username.push(arrData[i].username.String.toUpperCase());
+	    }
+
             dataSet[i] = [
-              arrData[i].partner_name
+              arrData[i].partner_name.toUpperCase()
               , arrData[i].transaction_id
-              , arrData[i].variant_name
+              , arrData[i].variant_name.toUpperCase()
               , arrData[i].voucher
               //, addDecimalPoints(arrData[i].discount_value)
               , date1[2] + " " + months[parseInt(date1[1])-1] + " " + date1[0]
 	      , date2[2] + " " + months[parseInt(date2[1])-1] + " " + date2[0]
 	      , cashoutDate
-              , cashoutCashier
-	      , status
+              , cashoutCashier.toUpperCase()
+	      , status.toUpperCase()
             ];
           }
           console.log(dataSet);
+	  console.log(username);
+
+	  for( y = 0; y < username.length; y++){
+		  var li = $("<option value='"+username[y]+"'>"+username[y]+"</div>");
+		  li.appendTo('#username');
+	  }
 
           var table = $('#datatable1').dataTable({
               data: dataSet,
@@ -166,16 +105,15 @@ function getTransactionByPartner(partnerId) {
               ],
               "order": [[ 0, "asc" ]],
               columns: [
-                  { title: "Partner Name" },
-                  { title: "Transaction Id" },
-                  { title: "Program Name" },
-                  { title: "Voucher Code" },
-                  //{ title: "Voucher Value" },
-                  { title: "Issued Date" },
-                  { title: "Redeem Date" },
-                  { title: "Cashout Date" },
-                  { title: "Cashier" },
-                  { title: "Status" }
+                  { title: "PARTNER" },
+                  { title: "TRANSACTION ID" },
+                  { title: "PROGRAM" },
+                  { title: "VOUCHER" },
+                  { title: "ISSUED" },
+                  { title: "REDEEM" },
+                  { title: "CASHOUT" },
+                  { title: "USER" },
+                  { title: "STATUS" }
               ],
               oLanguage: {
                   sSearch: '<em class="ion-search"></em>',
@@ -192,11 +130,17 @@ function getTransactionByPartner(partnerId) {
             });
             var inputSearchClass = 'datatable_input_col_search';
             var columnInputs = $('thead .' + inputSearchClass);
-
-            columnInputs.keyup(function() {
-                    table.fnFilter(this.value, columnInputs.index(this));
-                });
-
+	    for( i = 0; i < columnInputs.length; i++){
+		if(columnInputs.get(i).tagName.toLowerCase() == "select"){
+			columnInputs[i].onchange = function() {
+				table.fnFilter(this.value, columnInputs.index(this));
+			};
+		}else{
+			columnInputs[i].onkeyup = function() {
+				table.fnFilter(this.value, columnInputs.index(this));
+			};
+		}
+	    }
         }
     });
 }

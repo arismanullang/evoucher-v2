@@ -84,6 +84,38 @@ func checkPartner(name string) (string, error) {
 	return res[0], nil
 }
 
+func FindPartners(param map[string]string) ([]Partner, error) {
+	fmt.Println("Select partner")
+	q := `
+		SELECT
+			id
+			, partner_name
+			, serial_number
+			, tag
+			, description
+		FROM partners
+		WHERE status = ?
+	`
+	for key, value := range param {
+		if key == "q" {
+			q += `AND (id ILIKE '%` + value + `%' OR partner_name ILIKE '%` + value + `%' OR serial_number ILIKE '%` + value + `%')`
+		} else {
+			q += ` AND ` + key + ` = '` + value + `'`
+		}
+	}
+
+	var resv []Partner
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+		fmt.Println(err.Error())
+		return []Partner{}, ErrServerInternal
+	}
+	if len(resv) < 1 {
+		return []Partner{}, ErrResourceNotFound
+	}
+
+	return resv, nil
+}
+
 func FindAllPartners() ([]Partner, error) {
 	fmt.Println("Select partner")
 	q := `
@@ -107,58 +139,6 @@ func FindAllPartners() ([]Partner, error) {
 	}
 
 	return resv, nil
-}
-
-func FindPartnerSerialNumber(param string) (Partner, error) {
-	fmt.Println("Select partner")
-	q := `
-		SELECT
-			serial_number
-		FROM
-			partners
-		WHERE
-			(id = ?
-				OR
-			partner_name = ? )
-		AND 	status = ?
-	`
-
-	var resv []Partner
-	if err := db.Select(&resv, db.Rebind(q), param, param, StatusCreated); err != nil {
-		fmt.Println(err.Error())
-		return Partner{}, ErrServerInternal
-	}
-	if len(resv) < 1 {
-		return Partner{}, ErrResourceNotFound
-	}
-
-	return resv[0], nil
-}
-
-func FindPartnerDetails(param string) (Partner, error) {
-	fmt.Println("Select partner")
-	q := `
-		SELECT
-			partner_name
-			, serial_number
-			, tag
-			, description
-		FROM
-			partners
-		WHERE 	id = ?
-		AND 	status = ?
-	`
-
-	var resv []Partner
-	if err := db.Select(&resv, db.Rebind(q), param, StatusCreated); err != nil {
-		fmt.Println(err.Error())
-		return Partner{}, ErrServerInternal
-	}
-	if len(resv) < 1 {
-		return Partner{}, ErrResourceNotFound
-	}
-
-	return resv[0], nil
 }
 
 func UpdatePartner(partnerId, serialNumber, user string) error {

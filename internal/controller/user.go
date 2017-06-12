@@ -249,7 +249,6 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if valid {
-		fmt.Println("Valid")
 		status = http.StatusOK
 		param := model.User{
 			AccountId: accountId,
@@ -275,6 +274,28 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	render.JSON(w, res, status)
+}
+
+func UpdateUserRoute(w http.ResponseWriter, r *http.Request) {
+	types := r.FormValue("type")
+
+	res := NewResponse(nil)
+	status := http.StatusUnauthorized
+	err := model.ErrServerInternal
+	errTitle := model.ErrCodeInternalError
+	if types == "" {
+		res.AddError(its(status), errTitle, err.Error(), "Update type not found")
+		render.JSON(w, res, status)
+	} else {
+		if types == "detail" {
+			UpdateUser(w, r)
+		} else if types == "password" {
+			ChangePassword(w, r)
+		} else {
+			res.AddError(its(status), errTitle, err.Error(), "Update type not allowed")
+			render.JSON(w, res, status)
+		}
+	}
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
@@ -318,7 +339,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
-func ForgotPassword(w http.ResponseWriter, r *http.Request) {
+func SendMailForgotPassword(w http.ResponseWriter, r *http.Request) {
 	var username = r.FormValue("username")
 	fmt.Println(username)
 	if err := model.SendMail(model.Domain, model.ApiKey, model.PublicApiKey, username); err != nil {
@@ -326,7 +347,7 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func UpdatePassword(w http.ResponseWriter, r *http.Request) {
+func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	var rd PasswordReq
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {

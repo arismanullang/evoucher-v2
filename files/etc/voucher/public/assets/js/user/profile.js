@@ -15,26 +15,28 @@ function getUserDetails() {
 
     var arrData = [];
     $.ajax({
-        url: '/v1/api/get/userDetails?token='+token,
+        url: '/v1/ui/user?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
           var i;
-          var arrData = data.data;
-          var limit = arrData.RoleId.length;
+          var result = data.data;
+          var limit = result.RoleId.length;
           var desc = "Act as ";
           for ( i = 0; i < limit; i++){
-            desc += arrData.RoleId[i];
+            desc += result.RoleId[i];
             if( i != limit-1){
               desc += ", ";
             }
           }
           desc += ".";
+	  var date = new Date(result.CreatedAt);
+
           $("#user-desc").html(desc);
-          $("#user-name").html(arrData.Username);
-          $("#user-email").html(arrData.Email);
-          $("#user-phone").html(arrData.Phone);
-          $("#user-date").html(arrData.CreatedAt.substr(0,10));
+          $("#user-name").html(result.Username);
+          $("#user-email").html(result.Email);
+          $("#user-phone").html(result.Phone);
+          $("#user-date").html(date.toDateString() + ", " + toTwoDigit(date.getHours()) + ":" + toTwoDigit(date.getMinutes()));
         },
         error: function (data) {
           alert("User Not Found.");
@@ -47,7 +49,7 @@ function getUser() {
 
     var arrData = [];
     $.ajax({
-        url: '/v1/api/get/users?token='+token,
+        url: '/v1/ui/user/all?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -74,7 +76,7 @@ function getAccount() {
     console.log("Get Account Data");
 
     $.ajax({
-        url: '/v1/api/get/accountsDetail?token='+token,
+        url: '/v1/ui/account?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -101,12 +103,12 @@ function getVariant() {
     console.log("Get Account Data");
 
     $.ajax({
-        url: '/v1/api/get/totalVariant?token='+token,
+        url: '/v1/ui/variant/all?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
           var result = data.data;
-          $("#user-variant").html(result);
+          $("#user-variant").html(result.length);
         },
         error: function (data) {
           alert("Account Not Found.");
@@ -115,5 +117,5 @@ function getVariant() {
 }
 
 function updateUser(){
-  window.location = "/user/update";
+  window.location = "/user/update?token="+token;
 }

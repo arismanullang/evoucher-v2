@@ -107,21 +107,12 @@ func getUiRole() map[string][]string {
 	roles, err := model.GetAllUiFeatures()
 
 	if err == nil {
-		tempRole := ""
-		tempAction := []string{}
-		for index, value := range roles {
-			if index != 0 {
-				if tempRole != value.Role {
-					m[tempRole] = tempAction
-					tempRole = value.Role
-					tempAction = []string{}
-				}
-			} else {
-				tempRole = value.Role
-			}
-			tempAction = append(tempAction, "/"+value.Category+"/"+value.Detail)
+		for _, value := range roles {
+			m[value.Role] = append(m[value.Role], "/"+value.Category+"/"+value.Detail)
+
 		}
-		m[tempRole] = tempAction
+
 	}
+	fmt.Println(m)
 	return m
 }
