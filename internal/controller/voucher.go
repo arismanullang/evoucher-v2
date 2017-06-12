@@ -681,7 +681,7 @@ func (vr *GenerateVoucherRequest) generateVoucher(v *model.Variant) ([]model.Vou
 
 	for i := 0; i <= vr.Quantity-1; i++ {
 
-		code = append(code, voucherCode(vcf , v.VoucherFormat))
+		code = append(code, voucherCode(vcf, v.VoucherFormat))
 
 		// fmt.Println("generate data =>", vr.Holder)
 		rd := model.Voucher{
@@ -814,15 +814,15 @@ func generateLink(id string) string {
 	return model.VOUCHER_URL + "?x=" + StrEncode(id)
 }
 
-func voucherCode(vcf model.VoucherCodeFormat , flag int) string {
+func voucherCode(vcf model.VoucherCodeFormat, flag int) string {
 	var code string
 
-	seedCode := func()string{
-		return randStr(model.DEFAULT_SEED_LENGTH,model.DEFAULT_SEED_CODE)
+	seedCode := func() string {
+		return randStr(model.DEFAULT_SEED_LENGTH, model.DEFAULT_SEED_CODE)
 	}
 
-	if vcf.Prefix.Valid{
-		code +=  vcf.Prefix.String + "-"
+	if vcf.Prefix.Valid {
+		code += vcf.Prefix.String + "-"
 	}
 
 	switch {
@@ -831,14 +831,12 @@ func voucherCode(vcf model.VoucherCodeFormat , flag int) string {
 	case vcf.Body.Valid == true && vcf.Body.String != "":
 		code += seedCode() + "-" + vcf.Body.String
 	default:
-		code += seedCode() + "-" + randStr(vcf.Length , vcf.FormatType)
+		code += seedCode() + "-" + randStr(vcf.Length, vcf.FormatType)
 	}
 
-	if vcf.Postfix.Valid{
-		code +=  "-" + vcf.Postfix.String
+	if vcf.Postfix.Valid {
+		code += "-" + vcf.Postfix.String
 	}
 
-	return  code
+	return code
 }
-
-

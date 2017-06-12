@@ -33,10 +33,9 @@ func RegisterAccount(w http.ResponseWriter, r *http.Request) {
 	param := model.Account{
 		AccountName: rd.AccountName,
 		Billing:     rd.Billing,
-		CreatedBy:   rd.CreatedBy,
 	}
 
-	if err := model.AddAccount(param); err != nil {
+	if err := model.AddAccount(param, rd.CreatedBy); err != nil {
 		//log.Panic(err)
 		status = http.StatusInternalServerError
 	}
@@ -45,7 +44,7 @@ func RegisterAccount(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
-func GetAccount(w http.ResponseWriter, r *http.Request) {
+func GetAllAccount(w http.ResponseWriter, r *http.Request) {
 	account, err := model.FindAllAccounts()
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
@@ -65,7 +64,7 @@ func GetAccountDetailByUser(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Get Account")
 
 	a := AuthToken(w, r)
-	if a.Valid{
+	if a.Valid {
 		status = http.StatusOK
 		account, err := model.GetAccountDetailByUser(a.User.ID)
 		if err != nil {
@@ -80,7 +79,7 @@ func GetAccountDetailByUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(account)
 		}
-	}else {
+	} else {
 		res = a.res
 		status = http.StatusUnauthorized
 	}
@@ -111,7 +110,7 @@ func GetAccountsByUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(account)
 		}
-	}else {
+	} else {
 		res = a.res
 		status = http.StatusUnauthorized
 	}

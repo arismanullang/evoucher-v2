@@ -30,7 +30,7 @@ type (
 )
 
 func OTPAuth(key, challenge, response string) bool {
-	req := ReqParams{Key: key, Challenge: challenge, Response: response,Token:model.OCRA_EVOUCHER_APPS_KEY}
+	req := ReqParams{Key: key, Challenge: challenge, Response: response, Token: model.OCRA_EVOUCHER_APPS_KEY}
 	d, r, err := ocra(req)
 
 	if r.StatusCode == 200 && d.Data.State == "success" {

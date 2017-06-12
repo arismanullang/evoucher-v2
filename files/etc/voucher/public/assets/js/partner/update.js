@@ -7,13 +7,11 @@ function getPartner(id) {
     console.log("Get Partner Data");
 
     $.ajax({
-      url: '/v1/get/partner/'+id+"?token="+token,
+      url: '/v1/ui/partner?id='+id+"&token="+token,
       type: 'get',
       success: function (data) {
-        console.log("Render Data");
-        var arrData = [];
-        arrData = data.data;
-        console.log(arrData);
+        console.log(data.data);
+        var arrData = data.data[0];
         $("#partner-name").html(arrData.partner_name);
         $("#serial-number").val(arrData.serial_number.String);
       }
@@ -44,14 +42,14 @@ function update() {
 
     console.log(userReq);
     $.ajax({
-       url: '/v1/update/partner/'+id+'?token='+token,
+       url: '/v1/ui/partner/update?id='+id+'&token='+token,
        type: 'post',
        dataType: 'json',
        contentType: "application/json",
        data: JSON.stringify(userReq),
        success: function () {
            alert("Partner Updated.");
-           window.location = "/partner/search";
+           window.location = "/partner/search?token="+token;
        }
    });
 }

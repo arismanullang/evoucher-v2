@@ -9,7 +9,7 @@
 <div class="container-overlap bg-white">
 </div>
 <div class="container container-md">
-  <form id="create-variant" name="create-variant" novalidate="" class="card b0 form-validate redeem-rules-form" action="/v1/sample/link" method="get">
+  <form id="create-variant" name="create-variant" novalidate="" class="card b0 form-validate redeem-rules-form" action="/v1/ui/sample/link" method="get">
     <div class="row">
       <div class="card">
         <!-- Nav tabs-->
@@ -180,7 +180,6 @@
                         <div class="mda-form-control">
                           <select id="voucher-type" name="voucher-type" class="form-control select2" tabindex="0">
                             <option value="cash">Cash Back</option>
-                            <option value="discount">Discount</option>
                           </select>
                           <div class="mda-form-control-line"></div>
                           <label>Voucher Type</label>
@@ -201,21 +200,12 @@
                     </div>
                   </div>
                   <div id="max-row" class="row">
-                    <div class="col-sm-6">
+                    <div class="col-sm-12">
                       <div class="mda-form-group">
                         <div class="mda-form-control">
                           <input id="max-quantity-voucher" name="max-quantity-voucher" placeholder="Min 1" check="true" tabindex="0" aria-invalid="false" class="form-control">
                           <div class="mda-form-control-line"></div>
                           <label>Maximum Quantity</label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-sm-6">
-                      <div class="mda-form-group">
-                        <div class="mda-form-control">
-                          <input id="max-usage-voucher" name="max-usage-voucher" placeholder="Min 1" check="true" tabindex="0" aria-invalid="false" class="form-control">
-                          <div class="mda-form-control-line"></div>
-                          <label>Maximum Issued per User</label>
                         </div>
                       </div>
                     </div>
@@ -247,39 +237,12 @@
                     </div>
                     <div class="col-sm-6">
                       <div class="mda-form-group">
-                        <div class="mda-form-control">
-                          <input id="length" name="length" tabindex="0" check="true" aria-invalid="false" class="form-control" placeholder="min 8">
-                          <div class="mda-form-control-line"></div>
-                          <label>Length</label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-sm-4">
-                      <div class="mda-form-group">
-                        <div class="mda-form-control">
-                          <input id="prefix" name="prefix" tabindex="0" aria-invalid="false" class="form-control">
-                          <div class="mda-form-control-line"></div>
-                          <label>Prefix</label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-sm-4">
-                      <div class="mda-form-group">
-                        <div class="mda-form-control">
-                          <input id="body" name="body" tabindex="0" aria-invalid="false" class="form-control">
-                          <div class="mda-form-control-line"></div>
-                          <label>Body</label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-sm-4">
-                      <div class="mda-form-group">
-                        <div class="mda-form-control">
-                          <input id="postfix" name="postfix" tabindex="0" aria-invalid="false" class="form-control">
-                          <div class="mda-form-control-line"></div>
-                          <label>Postfix</label>
+                        <div class="mda-form-group">
+                          <div class="mda-form-control">
+                            <input id="prefix" name="prefix" tabindex="0" aria-invalid="false" class="form-control">
+                            <div class="mda-form-control-line"></div>
+                            <label>Prefix</label>
+                          </div>
                         </div>
                       </div>
                     </div>

@@ -6,7 +6,7 @@ function getTag() {
     console.log("Get Tag List");
 
     $.ajax({
-      url: '/v1/get/tag',
+      url: '/v1/ui/tag/all',
       type: 'get',
       success: function (data) {
         console.log("Render Data");
@@ -41,7 +41,7 @@ function add(param) {
   };
 
   $.ajax({
-    url: '/v1/create/tag?token='+token,
+    url: '/v1/ui/tag/create?token='+token,
     type: 'post',
     dataType: 'json',
     contentType: "application/json",
@@ -59,7 +59,7 @@ function deleteTag(param) {
   };
 
   $.ajax({
-    url: '/v1/delete/tag/'+param+'?token='+token,
+    url: '/v1/ui/tag/delete?id='+param+'&token='+token,
     type: 'get',
     success: function (data) {
       location.reload();
@@ -74,7 +74,7 @@ function deleteTagBulk(param) {
   };
 
   $.ajax({
-    url: '/v1/delete/tag?token='+token,
+    url: '/v1/ui/tag/delete?token='+token,
     type: 'post',
     dataType: 'json',
     contentType: "application/json",

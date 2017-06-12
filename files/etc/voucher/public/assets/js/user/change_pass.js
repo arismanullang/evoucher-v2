@@ -18,14 +18,14 @@ function recover(){
     };
 
   $.ajax({
-      url: '/v1/update/user/password?token='+token,
+      url: '/v1/ui/user/update?type=password&token='+token,
       type: 'post',
       dataType: 'json',
       contentType: "application/json",
       data: JSON.stringify(user),
       success: function (data){
         alert("Password Updated");
-        window.location = "/user/profile";
+        window.location = "/user/profile?token="+token;
       },
       error: function (data){
         alert("Failed");

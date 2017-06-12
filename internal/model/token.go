@@ -14,7 +14,7 @@ type Token struct {
 }
 
 type SessionData struct {
-	User	  User
+	User      User
 	ExpiredAt time.Time `json:"expired_at"`
 }
 
@@ -48,7 +48,7 @@ func setSession(u User, token Token) {
 	defer c.Close()
 
 	sd := SessionData{
-		User: u,
+		User:      u,
 		ExpiredAt: token.ExpiredAt,
 	}
 

@@ -7,7 +7,7 @@ function getVariant() {
 
     var arrData = [];
     $.ajax({
-        url: '/v1/api/get/allVariant?token='+token,
+        url: '/v1/ui/variant/all?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -15,6 +15,7 @@ function getVariant() {
           var i;
           var dataSet = [];
           var dataId = [];
+          var dataType = [];
           var dataStart = [];
           var dataEnd = [];
           var dataModified = [];
@@ -23,6 +24,7 @@ function getVariant() {
           var dataValue = [];
           var dataMax = [];
           var dataVoucher = [];
+          var dataRedeem = [];
           var dataStatus = [];
 	  var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
           for ( i = 0; i < arrData.length; i++){
@@ -34,13 +36,33 @@ function getVariant() {
 	      var date3 = arrData[i].created_at.substring(0, 10).split("-");
 	      var date4 = arrData[i].updated_at.String.substring(0, 10).split("-");
               dataId.push(arrData[i].id);
+              if(arrData[i].variant_type == "on-demand"){
+		dataType.push("Mobile App");
+	      }else{
+              	dataType.push("Email Blast");
+	      }
               dataStart.push(date1[2] + " " + months[parseInt(date1[1])-1] + " " + date1[0]);
               dataEnd.push(date2[2] + " " + months[parseInt(date2[1])-1] + " " + date2[0]);
               dataName.push(arrData[i].variant_name);
               dataPrice.push(arrData[i].voucher_price);
               dataValue.push(arrData[i].discount_value);
               dataMax.push(arrData[i].max_quantity_voucher);
-              dataVoucher.push(arrData[i].voucher);
+
+              var created = 0;
+	      var redeem = 0;
+
+              if(arrData[i].vouchers != null){
+		for(y = 0; y < arrData[i].vouchers.length; y++){
+		  created += parseInt(arrData[i].vouchers[y].voucher);
+		  if(arrData[i].vouchers[y].state != 'created'){
+		  	redeem += parseInt(arrData[i].vouchers[y].voucher);
+		        created += parseInt(arrData[i].vouchers[y].voucher);
+		  }
+		}
+	      }
+
+              dataVoucher.push(created);
+              dataRedeem.push(redeem);
 
               if(arrData[i].status = 'created' ){
 	              	var dateStart  = new Date(date1[0], date1[1]-1, date1[2]);
@@ -63,62 +85,32 @@ function getVariant() {
 	      }
             }
             else{
-              dataVoucher[tempIndex] = parseInt(dataVoucher[tempIndex]) + parseInt(arrData[i].voucher);
+              //dataVoucher[tempIndex] = parseInt(dataVoucher[tempIndex]) + parseInt(arrData[i].voucher);
             }
           }
 
           for ( i = 0; i < dataId.length; i++){
-        //     var date1 = dataStart[i].substring(0, 10).split("-");
-        //     var date2 = dataEnd[i].substring(0, 10).split("-");
-            //
-        //     var dateStart  = new Date(date1[0], date1[1]-1, date1[2]);
-        //     var dateEnd  = new Date(date2[0], date2[1]-1, date2[2]);
-        //     var dateNow_ms  = Date.now();
-            //
-        //     var one_day = 1000*60*60*24;
-        //     var dateStart_ms = dateStart.getTime();
-        //     var dateEnd_ms = dateEnd.getTime();
-        //     // var dateNow_ms = dateNow.getTime();
-            //
-        //     var diffNow = Math.round((dateEnd_ms-dateStart_ms)/one_day);
-        //     var persen = 100;
-            //
-        //     if(dateStart_ms < dateNow_ms){
-        //       diffNow = Math.round((dateEnd_ms-dateNow_ms)/one_day);
-        //       var diffTotal = Math.round((dateEnd_ms-dateStart_ms)/one_day);
-        //       persen = diffNow / diffTotal * 100;
-        //     }
-            //
-        //     if(dateNow_ms > dateEnd_ms){
-        //       persen = -1;
-        //     }
-            //
-        //     console.log(dataId[i] + " " + dateStart + " " + dateEnd);
-        //     console.log(dataId[i] + " " + diffNow + " " + diffTotal + " " + persen);
-        //     var diffDay = diffNow;
-        //     diffNow = diffNow + " hari";
-            //
-        //     if( persen < 0){
-        //       diffNow = "Expired";
-        //     }
-            //
-        //     if( diffDay == 30 && diffTotal > 30){
-        //       diffNow = "Not start yet";
-        //     }
-
             var button = "<button type='button' onclick='detail(\""+dataId[i]+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"+
             "<button type='button' onclick='edit(\""+dataId[i]+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>"+
             "<button type='button' value=\""+dataId[i]+"\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>"
 
+	    var avail = 0;
+	    var rate = 0;
+	    if(dataMax[i] != 0){
+		avail = dataMax[i] - dataVoucher[i];
+		rate = dataRedeem[i]/dataMax[i]*100;
+	    }
             dataSet[i] = [
-              dataName[i]
+              dataName[i].toUpperCase()
+	      , dataType[i].toUpperCase()
               , dataPrice[i] + " / " + addDecimalPoints(dataValue[i])
-              , dataStart[i]
-              , dataEnd[i]
-	      , dataStatus[i]
-	      , dataModified[i]
+	      , dataStatus[i].toUpperCase()
+              , dataStart[i].toUpperCase()
+              , dataEnd[i].toUpperCase()
+	      , dataModified[i].toUpperCase()
 	      , dataMax[i]
-              , (dataMax[i] - dataVoucher[i])
+              , avail
+              , rate+"%"
               , button
             ];
           }
@@ -134,17 +126,19 @@ function getVariant() {
               buttons: [
                   'copy', 'csv', 'excel', 'pdf', 'print'
               ],
-              "order": [[ 5, "desc" ]],
+              "order": [[ 6, "desc" ]],
               columns: [
-                  { title: "Program Name" },
-                  { title: "Conversion </br> (point / currency)" },
-                  { title: "Start Date" },
-                  { title: "End Date" },
-                  { title: "Status" },
-                  { title: "Last Modified" },
-                  { title: "Total Voucher" },
-                  { title: "Available Voucher" },
-                  { title: "Action"}
+                  { title: "PROGRAM" },
+                  { title: "TYPE" },
+                  { title: "CONVERSION </br> (POINT / CURRENCY)" },
+	          { title: "STATUS" },
+                  { title: "START" },
+                  { title: "END" },
+                  { title: "LAST MODIFIED" },
+                  { title: "TOTAL </br> VOUCHER" },
+                  { title: "AVAILABLE </br> VOUCHER" },
+                  { title: "REDEEM RATE" },
+                  { title: "ACTION"}
               ],
               oLanguage: {
                   sSearch: '<em class="ion-search"></em>',
@@ -161,32 +155,38 @@ function getVariant() {
             });
             var inputSearchClass = 'datatable_input_col_search';
             var columnInputs = $('thead .' + inputSearchClass);
-
-            columnInputs
-                .keyup(function() {
-                    table.fnFilter(this.value, columnInputs.index(this));
-                });
+	    for( i = 0; i < columnInputs.length; i++){
+		if(columnInputs.get(i).tagName.toLowerCase() == "select"){
+			columnInputs[i].onchange = function() {
+				table.fnFilter(this.value, columnInputs.index(this));
+			};
+		}else{
+			columnInputs[i].onkeyup = function() {
+				table.fnFilter(this.value, columnInputs.index(this));
+			};
+		}
+	    }
         }
     });
 }
 
 function edit(url){
-  window.location = "/variant/update?id="+url;
+  window.location = "/variant/update?id="+url+"&token="+token;
 }
 
 function detail(url){
-  window.location = "/variant/check?id="+url;
+  window.location = "/variant/check?id="+url+"&token="+token;
 }
 
 function addVariant(url){
-  window.location = "/variant/create";
+  window.location = "/variant/create?token="+token;
 }
 
 function deleteVariant(id) {
     console.log("Delete Variant");
 
     $.ajax({
-        url: '/v1/delete/variant/'+id+'?token='+token,
+        url: '/v1/ui/variant/delete?id='+id+'&token='+token,
         type: 'get',
         success: function (data) {
           getVariant();

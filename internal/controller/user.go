@@ -16,7 +16,6 @@ import (
 	"github.com/ruizu/render"
 
 	"github.com/gilkor/evoucher/internal/model"
-	"golang.org/x/tools/go/gcimporter15/testdata"
 )
 
 type (
@@ -123,7 +122,7 @@ func InsertBroadcastUser(w http.ResponseWriter, r *http.Request) {
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 		}
 
-	}else {
+	} else {
 		res = a.res
 		status = http.StatusUnauthorized
 	}
@@ -153,7 +152,7 @@ func FindUserByRole(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(user)
 		}
-	}else {
+	} else {
 		res = a.res
 		status = http.StatusUnauthorized
 	}
@@ -181,7 +180,7 @@ func GetUserDetails(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(user)
 		}
-	}else {
+	} else {
 		res = a.res
 		status = http.StatusUnauthorized
 	}
@@ -210,7 +209,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(user)
 		}
-	}else {
+	} else {
 		res = a.res
 		status = http.StatusUnauthorized
 	}
@@ -253,7 +252,6 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), its(status), err.Error(), "user")
 
-
 	var rd User
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
@@ -285,12 +283,34 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(a.User.ID)
 		}
-	}else {
+	} else {
 		res = a.res
 		status = http.StatusUnauthorized
 	}
 
 	render.JSON(w, res, status)
+}
+
+func UpdateUserRoute(w http.ResponseWriter, r *http.Request) {
+	types := r.FormValue("type")
+
+	res := NewResponse(nil)
+	status := http.StatusUnauthorized
+	err := model.ErrServerInternal
+	errTitle := model.ErrCodeInternalError
+	if types == "" {
+		res.AddError(its(status), errTitle, err.Error(), "Update type not found")
+		render.JSON(w, res, status)
+	} else {
+		if types == "detail" {
+			UpdateUser(w, r)
+		} else if types == "password" {
+			ChangePassword(w, r)
+		} else {
+			res.AddError(its(status), errTitle, err.Error(), "Update type not allowed")
+			render.JSON(w, res, status)
+		}
+	}
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
@@ -299,7 +319,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 
 	res.AddError(its(status), its(status), err.Error(), "user")
-
 
 	var rd User
 	decoder := json.NewDecoder(r.Body)
@@ -329,7 +348,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(a.User.ID)
 		}
-	}else {
+	} else {
 		res = a.res
 		status = http.StatusUnauthorized
 	}
@@ -337,7 +356,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
-func ForgotPassword(w http.ResponseWriter, r *http.Request) {
+func SendMailForgotPassword(w http.ResponseWriter, r *http.Request) {
 	var username = r.FormValue("username")
 	fmt.Println(username)
 	if err := model.SendMail(model.Domain, model.ApiKey, model.PublicApiKey, username); err != nil {
@@ -345,7 +364,7 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func UpdatePassword(w http.ResponseWriter, r *http.Request) {
+func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	var rd PasswordReq
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
@@ -373,7 +392,6 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 
 	res.AddError(its(status), its(status), err.Error(), "user")
 
-
 	var rd ChangePasswordReq
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
@@ -396,7 +414,7 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse(a.User.ID)
 		}
-	}else {
+	} else {
 		res = a.res
 		status = http.StatusUnauthorized
 	}
