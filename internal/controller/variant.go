@@ -127,16 +127,20 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 	}
 	d := make(GetVoucherOfVariatList, len(variant))
 	for k, dt := range variant {
-		d[k].VariantID = dt.Id
-		d[k].AccountId = dt.AccountId
-		d[k].VariantName = dt.VariantName
-		d[k].VoucherType = dt.VoucherType
-		d[k].VoucherPrice = dt.VoucherPrice
-		d[k].DiscountValue = dt.DiscountValue
-		d[k].StartDate = dt.StartDate
-		d[k].EndDate = dt.EndDate
-		d[k].ImgUrl = dt.ImgUrl
-		d[k].Used = getCountVoucher(dt.Id)
+		used := getCountVoucher(dt.Id)
+		if (int(dt.MaxVoucher) - used) > 0 {
+			d[k].VariantID = dt.Id
+			d[k].AccountId = dt.AccountId
+			d[k].VariantName = dt.VariantName
+			d[k].VoucherType = dt.VoucherType
+			d[k].VoucherPrice = dt.VoucherPrice
+			d[k].DiscountValue = dt.DiscountValue
+			d[k].StartDate = dt.StartDate
+			d[k].EndDate = dt.EndDate
+			d[k].ImgUrl = dt.ImgUrl
+			d[k].MaxQty = dt.MaxVoucher
+			d[k].Used = used
+		}
 	}
 
 	status = http.StatusOK

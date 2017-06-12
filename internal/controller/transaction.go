@@ -89,7 +89,9 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			return
 		} else {
 			fmt.Println("panrner data : ", p[0].SerialNumber.String)
-			if !OTPAuth(p[0].Id, rd.Challenge, rd.Response) {
+
+
+			if !OTPAuth(p[0].SerialNumber.String, rd.Challenge, rd.Response) {
 				status = http.StatusBadRequest
 				res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, "voucher")
 				render.JSON(w, res, status)
@@ -253,7 +255,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			return
 		} else {
 			fmt.Println("panrner data : ", p[0].SerialNumber.String)
-			if !OTPAuth(p[0].Id, rd.Challenge, rd.Response) {
+			if !OTPAuth(p[0].SerialNumber.String, rd.Challenge, rd.Response) {
 				status = http.StatusBadRequest
 				res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, "voucher")
 				render.JSON(w, res, status)
