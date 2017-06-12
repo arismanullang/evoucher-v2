@@ -56,6 +56,15 @@ function addDecimalPoints(value) {
     return newValue.split("").reverse().join("");
 }
 
+function toTwoDigit(val){
+	if (val < 10){
+		return '0'+val;
+	}
+	else {
+		return val;
+	}
+}
+
 function toTitleCase(str)
 {
     return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});

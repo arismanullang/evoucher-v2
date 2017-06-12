@@ -6,7 +6,7 @@ function getPartner() {
     console.log("Get Partner Data");
 
     $.ajax({
-      url: '/v1/get/partner',
+      url: '/v1/ui/partner/all',
       type: 'get',
       success: function (data) {
         console.log("Render Data");
@@ -17,7 +17,7 @@ function getPartner() {
         var dataSet = [];
         for (i = 0; i < arrData.length; i++){
 	  var button = "<button type='button' class='btn btn-flat btn-sm btn-info' onclick='edit(\""+arrData[i].id+"\")'><em class='ion-edit'></em></button>"+
-		"<button type='button' class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>";
+		"<button value='"+arrData[i].id+"' type='button' class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>";
 
 	  dataSet[i] = [
 		arrData[i].partner_name
@@ -66,11 +66,21 @@ function getPartner() {
 }
 
 function edit(url){
-  window.location = "/partner/update?id="+url;
+  window.location = "/partner/update?id="+url+"&token="+token;
 }
 
 function addPartner() {
-  window.location = "/partner/create";
+  window.location = "/partner/create?token="+token;
+}
+
+function deletePartner(id) {
+	$.ajax({
+		url: '/v1/ui/partner/delete?id='+id+'&token='+token,
+		type: 'get',
+		success: function (data) {
+			getPartner();
+		}
+	});
 }
 
 (function() {
@@ -92,7 +102,7 @@ function addPartner() {
                     closeOnConfirm: false
                 },
                 function() {
-                    swal('Deleted!', 'Delete success.', deleteVariant(e.target.value));
+                    swal('Deleted!', 'Delete success.', deletePartner(e.target.value));
                 });
 
         });

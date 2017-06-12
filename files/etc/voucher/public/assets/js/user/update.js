@@ -12,7 +12,7 @@ function getUserDetails() {
 
     var arrData = [];
     $.ajax({
-        url: '/v1/api/get/userDetails?token='+token,
+        url: '/v1/ui/user?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -54,14 +54,14 @@ function send() {
 
     console.log(userReq);
     $.ajax({
-       url: '/v1/update/user?token='+token,
+       url: '/v1/ui/user/update?type=detail&token='+token,
        type: 'post',
        dataType: 'json',
        contentType: "application/json",
        data: JSON.stringify(userReq),
        success: function () {
            alert("User Updated.");
-           window.location = "/user/profile";
+           window.location = "/user/profile?token="+token;
        }
    });
 }

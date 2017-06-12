@@ -4,15 +4,15 @@ import "fmt"
 
 type (
 	User struct {
-		ID 	  string   `db:"id"`
-		AccountID string   `db:"account_id"`
-		Username  string   `db:"username"`
-		Password  string   `db:"password"`
-		Email     string   `db:"email"`
-		Phone     string   `db:"phone"`
-		Role      []Role   `db:"-"`
-		CreatedBy string   `db:"created_by"`
-		CreatedAt string   `db:"created_at"`
+		ID        string `db:"id"`
+		AccountID string `db:"account_id"`
+		Username  string `db:"username"`
+		Password  string `db:"password"`
+		Email     string `db:"email"`
+		Phone     string `db:"phone"`
+		Role      []Role `db:"-"`
+		CreatedBy string `db:"created_by"`
+		CreatedAt string `db:"created_at"`
 	}
 	Role struct {
 		Id         string `db:"id"`

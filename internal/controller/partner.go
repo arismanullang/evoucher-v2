@@ -40,6 +40,28 @@ type (
 	}
 )
 
+func GetPartners(w http.ResponseWriter, r *http.Request) {
+	param := getUrlParam(r.URL.String())
+	status := http.StatusOK
+	res := NewResponse(nil)
+	partner, err := model.FindVariantPartner(param)
+	if err != nil {
+		fmt.Println(err.Error())
+		status = http.StatusInternalServerError
+		errorTitle := model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errorTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
+	} else {
+		res = NewResponse(partner)
+	}
+
+	render.JSON(w, res, status)
+}
+
 func GetAllPartners(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	res := NewResponse(nil)
@@ -73,7 +95,6 @@ func GetAllPartnersCustomParam(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, a.res, status)
 		return
 	}
-
 
 	param := getUrlParam(r.URL.String())
 	delete(param, "token")
@@ -113,73 +134,8 @@ func GetAllPartnersCustomParam(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
-func GetPartnerSerialName(w http.ResponseWriter, r *http.Request) {
-	param := r.FormValue("param")
-
-	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errorTitle := model.ErrCodeInvalidToken
-	res := NewResponse(nil)
-	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
-
-	a := AuthToken(w, r)
-	if a.Valid {
-		status = http.StatusOK
-		partner, err := model.FindPartnerSerialNumber(param)
-		if err != nil {
-			status = http.StatusInternalServerError
-			errorTitle = model.ErrCodeInternalError
-			if err == model.ErrResourceNotFound {
-				status = http.StatusNotFound
-				errorTitle = model.ErrCodeResourceNotFound
-			}
-
-			res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
-		} else {
-			res = NewResponse(partner)
-		}
-	}else {
-		res = a.res
-		status = http.StatusUnauthorized
-	}
-
-	render.JSON(w, res, status)
-}
-
-func GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
-	id := bone.GetValue(r, "id")
-	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errorTitle := model.ErrCodeInvalidToken
-	res := NewResponse(nil)
-	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
-
-	a :=  AuthToken(w, r)
-	if a.Valid {
-		status = http.StatusOK
-		partner, err := model.FindPartnerDetails(id)
-		if err != nil {
-			status = http.StatusInternalServerError
-			errorTitle = model.ErrCodeInternalError
-			if err == model.ErrResourceNotFound {
-				status = http.StatusNotFound
-				errorTitle = model.ErrCodeResourceNotFound
-			}
-
-			res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
-		} else {
-			res = NewResponse(partner)
-		}
-	}else {
-		res = a.res
-		status = http.StatusUnauthorized
-	}
-
-	render.JSON(w, res, status)
-}
-
 func UpdatePartner(w http.ResponseWriter, r *http.Request) {
-	id := bone.GetValue(r, "id")
+	id := r.FormValue("id")
 
 	var rd Partner
 	decoder := json.NewDecoder(r.Body)
@@ -209,7 +165,7 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse("Success")
 		}
-	}else {
+	} else {
 		res = a.res
 		status = http.StatusUnauthorized
 	}
@@ -218,7 +174,7 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeletePartner(w http.ResponseWriter, r *http.Request) {
-	id := bone.GetValue(r, "id")
+	id := r.FormValue("id")
 
 	status := http.StatusUnauthorized
 	err := model.ErrTokenNotFound
@@ -242,7 +198,7 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse("Success")
 		}
-	}else {
+	} else {
 		res = a.res
 		status = http.StatusUnauthorized
 	}
@@ -298,7 +254,7 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 
 			res.AddError(its(status), errorTitle, err.Error(), "Add Partner")
 		}
-	}else {
+	} else {
 		res = a.res
 		status = http.StatusUnauthorized
 	}
@@ -358,7 +314,7 @@ func AddTag(w http.ResponseWriter, r *http.Request) {
 
 			res.AddError(its(status), errorTitle, err.Error(), "Add Tag")
 		}
-	}else {
+	} else {
 		res = a.res
 		status = http.StatusUnauthorized
 	}
@@ -390,7 +346,7 @@ func DeleteTag(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse("Success")
 		}
-	}else {
+	} else {
 		res = a.res
 		status = http.StatusUnauthorized
 	}
@@ -426,7 +382,7 @@ func DeleteTagBulk(w http.ResponseWriter, r *http.Request) {
 		} else {
 			res = NewResponse("Success")
 		}
-	}else {
+	} else {
 		res = a.res
 		status = http.StatusUnauthorized
 	}

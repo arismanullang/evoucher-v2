@@ -24,18 +24,17 @@ function searchById(id) {
     var arrData = [];
 
     $.ajax({
-        url: '/v1/api/get/variant/'+id+'?token='+token,
+        url: '/v1/ui/variant/detail?id='+id+'&token='+token,
         type: 'get',
         success: function (data) {
           console.log(data);
-          var variant = data.data;
+          var variant = data.data[0];
 	  $("#variant-id").val(id);
           $("#variant-name").val(variant.variant_name);
           $("#variant-type").val(variant.variant_type);
           $("#voucher-type").val(variant.voucher_type);
           $("#voucher-price").val(variant.voucher_price);
           $("#max-quantity-voucher").val(variant.max_quantity_voucher);
-          $("#max-usage-voucher").val(variant.max_usage_voucher);
           $("#redemption-method").val(variant.redeemtion_method);
           $("#variant-valid-from").val(convertToDate(variant.start_date));
           $("#variant-valid-to").val(convertToDate(variant.end_date));
@@ -44,17 +43,20 @@ function searchById(id) {
           $("#variant-description").val(variant.variant_description);
           $("#start-hour").val(variant.start_hour);
           $("#end-hour").val(variant.end_hour);
-	  //$("#image-url").val(variant.image_url);
+	  $("#image-url-default").val(variant.image_url);
+	  $("#voucher-valid-from").val(variant.valid_voucher_start);
+	  $("#voucher-valid-to").val(variant.valid_voucher_end);
 
 	  $("#voucher-price").attr("disabled","");
 	  $("#max-quantity-voucher").attr("disabled","");
-	  $("#max-usage-voucher").attr("disabled","");
           $("#voucher-value").attr("disabled","");
           $("#start-hour").attr("disabled","");
           $("#end-hour").attr("disabled","");
           $("#variant-valid-from").attr("disabled","");
           $("#variant-valid-to").attr("disabled","");
 	  $("#voucher-validity-type").attr("disabled","");
+	  $("#voucher-valid-from").attr("disabled","");
+	  $("#voucher-valid-to").attr("disabled","");
 
 	  if(variant.voucher_lifetime != 0){
 		$("#voucher-lifetime").attr("disabled","");
@@ -170,7 +172,7 @@ function send() {
     }
 
     var formData = new FormData();
-    var img = $('#image-url').val();
+    var img = $('#image-url-default').val();
     if($('#image-url')[0].files[0] != null){
 
      formData.append('image-url', $('#image-url')[0].files[0]);
@@ -192,7 +194,7 @@ function send() {
 		 voucher_type: $("#voucher-type").find(":selected").val(),
 		 voucher_price: parseInt($("#voucher-price").val()),
 		 max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
-		 max_usage_voucher: parseInt($("#max-usage-voucher").val()),
+		 max_usage_voucher: 1,
 		 allowAccumulative: $("#allow-accumulative").is(":checked"),
 		 redeemtion_method: $("#redeemtion-method").find(":selected").val(),
 		 start_date: $("#variant-valid-from").val(),
@@ -212,7 +214,7 @@ function send() {
 	   console.log(variant);
 
 	   $.ajax({
-		 url: '/v1/update/variant/'+id+'?token='+token,
+		 url: '/v1/ui/variant/update?id='+id+'&type=detail&token='+token,
 		 type: 'post',
 		 dataType: 'json',
 		 contentType: "application/json",
@@ -224,14 +226,14 @@ function send() {
 			 };
 
 			 $.ajax({
-				 url: '/v1/update/variant/'+id+'/tenant?token='+token,
+				 url: '/v1/ui/variant/update?id='+id+'&type=tenant&token='+token,
 				 type: 'post',
 				 dataType: 'json',
 				 contentType: "application/json",
 				 data: JSON.stringify(partner),
 				 success: function () {
 					 var id = findGetParameter("id");
-					 window.location = "/variant/check?id="+id;
+					 window.location = "/variant/check?id="+id+"&token="+token;
 				 }
 			 });
 		 }
@@ -246,7 +248,7 @@ function send() {
 		    voucher_type: $("#voucher-type").find(":selected").val(),
 		    voucher_price: parseInt($("#voucher-price").val()),
 		    max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
-		    max_usage_voucher: parseInt($("#max-usage-voucher").val()),
+		    max_usage_voucher: 1,
 		    allowAccumulative: $("#allow-accumulative").is(":checked"),
 		    redeemtion_method: $("#redeemtion-method").find(":selected").val(),
 		    start_date: $("#variant-valid-from").val(),
@@ -266,7 +268,7 @@ function send() {
 	    console.log(variant);
 
 	    $.ajax({
-		    url: '/v1/update/variant/'+id+'?token='+token,
+		    url: '/v1/ui/variant/update?id='+id+'&type=detail&token='+token,
 		    type: 'post',
 		    dataType: 'json',
 		    contentType: "application/json",
@@ -278,14 +280,14 @@ function send() {
 			    };
 
 			    $.ajax({
-				    url: '/v1/update/variant/'+id+'/tenant?token='+token,
+				    url: '/v1/ui/variant/update?id='+id+'&type=tenant&token='+token,
 				    type: 'post',
 				    dataType: 'json',
 				    contentType: "application/json",
 				    data: JSON.stringify(partner),
 				    success: function () {
 					    var id = findGetParameter("id");
-					    window.location = "/variant/check?id="+id;
+					    window.location = "/variant/check?id="+id+"&token="+token;
 				    }
 			    });
 		    }
@@ -297,7 +299,7 @@ function getPartner(id) {
     console.log("Get Partner Data");
 
     $.ajax({
-      url: '/v1/get/partner',
+      url: '/v1/ui/partner/all',
       type: 'get',
       success: function (data) {
         console.log("Render Data");
@@ -316,7 +318,7 @@ function getPartner(id) {
         }
 
 	$.ajax({
-            url: '/v1/api/get/partner?variant_id='+id+'&token='+token,
+            url: '/v1/ui/partner?variant_id='+id+'&token='+token,
             type: 'get',
             success: function (data) {
               var i;

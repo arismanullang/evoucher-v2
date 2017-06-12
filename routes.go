@@ -7,6 +7,7 @@ import (
 	"github.com/ruizu/render"
 
 	"github.com/gilkor/evoucher/internal/controller"
+	"github.com/gilkor/evoucher/internal/model"
 )
 
 func setRoutes() http.Handler {
@@ -31,80 +32,100 @@ func setRoutes() http.Handler {
 	//r.GetFunc("/v1/api/report/voucher/variant", controller.MakeCompleteReportVoucherByUser)
 	//r.GetFunc("/v1/api/report/vouchers/variant", controller.MakeReportVoucherByUser)
 
+	//r.PostFunc("/v1/create/variant", controller.CreateVariant)
+	//r.GetFunc("/v1/api/get/allVariant", controller.GetAllVariants)
+	//r.GetFunc("/v1/api/get/variant", controller.GetVariants)
+	//r.GetFunc("/v1/api/get/totalVariant", controller.GetTotalVariant)
+	//r.GetFunc("/v1/api/get/variantByDate", controller.GetVariantDetailsByDate)
+	//r.GetFunc("/v1/api/get/variantByDate", controller.GetVariantDetailsByDate)
+	//r.GetFunc("/v1/api/get/variantDetails/custom", controller.GetVariantDetailsCustom)
+	//r.GetFunc("/v1/api/get/variant/:id", controller.GetVariantDetailsById)
+	//r.GetFunc("/v1/ui/variant", controller.GetVariantDetailsById)
+	//r.PostFunc("/v1/update/variant/:id", controller.UpdateVariant)
+	//r.PostFunc("/v1/update/variant/:id/broadcastUser", controller.UpdateVariantBroadcast)
+	//r.PostFunc("/v1/update/variant/:id/tenant", controller.UpdateVariantTenant)
+	//r.GetFunc("/v1/delete/variant/:id", controller.DeleteVariant)
+
 	//variant
-	r.PostFunc("/v1/create/variant", controller.CreateVariant)
-	//r.PostFunc("/v1/variant/create", controller.CreateVariant)
-
-	r.GetFunc("/v1/api/get/allVariant", controller.GetAllVariants)
-	//r.GetFunc("/v1/variant/all", controller.GetAllVariants)
-
-	r.GetFunc("/v1/api/get/variant", controller.GetVariants)
-	//r.GetFunc("/v1/variant", controller.GetVariants)
-
-	r.GetFunc("/v1/api/get/totalVariant", controller.GetTotalVariant)
-	r.GetFunc("/v1/api/get/variantByDate", controller.GetVariantDetailsByDate)
-	r.GetFunc("/v1/api/get/variantByDate", controller.GetVariantDetailsByDate)
-	r.GetFunc("/v1/api/get/variantDetails/custom", controller.GetVariantDetailsCustom)
-	//r.GetFunc("/v1/variant/detail", controller.GetVariantDetailsCustom)
-
-	r.GetFunc("/v1/api/get/variant/:id", controller.GetVariantDetailsById)
-	//r.GetFunc("/v1/variant/:id", controller.GetVariantDetailsById)
-
-	r.PostFunc("/v1/update/variant/:id", controller.UpdateVariant)
-	//r.PostFunc("/v1/variant/update/:id", controller.UpdateVariant)
-
-	r.PostFunc("/v1/update/variant/:id/broadcastUser", controller.UpdateVariantBroadcast)
-	//r.PostFunc("/v1/variant/update/:id/broadcast", controller.UpdateVariantBroadcast)
-
-	r.PostFunc("/v1/update/variant/:id/tenant", controller.UpdateVariantTenant)
-	//r.PostFunc("/v1/variant/update/:id/tenant", controller.UpdateVariantTenant)
-
-	r.GetFunc("/v1/delete/variant/:id", controller.DeleteVariant)
-	//r.GetFunc("/v1/variant/delete/:id", controller.DeleteVariant)
+	r.PostFunc("/v1/ui/variant/create", controller.CreateVariant)
+	r.GetFunc("/v1/ui/variant/all", controller.GetAllVariants)
+	r.GetFunc("/v1/ui/variant", controller.GetVariants)
+	r.GetFunc("/v1/ui/variant/detail", controller.GetVariantDetailsCustom)
+	r.PostFunc("/v1/ui/variant/update", controller.UpdateVariantRoute)
+	r.GetFunc("/v1/ui/variant/delete", controller.DeleteVariant)
 
 	//transaction
-	r.GetFunc("/v1/get/transaction/details/:id", controller.GetTransaction)
+	r.PostFunc("/v1/transaction/redeem", controller.MobileCreateTransaction)
+	r.GetFunc("/v1/ui/transaction/partner", controller.GetAllTransactionsByPartner)
+	r.GetFunc("/v1/ui/transaction", controller.CashoutTransactionDetails)
+	r.PostFunc("/v1/ui/transaction/cashout/update", controller.CashoutTransactions)
+	r.GetFunc("/v1/ui/transaction/cashout/print", controller.PrintCashoutTransaction)
+
 	//r.PostFunc("/v1/update/transaction/:id", controller.UpdateTransaction)
-	r.PostFunc("/v1/delete/transaction/:id", controller.DeleteTransaction)
-	r.GetFunc("/v1/get/transaction", controller.GetAllTransactions)
-	r.GetFunc("/v1/get/transaction/partner", controller.GetAllTransactionsByPartner)
-	r.GetFunc("/v1/get/transaction/cashout/:id", controller.CashoutTransactionDetails)
-	r.GetFunc("/v1/update/transaction/cashout/:id", controller.CashoutTransaction)
-	r.PostFunc("/v1/update/transaction/cashout", controller.CashoutTransactions)
-	r.GetFunc("/v1/print/transaction/cashout", controller.PrintCashoutTransaction)
+	//r.PostFunc("/v1/delete/transaction/:id", controller.DeleteTransaction)
+	//r.GetFunc("/v1/get/transaction", controller.GetAllTransactions)
+	//r.GetFunc("/v1/get/transaction/partner", controller.GetAllTransactionsByPartner)
+	//r.GetFunc("/v1/get/transaction/cashout/:id", controller.CashoutTransactionDetails)
+	//r.GetFunc("/v1/update/transaction/cashout/:id", controller.CashoutTransaction)
+	//r.PostFunc("/v1/update/transaction/cashout", controller.CashoutTransactions)
+	//r.GetFunc("/v1/print/transaction/cashout", controller.PrintCashoutTransaction)
 
 	//user
-	r.PostFunc("/v1/create/user", controller.RegisterUser)
-	r.PostFunc("/v1/update/user", controller.UpdateUser)
-	r.PostFunc("/v1/update/user/password", controller.ChangePassword)
-	r.GetFunc("/v1/api/get/userByRole", controller.FindUserByRole)
-	r.GetFunc("/v1/api/get/users", controller.GetUser)
-	r.GetFunc("/v1/api/get/userDetails", controller.GetUserDetails)
-	r.GetFunc("/v1/api/mail", controller.ForgotPassword)
-	r.PostFunc("/v1/password", controller.UpdatePassword)
-	r.PostFunc("/v1/upload/user", controller.InsertBroadcastUser)
+	r.PostFunc("/v1/ui/user/create", controller.RegisterUser)
+	r.PostFunc("/v1/ui/user/update", controller.UpdateUserRoute)
+	r.GetFunc("/v1/ui/user/all", controller.GetUser)
+	r.GetFunc("/v1/ui/user", controller.GetUserDetails)
+	r.GetFunc("/v1/ui/user/forgot/mail", controller.SendMailForgotPassword)
+	r.PostFunc("/v1/ui/user/forgot/password", controller.ForgotPassword)
+	r.PostFunc("/v1/ui/user/create/broadcast", controller.InsertBroadcastUser)
+
+	//r.PostFunc("/v1/create/user", controller.RegisterUser)
+	//r.PostFunc("/v1/update/user", controller.UpdateUser)
+	//r.PostFunc("/v1/update/user/password", controller.ChangePassword)
+	//r.GetFunc("/v1/api/get/userByRole", controller.FindUserByRole)
+	//r.GetFunc("/v1/api/get/users", controller.GetUser)
+	//r.GetFunc("/v1/api/get/userDetails", controller.GetUserDetails)
+	//r.GetFunc("/v1/api/mail", controller.ForgotPassword)
+	//r.PostFunc("/v1/password", controller.UpdatePassword)
+	//r.PostFunc("/v1/upload/user", controller.InsertBroadcastUser)
 
 	//partner
-	r.GetFunc("/v1/get/partner", controller.GetAllPartners)
-	r.GetFunc("/v1/get/partner/:id", controller.GetPartnerDetails)
-	r.PostFunc("/v1/update/partner/:id", controller.UpdatePartner)
-	r.GetFunc("/v1/delete/partner/:id", controller.DeletePartner)
-	r.GetFunc("/v1/api/get/partner", controller.GetAllPartnersCustomParam)
-	r.PostFunc("/v1/create/partner", controller.AddPartner)
+	r.PostFunc("/v1/ui/partner/create", controller.AddPartner)
+	r.GetFunc("/v1/ui/partner/all", controller.GetAllPartners)
+	r.GetFunc("/v1/ui/partner", controller.GetPartners)
+	r.PostFunc("/v1/ui/partner/update", controller.UpdatePartner)
+	r.GetFunc("/v1/ui/partner/delete", controller.DeletePartner)
 
-	r.GetFunc("/v1/get/tag", controller.GetAllTags)
-	r.PostFunc("/v1/create/tag", controller.AddTag)
-	r.GetFunc("/v1/delete/tag/:id", controller.DeleteTag)
-	r.PostFunc("/v1/delete/tag", controller.DeleteTagBulk)
+	//tag
+	r.GetFunc("/v1/ui/tag/all", controller.GetAllTags)
+	r.PostFunc("/v1/ui/tag/create", controller.AddTag)
+	r.GetFunc("/v1/ui/tag/delete", controller.DeleteTag)
+	r.PostFunc("/v1/ui/tag/delete", controller.DeleteTagBulk)
+
+	//r.PostFunc("/v1/create/partner", controller.AddPartner)
+	//r.GetFunc("/v1/get/partner", controller.GetAllPartners)
+	//r.GetFunc("/v1/get/partner/:id", controller.GetPartnerDetails)
+	//r.PostFunc("/v1/update/partner/:id", controller.UpdatePartner)
+	//r.GetFunc("/v1/delete/partner/:id", controller.DeletePartner)
 
 	//account
-	r.GetFunc("/v1/api/get/account", controller.GetAccount)
-	r.GetFunc("/v1/api/get/accountsDetail", controller.GetAccountDetailByUser)
-	r.GetFunc("/v1/api/get/accountsByUser", controller.GetAccountsByUser)
-	r.GetFunc("/v1/api/get/role", controller.GetAllAccountRoles)
+	r.GetFunc("/v1/ui/account/all", controller.GetAllAccount)
+	r.GetFunc("/v1/ui/account", controller.GetAccountDetailByUser)
+	r.GetFunc("/v1/ui/role/all", controller.GetAllAccountRoles)
+
+	//r.GetFunc("/v1/api/get/account", controller.GetAccount)
+	//r.GetFunc("/v1/api/get/accountsDetail", controller.GetAccountDetailByUser)
+	//r.GetFunc("/v1/api/get/accountsByUser", controller.GetAccountsByUser)
+	//r.GetFunc("/v1/api/get/role", controller.GetAllAccountRoles)
+
+	//open API
+	r.GetFunc("/v1/variants", controller.ListVariants)
+	r.GetFunc("/v1/variants/:id", controller.ListVariantsDetails)
+	r.GetFunc("/v1/variant/vouchers", controller.GetVoucherOfVariant)
+	r.GetFunc("/v1/variant/vouchers/:id", controller.GetVoucherOfVariantDetails)
+	r.GetFunc("/v1/api/get/partner", controller.GetAllPartnersCustomParam)
 
 	//voucher
-	r.GetFunc("/v1/vouchers", controller.GetVoucherList)
 	r.GetFunc("/v1/vouchers/:id", controller.GetVoucherDetails)
 	r.GetFunc("/v1/voucher/generate/bulk", controller.GenerateVoucherBulk)
 	r.PostFunc("/v1/voucher/link", controller.GetVoucherlink)
@@ -157,27 +178,18 @@ func viewNoLayoutHandler(w http.ResponseWriter, r *http.Request) {
 func viewVariant(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	valid := true
-	//userRole := []string{}
-	//_, user, _, _ := controller.AuthToken(w, r)
-
-	//if user != "" {
-	//	userDetail, err := model.FindUserDetail(user)
-	//	if err == nil {
-	//		userRole = userDetail.RoleId
-	//		fmt.Println(userRole)
-	//	}
-	//	for _, valueRole := range userRole {
-	//		features := model.UiFeatures[valueRole]
-	//		fmt.Println(features)
-	//		fmt.Println(r.URL.Path)
-	//		for _, valueFeature := range features {
-	//			if r.URL.Path == valueFeature {
-	//				valid = true
-	//			}
-	//		}
-	//	}
-	//}
+	valid := false
+	a := controller.AuthToken(w, r)
+	if a.Valid {
+		for _, valueRole := range a.User.Role {
+			features := model.UiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if r.URL.Path == valueFeature {
+					valid = true
+				}
+			}
+		}
+	}
 
 	if valid {
 		if page == "create" {
@@ -203,24 +215,25 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 
 	if page == "login" {
 		render.FileInLayout(w, "layout.html", "user/login.html", nil)
+	} else if page == "forgot-password" {
+		render.File(w, "user/forgot.html", nil)
+	} else if page == "mail-send" {
+		render.File(w, "user/forgot_succ.html", nil)
+	} else if page == "recover" {
+		render.File(w, "user/recover.html", nil)
 	} else {
-		valid := true
-		//userRole := []string{}
-		//_, user, _, _ := controller.AuthToken(w, r)
-		//if user != "" {
-		//	userDetail, err := model.FindUserDetail(user)
-		//	if err == nil {
-		//		userRole = userDetail.RoleId
-		//	}
-		//	for _, valueRole := range userRole {
-		//		features := model.UiFeatures[valueRole]
-		//		for _, valueFeature := range features {
-		//			if r.URL.Path == valueFeature {
-		//				valid = true
-		//			}
-		//		}
-		//	}
-		//}
+		valid := false
+		a := controller.AuthToken(w, r)
+		if a.Valid {
+			for _, valueRole := range a.User.Role {
+				features := model.UiFeatures[valueRole.RoleDetail]
+				for _, valueFeature := range features {
+					if r.URL.Path == valueFeature {
+						valid = true
+					}
+				}
+			}
+		}
 		if valid {
 			if page == "register" {
 				render.FileInLayout(w, "layout.html", "user/create.html", nil)
@@ -232,17 +245,11 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 				render.FileInLayout(w, "layout.html", "user/change_pass.html", nil)
 			} else if page == "profile" {
 				render.FileInLayout(w, "layout.html", "user/profile.html", nil)
-			} else if page == "forgot-password" {
-				render.File(w, "user/forgot.html", nil)
-			} else if page == "mail-send" {
-				render.File(w, "user/forgot_succ.html", nil)
-			} else if page == "recover" {
-				render.File(w, "user/recover.html", nil)
 			} else {
 				render.FileInLayout(w, "layout.html", "notfound.html", nil)
 			}
 		} else {
-			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+			render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
 		}
 	}
 
@@ -251,23 +258,18 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 func viewPartner(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	valid := true
-	//userRole := []string{}
-	//_, user, _, _ := controller.AuthToken(w, r)
-	//if user != "" {
-	//	userDetail, err := model.FindUserDetail(user)
-	//	if err == nil {
-	//		userRole = userDetail.RoleId
-	//	}
-	//	for _, valueRole := range userRole {
-	//		features := model.UiFeatures[valueRole]
-	//		for _, valueFeature := range features {
-	//			if r.URL.Path == valueFeature {
-	//				valid = true
-	//			}
-	//		}
-	//	}
-	//}
+	valid := false
+	a := controller.AuthToken(w, r)
+	if a.Valid {
+		for _, valueRole := range a.User.Role {
+			features := model.UiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if r.URL.Path == valueFeature {
+					valid = true
+				}
+			}
+		}
+	}
 	if valid {
 		if page == "create" {
 			render.FileInLayout(w, "layout.html", "partner/create.html", nil)
@@ -279,30 +281,25 @@ func viewPartner(w http.ResponseWriter, r *http.Request) {
 			render.FileInLayout(w, "layout.html", "notfound.html", nil)
 		}
 	} else {
-		render.FileInLayout(w, "layout.html", "notfound.html", nil)
+		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
 	}
 }
 
 func viewTag(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	valid := true
-	//userRole := []string{}
-	//_, user, _, _ := controller.AuthToken(w, r)
-	//if user != "" {
-	//	userDetail, err := model.FindUserDetail(user)
-	//	if err == nil {
-	//		userRole = userDetail.RoleId
-	//	}
-	//	for _, valueRole := range userRole {
-	//		features := model.UiFeatures[valueRole]
-	//		for _, valueFeature := range features {
-	//			if r.URL.Path == valueFeature {
-	//				valid = true
-	//			}
-	//		}
-	//	}
-	//}
+	valid := false
+	a := controller.AuthToken(w, r)
+	if a.Valid {
+		for _, valueRole := range a.User.Role {
+			features := model.UiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if r.URL.Path == valueFeature {
+					valid = true
+				}
+			}
+		}
+	}
 	if valid {
 		if page == "search" {
 			render.FileInLayout(w, "layout.html", "tag/search.html", nil)
@@ -310,30 +307,25 @@ func viewTag(w http.ResponseWriter, r *http.Request) {
 			render.FileInLayout(w, "layout.html", "notfound.html", nil)
 		}
 	} else {
-		render.FileInLayout(w, "layout.html", "notfound.html", nil)
+		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
 	}
 }
 
 func viewVoucher(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	valid := true
-	//userRole := []string{}
-	//_, user, _, _ := controller.AuthToken(w, r)
-	//if user != "" {
-	//	userDetail, err := model.FindUserDetail(user)
-	//	if err == nil {
-	//		userRole = userDetail.RoleId
-	//	}
-	//	for _, valueRole := range userRole {
-	//		features := model.UiFeatures[valueRole]
-	//		for _, valueFeature := range features {
-	//			if r.URL.Path == valueFeature {
-	//				valid = true
-	//			}
-	//		}
-	//	}
-	//}
+	valid := false
+	a := controller.AuthToken(w, r)
+	if a.Valid {
+		for _, valueRole := range a.User.Role {
+			features := model.UiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if r.URL.Path == valueFeature {
+					valid = true
+				}
+			}
+		}
+	}
 	if valid {
 		if page == "search" {
 			render.FileInLayout(w, "layout.html", "voucher/search.html", nil)
@@ -347,30 +339,25 @@ func viewVoucher(w http.ResponseWriter, r *http.Request) {
 			render.FileInLayout(w, "layout.html", "notfound.html", nil)
 		}
 	} else {
-		render.FileInLayout(w, "layout.html", "notfound.html", nil)
+		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
 	}
 }
 
 func viewReport(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	valid := true
-	//userRole := []string{}
-	//_, user, _, _ := controller.AuthToken(w, r)
-	//if user != "" {
-	//	userDetail, err := model.FindUserDetail(user)
-	//	if err == nil {
-	//		userRole = userDetail.RoleId
-	//	}
-	//	for _, valueRole := range userRole {
-	//		features := model.UiFeatures[valueRole]
-	//		for _, valueFeature := range features {
-	//			if r.URL.Path == valueFeature {
-	//				valid = true
-	//			}
-	//		}
-	//	}
-	//}
+	valid := false
+	a := controller.AuthToken(w, r)
+	if a.Valid {
+		for _, valueRole := range a.User.Role {
+			features := model.UiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if r.URL.Path == valueFeature {
+					valid = true
+				}
+			}
+		}
+	}
 	if valid {
 		if page == "variant" {
 			render.FileInLayout(w, "layout.html", "report/variant.html", nil)
@@ -382,7 +369,7 @@ func viewReport(w http.ResponseWriter, r *http.Request) {
 			render.FileInLayout(w, "layout.html", "notfound.html", nil)
 		}
 	} else {
-		render.FileInLayout(w, "layout.html", "notfound.html", nil)
+		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
 	}
 }
 
