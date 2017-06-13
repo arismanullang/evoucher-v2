@@ -252,6 +252,7 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 		d[k].EndDate = dt.EndDate
 		d[k].ImgUrl = dt.ImgUrl
 		d[k].Used = getCountVoucher(v)
+		d[k].MaxQty = dt.MaxQuantityVoucher
 	}
 
 	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
@@ -259,6 +260,7 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 	res = NewResponse(d)
 	render.JSON(w, res, status)
 }
+
 
 func GetVoucherOfVariantDetails(w http.ResponseWriter, r *http.Request) {
 	variant := bone.GetValue(r, "id")
@@ -325,6 +327,10 @@ func GetVoucherOfVariantDetails(w http.ResponseWriter, r *http.Request) {
 	d.VariantID = dt.Id
 	d.AccountId = dt.AccountId
 	d.VariantName = dt.VariantName
+	d.VariantType = dt.VariantType
+	d.VariantTnc = dt.VariantTnc
+	d.CreatedBy = dt.CreatedBy
+	d.CreatedAt = dt.CreatedAt
 	d.VoucherType = dt.VoucherType
 	d.VoucherType = dt.VoucherType
 	d.VoucherPrice = dt.VoucherPrice
@@ -338,12 +344,15 @@ func GetVoucherOfVariantDetails(w http.ResponseWriter, r *http.Request) {
 	d.ImgUrl = dt.ImgUrl
 	d.VariantTnc = dt.VariantTnc
 	d.VariantDescription = dt.VariantDescription
+	d.Used = getCountVoucher(dt.Id)
 
 	d.Partners = make([]Partner, len(p))
 	for i, pd := range p {
 		d.Partners[i].ID = pd.Id
 		d.Partners[i].PartnerName = pd.PartnerName
 		d.Partners[i].SerialNumber = pd.SerialNumber.String
+		d.Partners[i].Tag = pd.Tag.String
+		d.Partners[i].Description = pd.Description.String
 	}
 
 	d.Voucher = make([]VoucerResponse, len(voucher.VoucherData))
@@ -540,15 +549,33 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
+	sd, err := time.Parse(time.RFC3339Nano, dt.StartDate)
+	ed, err := time.Parse(time.RFC3339Nano, dt.EndDate)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInvalidVariant+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
 
 	if (int(dt.MaxQuantityVoucher) - getCountVoucher(gvd.VariantID) - 1) < 0 {
-		status = http.StatusInternalServerError
+		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, "voucher")
 		render.JSON(w, res, status)
 		return
 	} else if dt.VariantType != model.VariantTypeOnDemand {
-		status = http.StatusInternalServerError
+		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeVoucherRulesViolated, model.ErrMessageVoucherRulesViolated, "voucher")
+		render.JSON(w, res, status)
+		return
+	} else if !sd.Before(time.Now()){
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeVoucherNotActive, model.ErrMessageVoucherNotActive, "voucher")
+		render.JSON(w, res, status)
+		return
+	} else if !ed.After(time.Now()){
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeVoucherExpired, model.ErrMessageVoucherExpired, "voucher")
 		render.JSON(w, res, status)
 		return
 	}
@@ -837,7 +864,6 @@ func GetCsvSample(w http.ResponseWriter, r *http.Request) {
 }
 
 func getCountVoucher(variantID string) int {
-	fmt.Println(model.CountVoucher(variantID))
 	return model.CountVoucher(variantID)
 }
 
