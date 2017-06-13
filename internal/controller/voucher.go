@@ -538,7 +538,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if (int(dt.MaxQuantityVoucher) - getCountVoucher(gvd.VariantID) - 1) <= 0 {
+	if (int(dt.MaxQuantityVoucher) - getCountVoucher(gvd.VariantID) - 1) < 0 {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, "voucher")
 		render.JSON(w, res, status)
@@ -653,9 +653,8 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 // GenerateVoucher Genera te voucher and strore to DB
 func (vr *GenerateVoucherRequest) generateVoucher(v *model.Variant) ([]model.Voucher, error) {
 	ret := make([]model.Voucher, vr.Quantity)
-	var rt []string
+	var code []string
 	var vcf model.VoucherCodeFormat
-	var code string
 	var tsd, ted time.Time
 
 	vcf, err := model.GetVoucherCodeFormat(v.VoucherFormat)
@@ -678,19 +677,12 @@ func (vr *GenerateVoucherRequest) generateVoucher(v *model.Variant) ([]model.Vou
 	}
 
 	for i := 0; i <= vr.Quantity-1; i++ {
-		switch {
-		case v.VoucherFormat == 0:
-			code = randStr(model.DEFAULT_LENGTH, model.DEFAULT_CODE)
-		case vcf.Body.Valid == true && vcf.Body.String != "":
-			code = vcf.Prefix.String + vcf.Body.String + vcf.Postfix.String
-		default:
-			code = vcf.Prefix.String + randStr(vcf.Length-(len(vcf.Prefix.String)+len(vcf.Postfix.String)), vcf.FormatType) + vcf.Postfix.String
-		}
-		rt = append(rt, code)
+
+		code = append(code, voucherCode(vcf , v.VoucherFormat))
 
 		// fmt.Println("generate data =>", vr.Holder)
 		rd := model.Voucher{
-			VoucherCode:   rt[i],
+			VoucherCode:   code[i],
 			ReferenceNo:   vr.ReferenceNo,
 			VariantID:     vr.VariantID,
 			ValidAt:       tsd,
@@ -816,3 +808,32 @@ func rollback(vr string) {
 func generateLink(id string) string {
 	return model.VOUCHER_URL + "?x=" + StrEncode(id)
 }
+
+func voucherCode(vcf model.VoucherCodeFormat , flag int) string {
+	var code string
+
+	seedCode := func()string{
+		return randStr(model.DEFAULT_SEED_LENGTH,model.DEFAULT_SEED_CODE)
+	}
+
+	if vcf.Prefix.Valid{
+		code +=  vcf.Prefix.String + "-"
+	}
+
+	switch {
+	case flag == 0:
+		code += seedCode() + "-" + randStr(model.DEFAULT_LENGTH, model.DEFAULT_CODE)
+	case vcf.Body.Valid == true && vcf.Body.String != "":
+		code += seedCode() + "-" + vcf.Body.String
+	default:
+		code += seedCode() + "-" + randStr(vcf.Length , vcf.FormatType)
+	}
+
+	if vcf.Postfix.Valid{
+		code +=  "-" + vcf.Postfix.String
+	}
+
+	return  code
+}
+
+

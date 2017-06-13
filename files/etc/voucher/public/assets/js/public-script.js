@@ -1,10 +1,16 @@
 $( document ).ready(function() {
 	var transactioncode = findGetParameter('transactioncode');
 	$('#transactioncode').html(transactioncode);
+	if(transactioncode != null){
+		getVoucherCode(transactioncode);
+	}
+
 
 	var x = findGetParameter('x')+"=";
 	console.log(x);
-	getProfile(x);
+	if(x != 'null='){
+		getProfile(x);
+	}
 
 	$('#formsubmit').submit(function(e) {
 		e.preventDefault();
@@ -35,6 +41,22 @@ function getProfile(x){
 			$("#discount-value").val(data.data.discount_value);
 			$("#voucher").val(data.data.Vouchers[0].voucher_id);
 			$("#tnc").html(data.data.variant_tnc);
+		}
+	});
+}
+
+function getVoucherCode(x){
+	$.ajax({
+		url: '/v1/public/transaction/'+encodeURIComponent(x),
+		type: 'get',
+		success: function (data) {
+			var result = data.data;
+			console.log(result.vouchers[0].VoucherCode);
+			for(i = 0; i < result.vouchers.length; i++){
+				var li = $("<strong></strong>");
+				li.html(result.vouchers[i].VoucherCode);
+				li.appendTo('#vouchers');
+			}
 		}
 	});
 }

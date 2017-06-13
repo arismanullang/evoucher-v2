@@ -81,7 +81,7 @@ func FindVoucher(param map[string]string) (VoucherResponse, error) {
 	for key, value := range param {
 		q += ` AND ` + key + ` = '` + value + `'`
 	}
-	q += ` ORDER BY created_at DESC`
+	q += ` ORDER BY state DESC`
 
 	var resd []Voucher
 	if err := db.Select(&resd, db.Rebind(q), StatusCreated); err != nil {
