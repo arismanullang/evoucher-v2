@@ -26,6 +26,34 @@ func GetAllUiFeatures() ([]Feature, error) {
 		JOIN features AS f
 		ON
 			f.id = rf.feature_id
+		WHERE
+			f.feature_type = 'ui'
+	`
+
+	var resv []Feature
+	if err := db.Select(&resv, db.Rebind(q)); err != nil {
+		return []Feature{}, ErrServerInternal
+	}
+	if len(resv) < 1 {
+		return []Feature{}, ErrResourceNotFound
+	}
+
+	return resv, nil
+}
+
+func GetAllApiFeatures() ([]Feature, error) {
+	q := `
+		SELECT
+			r.role_detail, f.feature_category, f.feature_detail
+		FROM roles AS r
+		JOIN role_features AS rf
+		ON
+			r.id = rf.role_id
+		JOIN features AS f
+		ON
+			f.id = rf.feature_id
+		WHERE
+			f.feature_type = 'api'
 	`
 
 	var resv []Feature

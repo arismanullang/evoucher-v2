@@ -582,6 +582,8 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 
 //GenerateVoucher Generate bulk voucher request
 func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
+	apiName := "voucher_generate-bulk"
+	valid := false
 	var gvd GenerateVoucherRequest
 	var status int
 	res := NewResponse(nil)
@@ -590,7 +592,23 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 	//Token Authentocation
 	a := AuthToken(w, r)
 	if !a.Valid {
+
 		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+
+	}
+
+	for _, valueRole := range a.User.Role {
+		features := model.ApiFeatures[valueRole.RoleDetail]
+		for _, valueFeature := range features {
+			if apiName == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if valid {
+		render.JSON(w, model.ErrCodeInvalidRole, http.StatusUnauthorized)
 		return
 	}
 
@@ -710,6 +728,9 @@ func (vr *GenerateVoucherRequest) generateVoucher(v *model.Variant) ([]model.Vou
 }
 
 func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
+	apiName := "voucher_get-link"
+	valid := false
+
 	status := http.StatusOK
 	res := NewResponse(nil)
 	varID := r.FormValue("variant")
@@ -717,6 +738,20 @@ func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 	a := AuthToken(w, r)
 	if !a.Valid {
 		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
+
+	for _, valueRole := range a.User.Role {
+		features := model.ApiFeatures[valueRole.RoleDetail]
+		for _, valueFeature := range features {
+			if apiName == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if valid {
+		render.JSON(w, model.ErrCodeInvalidRole, http.StatusUnauthorized)
 		return
 	}
 

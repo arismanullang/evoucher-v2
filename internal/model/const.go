@@ -14,6 +14,7 @@ var (
 	ErrTokenExpired     = errors.New("Token Expired.")
 	ErrTokenNotFound    = errors.New("Token Not Found.")
 	ErrServerInternal   = errors.New("Server Internal Error.")
+	ErrInvalidRole      = errors.New("Invalid Role.")
 )
 
 const (
@@ -42,6 +43,7 @@ const (
 	ErrCodeInvalidPartner           string = "invalid_partner"
 	ErrCodeInvalidVariant           string = "invalid_variant"
 	ErrCodeInvalidUser              string = "invalid_username_and_password"
+	ErrCodeInvalidRole              string = "invalid_role"
 	ErrCodeRedeemNotValidDay        string = "voucher_cannot_be_used_today"
 	ErrCodeRedeemNotValidHour       string = "voucher_cannot_be_used_at_current_time"
 
