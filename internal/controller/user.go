@@ -246,11 +246,14 @@ func GetUserCustomParam(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
-	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	res := NewResponse(nil)
+	apiName := "user_create"
+	valid := false
 
-	res.AddError(its(status), its(status), err.Error(), "user")
+	status := http.StatusUnauthorized
+	err := model.ErrInvalidRole
+	errTitle := model.ErrCodeInvalidRole
+	res := NewResponse(nil)
+	res.AddError(its(status), errTitle, err.Error(), "User Create")
 
 	var rd User
 	decoder := json.NewDecoder(r.Body)
@@ -260,28 +263,37 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	a := AuthToken(w, r)
 	if a.Valid {
-		fmt.Println("Valid")
-		status = http.StatusOK
-		param := model.User{
-			AccountID: a.User.AccountID,
-			Username:  rd.Username,
-			Password:  hash(rd.Password),
-			Email:     rd.Email,
-			Phone:     rd.Phone,
-			Role:      a.User.Role,
-			CreatedBy: a.User.ID,
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
+			}
 		}
 
-		if err := model.AddUser(param); err != nil {
-			fmt.Print(err.Error())
-			status = http.StatusInternalServerError
-			if err == model.ErrResourceNotFound {
-				status = http.StatusNotFound
+		if valid {
+			status = http.StatusOK
+			param := model.User{
+				AccountID: a.User.AccountID,
+				Username:  rd.Username,
+				Password:  hash(rd.Password),
+				Email:     rd.Email,
+				Phone:     rd.Phone,
+				Role:      a.User.Role,
+				CreatedBy: a.User.ID,
 			}
 
-			res.AddError(its(status), its(status), err.Error(), "user")
-		} else {
-			res = NewResponse(a.User.ID)
+			if err := model.AddUser(param); err != nil {
+				status = http.StatusInternalServerError
+				if err == model.ErrResourceNotFound {
+					status = http.StatusNotFound
+				}
+
+				res.AddError(its(status), its(status), err.Error(), "user")
+			} else {
+				res = NewResponse(a.User.ID)
+			}
 		}
 	} else {
 		res = a.res
