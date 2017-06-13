@@ -29,7 +29,7 @@ function cashout(){
 	console.log(textArea.value);
 	console.log(transaction);
 	$.ajax({
-		url: '/v1/update/transaction/cashout?token='+token,
+		url: '/v1/ui/transaction/cashout/update?token='+token,
 		type: 'post',
 		dataType: 'json',
 		contentType: "application/json",
@@ -37,7 +37,7 @@ function cashout(){
 		success: function () {
 			localStorage.setItem("transaction_cashout", "");
 			localStorage.setItem("transaction_cashout", transactions);
-			window.location = "/voucher/print";
+			window.location = "/voucher/print?token="+token;
 		}
 	});
 }
@@ -45,7 +45,7 @@ function cashout(){
 function addElem(){
 	var id = $('#transaction-code').val();
 	$.ajax({
-		url: '/v1/get/transaction/cashout/'+id+'?token='+token,
+		url: '/v1/ui/transaction?id='+id+'&token='+token,
 		type: 'get',
 		success: function (data) {
 			console.log("Render Data");

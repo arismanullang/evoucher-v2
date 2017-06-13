@@ -73,21 +73,26 @@ type (
 		Img_url string `db:"img_url"`
 	}
 	SearchVariant struct {
-		Id            string         `db:"id" json:"id"`
-		AccountId     string         `db:"account_id" json:"account_id"`
-		VariantName   string         `db:"variant_name" json:"variant_name"`
-		VoucherType   string         `db:"voucher_type" json:"voucher_type"`
-		VoucherPrice  float64        `db:"voucher_price" json:"voucher_price"`
-		DiscountValue float64        `db:"discount_value" json:"discount_value"`
-		MaxVoucher    float64        `db:"max_quantity_voucher" json:"max_quantity_voucher"`
-		ImgUrl        string         `db:"img_url" json:"image_url"`
-		StartDate     string         `db:"start_date" json:"start_date"`
-		EndDate       string         `db:"end_date" json:"end_date"`
-		Voucher       string         `db:"voucher" json:"voucher"`
-		State         sql.NullString `db:"state" json:"state"`
-		Status        string         `db:"status" json:"status"`
-		CreatedAt     string         `db:"created_at" json:"created_at"`
-		UpdatedAt     sql.NullString `db:"updated_at" json:"updated_at"`
+		Id            string                 `db:"id" json:"id"`
+		AccountId     string                 `db:"account_id" json:"account_id"`
+		VariantName   string                 `db:"variant_name" json:"variant_name"`
+		VariantType   string                 `db:"variant_type" json:"variant_type"`
+		VoucherType   string                 `db:"voucher_type" json:"voucher_type"`
+		VoucherPrice  float64                `db:"voucher_price" json:"voucher_price"`
+		DiscountValue float64                `db:"discount_value" json:"discount_value"`
+		MaxVoucher    float64                `db:"max_quantity_voucher" json:"max_quantity_voucher"`
+		ImgUrl        string                 `db:"img_url" json:"image_url"`
+		StartDate     string                 `db:"start_date" json:"start_date"`
+		EndDate       string                 `db:"end_date" json:"end_date"`
+		Vouchers      []SearchVariantVoucher `db:"-" json:"vouchers"`
+		State         sql.NullString         `db:"state" json:"state"`
+		Status        string                 `db:"status" json:"status"`
+		CreatedAt     string                 `db:"created_at" json:"created_at"`
+		UpdatedAt     sql.NullString         `db:"updated_at" json:"updated_at"`
+	}
+	SearchVariantVoucher struct {
+		Voucher string `db:"voucher" json:"voucher"`
+		State   string `db:"state" json:"state"`
 	}
 	UpdateVariantArrayRequest struct {
 		VariantId string   `db:"variant_id"`
@@ -550,6 +555,7 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 		SELECT
 			va.id
 			, va.account_id
+			, va.variant_type
 			, va.variant_name
 			, va.voucher_type
 			, va.voucher_price
@@ -560,7 +566,6 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 			, va.end_date
 			, va.created_at
 			, va.updated_at
-			, count (vo.id) as voucher
 			, va.status
 			, vo.state
 		FROM
@@ -587,11 +592,34 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 		return resv, ErrResourceNotFound
 	}
 
+	for index, value := range resv {
+		q = `
+		SELECT
+			COUNT(id) as voucher, state
+		FROM
+			vouchers
+		WHERE
+			status = ?
+			AND variant_id = ?
+		GROUP BY
+			state
+	`
+
+		var resvo []SearchVariantVoucher
+		if err := db.Select(&resvo, db.Rebind(q), StatusCreated, value.Id); err != nil {
+			fmt.Println(err.Error())
+			return []SearchVariant{}, ErrServerInternal
+		}
+		if len(resv) < 1 {
+			return []SearchVariant{}, ErrResourceNotFound
+		}
+
+		resv[index].Vouchers = resvo
+	}
 	return resv, nil
 }
 
 func FindVariantsCustomParam(param map[string]string) ([]SearchVariant, error) {
-	fmt.Println("Query start")
 	q := `
 		SELECT
 			va.id
@@ -722,7 +750,7 @@ func FindVariantDetailsCustomParam(param map[string]string) ([]Variant, error) {
 		FROM
 			variants
 		WHERE
-			AND status = ?
+			status = ?
 	`
 	for key, value := range param {
 		if key == "q" {

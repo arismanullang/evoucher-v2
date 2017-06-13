@@ -1,7 +1,7 @@
 $( window ).ready(function() {
   var password = findGetParameter("key");
   if( password == null ){
-        window.location = "/user/login ";
+        window.location = "/user/login";
   }
 
 });
@@ -23,7 +23,7 @@ function recover(){
     };
 
   $.ajax({
-      url: '/v1/password?key='+key,
+      url: '/v1/ui/user/forgot/password?key='+key,
       type: 'post',
       dataType: 'json',
       contentType: "application/json",

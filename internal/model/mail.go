@@ -41,13 +41,12 @@ func SendMail(domain, apiKey, publicApiKey, username string) error {
 }
 
 func makeMessage(id string) string {
-	account, err := GetAccountDetailByUser(id)
+	u, err := FindUserDetail(id)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ""
 	}
-	fmt.Println(account)
-	tok := GenerateToken(account[0].Id, id)
+	tok := GenerateToken(u)
 	str, err := ioutil.ReadFile(RootTemplate + "template")
 	if err != nil {
 		fmt.Println(err.Error())

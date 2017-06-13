@@ -20,32 +20,41 @@ type (
 		} `json:"data"`
 	}
 
+	AuthResponseError struct {
+		Data struct {
+			Code        string `json:"code"`
+			Description string `json:"title"`
+			Name        string `json:"detail"`
+			State       string `json:"name"`
+		} `json:"errors"`
+	}
+
 	ReqParams struct {
 		Key       string `url:"key,omitempty"`
 		Challenge string `url:"challenge,omitempty"`
 		Password  string `url:"password,omitempty"`
 		Response  string `url:"response,omitempty"`
+		Token     string `url:"token,omitempty"`
 	}
 )
 
 func OTPAuth(key, challenge, response string) bool {
-	req := ReqParams{Key: key, Challenge: challenge, Response: response}
-	d, r, err := ocra(req)
+	req := ReqParams{Key: key, Challenge: challenge, Response: response,Token:model.OCRA_EVOUCHER_APPS_KEY}
+	d, _ , r, err := ocra(req)
 
 	if r.StatusCode == 200 && d.Data.State == "success" {
 		return true
 	} else if err != nil {
-		return false
+		return  false
 	}
-
 	return false
 }
 
-func ocra(param ReqParams) (AuthResponse, *http.Response, error) {
+func ocra(param ReqParams) (AuthResponse,AuthResponseError, *http.Response, error) {
 	return server("/v1/ocra/ocra", param)
 }
 
-func server(path string, param ReqParams) (AuthResponse, *http.Response, error) {
+func server(path string, param ReqParams) (AuthResponse , AuthResponseError , *http.Response, error) {
 	c := http.Client{}
 	s := sling.New()
 	req, err := s.Get(model.OCRA_URL + path).QueryStruct(param).Request()
@@ -53,7 +62,7 @@ func server(path string, param ReqParams) (AuthResponse, *http.Response, error) 
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Split(bufio.ScanRunes)
 	if err != nil {
-		return AuthResponse{}, resp, err
+		return AuthResponse{}, AuthResponseError{}, resp, err
 	}
 	var buf bytes.Buffer
 	for scanner.Scan() {
@@ -61,7 +70,7 @@ func server(path string, param ReqParams) (AuthResponse, *http.Response, error) 
 		n, err = buf.WriteString(scanner.Text())
 		if err != nil {
 			fmt.Println("return  :", n, " : ", err)
-			return AuthResponse{}, resp, err
+			return AuthResponse{},AuthResponseError{}, resp, err
 		}
 	}
 
@@ -72,11 +81,20 @@ func server(path string, param ReqParams) (AuthResponse, *http.Response, error) 
 
 	//decode response data
 	var data AuthResponse
+	var dataErr AuthResponseError
+	if resp.StatusCode != 200 {
+		err = json.Unmarshal([]byte(buf.String()), &dataErr)
+		if err != nil {
+			fmt.Println("unmarshall error :", err)
+			return AuthResponse{},AuthResponseError{}, resp, err
+		}
+	}
 	err = json.Unmarshal([]byte(buf.String()), &data)
 	if err != nil {
 		fmt.Println("unmarshall error :", err)
-		return AuthResponse{}, resp, err
+		return AuthResponse{},AuthResponseError{}, resp, err
 	}
 	fmt.Println("response data : ", data)
-	return data, resp, nil
+
+	return data, dataErr , resp, nil
 }

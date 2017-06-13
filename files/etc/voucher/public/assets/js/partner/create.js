@@ -51,7 +51,7 @@ function send() {
      contentType: "application/json",
      data: JSON.stringify(partner),
      success: function () {
-         window.location = "/partner/search";
+         window.location = "/partner/search?token="+token;
      }
  });
 }

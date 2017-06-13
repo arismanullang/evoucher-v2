@@ -19,62 +19,84 @@
           <tr>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_program_name" placeholder="Program Name" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_program_name" placeholder="PROGRAM" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_conversion" placeholder="Conversion" class="form-control input-sm datatable_input_col_search">
+                <select name="filter_voucher_type" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
+                  <option value="">ALL</option>
+                  <option value="MOBILE APP">MOBILE APP</option>
+                  <option value="EMAIL BLAST">EMAIL BLAST</option>
+                </select>
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_start_date" placeholder="Start Date" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_conversion" placeholder="CONVERSION" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_end_date" placeholder="End Date" class="form-control input-sm datatable_input_col_search">
+                <select name="filter_status" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
+                  <option value="">ALL</option>
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="END">END</option>
+                </select>
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_status" placeholder="Status" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_start_date" placeholder="START" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_last_modified" placeholder="Last Modified" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_end_date" placeholder="END" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_total_voucher" placeholder="Total" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_last_modified" placeholder="LAST MODIFIED" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_available_voucher" placeholder="Available" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_total_voucher" placeholder="TOTAL" class="form-control input-sm datatable_input_col_search">
+                <div class="mda-form-control-line"></div>
+              </div>
+            </th>
+            <th>
+              <div class="mda-form-control pt0">
+                <input type="text" name="filter_available_voucher" placeholder="AVAILABLE" class="form-control input-sm datatable_input_col_search">
+                <div class="mda-form-control-line"></div>
+              </div>
+            </th>
+            <th>
+              <div class="mda-form-control pt0">
+                <input type="text" name="filter_redeem_voucher" placeholder="RATE" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
           </tr>
           <tr role="row">
             <th>Program Name</th>
+            <th>Type</th>
             <th>Conversion</th>
+            <th>Status</th>
             <th>Start Date</th>
             <th>End Date</th>
-            <th>Status</th>
             <th>Last Modified</th>
-            <th>Available</th>
             <th>Total</th>
+            <th>Available</th>
+            <th>Rate</th>
             <th class="center-text"></th>
           </tr>
         </thead>
@@ -96,6 +118,7 @@
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.html5.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.print.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/nouislider/distribute/nouislider.js"></script>
+<script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
 <script type="text/javascript" src="/assets/js/variant/search.js"></script>
 {{ end }}
 
@@ -105,4 +128,5 @@
 <link rel="stylesheet" href="/assets/vendor/nouislider/distribute/nouislider.min.css">
 <link rel="stylesheet" href="/assets/vendor/datatables/media/css/jquery.dataTables.css">
 <link rel="stylesheet" href="/assets/vendor/datatables/media/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
 {{ end }}
