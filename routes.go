@@ -126,9 +126,10 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/api/get/partner", controller.GetAllPartnersCustomParam)
 
 	//voucher
+	r.GetFunc("/v1/ui/vouchers", controller.GetVoucherList)
 	r.GetFunc("/v1/vouchers/:id", controller.GetVoucherDetails)
-	r.GetFunc("/v1/voucher/generate/bulk", controller.GenerateVoucherBulk)
-	r.PostFunc("/v1/voucher/link", controller.GetVoucherlink)
+	r.GetFunc("/v1/ui/voucher/generate/bulk", controller.GenerateVoucherBulk)
+	r.PostFunc("/v1/ui/voucher/link", controller.GetVoucherlink)
 	r.GetFunc("/v1/sample/link", controller.GetCsvSample)
 
 	//mobile API
