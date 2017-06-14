@@ -6,7 +6,7 @@ html {
 }
 
 body {
-  background-color: #eff2f6;
+  background-color: #ffffff;
   font-family: 'Montserrat', sans-serif;
   position: static;
   background-size: cover;
@@ -33,7 +33,15 @@ body {
 
 
 .black {
-  color: #555;
+  color: #333;
+}
+
+.bs1 {
+  box-shadow: 1px 1px 40px 0 rgba(0, 0, 0, 0.1);
+}
+
+.bs2 {
+  box-shadow: 1px 1px 40px 0 rgba(0, 0, 0, 0.2);
 }
 
 .white {
@@ -45,7 +53,7 @@ body {
   border-radius: 6px;
   background-color: #fff;
   max-height: 100%;
-  box-shadow: 1px 1px 40px 0 rgba(0, 0, 0, 0.3);
+  box-shadow: 1px 1px 40px 0 rgba(0, 0, 0, 0.1);
 }
 
 .panel {
@@ -76,6 +84,10 @@ body {
 
 .padding-form {
   padding: 5%;
+}
+
+.radius5 {
+  border-radius: 5px;
 }
 
 .caption {
@@ -158,9 +170,7 @@ label {
 .form-input-voucher button {
   display: block;
   border-radius: 3px;
-  background: #0cebeb;  /* fallback for old browsers */
-  background: -webkit-linear-gradient(to right, #29ffc6, #20e3b2, #0cebeb);  /* Chrome 10-25, Safari 5.1-6 */
-  background: linear-gradient(to right, #29ffc6, #20e3b2, #0cebeb); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  background: #00C9FF;
   color: #ffffff;
   box-shadow: 1px 2px 4px 0 rgba(0, 0, 0, 0.08);
   width: 100%;
@@ -212,7 +222,7 @@ label {
   border-radius: 0;
   color: #fff;
   /* background-color: #004FF9; */
-  background: #004FF9;
+  background: #0072ff;
 }
 
 .alert-fail {
@@ -223,10 +233,13 @@ label {
   color: #fff;
   /* background-color: #004FF9; */
   background: #FF1744;
+  box-shadow: 1px 1px 40px 0 rgba(255, 23, 68, 0.3);
+  border-radius: 5px;
 }
 
 .alert-info {
-
+  box-shadow: 1px 1px 40px 0 rgba(0, 79, 249, 0.3);
+  border-radius: 5px;
 }
 
 @media (max-width: 600px) {
@@ -241,7 +254,7 @@ label {
     margin-top: 10px;
   }
   .caption h1 {
-    color: #555;
+    color: #000;
     font-size: 18pt;
     font-weight: 700;
   }
@@ -271,6 +284,40 @@ label {
   width: 100%;
   position: fixed;
   z-index: -99999;
+}
+
+.post-content {
+  opacity: 0.5;
+  top:0;
+  left:0;
+  min-width: 500px;
+  min-height: 500px;
+  position: absolute;
+  color: #ffffff;
+}
+
+.thumbnail{
+  position:relative;
+
+}
+.details {
+  z-index: 2;
+  top: 0;
+  color: #333;
+}
+
+
+.carousel-caption {
+  position: absolute;
+  right: 55% !important;
+  bottom: -10px;
+  left: 0%;
+  z-index: 10;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0,0,0,.6);
 }
 
 .form-elem{
