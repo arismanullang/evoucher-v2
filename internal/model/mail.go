@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/gilkor/evoucher/vendor/gopkg.in/mailgun/mailgun-go.v1"
 	"gopkg.in/mailgun/mailgun-go.v1"
 )
 

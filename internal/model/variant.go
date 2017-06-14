@@ -85,6 +85,7 @@ type (
 		StartDate     string                 `db:"start_date" json:"start_date"`
 		EndDate       string                 `db:"end_date" json:"end_date"`
 		Vouchers      []SearchVariantVoucher `db:"-" json:"vouchers"`
+		Voucher       string                 `db:"voucher" json:"voucher"`
 		State         sql.NullString         `db:"state" json:"state"`
 		Status        string                 `db:"status" json:"status"`
 		CreatedAt     string                 `db:"created_at" json:"created_at"`
