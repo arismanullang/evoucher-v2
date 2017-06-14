@@ -56,7 +56,6 @@ function getVariant() {
 		  created += parseInt(arrData[i].vouchers[y].voucher);
 		  if(arrData[i].vouchers[y].state != 'created'){
 		  	redeem += parseInt(arrData[i].vouchers[y].voucher);
-		        created += parseInt(arrData[i].vouchers[y].voucher);
 		  }
 		}
 	      }
@@ -95,10 +94,14 @@ function getVariant() {
             "<button type='button' value=\""+dataId[i]+"\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>"
 
 	    var avail = 0;
-	    var rate = 0;
+	    var redemptionRate = 0;
+	    var distributionRate = 0;
 	    if(dataMax[i] != 0){
 		avail = dataMax[i] - dataVoucher[i];
-		rate = dataRedeem[i]/dataMax[i]*100;
+		if(dataVoucher[i] != 0){
+			redemptionRate = dataRedeem[i]/dataVoucher[i]*100;
+			distributionRate = dataVoucher[i]/dataMax[i]*100;
+		}
 	    }
             dataSet[i] = [
               dataName[i].toUpperCase()
@@ -110,7 +113,8 @@ function getVariant() {
 	      , dataModified[i].toUpperCase()
 	      , dataMax[i]
               , avail
-              , rate+"%"
+              , Math.round(distributionRate)+"%"
+              , Math.round(redemptionRate)+"%"
               , button
             ];
           }
@@ -137,7 +141,8 @@ function getVariant() {
                   { title: "LAST MODIFIED" },
                   { title: "TOTAL </br> VOUCHER" },
                   { title: "AVAILABLE </br> VOUCHER" },
-                  { title: "REDEEM RATE" },
+                  { title: "DISTRIBUTION" },
+                  { title: "REDEMPTION" },
                   { title: "ACTION"}
               ],
               oLanguage: {

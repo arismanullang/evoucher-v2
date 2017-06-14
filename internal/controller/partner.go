@@ -40,11 +40,33 @@ type (
 	}
 )
 
-func GetPartners(w http.ResponseWriter, r *http.Request) {
+func GetVariantPartners(w http.ResponseWriter, r *http.Request) {
 	param := getUrlParam(r.URL.String())
 	status := http.StatusOK
 	res := NewResponse(nil)
 	partner, err := model.FindVariantPartner(param)
+	if err != nil {
+		fmt.Println(err.Error())
+		status = http.StatusInternalServerError
+		errorTitle := model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errorTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
+	} else {
+		res = NewResponse(partner)
+	}
+
+	render.JSON(w, res, status)
+}
+
+func GetPartners(w http.ResponseWriter, r *http.Request) {
+	param := getUrlParam(r.URL.String())
+	status := http.StatusOK
+	res := NewResponse(nil)
+	partner, err := model.FindPartners(param)
 	if err != nil {
 		fmt.Println(err.Error())
 		status = http.StatusInternalServerError

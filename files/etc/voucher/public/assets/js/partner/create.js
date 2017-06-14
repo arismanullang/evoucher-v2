@@ -6,7 +6,7 @@ function getTag() {
     console.log("Get Tag List");
 
     $.ajax({
-      url: '/v1/get/tag',
+      url: '/v1/ui/tag/all',
       type: 'get',
       success: function (data) {
         console.log("Render Data");
@@ -40,12 +40,12 @@ function send() {
     partner_name: $("#partner-name").val(),
     serial_number: $("#serial-number").val(),
     tag: listTag,
-    description: $("#description").val(),
+    description: "",
   };
 
   console.log(partner);
   $.ajax({
-     url: '/v1/create/partner?token='+token,
+     url: '/v1/ui/partner/create?token='+token,
      type: 'post',
      dataType: 'json',
      contentType: "application/json",

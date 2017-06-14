@@ -92,6 +92,7 @@ func setRoutes() http.Handler {
 	//partner
 	r.PostFunc("/v1/ui/partner/create", controller.AddPartner)
 	r.GetFunc("/v1/ui/partner/all", controller.GetAllPartners)
+	r.GetFunc("/v1/ui/partner/variant", controller.GetVariantPartners)
 	r.GetFunc("/v1/ui/partner", controller.GetPartners)
 	r.PostFunc("/v1/ui/partner/update", controller.UpdatePartner)
 	r.GetFunc("/v1/ui/partner/delete", controller.DeletePartner)
