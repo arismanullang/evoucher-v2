@@ -153,8 +153,8 @@ function send() {
     periodEnd = $("#voucher-valid-to").val();
   }else if($("#voucher-validity-type").val() == "lifetime"){
     lifetime = $("#voucher-lifetime").val();
-    periodStart = "01/01/0001";
-    periodEnd = "01/01/0001";
+    periodStart = "1001-01-01T00:00:00Z";
+    periodEnd = "1001-01-01T00:00:00Z";
   }
 
     $('input[check="true"]').each(function() {
@@ -318,7 +318,7 @@ function getPartner(id) {
         }
 
 	$.ajax({
-            url: '/v1/ui/partner?variant_id='+id+'&token='+token,
+            url: '/v1/ui/partner/variant?variant_id='+id+'&token='+token,
             type: 'get',
             success: function (data) {
               var i;

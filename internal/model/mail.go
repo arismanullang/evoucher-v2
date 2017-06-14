@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/gilkor/evoucher/vendor/gopkg.in/mailgun/mailgun-go.v1"
 	"gopkg.in/mailgun/mailgun-go.v1"
 )
 
@@ -53,7 +54,7 @@ func makeMessage(id string) string {
 		return ""
 	}
 
-	url := "http://voucher.apps.id:8889/user/recover?key=" + tok.Token
+	url := "voucher.elys.id/user/recover?key=" + tok.Token
 	result := string(str) + url
 	return result
 }
