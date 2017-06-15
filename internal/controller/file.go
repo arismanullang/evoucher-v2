@@ -12,6 +12,7 @@ import (
 	"github.com/ruizu/render"
 
 	"cloud.google.com/go/storage"
+	"strings"
 )
 
 func UploadFile(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +50,7 @@ func UploadFileFromForm(r *http.Request) (url string, err error) {
 		return "", errors.New("storage bucket is missing")
 	}
 
-	ext := path.Ext(fh.Filename)
+	ext := strings.ToLower(path.Ext(fh.Filename))
 	if ext != ".jpg" && ext != ".png" && ext != ".jpeg" {
 		return "We do not allow files of type " + ext + " , We only allow jpg, jpeg, png extensions.", nil
 	}
