@@ -113,7 +113,7 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 	param["account_id"] = a.User.AccountID
 	delete(param, "token")
 
-	variant, err := model.FindVariantsCustomParam(param)
+	variant, err := model.FindAvailableVariants()
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilVariant, "voucher")
@@ -125,21 +125,23 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
-	d := make(GetVoucherOfVariatList, len(variant))
-	for k, dt := range variant {
-		used := getCountVoucher(dt.Id)
-		if (int(dt.MaxVoucher) - used) > 0 {
-			d[k].VariantID = dt.Id
-			d[k].AccountId = dt.AccountId
-			d[k].VariantName = dt.VariantName
-			d[k].VoucherType = dt.VoucherType
-			d[k].VoucherPrice = dt.VoucherPrice
-			d[k].DiscountValue = dt.DiscountValue
-			d[k].StartDate = dt.StartDate
-			d[k].EndDate = dt.EndDate
-			d[k].ImgUrl = dt.ImgUrl
-			d[k].MaxQty = dt.MaxVoucher
-			d[k].Used = used
+	d := []GetVoucherOfVariatdata{}
+	for _, dt := range variant {
+		if (int(dt.MaxVoucher) - sti(dt.Voucher)) > 0 {
+			tempVoucher := GetVoucherOfVariatdata{}
+			tempVoucher.VariantID = dt.Id
+			tempVoucher.AccountId = dt.AccountId
+			tempVoucher.VariantName = dt.VariantName
+			tempVoucher.VoucherType = dt.VoucherType
+			tempVoucher.VoucherPrice = dt.VoucherPrice
+			tempVoucher.DiscountValue = dt.DiscountValue
+			tempVoucher.StartDate = dt.StartDate
+			tempVoucher.EndDate = dt.EndDate
+			tempVoucher.ImgUrl = dt.ImgUrl
+			tempVoucher.MaxQty = dt.MaxVoucher
+			tempVoucher.Used = sti(dt.Voucher)
+
+			d = append(d, tempVoucher)
 		}
 	}
 
@@ -154,7 +156,7 @@ func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
 	var status int
 
 	a := AuthToken(w, r)
-	if a.Valid {
+	if !a.Valid {
 		render.JSON(w, a.res, http.StatusUnauthorized)
 		return
 	}
@@ -412,80 +414,94 @@ func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateVariant(w http.ResponseWriter, r *http.Request) {
+	apiName := "variant_create"
+	valid := false
+
 	res := NewResponse(nil)
 	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errTitle := model.ErrCodeInvalidToken
+	err := model.ErrInvalidRole
+	errTitle := model.ErrCodeInvalidRole
 	res.AddError(its(status), errTitle, err.Error(), "Create Variant")
 
 	a := AuthToken(w, r)
 	if a.Valid {
-		status = http.StatusCreated
-
-		var rd Variant
-		decoder := json.NewDecoder(r.Body)
-		if err := decoder.Decode(&rd); err != nil {
-			log.Panic(err)
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
+			}
 		}
 
-		ts, err := time.Parse("01/02/2006", rd.StartDate)
-		if err != nil {
-			log.Panic(err)
-		}
-		te, err := time.Parse("01/02/2006", rd.EndDate)
-		if err != nil {
-			log.Panic(err)
-		}
-		fmt.Println(rd.ValidVoucherStart)
-		tvs, err := time.Parse("01/02/2006", rd.ValidVoucherStart)
-		if err != nil {
-			log.Panic(err)
-		}
-		tve, err := time.Parse("01/02/2006", rd.ValidVoucherEnd)
-		if err != nil {
-			log.Panic(err)
-		}
+		if valid {
+			status = http.StatusCreated
 
-		vr := model.VariantReq{
-			AccountId:          a.User.AccountID,
-			VariantName:        rd.VariantName,
-			VariantType:        rd.VariantType,
-			VoucherType:        rd.VoucherType,
-			VoucherPrice:       rd.VoucherPrice,
-			MaxQuantityVoucher: rd.MaxQuantityVoucher,
-			MaxUsageVoucher:    rd.MaxUsageVoucher,
-			AllowAccumulative:  rd.AllowAccumulative,
-			RedeemtionMethod:   rd.RedeemtionMethod,
-			DiscountValue:      rd.DiscountValue,
-			StartDate:          ts.Format("2006-01-02 15:04:05.000"),
-			EndDate:            te.Format("2006-01-02 15:04:05.000"),
-			StartHour:          rd.StartHour,
-			EndHour:            rd.EndHour,
-			ValidVoucherStart:  tvs.Format("2006-01-02 15:04:05.000"),
-			ValidVoucherEnd:    tve.Format("2006-01-02 15:04:05.000"),
-			VoucherLifetime:    rd.VoucherLifetime,
-			ValidityDays:       rd.ValidityDays,
-			ImgUrl:             rd.ImgUrl,
-			VariantTnc:         rd.VariantTnc,
-			VariantDescription: rd.VariantDescription,
-			ValidPartners:      rd.ValidPartners,
-		}
+			var rd Variant
+			decoder := json.NewDecoder(r.Body)
+			if err := decoder.Decode(&rd); err != nil {
+				log.Panic(err)
+			}
 
-		accountDetail, err := model.GetAccountDetailByUser(a.User.ID)
-		fr := model.FormatReq{
-			Prefix:     rd.VoucherFormat.Prefix,
-			Postfix:    accountDetail[0].Alias,
-			Body:       rd.VoucherFormat.Body,
-			FormatType: rd.VoucherFormat.FormatType,
-			Length:     rd.VoucherFormat.Length,
-		}
-		if id, err := model.InsertVariant(vr, fr, a.User.ID); err != nil {
-			//log.Panic(err)
-			status = http.StatusInternalServerError
-			errTitle = model.ErrCodeInternalError
-			res.AddError(its(status), errTitle, err.Error(), "Create Variant")
-		} else {
-			res = NewResponse(id)
+			ts, err := time.Parse("01/02/2006", rd.StartDate)
+			if err != nil {
+				log.Panic(err)
+			}
+			te, err := time.Parse("01/02/2006", rd.EndDate)
+			if err != nil {
+				log.Panic(err)
+			}
+			fmt.Println(rd.ValidVoucherStart)
+			tvs, err := time.Parse("01/02/2006", rd.ValidVoucherStart)
+			if err != nil {
+				log.Panic(err)
+			}
+			tve, err := time.Parse("01/02/2006", rd.ValidVoucherEnd)
+			if err != nil {
+				log.Panic(err)
+			}
+
+			vr := model.VariantReq{
+				AccountId:          a.User.AccountID,
+				VariantName:        rd.VariantName,
+				VariantType:        rd.VariantType,
+				VoucherType:        rd.VoucherType,
+				VoucherPrice:       rd.VoucherPrice,
+				MaxQuantityVoucher: rd.MaxQuantityVoucher,
+				MaxUsageVoucher:    rd.MaxUsageVoucher,
+				AllowAccumulative:  rd.AllowAccumulative,
+				RedeemtionMethod:   rd.RedeemtionMethod,
+				DiscountValue:      rd.DiscountValue,
+				StartDate:          ts.Format("2006-01-02 15:04:05.000"),
+				EndDate:            te.Format("2006-01-02 15:04:05.000"),
+				StartHour:          rd.StartHour,
+				EndHour:            rd.EndHour,
+				ValidVoucherStart:  tvs.Format("2006-01-02 15:04:05.000"),
+				ValidVoucherEnd:    tve.Format("2006-01-02 15:04:05.000"),
+				VoucherLifetime:    rd.VoucherLifetime,
+				ValidityDays:       rd.ValidityDays,
+				ImgUrl:             rd.ImgUrl,
+				VariantTnc:         rd.VariantTnc,
+				VariantDescription: rd.VariantDescription,
+				ValidPartners:      rd.ValidPartners,
+			}
+
+			accountDetail, err := model.GetAccountDetailByUser(a.User.ID)
+			fr := model.FormatReq{
+				Prefix:     rd.VoucherFormat.Prefix,
+				Postfix:    accountDetail[0].Alias,
+				Body:       rd.VoucherFormat.Body,
+				FormatType: rd.VoucherFormat.FormatType,
+				Length:     rd.VoucherFormat.Length,
+			}
+			if id, err := model.InsertVariant(vr, fr, a.User.ID); err != nil {
+				//log.Panic(err)
+				status = http.StatusInternalServerError
+				errTitle = model.ErrCodeInternalError
+				res.AddError(its(status), errTitle, err.Error(), "Create Variant")
+			} else {
+				res = NewResponse(id)
+			}
 		}
 	} else {
 		res = a.res
@@ -497,23 +513,42 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 
 func UpdateVariantRoute(w http.ResponseWriter, r *http.Request) {
 	types := r.FormValue("type")
+	apiName := "variant_update"
+	valid := false
 
 	res := NewResponse(nil)
 	status := http.StatusUnauthorized
-	err := model.ErrServerInternal
-	errTitle := model.ErrCodeInternalError
+	err := model.ErrInvalidRole
+	errTitle := model.ErrCodeInvalidRole
+	a := AuthToken(w, r)
+	if a.Valid {
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
+			}
+		}
+	}
+
 	if types == "" {
 		res.AddError(its(status), errTitle, err.Error(), "Update type not found")
 		render.JSON(w, res, status)
 	} else {
-		if types == "detail" {
-			UpdateVariant(w, r)
-		} else if types == "tenant" {
-			UpdateVariantTenant(w, r)
-		} else if types == "broadcast" {
-			UpdateVariantBroadcast(w, r)
+		if valid {
+			if types == "detail" {
+				UpdateVariant(w, r)
+			} else if types == "tenant" {
+				UpdateVariantTenant(w, r)
+			} else if types == "broadcast" {
+				UpdateVariantBroadcast(w, r)
+			} else {
+				res.AddError(its(status), errTitle, err.Error(), "Update type not allowed")
+				render.JSON(w, res, status)
+			}
 		} else {
-			res.AddError(its(status), errTitle, err.Error(), "Update type not allowed")
+			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 			render.JSON(w, res, status)
 		}
 	}
@@ -670,28 +705,44 @@ func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteVariant(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Delete Variant")
+	apiName := "variant_delete"
+	valid := false
+
 	res := NewResponse(nil)
 	id := r.FormValue("id")
 
 	status := http.StatusUnauthorized
-	errTitle := model.ErrCodeInvalidToken
+	err := model.ErrInvalidRole
+	errTitle := model.ErrCodeInvalidRole
+	res.AddError(its(status), errTitle, err.Error(), "Delete Variant")
 	a := AuthToken(w, r)
 	if a.Valid {
-		status = http.StatusOK
-		d := &model.DeleteVariantRequest{
-			Id:   id,
-			User: a.User.ID,
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
+			}
 		}
-		if err := d.Delete(); err != nil {
-			status = http.StatusInternalServerError
-			errTitle = model.ErrCodeInternalError
-			res.AddError(its(status), errTitle, err.Error(), "Delete Variant")
 
-		}
-		objName := strings.Split(d.Img_url, "/")
-		if deleteFile(w, r, objName[4]) {
-			return
+		if valid {
+			status = http.StatusOK
+			d := &model.DeleteVariantRequest{
+				Id:   id,
+				User: a.User.ID,
+			}
+			if err := d.Delete(); err != nil {
+				status = http.StatusInternalServerError
+				errTitle = model.ErrCodeInternalError
+				res.AddError(its(status), errTitle, err.Error(), "Delete Variant")
+
+			}
+			objName := strings.Split(d.Img_url, "/")
+			if deleteFile(w, r, objName[4]) {
+				return
+			}
+			res = NewResponse("")
 		}
 	} else {
 		res = a.res

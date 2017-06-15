@@ -53,7 +53,7 @@ func makeMessage(id string) string {
 		return ""
 	}
 
-	url := "http://voucher.apps.id:8889/user/recover?key=" + tok.Token
+	url := "voucher.elys.id/user/recover?key=" + tok.Token
 	result := string(str) + url
 	return result
 }

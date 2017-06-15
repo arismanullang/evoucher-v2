@@ -16,7 +16,7 @@ function getVoucher(id) {
 
     var arrData = [];
     $.ajax({
-        url: '/v1/ui/vouchers?variant_id='+id+'&token='+token,
+        url: '/v1/ui/voucher?variant_id='+id+'&token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -25,25 +25,17 @@ function getVoucher(id) {
           var limit = arrData.length;
           var used = 0;
           var paid = 0;
-          // if (arrData.length > 4){
-          //   limit = 4;
-          //   $("<div class='card-body pv0 text-right'><a href='/voucher/search?variant_id="+id+"' class='btn btn-flat btn-info'>View all</a></div>").appendTo('#cardVoucher');
-          // }
 
           var dataSet = [];
           for ( i = 0; i < limit; i++){
-         //    var html = "<div class='mda-list-item-icon'><em class='ion-pricetag icon-2x'></em></div>"
-         //    +  "<div class='mda-list-item-text'>"
-         //    +  "<h3><a href='/voucher/check?id="+arrData[i].id+"'>"+arrData[i].voucher_code+"</a></h3>"
-         //    +  "<div class='text-muted text-ellipsis'>Status "+arrData[i].state+"</div>"
-         //    +"</div>";
-         //    if( arrData[i].state == "used"){
-         //    	used++;
-	    // } else if( arrData[i].state == "paid"){
-         //    	paid++;
-	    // }
-         //    var li = $("<div class='mda-list-item'></div>").html(html);
-         //    li.appendTo('#listVoucher');
+	    if(arrData[i].state == "used") {
+		used++;
+	    }
+
+	    if(arrData[i].state == "paid") {
+	    	used++;
+	    	paid++;
+	    }
 
             var dateValid = new Date(arrData[i].valid_at);
             var dateExpired = new Date(arrData[i].expired_at);
@@ -105,7 +97,6 @@ function getVoucher(id) {
         },
         error: function (data) {
           console.log(data.data);
-          $("<div class='card-body text-center'>No Voucher Yet</div>").appendTo('#cardVoucher');
           getVariant(id, 0, 0, 0);
         }
     });
@@ -116,7 +107,7 @@ function getPartner(id) {
 
     var arrData = [];
     $.ajax({
-        url: '/v1/ui/partner?variant_id='+id+'&token='+token,
+        url: '/v1/ui/partner/variant?variant_id='+id+'&token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);

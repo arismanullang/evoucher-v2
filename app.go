@@ -80,6 +80,7 @@ func main() {
 	render.SetPath(config.Server.TemplateDirectory)
 
 	model.UiFeatures = getUiRole()
+	model.ApiFeatures = getApiRole()
 	model.Domain = config.Mailgun.Domain
 	model.ApiKey = config.Mailgun.MailgunKey
 	model.PublicApiKey = config.Mailgun.MailgunPublicKey
@@ -113,6 +114,23 @@ func getUiRole() map[string][]string {
 		}
 
 	}
+	fmt.Print("Role ui : ")
+	fmt.Println(m)
+	return m
+}
+
+func getApiRole() map[string][]string {
+	m := make(map[string][]string)
+	roles, err := model.GetAllApiFeatures()
+
+	if err == nil {
+		for _, value := range roles {
+			m[value.Role] = append(m[value.Role], value.Category+"_"+value.Detail)
+
+		}
+
+	}
+	fmt.Print("Role api : ")
 	fmt.Println(m)
 	return m
 }

@@ -92,6 +92,7 @@ func setRoutes() http.Handler {
 	//partner
 	r.PostFunc("/v1/ui/partner/create", controller.AddPartner)
 	r.GetFunc("/v1/ui/partner/all", controller.GetAllPartners)
+	r.GetFunc("/v1/ui/partner/variant", controller.GetVariantPartners)
 	r.GetFunc("/v1/ui/partner", controller.GetPartners)
 	r.PostFunc("/v1/ui/partner/update", controller.UpdatePartner)
 	r.GetFunc("/v1/ui/partner/delete", controller.DeletePartner)
@@ -119,16 +120,13 @@ func setRoutes() http.Handler {
 	//r.GetFunc("/v1/api/get/role", controller.GetAllAccountRoles)
 
 	//open API
-	r.GetFunc("/v1/variants", controller.ListVariants)
-	r.GetFunc("/v1/variants/:id", controller.ListVariantsDetails)
-	r.GetFunc("/v1/variant/vouchers", controller.GetVoucherOfVariant)
-	r.GetFunc("/v1/variant/vouchers/:id", controller.GetVoucherOfVariantDetails)
 	r.GetFunc("/v1/api/get/partner", controller.GetAllPartnersCustomParam)
 
 	//voucher
+	r.GetFunc("/v1/ui/voucher", controller.GetVoucherList)
 	r.GetFunc("/v1/vouchers/:id", controller.GetVoucherDetails)
-	r.GetFunc("/v1/voucher/generate/bulk", controller.GenerateVoucherBulk)
-	r.PostFunc("/v1/voucher/link", controller.GetVoucherlink)
+	r.GetFunc("/v1/ui/voucher/generate/bulk", controller.GenerateVoucherBulk)
+	r.PostFunc("/v1/ui/voucher/link", controller.GetVoucherlink)
 	r.GetFunc("/v1/sample/link", controller.GetCsvSample)
 
 	//mobile API
@@ -138,6 +136,13 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/variant/vouchers/:id", controller.GetVoucherOfVariantDetails)
 	r.PostFunc("/v1/voucher/generate/single", controller.GenerateVoucherOnDemand)
 	r.PostFunc("/v1/transaction/redeem", controller.MobileCreateTransaction)
+
+	//r.GetFunc("/v1/variants", controller.ListVariants)
+	//r.GetFunc("/v1/variants/:id", controller.ListVariantsDetails)
+	//r.GetFunc("/v1/variant/vouchers", controller.GetVoucherOfVariant)
+	//r.GetFunc("/v1/variant/vouchers/:id", controller.GetVoucherOfVariantDetails)
+	//r.PostFunc("/v1/voucher/generate/single", controller.GenerateVoucherOnDemand)
+	//r.PostFunc("/v1/transaction/redeem", controller.MobileCreateTransaction)
 
 	//public API
 	r.GetFunc("/v1/public/challenge", controller.GetChallenge)

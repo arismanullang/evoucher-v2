@@ -40,11 +40,33 @@ type (
 	}
 )
 
-func GetPartners(w http.ResponseWriter, r *http.Request) {
+func GetVariantPartners(w http.ResponseWriter, r *http.Request) {
 	param := getUrlParam(r.URL.String())
 	status := http.StatusOK
 	res := NewResponse(nil)
 	partner, err := model.FindVariantPartner(param)
+	if err != nil {
+		fmt.Println(err.Error())
+		status = http.StatusInternalServerError
+		errorTitle := model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errorTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
+	} else {
+		res = NewResponse(partner)
+	}
+
+	render.JSON(w, res, status)
+}
+
+func GetPartners(w http.ResponseWriter, r *http.Request) {
+	param := getUrlParam(r.URL.String())
+	status := http.StatusOK
+	res := NewResponse(nil)
+	partner, err := model.FindPartners(param)
 	if err != nil {
 		fmt.Println(err.Error())
 		status = http.StatusInternalServerError
@@ -135,8 +157,10 @@ func GetAllPartnersCustomParam(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdatePartner(w http.ResponseWriter, r *http.Request) {
-	id := r.FormValue("id")
+	apiName := "partner_update"
+	valid := false
 
+	id := r.FormValue("id")
 	var rd Partner
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
@@ -144,26 +168,38 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	}
 
 	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errorTitle := model.ErrCodeInvalidToken
+	err := model.ErrInvalidRole
+	errorTitle := model.ErrCodeInvalidRole
 	res := NewResponse(nil)
-	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
+	res.AddError(its(status), errorTitle, err.Error(), "Update Partner")
 
 	a := AuthToken(w, r)
 	if a.Valid {
-		status = http.StatusOK
-		err := model.UpdatePartner(id, rd.SerialNumber, a.User.ID)
-		if err != nil {
-			status = http.StatusInternalServerError
-			errorTitle = model.ErrCodeInternalError
-			if err == model.ErrResourceNotFound {
-				status = http.StatusNotFound
-				errorTitle = model.ErrCodeResourceNotFound
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
+			}
+		}
+
+		if valid {
+			status = http.StatusOK
+			err := model.UpdatePartner(id, rd.SerialNumber, a.User.ID)
+			if err != nil {
+				status = http.StatusInternalServerError
+				errorTitle = model.ErrCodeInternalError
+				if err == model.ErrResourceNotFound {
+					status = http.StatusNotFound
+					errorTitle = model.ErrCodeResourceNotFound
+				}
+
+				res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
+			} else {
+				res = NewResponse("Success")
 			}
 
-			res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
-		} else {
-			res = NewResponse("Success")
 		}
 	} else {
 		res = a.res
@@ -174,29 +210,43 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeletePartner(w http.ResponseWriter, r *http.Request) {
+	apiName := "partner_delete"
+	valid := false
+
 	id := r.FormValue("id")
 
 	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errorTitle := model.ErrCodeInvalidToken
+	err := model.ErrInvalidRole
+	errorTitle := model.ErrCodeInvalidRole
 	res := NewResponse(nil)
-	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
+	res.AddError(its(status), errorTitle, err.Error(), "Delete Partner")
 
 	a := AuthToken(w, r)
 	if a.Valid {
-		status = http.StatusOK
-		err := model.DeletePartner(id, a.User.ID)
-		if err != nil {
-			status = http.StatusInternalServerError
-			errorTitle = model.ErrCodeInternalError
-			if err == model.ErrResourceNotFound {
-				status = http.StatusNotFound
-				errorTitle = model.ErrCodeResourceNotFound
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
 			}
+		}
 
-			res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
-		} else {
-			res = NewResponse("Success")
+		if valid {
+			status = http.StatusOK
+			err := model.DeletePartner(id, a.User.ID)
+			if err != nil {
+				status = http.StatusInternalServerError
+				errorTitle = model.ErrCodeInternalError
+				if err == model.ErrResourceNotFound {
+					status = http.StatusNotFound
+					errorTitle = model.ErrCodeResourceNotFound
+				}
+
+				res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
+			} else {
+				res = NewResponse("Success")
+			}
 		}
 	} else {
 		res = a.res
@@ -207,7 +257,9 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 
 // dashboard
 func AddPartner(w http.ResponseWriter, r *http.Request) {
-	fmt.Print("Add")
+	apiName := "partner_create"
+	valid := false
+
 	var rd Partner
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
@@ -215,44 +267,57 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 	}
 
 	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errorTitle := model.ErrCodeInvalidToken
+	err := model.ErrInvalidRole
+	errorTitle := model.ErrCodeInvalidRole
 	res := NewResponse(nil)
-	res.AddError(its(status), errorTitle, err.Error(), "Add Partner")
+	res.AddError(its(status), errorTitle, err.Error(), "Create Partner")
 
-	fmt.Println("Check Session")
 	a := AuthToken(w, r)
 	if a.Valid {
-		status = http.StatusCreated
-		param := model.Partner{
-			PartnerName: rd.PartnerName,
-			SerialNumber: sql.NullString{
-				String: rd.SerialNumber,
-				Valid:  true,
-			},
-			CreatedBy: sql.NullString{
-				String: a.User.ID,
-				Valid:  true,
-			},
-			Tag: sql.NullString{
-				String: rd.Tag,
-				Valid:  true,
-			},
-			Description: sql.NullString{
-				String: rd.Description,
-				Valid:  true,
-			},
-		}
-		err := model.InsertPartner(param)
-		if err != nil {
-			status = http.StatusInternalServerError
-			errorTitle = model.ErrCodeInternalError
-			if err == model.ErrResourceNotFound {
-				status = http.StatusNotFound
-				errorTitle = model.ErrCodeResourceNotFound
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
 			}
+		}
 
-			res.AddError(its(status), errorTitle, err.Error(), "Add Partner")
+		if valid {
+
+			status = http.StatusCreated
+			param := model.Partner{
+				PartnerName: rd.PartnerName,
+				SerialNumber: sql.NullString{
+					String: rd.SerialNumber,
+					Valid:  true,
+				},
+				CreatedBy: sql.NullString{
+					String: a.User.ID,
+					Valid:  true,
+				},
+				Tag: sql.NullString{
+					String: rd.Tag,
+					Valid:  true,
+				},
+				Description: sql.NullString{
+					String: rd.Description,
+					Valid:  true,
+				},
+			}
+			err := model.InsertPartner(param)
+			if err != nil {
+				status = http.StatusInternalServerError
+				errorTitle = model.ErrCodeInternalError
+				if err == model.ErrResourceNotFound {
+					status = http.StatusNotFound
+					errorTitle = model.ErrCodeResourceNotFound
+				}
+
+				res.AddError(its(status), errorTitle, err.Error(), "Add Partner")
+			} else {
+				res = NewResponse("Success")
+			}
 		}
 	} else {
 		res = a.res
@@ -286,7 +351,9 @@ func GetAllTags(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddTag(w http.ResponseWriter, r *http.Request) {
-	fmt.Print("Add")
+	apiName := "tag_create"
+	valid := false
+
 	var rd Tag
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
@@ -294,25 +361,38 @@ func AddTag(w http.ResponseWriter, r *http.Request) {
 	}
 
 	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errorTitle := model.ErrCodeInvalidToken
+	err := model.ErrInvalidRole
+	errorTitle := model.ErrCodeInvalidRole
 	res := NewResponse(nil)
 	res.AddError(its(status), errorTitle, err.Error(), "Add Tag")
 
-	fmt.Println("Check Session")
 	a := AuthToken(w, r)
 	if a.Valid {
-		status = http.StatusCreated
-		err := model.InsertTag(rd.Value, a.User.ID)
-		if err != nil {
-			status = http.StatusInternalServerError
-			errorTitle = model.ErrCodeInternalError
-			if err == model.ErrResourceNotFound {
-				status = http.StatusNotFound
-				errorTitle = model.ErrCodeResourceNotFound
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
+			}
+		}
+
+		if valid {
+			status = http.StatusCreated
+			err := model.InsertTag(rd.Value, a.User.ID)
+			if err != nil {
+				status = http.StatusInternalServerError
+				errorTitle = model.ErrCodeInternalError
+				if err == model.ErrResourceNotFound {
+					status = http.StatusNotFound
+					errorTitle = model.ErrCodeResourceNotFound
+				}
+
+				res.AddError(its(status), errorTitle, err.Error(), "Add Tag")
 			}
 
-			res.AddError(its(status), errorTitle, err.Error(), "Add Tag")
+		} else {
+			res = NewResponse("Success")
 		}
 	} else {
 		res = a.res
@@ -322,29 +402,43 @@ func AddTag(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteTag(w http.ResponseWriter, r *http.Request) {
+	apiName := "tag_delete"
+	valid := false
+
 	id := bone.GetValue(r, "id")
 
 	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errorTitle := model.ErrCodeInvalidToken
+	err := model.ErrInvalidRole
+	errorTitle := model.ErrCodeInvalidRole
 	res := NewResponse(nil)
-	res.AddError(its(status), errorTitle, err.Error(), "Get Tag")
+	res.AddError(its(status), errorTitle, err.Error(), "Delete Tag")
 
 	a := AuthToken(w, r)
 	if a.Valid {
-		status = http.StatusOK
-		err := model.DeleteTag(id, a.User.ID)
-		if err != nil {
-			status = http.StatusInternalServerError
-			errorTitle = model.ErrCodeInternalError
-			if err == model.ErrResourceNotFound {
-				status = http.StatusNotFound
-				errorTitle = model.ErrCodeResourceNotFound
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
 			}
+		}
 
-			res.AddError(its(status), errorTitle, err.Error(), "Get tag")
-		} else {
-			res = NewResponse("Success")
+		if valid {
+			status = http.StatusOK
+			err := model.DeleteTag(id, a.User.ID)
+			if err != nil {
+				status = http.StatusInternalServerError
+				errorTitle = model.ErrCodeInternalError
+				if err == model.ErrResourceNotFound {
+					status = http.StatusNotFound
+					errorTitle = model.ErrCodeResourceNotFound
+				}
+
+				res.AddError(its(status), errorTitle, err.Error(), "Get tag")
+			} else {
+				res = NewResponse("Success")
+			}
 		}
 	} else {
 		res = a.res
@@ -354,6 +448,9 @@ func DeleteTag(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteTagBulk(w http.ResponseWriter, r *http.Request) {
+	apiName := "tag_delete"
+	valid := false
+
 	var rd Tags
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
@@ -361,26 +458,37 @@ func DeleteTagBulk(w http.ResponseWriter, r *http.Request) {
 	}
 
 	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errorTitle := model.ErrCodeInvalidToken
+	err := model.ErrInvalidRole
+	errorTitle := model.ErrCodeInvalidRole
 	res := NewResponse(nil)
-	res.AddError(its(status), errorTitle, err.Error(), "Get Tag")
+	res.AddError(its(status), errorTitle, err.Error(), "Delete Tag")
 
 	a := AuthToken(w, r)
 	if a.Valid {
-		status = http.StatusOK
-		err := model.DeleteTagBulk(rd.Value, a.User.ID)
-		if err != nil {
-			status = http.StatusInternalServerError
-			errorTitle = model.ErrCodeInternalError
-			if err == model.ErrResourceNotFound {
-				status = http.StatusNotFound
-				errorTitle = model.ErrCodeResourceNotFound
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
 			}
+		}
 
-			res.AddError(its(status), errorTitle, err.Error(), "Get tag")
-		} else {
-			res = NewResponse("Success")
+		if valid {
+			status = http.StatusOK
+			err := model.DeleteTagBulk(rd.Value, a.User.ID)
+			if err != nil {
+				status = http.StatusInternalServerError
+				errorTitle = model.ErrCodeInternalError
+				if err == model.ErrResourceNotFound {
+					status = http.StatusNotFound
+					errorTitle = model.ErrCodeResourceNotFound
+				}
+
+				res.AddError(its(status), errorTitle, err.Error(), "Get tag")
+			} else {
+				res = NewResponse("Success")
+			}
 		}
 	} else {
 		res = a.res

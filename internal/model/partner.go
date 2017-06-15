@@ -234,7 +234,33 @@ func FindVariantPartner(param map[string]string) ([]Partner, error) {
 	if len(resv) < 1 {
 		return []Partner{}, ErrResourceNotFound
 	}
-	fmt.Println(resv)
+	return resv, nil
+}
+
+func FindVariantPartners(variantId string) ([]Partner, error) {
+	q := `
+		SELECT 	b.id
+			, b.partner_name
+			, b.serial_number
+			, b.created_by
+			, a.variant_id
+	 	FROM
+			variant_partners a
+		JOIN
+		 	partners b
+		ON
+			a.partner_id = b.id
+ 		WHERE
+			a.status = ?
+			AND a.variant_id = ?
+		`
+	var resv []Partner
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, variantId); err != nil {
+		return []Partner{}, err
+	}
+	if len(resv) < 1 {
+		return []Partner{}, ErrResourceNotFound
+	}
 	return resv, nil
 }
 

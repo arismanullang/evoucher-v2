@@ -177,7 +177,7 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 	delete(param, "token")
 
 	if len(param) > 0 {
-		voucher, err = model.FindVoucher(param)
+		voucher, err = model.FindAvailableVoucher(param)
 	} else {
 		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, "voucher")
@@ -205,20 +205,52 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	// fmt.Println(distinctVariant)
-	d := make(GetVoucherOfVariatList, len(distinctVariant))
-	for k, v := range distinctVariant {
+	d := []GetVoucherOfVariatListDetails{}
+	for _, v := range distinctVariant {
+		tempVoucherResponse := []VoucerResponse{}
+		tempGetVoucherOfVariatListDetails := GetVoucherOfVariatListDetails{}
+		tempPartners := []Partner{}
+
 		dt, _ := model.FindVariantDetailsById(v)
-		d[k].VariantID = dt.Id
-		d[k].AccountId = dt.AccountId
-		d[k].VariantName = dt.VariantName
-		d[k].VoucherType = dt.VoucherType
-		d[k].VoucherPrice = dt.VoucherPrice
-		d[k].DiscountValue = dt.DiscountValue
-		d[k].StartDate = dt.StartDate
-		d[k].EndDate = dt.EndDate
-		d[k].ImgUrl = dt.ImgUrl
-		d[k].Used = getCountVoucher(v)
-		d[k].MaxQty = dt.MaxQuantityVoucher
+		tempGetVoucherOfVariatListDetails.VariantID = dt.Id
+		tempGetVoucherOfVariatListDetails.AccountId = dt.AccountId
+		tempGetVoucherOfVariatListDetails.VariantName = dt.VariantName
+		tempGetVoucherOfVariatListDetails.VoucherType = dt.VoucherType
+		tempGetVoucherOfVariatListDetails.VoucherPrice = dt.VoucherPrice
+		tempGetVoucherOfVariatListDetails.DiscountValue = dt.DiscountValue
+		tempGetVoucherOfVariatListDetails.StartDate = dt.StartDate
+		tempGetVoucherOfVariatListDetails.EndDate = dt.EndDate
+		tempGetVoucherOfVariatListDetails.ImgUrl = dt.ImgUrl
+		tempGetVoucherOfVariatListDetails.AllowAccumulative = dt.AllowAccumulative
+		tempGetVoucherOfVariatListDetails.RedeemtionMethod = dt.RedeemtionMethod
+		tempGetVoucherOfVariatListDetails.VariantTnc = dt.VariantTnc
+		tempGetVoucherOfVariatListDetails.VariantDescription = dt.VariantDescription
+		tempGetVoucherOfVariatListDetails.MaxQuantityVoucher = dt.MaxQuantityVoucher
+		for _, vv := range voucher.VoucherData {
+			if vv.VariantID == v {
+				tempVoucher := VoucerResponse{
+					VoucherID: vv.ID,
+					VoucherNo: vv.VoucherCode,
+					State:     vv.State,
+				}
+				tempVoucherResponse = append(tempVoucherResponse, tempVoucher)
+			}
+		}
+		tempGetVoucherOfVariatListDetails.Voucher = tempVoucherResponse
+
+		pv, _ := model.FindVariantPartners(v)
+		for _, vv := range pv {
+			tempPartner := Partner{
+				ID:           vv.Id,
+				PartnerName:  vv.PartnerName,
+				SerialNumber: vv.SerialNumber.String,
+				Tag:          vv.Tag.String,
+			}
+			tempPartners = append(tempPartners, tempPartner)
+		}
+		tempGetVoucherOfVariatListDetails.Partners = tempPartners
+
+		d = append(d, tempGetVoucherOfVariatListDetails)
 	}
 
 	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
@@ -542,12 +574,12 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		res.AddError(its(status), model.ErrCodeVoucherRulesViolated, model.ErrMessageVoucherRulesViolated, "voucher")
 		render.JSON(w, res, status)
 		return
-	} else if !sd.Before(time.Now()){
+	} else if !sd.Before(time.Now()) {
 		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeVoucherNotActive, model.ErrMessageVoucherNotActive, "voucher")
 		render.JSON(w, res, status)
 		return
-	} else if !ed.After(time.Now()){
+	} else if !ed.After(time.Now()) {
 		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeVoucherExpired, model.ErrMessageVoucherExpired, "voucher")
 		render.JSON(w, res, status)
@@ -583,6 +615,8 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 
 //GenerateVoucher Generate bulk voucher request
 func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
+	apiName := "voucher_generate-bulk"
+	valid := false
 	var gvd GenerateVoucherRequest
 	var status int
 	res := NewResponse(nil)
@@ -591,7 +625,23 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 	//Token Authentocation
 	a := AuthToken(w, r)
 	if !a.Valid {
+
 		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+
+	}
+
+	for _, valueRole := range a.User.Role {
+		features := model.ApiFeatures[valueRole.RoleDetail]
+		for _, valueFeature := range features {
+			if apiName == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if valid {
+		render.JSON(w, model.ErrCodeInvalidRole, http.StatusUnauthorized)
 		return
 	}
 
@@ -655,6 +705,9 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
+	apiName := "voucher_get-link"
+	valid := false
+
 	status := http.StatusOK
 	res := NewResponse(nil)
 	varID := r.FormValue("variant")
@@ -662,6 +715,20 @@ func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 	a := AuthToken(w, r)
 	if !a.Valid {
 		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
+
+	for _, valueRole := range a.User.Role {
+		features := model.ApiFeatures[valueRole.RoleDetail]
+		for _, valueFeature := range features {
+			if apiName == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if valid {
+		render.JSON(w, model.ErrCodeInvalidRole, http.StatusUnauthorized)
 		return
 	}
 

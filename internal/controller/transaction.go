@@ -411,21 +411,32 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
+	apiName := "report_transaction"
+	valid := false
 	partnerId := r.FormValue("partner")
 
-	fmt.Println("Get Transaction")
 	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errTitle := model.ErrCodeInvalidToken
+	err := model.ErrInvalidRole
+	errTitle := model.ErrCodeInvalidRole
 	res := NewResponse(nil)
 	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
 
-	fmt.Println("Check Session")
 	a := AuthToken(w, r)
 	if a.Valid {
-		status = http.StatusOK
-		transaction, _ := model.FindAllTransactionByPartner(a.User.AccountID, partnerId)
-		res = NewResponse(transaction)
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
+			}
+		}
+
+		if valid {
+			status = http.StatusOK
+			transaction, _ := model.FindAllTransactionByPartner(a.User.AccountID, partnerId)
+			res = NewResponse(transaction)
+		}
 	} else {
 		res = a.res
 		status = http.StatusUnauthorized
@@ -434,31 +445,43 @@ func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 }
 
 func CashoutTransactionDetails(w http.ResponseWriter, r *http.Request) {
+	apiName := "transaction_get"
+	valid := false
+
 	transactionCode := r.FormValue("id")
 	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errTitle := model.ErrCodeInvalidToken
+	err := model.ErrInvalidRole
+	errTitle := model.ErrCodeInvalidRole
 	res := NewResponse(nil)
 	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
 
-	fmt.Println("Check Session")
-
 	a := AuthToken(w, r)
 	if a.Valid {
-		status = http.StatusOK
-		variant, err := model.FindCashoutTransactionDetails(transactionCode)
-		fmt.Println(err)
-		if err != nil {
-			status = http.StatusInternalServerError
-			errTitle = model.ErrCodeInternalError
-			if err == model.ErrResourceNotFound {
-				status = http.StatusNotFound
-				errTitle = model.ErrCodeResourceNotFound
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
 			}
+		}
 
-			res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
-		} else {
-			res = NewResponse(variant)
+		if valid {
+			status = http.StatusOK
+			variant, err := model.FindCashoutTransactionDetails(transactionCode)
+			fmt.Println(err)
+			if err != nil {
+				status = http.StatusInternalServerError
+				errTitle = model.ErrCodeInternalError
+				if err == model.ErrResourceNotFound {
+					status = http.StatusNotFound
+					errTitle = model.ErrCodeResourceNotFound
+				}
+
+				res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
+			} else {
+				res = NewResponse(variant)
+			}
 		}
 	} else {
 		res = a.res
@@ -495,75 +518,83 @@ func PublicCashoutTransactionDetails(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
-func UpdateTransaction(w http.ResponseWriter, r *http.Request) {
-	id := bone.GetValue(r, "id")
-	var rd TransactionRequest
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
-	}
-
-	a := AuthToken(w, r)
-	if !a.Valid {
-		render.JSON(w, a.res, http.StatusUnauthorized)
-		return
-	}
-
-	d := &model.Transaction{
-		Id:              id,
-		AccountId:       a.User.AccountID,
-		PartnerId:       rd.Partner,
-		TransactionCode: "",
-		DiscountValue:   0,
-		User:            a.User.ID,
-		Vouchers:        rd.Vouchers,
-	}
-	if err := d.Update(); err != nil {
-		log.Panic(err)
-	}
-
-	res := NewResponse(nil)
-	render.JSON(w, res, http.StatusOK)
-}
-
 func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
+	apiName := "transaction_cashout"
+	valid := false
+
 	var rd TransactionCodeBulk
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
 		log.Panic(err)
 	}
 
+	res := NewResponse(nil)
+	status := http.StatusUnauthorized
+	err := model.ErrInvalidRole
+	errTitle := model.ErrCodeInvalidRole
+	res.AddError(its(status), errTitle, err.Error(), "Cashout Transaction")
+
 	a := AuthToken(w, r)
-	if !a.Valid {
-		render.JSON(w, a.res, http.StatusUnauthorized)
-		return
-	}
-	if err := model.UpdateCashoutTransactions(rd.TransactionCode, a.User.ID); err != nil {
-		log.Panic(err)
+	if a.Valid {
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
+			}
+		}
+
+		if valid {
+			status = http.StatusOK
+			if err := model.UpdateCashoutTransactions(rd.TransactionCode, a.User.ID); err != nil {
+				status = http.StatusInternalServerError
+				errTitle = model.ErrCodeInternalError
+				res.AddError(its(status), errTitle, err.Error(), "Cashout Transaction")
+			} else {
+				res = NewResponse("Transaction Success")
+			}
+		}
+	} else {
+		res = a.res
 	}
 
-	res := NewResponse(nil)
-	render.JSON(w, res, http.StatusOK)
+	render.JSON(w, res, status)
 }
 
 func PrintCashoutTransaction(w http.ResponseWriter, r *http.Request) {
+	apiName := "transaction_cashout"
+	valid := false
+
 	transactionCode := r.FormValue("transcation_code")
 	transactionCodeArr := strings.Split(transactionCode, ";")
 
-	fmt.Println("Get Transaction")
 	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errTitle := model.ErrCodeInvalidToken
+	err := model.ErrInvalidRole
+	errTitle := model.ErrCodeInvalidRole
 	res := NewResponse(nil)
 	res.AddError(its(status), errTitle, err.Error(), "Get Transaction")
 
-	fmt.Println("Check Session")
 	a := AuthToken(w, r)
 	if a.Valid {
-		status = http.StatusOK
-		transaction, _ := model.PrintCashout(a.User.AccountID, transactionCodeArr)
-		res = NewResponse(transaction)
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
+			}
+		}
+
+		if valid {
+			status = http.StatusOK
+			transaction, _ := model.PrintCashout(a.User.AccountID, transactionCodeArr)
+			res = NewResponse(transaction)
+		}
+	} else {
+		res = a.res
 	}
+
 	render.JSON(w, res, status)
 }
 
