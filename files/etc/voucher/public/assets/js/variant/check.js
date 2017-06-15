@@ -16,7 +16,7 @@ function getVoucher(id) {
 
     var arrData = [];
     $.ajax({
-        url: '/v1/ui/vouchers?variant_id='+id+'&token='+token,
+        url: '/v1/ui/voucher?variant_id='+id+'&token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);

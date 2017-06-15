@@ -620,6 +620,46 @@ func FindAllVariants(accountId string) ([]SearchVariant, error) {
 	return resv, nil
 }
 
+func FindAvailableVariants() ([]SearchVariant, error) {
+	q := `
+		SELECT
+			va.id
+			, va.account_id
+			, va.variant_name
+			, va.voucher_type
+			, va.voucher_price
+			, va.discount_value
+			, va.max_quantity_voucher
+			, va.img_url
+			, va.start_date
+			, va.end_date
+			, count (vo.id) as voucher
+		FROM
+			variants as va
+		LEFT JOIN
+			vouchers as vo
+		ON
+			va.id = vo.variant_id
+		WHERE
+			va.status = ?
+			AND va.end_date > now()
+			AND va.start_date < now()
+		GROUP BY
+			va.id
+	`
+
+	var resv []SearchVariant
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+		fmt.Println(err.Error())
+		return []SearchVariant{}, err
+	}
+	if len(resv) < 1 {
+		return []SearchVariant{}, ErrResourceNotFound
+	}
+
+	return resv, nil
+}
+
 func FindVariantsCustomParam(param map[string]string) ([]SearchVariant, error) {
 	q := `
 		SELECT
