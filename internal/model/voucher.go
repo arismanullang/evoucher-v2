@@ -79,6 +79,7 @@ func FindAvailableVoucher(param map[string]string) (VoucherResponse, error) {
 			status = ?
 			AND expired_at > now()
 			AND valid_at < now()
+			AND state = 'created'
 	`
 	for key, value := range param {
 		q += ` AND ` + key + ` = '` + value + `'`
