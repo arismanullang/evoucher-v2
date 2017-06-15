@@ -3,9 +3,6 @@ package controller
 import (
 	"fmt"
 	"net/http"
-
-	"github.com/asaskevich/govalidator"
-	"github.com/serenize/snaker"
 )
 
 type errorData struct {
@@ -59,10 +56,10 @@ func (r *Response) AddError(code, title, detail, name string) {
 	r.Errors = &errorData{code, title, detail, name}
 }
 
-func (r *Response) AddGovalidatorErrors(errs govalidator.Errors) {
-	for _, v := range errs {
-		te := v.(govalidator.Error)
-		tn := snaker.CamelToSnake(te.Name)
-		r.AddError("000001", "Validation Error", fmt.Sprintf("%s: %s", tn, te.Err.Error()), tn)
-	}
-}
+//func (r *Response) AddGovalidatorErrors(errs govalidator.Errors) {
+//	for _, v := range errs {
+//		te := v.(govalidator.Error)
+//		tn := snaker.CamelToSnake(te.Name)
+//		r.AddError("000001", "Validation Error", fmt.Sprintf("%s: %s", tn, te.Err.Error()), tn)
+//	}
+//}

@@ -14,6 +14,7 @@ import (
 	"github.com/gilkor/evoucher/internal/model"
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
+	"github.com/go-ozzo/ozzo-validation"
 )
 
 type (
@@ -156,42 +157,7 @@ type (
 	}
 )
 
-//CheckVoucherRedeemtion validation
-func (r *TransactionRequest) CheckVoucherRedeemtion(voucherID string) (bool, error) {
-
-	voucher, err := model.FindVoucher(map[string]string{"id": voucherID})
-
-	if err != nil {
-		return false, err
-	} else if voucher.VoucherData[0].State == model.VoucherStateUsed {
-		return false, errors.New(model.ErrMessageVoucherAlreadyUsed)
-	} else if voucher.VoucherData[0].State == model.VoucherStatePaid {
-		return false, errors.New(model.ErrMessageVoucherAlreadyPaid)
-	} else if !voucher.VoucherData[0].ExpiredAt.After(time.Now()) {
-		return false, errors.New(model.ErrMessageVoucherExpired)
-	}
-
-	return true, nil
-}
-
-//UpdateVoucher redeem
-func (r *RedeemVoucherRequest) UpdateVoucher() (bool, error) {
-	var d model.UpdateDeleteRequest
-
-	d.State = model.VoucherStateUsed
-	d.User = r.User
-	d.State = r.State
-
-	for _, v := range r.Vouchers {
-		d.ID = v
-		fmt.Println("update voucher :", d.ID)
-		if _, err := d.UpdateVc(); err != nil {
-			return false, err
-		}
-	}
-
-	return true, nil
-}
+// ## API ##//
 
 //GetVoucherOfVariant list voucher by holder
 func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
@@ -261,7 +227,7 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
-
+//GetVoucherOfVariantDetails voucher by holder
 func GetVoucherOfVariantDetails(w http.ResponseWriter, r *http.Request) {
 	variant := bone.GetValue(r, "id")
 	res := NewResponse(nil)
@@ -522,6 +488,14 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	var status int
 	res := NewResponse(nil)
 
+	err := gvd.Validate()
+	if err !=nil {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
+		render.JSON(w, res, status)
+		return
+	}
+
 	//Token Authentocation
 	a := AuthToken(w, r)
 	if !a.Valid {
@@ -680,62 +654,6 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// GenerateVoucher Genera te voucher and strore to DB
-func (vr *GenerateVoucherRequest) generateVoucher(v *model.Variant) ([]model.Voucher, error) {
-	ret := make([]model.Voucher, vr.Quantity)
-	var code []string
-	var vcf model.VoucherCodeFormat
-	var tsd, ted time.Time
-
-	vcf, err := model.GetVoucherCodeFormat(v.VoucherFormat)
-	if err != nil {
-		return ret, err
-	}
-	if v.VoucherLifetime > 0 {
-		tsd = time.Now()
-		ted = time.Now().AddDate(0, 0, v.VoucherLifetime)
-	} else {
-		tsd, err = time.Parse(time.RFC3339Nano, v.ValidVoucherStart)
-		if err != nil {
-			log.Panic(err)
-		}
-
-		ted, err = time.Parse(time.RFC3339Nano, v.ValidVoucherEnd)
-		if err != nil {
-			log.Panic(err)
-		}
-	}
-
-	for i := 0; i <= vr.Quantity-1; i++ {
-
-		code = append(code, voucherCode(vcf, v.VoucherFormat))
-
-		// fmt.Println("generate data =>", vr.Holder)
-		rd := model.Voucher{
-			VoucherCode:   code[i],
-			ReferenceNo:   vr.ReferenceNo,
-			VariantID:     vr.VariantID,
-			ValidAt:       tsd,
-			ExpiredAt:     ted,
-			DiscountValue: v.DiscountValue,
-			State:         model.VoucherStateCreated,
-			CreatedBy:     vr.CreatedBy, //note harus nya by user
-			CreatedAt:     time.Now(),
-		}
-		rd.Holder = sql.NullString{String: vr.Holder.Key, Valid: true}
-		rd.HolderPhone = sql.NullString{String: vr.Holder.Phone, Valid: true}
-		rd.HolderEmail = sql.NullString{String: vr.Holder.Email, Valid: true}
-		rd.HolderDescription = sql.NullString{String: vr.Holder.Description, Valid: true}
-
-		if err := rd.InsertVc(); err != nil {
-			log.Panic(err)
-		}
-		// fmt.Println(i)
-		ret[i] = rd
-	}
-	return ret, nil
-}
-
 func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	res := NewResponse(nil)
@@ -826,6 +744,112 @@ func GetCsvSample(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", "attachment;filename=Sample.csv")
 	w.Write(b.Bytes())
 	return
+}
+
+// ## ### ##//
+
+func (gv GenerateVoucherRequest) Validate() error{
+	return validation.ValidateStruct(&gv,
+		validation.Field(&gv.VariantID, validation.Required),
+		validation.Field(&gv.ReferenceNo, validation.Required,validation.Length(1,64)),
+		validation.Field(&gv.Holder.Key, validation.Required),
+		validation.Field(&gv.Holder.Phone, validation.Skip,validation.Length(0,8)),
+		validation.Field(&gv.Holder.Email, validation.Skip),
+		validation.Field(&gv.Holder.Description, validation.Skip,validation.Length(0,64)),
+	)
+}
+
+//CheckVoucherRedeemtion validation
+func (r *TransactionRequest) CheckVoucherRedeemtion(voucherID string) (bool, error) {
+
+	voucher, err := model.FindVoucher(map[string]string{"id": voucherID})
+
+	if err != nil {
+		return false, err
+	} else if voucher.VoucherData[0].State == model.VoucherStateUsed {
+		return false, errors.New(model.ErrMessageVoucherAlreadyUsed)
+	} else if voucher.VoucherData[0].State == model.VoucherStatePaid {
+		return false, errors.New(model.ErrMessageVoucherAlreadyPaid)
+	} else if !voucher.VoucherData[0].ExpiredAt.After(time.Now()) {
+		fmt.Println("expired date : ", voucher.VoucherData[0].ExpiredAt , voucher.VoucherData[0].ID)
+		return false, errors.New(model.ErrMessageVoucherExpired)
+	}
+
+	return true, nil
+}
+
+//UpdateVoucher redeem
+func (r *RedeemVoucherRequest) UpdateVoucher() (bool, error) {
+	var d model.UpdateDeleteRequest
+
+	d.State = model.VoucherStateUsed
+	d.User = r.User
+	d.State = r.State
+
+	for _, v := range r.Vouchers {
+		d.ID = v
+		fmt.Println("update voucher :", d.ID)
+		if _, err := d.UpdateVc(); err != nil {
+			return false, err
+		}
+	}
+
+	return true, nil
+}
+
+func (vr *GenerateVoucherRequest) generateVoucher(v *model.Variant) ([]model.Voucher, error) {
+	ret := make([]model.Voucher, vr.Quantity)
+	var code []string
+	var vcf model.VoucherCodeFormat
+	var tsd, ted time.Time
+
+	vcf, err := model.GetVoucherCodeFormat(v.VoucherFormat)
+	if err != nil {
+		return ret, err
+	}
+	if v.VoucherLifetime > 0 {
+		tsd = time.Now()
+		ted = time.Now().AddDate(0, 0, v.VoucherLifetime)
+	} else {
+		tsd, err = time.Parse(time.RFC3339Nano, v.ValidVoucherStart)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		ted, err = time.Parse(time.RFC3339Nano, v.ValidVoucherEnd)
+		if err != nil {
+			log.Panic(err)
+		}
+	}
+
+	for i := 0; i <= vr.Quantity-1; i++ {
+
+		code = append(code, voucherCode(vcf, v.VoucherFormat))
+
+		// fmt.Println("generate data =>", vr.Holder)
+		rd := model.Voucher{
+			VoucherCode:   code[i],
+			ReferenceNo:   vr.ReferenceNo,
+			VariantID:     vr.VariantID,
+			ValidAt:       tsd,
+			ExpiredAt:     ted,
+			DiscountValue: v.DiscountValue,
+			State:         model.VoucherStateCreated,
+			CreatedBy:     vr.CreatedBy, //note harus nya by user
+			CreatedAt:     time.Now(),
+		}
+		rd.Holder = sql.NullString{String: vr.Holder.Key, Valid: true}
+		rd.HolderPhone = sql.NullString{String: vr.Holder.Phone, Valid: true}
+		rd.HolderEmail = sql.NullString{String: vr.Holder.Email, Valid: true}
+		rd.HolderDescription = sql.NullString{String: vr.Holder.Description, Valid: true}
+
+		if err := rd.InsertVc(); err != nil {
+			log.Panic(err)
+		}
+		// fmt.Println(i)
+		ret[i] = rd
+	}
+	return ret, nil
 }
 
 func getCountVoucher(variantID string) int {

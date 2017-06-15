@@ -11,6 +11,8 @@ import (
 	"github.com/ruizu/render"
 
 	"github.com/gilkor/evoucher/internal/model"
+	"github.com/go-ozzo/ozzo-validation"
+	"github.com/go-ozzo/ozzo-validation/is"
 )
 
 type (
@@ -20,7 +22,7 @@ type (
 		Partner       string   `json:"partner"`
 		Challenge     string   `json:"challenge"`
 		Response      string   `json:"response"`
-		DiscountValue float64  `json:"discount_value"`
+		DiscountValue string   `json:"discount_value"`
 		Vouchers      []string `json:"vouchers"`
 	}
 	DeleteTransactionRequest struct {
@@ -38,23 +40,45 @@ type (
 	}
 )
 
+func (t TransactionRequest) validate() error {
+	return validation.ValidateStruct(&t,
+		validation.Field(&t.VariantID,validation.Required),
+		validation.Field(&t.RedeemMethod,validation.Required,validation.In("qr","token")),
+		validation.Field(&t.Partner,validation.Required),
+		validation.Field(&t.Challenge,is.Digit,),
+		validation.Field(&t.Response,is.Digit,),
+		validation.Field(&t.DiscountValue,validation.Required,is.Float),
+		validation.Field(&t.Vouchers,validation.Required),
+	)
+
+}
+
 func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	var rd TransactionRequest
 	status := http.StatusCreated
 	res := NewResponse(nil)
 
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		status = http.StatusBadRequest
+		res.AddError(its(status), http.StatusText(status), http.StatusText(status)+"("+err.Error()+")", "transaction")
+		render.JSON(w, res, status)
+		return
+	}
+
+	//validate request param
+	err := rd.validate()
+	if err !=nil {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
+		render.JSON(w, res, status)
+		return
+	}
+
 	//Token Authentocation
 	a := AuthToken(w, r)
 	if !a.Valid {
 		render.JSON(w, a.res, status)
-		return
-	}
-
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		status = http.StatusBadRequest
-		res.AddError(its(status), http.StatusText(status), http.StatusText(status)+"("+err.Error()+")", "voucher")
-		render.JSON(w, res, status)
 		return
 	}
 
@@ -93,7 +117,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 			if !OTPAuth(p[0].SerialNumber.String, rd.Challenge, rd.Response) {
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, "voucher")
+				res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, "transaction")
 				render.JSON(w, res, status)
 				return
 			}
@@ -142,27 +166,27 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			switch err.Error() {
 			case model.ErrCodeVoucherNotActive:
 				status = http.StatusBadRequest
-				res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, "voucher")
+				res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, "transaction")
 				render.JSON(w, res, status)
 			case model.ErrResourceNotFound.Error():
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeResourceNotFound, err.Error(), "voucher")
+				res.AddError(its(status), model.ErrCodeResourceNotFound, err.Error(), "transaction")
 				render.JSON(w, res, status)
 			case model.ErrMessageVoucherAlreadyUsed:
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeVoucherDisabled, err.Error(), "voucher")
+				res.AddError(its(status), model.ErrCodeVoucherDisabled, err.Error(), "transaction")
 				render.JSON(w, res, status)
 			case model.ErrMessageVoucherAlreadyPaid:
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeVoucherDisabled, model.ErrMessageVoucherAlreadyUsed, "voucher")
+				res.AddError(its(status), model.ErrCodeVoucherDisabled, model.ErrMessageVoucherAlreadyUsed, "transaction")
 				render.JSON(w, res, status)
 			case model.ErrMessageVoucherExpired:
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeVoucherExpired, err.Error(), "voucher")
+				res.AddError(its(status), model.ErrCodeVoucherExpired, err.Error(), "transaction")
 				render.JSON(w, res, status)
 			default:
 				status = http.StatusInternalServerError
-				res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+				res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
 				render.JSON(w, res, status)
 			}
 			return
@@ -174,7 +198,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		AccountId:       a.User.AccountID,
 		PartnerId:       rd.Partner,
 		TransactionCode: txCode,
-		DiscountValue:   rd.DiscountValue,
+		DiscountValue:   stf(rd.DiscountValue),
 		Token:           rd.Response,
 		User:            a.User.ID,
 		Vouchers:        rd.Vouchers,
@@ -182,7 +206,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(d)
 	if err := model.InsertTransaction(d); err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
 		render.JSON(w, res, status)
 		return
 	}
@@ -197,12 +221,12 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	// update voucher state "Used"
 	if ok, err := rv.UpdateVoucher(); !ok {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
 		render.JSON(w, res, status)
 		return
 	}
@@ -219,7 +243,15 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
 		status = http.StatusBadRequest
-		res.AddError(its(status), http.StatusText(status), http.StatusText(status)+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), http.StatusText(status), http.StatusText(status)+"("+err.Error()+")", "transaction")
+		render.JSON(w, res, status)
+		return
+	}
+
+	err := rd.validate()
+	if err !=nil {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
 		render.JSON(w, res, status)
 		return
 	}
@@ -257,7 +289,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("panrner data : ", p[0].SerialNumber.String)
 			if !OTPAuth(p[0].SerialNumber.String, rd.Challenge, rd.Response) {
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, "voucher")
+				res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, "transaction")
 				render.JSON(w, res, status)
 				return
 			}
@@ -306,27 +338,27 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			switch err.Error() {
 			case model.ErrCodeVoucherNotActive:
 				status = http.StatusBadRequest
-				res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, "voucher")
+				res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, "transaction")
 				render.JSON(w, res, status)
 			case model.ErrResourceNotFound.Error():
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeResourceNotFound, err.Error(), "voucher")
+				res.AddError(its(status), model.ErrCodeResourceNotFound, err.Error(), "transaction")
 				render.JSON(w, res, status)
 			case model.ErrMessageVoucherAlreadyUsed:
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeVoucherDisabled, err.Error(), "voucher")
+				res.AddError(its(status), model.ErrCodeVoucherDisabled, err.Error(), "transaction")
 				render.JSON(w, res, status)
 			case model.ErrMessageVoucherAlreadyPaid:
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeVoucherDisabled, model.ErrMessageVoucherAlreadyUsed, "voucher")
+				res.AddError(its(status), model.ErrCodeVoucherDisabled, model.ErrMessageVoucherAlreadyUsed, "transaction")
 				render.JSON(w, res, status)
 			case model.ErrMessageVoucherExpired:
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeVoucherExpired, err.Error(), "voucher")
+				res.AddError(its(status), model.ErrCodeVoucherExpired, err.Error(), "transaction")
 				render.JSON(w, res, status)
 			default:
 				status = http.StatusInternalServerError
-				res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+				res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
 				render.JSON(w, res, status)
 			}
 			return
@@ -341,7 +373,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		AccountId:       variant.AccountId,
 		PartnerId:       rd.Partner,
 		TransactionCode: txCode,
-		DiscountValue:   rd.DiscountValue,
+		DiscountValue:   stf(rd.DiscountValue),
 		Token:           rd.Response,
 		User:            variant.CreatedBy,
 		Vouchers:        rd.Vouchers,
@@ -349,7 +381,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(d)
 	if err := model.InsertTransaction(d); err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
 		render.JSON(w, res, status)
 		return
 	}
@@ -364,12 +396,12 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	// update voucher state "Used"
 	if ok, err := rv.UpdateVoucher(); !ok {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
 		render.JSON(w, res, status)
 		return
 	}
