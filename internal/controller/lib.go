@@ -134,3 +134,7 @@ func StrDecode(s string) string{
 	return string(data)
 }
 
+func stf(s string) float64 {
+	f,_:= strconv.ParseFloat(s,64)
+	return f
+}
