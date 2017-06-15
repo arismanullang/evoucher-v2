@@ -113,7 +113,7 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 	param["account_id"] = a.User.AccountID
 	delete(param, "token")
 
-	variant, err := model.FindVariantsCustomParam(param)
+	variant, err := model.FindAvailableVariants()
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilVariant, "voucher")
@@ -125,21 +125,23 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
-	d := make(GetVoucherOfVariatList, len(variant))
-	for k, dt := range variant {
-		used := getCountVoucher(dt.Id)
-		if (int(dt.MaxVoucher) - used) > 0 {
-			d[k].VariantID = dt.Id
-			d[k].AccountId = dt.AccountId
-			d[k].VariantName = dt.VariantName
-			d[k].VoucherType = dt.VoucherType
-			d[k].VoucherPrice = dt.VoucherPrice
-			d[k].DiscountValue = dt.DiscountValue
-			d[k].StartDate = dt.StartDate
-			d[k].EndDate = dt.EndDate
-			d[k].ImgUrl = dt.ImgUrl
-			d[k].MaxQty = dt.MaxVoucher
-			d[k].Used = used
+	d := []GetVoucherOfVariatdata{}
+	for _, dt := range variant {
+		if (int(dt.MaxVoucher) - sti(dt.Voucher)) > 0 {
+			tempVoucher := GetVoucherOfVariatdata{}
+			tempVoucher.VariantID = dt.Id
+			tempVoucher.AccountId = dt.AccountId
+			tempVoucher.VariantName = dt.VariantName
+			tempVoucher.VoucherType = dt.VoucherType
+			tempVoucher.VoucherPrice = dt.VoucherPrice
+			tempVoucher.DiscountValue = dt.DiscountValue
+			tempVoucher.StartDate = dt.StartDate
+			tempVoucher.EndDate = dt.EndDate
+			tempVoucher.ImgUrl = dt.ImgUrl
+			tempVoucher.MaxQty = dt.MaxVoucher
+			tempVoucher.Used = sti(dt.Voucher)
+
+			d = append(d, tempVoucher)
 		}
 	}
 
@@ -154,7 +156,7 @@ func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
 	var status int
 
 	a := AuthToken(w, r)
-	if a.Valid {
+	if !a.Valid {
 		render.JSON(w, a.res, http.StatusUnauthorized)
 		return
 	}

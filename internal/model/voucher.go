@@ -51,6 +51,59 @@ type (
 	}
 )
 
+func FindAvailableVoucher(param map[string]string) (VoucherResponse, error) {
+	q := `
+		SELECT
+			id
+			, voucher_code
+			, reference_no
+			, holder
+			, holder_phone
+			, holder_email
+			, holder_description
+			, variant_id
+			, valid_at
+			, expired_at
+			, discount_value
+			, state
+			, created_by
+			, created_at
+			, updated_by
+			, updated_at
+			, deleted_by
+			, deleted_at
+			, status
+		FROM
+			vouchers
+		WHERE
+			status = ?
+			AND expired_at > now()
+			AND valid_at < now()
+			AND state = 'created'
+	`
+	for key, value := range param {
+		q += ` AND ` + key + ` = '` + value + `'`
+	}
+	q += ` ORDER BY state DESC`
+
+	var resd []Voucher
+	if err := db.Select(&resd, db.Rebind(q), StatusCreated); err != nil {
+		return VoucherResponse{Status: ResponseStateNok, Message: err.Error(), VoucherData: resd}, err
+	}
+	if len(resd) < 1 {
+		return VoucherResponse{Status: ResponseStateNok, Message: ErrResourceNotFound.Error(), VoucherData: resd}, ErrResourceNotFound
+	} else if resd[0].State != VoucherStateActived && resd[0].State != VoucherStateCreated {
+		return VoucherResponse{Status: ErrCodeVoucherDisabled, Message: ErrMessageVoucherDisabled, VoucherData: resd}, nil
+	} else if resd[0].ValidAt.After(time.Now()) {
+		return VoucherResponse{Status: ErrCodeVoucherNotActive, Message: ErrMessageVoucherNotActive, VoucherData: resd}, nil
+	} else if resd[0].ExpiredAt.Before(time.Now()) {
+		return VoucherResponse{Status: ErrCodeVoucherExpired, Message: ErrMessageVoucherExpired, VoucherData: resd}, nil
+	}
+
+	res := VoucherResponse{Status: ResponseStateOk, Message: "success", VoucherData: resd}
+	return res, nil
+}
+
 func FindVoucher(param map[string]string) (VoucherResponse, error) {
 	q := `
 		SELECT
