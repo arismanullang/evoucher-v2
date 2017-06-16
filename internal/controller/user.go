@@ -274,13 +274,13 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 		if valid {
 			status = http.StatusOK
-			param := model.User{
+			param := model.RegisterUser{
 				AccountID: a.User.AccountID,
 				Username:  rd.Username,
 				Password:  hash(rd.Password),
 				Email:     rd.Email,
 				Phone:     rd.Phone,
-				Role:      a.User.Role,
+				Role:      rd.RoleId,
 				CreatedBy: a.User.ID,
 			}
 

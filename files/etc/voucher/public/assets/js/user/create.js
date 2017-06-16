@@ -29,7 +29,6 @@ function send() {
       listRole[i] = value;
   }
 
-  listRole.splice(0, 1);
   var error = false;
   $('input[check="true"]').each(function() {
     if($(this).val() == ""){
@@ -61,7 +60,13 @@ function send() {
        data: JSON.stringify(userReq),
        success: function () {
            alert("User created.");
-       }
+       },
+    	error: function (data) {
+		var a = JSON.parse(data.responseText);
+		if(a.errors.detail == "Duplicate Entry."){
+			alert("Username already used.");
+		}
+    	}
    });
 }
 
