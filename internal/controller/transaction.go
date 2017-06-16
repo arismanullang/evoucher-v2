@@ -42,13 +42,13 @@ type (
 
 func (t TransactionRequest) validate() error {
 	return validation.ValidateStruct(&t,
-		validation.Field(&t.VariantID,validation.Required),
-		validation.Field(&t.RedeemMethod,validation.Required,validation.In("qr","token")),
-		validation.Field(&t.Partner,validation.Required),
-		validation.Field(&t.Challenge,is.Digit,),
-		validation.Field(&t.Response,is.Digit,),
-		validation.Field(&t.DiscountValue,validation.Required,is.Float),
-		validation.Field(&t.Vouchers,validation.Required),
+		validation.Field(&t.VariantID, validation.Required),
+		validation.Field(&t.RedeemMethod, validation.Required, validation.In("qr", "token")),
+		validation.Field(&t.Partner, validation.Required),
+		validation.Field(&t.Challenge, is.Digit),
+		validation.Field(&t.Response, is.Digit),
+		validation.Field(&t.DiscountValue, validation.Required, is.Float),
+		validation.Field(&t.Vouchers, validation.Required),
 	)
 
 }
@@ -67,13 +67,13 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//validate request param
-	err := rd.validate()
-	if err !=nil {
-		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
-		render.JSON(w, res, status)
-		return
-	}
+	//err := rd.validate()
+	//if err !=nil {
+	//	status = http.StatusBadRequest
+	//	res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
+	//	render.JSON(w, res, status)
+	//	return
+	//}
 
 	//Token Authentocation
 	a := AuthToken(w, r)
@@ -113,7 +113,6 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			return
 		} else {
 			fmt.Println("panrner data : ", p[0].SerialNumber.String)
-
 
 			if !OTPAuth(p[0].SerialNumber.String, rd.Challenge, rd.Response) {
 				status = http.StatusBadRequest
@@ -249,7 +248,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := rd.validate()
-	if err !=nil {
+	if err != nil {
 		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
 		render.JSON(w, res, status)
