@@ -3,6 +3,16 @@ package model
 import "fmt"
 
 type (
+	RegisterUser struct {
+		ID        string   `db:"id"`
+		AccountID string   `db:"account_id"`
+		Username  string   `db:"username"`
+		Password  string   `db:"password"`
+		Email     string   `db:"email"`
+		Phone     string   `db:"phone"`
+		Role      []string `db:"-"`
+		CreatedBy string   `db:"created_by"`
+	}
 	User struct {
 		ID        string `db:"id"`
 		AccountID string `db:"account_id"`
@@ -25,7 +35,7 @@ type (
 	}
 )
 
-func AddUser(u User) error {
+func AddUser(u RegisterUser) error {
 	fmt.Println("Add")
 	tx, err := db.Beginx()
 	if err != nil {

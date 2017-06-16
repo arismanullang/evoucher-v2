@@ -12,9 +12,9 @@ import (
 	"time"
 
 	"github.com/gilkor/evoucher/internal/model"
+	"github.com/go-ozzo/ozzo-validation"
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
-	"github.com/go-ozzo/ozzo-validation"
 )
 
 type (
@@ -519,11 +519,11 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	var gvd GenerateVoucherRequest
 	var status int
 	res := NewResponse(nil)
-
+	//
 	//err := gvd.Validate()
 	//if err !=nil {
 	//	status = http.StatusBadRequest
-	//	res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
+	//	res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "voucher")
 	//	render.JSON(w, res, status)
 	//	return
 	//}
@@ -815,14 +815,18 @@ func GetCsvSample(w http.ResponseWriter, r *http.Request) {
 
 // ## ### ##//
 
-func (gv GenerateVoucherRequest) Validate() error{
+func (gv GenerateVoucherRequest) Validate() error {
 	return validation.ValidateStruct(&gv,
+		validation.Field(&gv.AccountID, validation.Skip),
 		validation.Field(&gv.VariantID, validation.Required),
-		validation.Field(&gv.ReferenceNo, validation.Required,validation.Length(1,64)),
+		validation.Field(&gv.Quantity, validation.Skip),
+		validation.Field(&gv.CreatedBy, validation.Skip),
+		validation.Field(&gv.Holder, validation.Required),
+		validation.Field(&gv.ReferenceNo, validation.Required, validation.Length(1, 64)),
 		validation.Field(&gv.Holder.Key, validation.Required),
-		validation.Field(&gv.Holder.Phone, validation.Skip,validation.Length(0,8)),
+		validation.Field(&gv.Holder.Phone, validation.Skip),
 		validation.Field(&gv.Holder.Email, validation.Skip),
-		validation.Field(&gv.Holder.Description, validation.Skip,validation.Length(0,64)),
+		validation.Field(&gv.Holder.Description, validation.Skip),
 	)
 }
 
@@ -838,7 +842,7 @@ func (r *TransactionRequest) CheckVoucherRedeemtion(voucherID string) (bool, err
 	} else if voucher.VoucherData[0].State == model.VoucherStatePaid {
 		return false, errors.New(model.ErrMessageVoucherAlreadyPaid)
 	} else if !voucher.VoucherData[0].ExpiredAt.After(time.Now()) {
-		fmt.Println("expired date : ", voucher.VoucherData[0].ExpiredAt , voucher.VoucherData[0].ID)
+		fmt.Println("expired date : ", voucher.VoucherData[0].ExpiredAt, voucher.VoucherData[0].ID)
 		return false, errors.New(model.ErrMessageVoucherExpired)
 	}
 
