@@ -46,6 +46,7 @@ const (
 	ErrCodeInvalidRole              string = "invalid_role"
 	ErrCodeRedeemNotValidDay        string = "voucher_cannot_be_used_today"
 	ErrCodeRedeemNotValidHour       string = "voucher_cannot_be_used_at_current_time"
+	ErrCodeValidationError		string = "validation_Error"
 
 	ErrMessageAllowAccumulativeDisable string = "accumulation is not allowed"
 	ErrMessageResourceNotFound         string = "resource not found"
@@ -73,6 +74,8 @@ const (
 	ErrMessageRedeemNotValidDay        string = "Voucher cannot be used today."
 	ErrMessageRedeemNotValidHour       string = "voucher cannot be used at current time."
 	ErrMessageVariantHasBeenUsed       string = "Variant Has been Used"
+	ErrMessageValidationError	   string = "Validation Error"
+
 
 	StatusCreated string = "created"
 	StatusDeleted string = "deleted"
@@ -121,7 +124,7 @@ const (
 	TIMEOUT_DURATION int    = 120 //in Second
 
 	//OCRA config
-	//OCRA_URL string = "http://ocra-staging.elys.id"
-	OCRA_URL string = "http://localhost:8887"
+	OCRA_URL string = "http://ocra-staging.elys.id"
+	//OCRA_URL string = "http://localhost:8887"
 	OCRA_EVOUCHER_APPS_KEY string = "uuvdqHUa5VHXOGxrMHYvym1OUBETZwT4r2S7YfxmQOSL9dgIhxJAH8vTrNNVwGxi"
 )
