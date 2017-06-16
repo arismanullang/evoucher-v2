@@ -520,13 +520,13 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	var status int
 	res := NewResponse(nil)
 
-	err := gvd.Validate()
-	if err !=nil {
-		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
-		render.JSON(w, res, status)
-		return
-	}
+	//err := gvd.Validate()
+	//if err !=nil {
+	//	status = http.StatusBadRequest
+	//	res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
+	//	render.JSON(w, res, status)
+	//	return
+	//}
 
 	//Token Authentocation
 	a := AuthToken(w, r)

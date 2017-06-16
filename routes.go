@@ -55,7 +55,6 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/ui/variant/delete", controller.DeleteVariant)
 
 	//transaction
-//	r.PostFunc("/v1/transaction/redeem", controller.MobileCreateTransaction)
 	r.GetFunc("/v1/ui/transaction/partner", controller.GetAllTransactionsByPartner)
 	r.GetFunc("/v1/ui/transaction", controller.CashoutTransactionDetails)
 	r.PostFunc("/v1/ui/transaction/cashout/update", controller.CashoutTransactions)
