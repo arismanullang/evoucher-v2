@@ -274,13 +274,22 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 		if valid {
 			status = http.StatusOK
-			param := model.RegisterUser{
+			role := []model.Role{}
+			for _, v := range rd.RoleId {
+				tempRole := model.Role{
+					Id:         v,
+					RoleDetail: "",
+				}
+
+				role = append(role, tempRole)
+			}
+			param := model.User{
 				AccountID: a.User.AccountID,
 				Username:  rd.Username,
 				Password:  hash(rd.Password),
 				Email:     rd.Email,
 				Phone:     rd.Phone,
-				Role:      rd.RoleId,
+				Role:      role,
 				CreatedBy: a.User.ID,
 			}
 
