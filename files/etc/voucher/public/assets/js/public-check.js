@@ -9,7 +9,7 @@ $( document ).ready(function() {
 function addElem(){
 	var id = $('#transaction-code').val();
 	$.ajax({
-		url: '/v1/get/transaction/cashout/'+id+'?token='+token,
+		url: '/v1/public/transaction/'+id,
 		type: 'get',
 		success: function (data) {
 			console.log("Render Data");
@@ -21,10 +21,13 @@ function addElem(){
 			for( i = 0; i < result.vouchers.length; i++){
 				body += result.vouchers[i].VoucherCode + "<br>";
 			}
+
+			$("#label-transaction-code").html(result.transaction_code);
 			$("#voucher-code").html(body);
 			$("#voucher-value").html("Rp. "+toDigit(result.discount_value.toString())+",00");
 			$("#transaction-date").html(date.toDateString() + ", " +toTwoDigit(date.getHours()) + ":" + toTwoDigit(date.getMinutes()));
 			$("#partner-name").html(result.partner_name);
+			$("#member-name").html(result.vouchers[0].Holder);
 			$("#voucher-status").html(result.state);
 
 			$("#error").html('');

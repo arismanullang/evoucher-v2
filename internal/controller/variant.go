@@ -110,7 +110,7 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 	param := getUrlParam(r.URL.String())
 
 	param["variant_type"] = model.VariantTypeOnDemand
-	param["account_id"] = a.User.AccountID
+	param["account_id"] = a.User.Account.Id
 	delete(param, "token")
 
 	variant, err := model.FindAvailableVariants()
@@ -230,7 +230,7 @@ func GetAllVariants(w http.ResponseWriter, r *http.Request) {
 	a := AuthToken(w, r)
 	if a.Valid {
 		status = http.StatusOK
-		variant, err := model.FindAllVariants(a.User.AccountID)
+		variant, err := model.FindAllVariants(a.User.Account.Id)
 		fmt.Println(err)
 		if err != nil {
 			status = http.StatusInternalServerError
@@ -261,7 +261,7 @@ func GetTotalVariant(w http.ResponseWriter, r *http.Request) {
 
 	if a.Valid {
 		status = http.StatusOK
-		variant, err := model.FindAllVariants(a.User.AccountID)
+		variant, err := model.FindAllVariants(a.User.Account.Id)
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
@@ -390,7 +390,7 @@ func GetVariantDetailsByDate(w http.ResponseWriter, r *http.Request) {
 	a := AuthToken(w, r)
 	if a.Valid {
 		status = http.StatusOK
-		variant, err := model.FindVariantsByDate(start, end, a.User.AccountID)
+		variant, err := model.FindVariantsByDate(start, end, a.User.Account.Id)
 		if err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
@@ -462,7 +462,7 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			}
 
 			vr := model.VariantReq{
-				AccountId:          a.User.AccountID,
+				AccountId:          a.User.Account.Id,
 				VariantName:        rd.VariantName,
 				VariantType:        rd.VariantType,
 				VoucherType:        rd.VoucherType,

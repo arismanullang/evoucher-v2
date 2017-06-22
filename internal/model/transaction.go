@@ -33,6 +33,7 @@ type (
 		Id           string `db:"id" json:"id"`
 		VoucherCode  string `db:"voucher_code" json"voucher_code"`
 		VoucherState string `db:"state" json"state"`
+		Holder       string `db:"holder" json"holder"`
 	}
 	DeleteTransactionRequest struct {
 		Id   string `db:"id"`
@@ -331,7 +332,7 @@ func FindCashoutTransactionDetails(transactionCode string) (Cashout, error) {
 
 	q = `
 		SELECT
-			v.id, v.voucher_code, v.state
+			v.id, v.voucher_code, v.state, v.holder_description as holder
 		FROM
 			transaction_details as td
 		JOIN

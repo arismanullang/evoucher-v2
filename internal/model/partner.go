@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -38,6 +39,13 @@ func InsertPartner(p Partner) error {
 	}
 
 	if partner == "" {
+		tags := strings.Split(p.Tag.String, "#")
+		err := CheckAndInsertTag(tags, p.CreatedBy.String)
+		if err != nil {
+			fmt.Println(err.Error())
+			return ErrServerInternal
+		}
+
 		q := `
 			INSERT INTO partners(
 				partner_name
@@ -50,7 +58,7 @@ func InsertPartner(p Partner) error {
 			VALUES (?, ?, ?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q), p.PartnerName, p.SerialNumber, p.Tag, p.Description, p.CreatedBy, StatusCreated)
+		_, err = tx.Exec(tx.Rebind(q), p.PartnerName, p.SerialNumber, p.Tag.String, p.Description, p.CreatedBy.String, StatusCreated)
 		if err != nil {
 			fmt.Println(err.Error())
 			return ErrServerInternal
@@ -286,6 +294,60 @@ func FindAllTags() ([]string, error) {
 	}
 
 	return resv, nil
+}
+
+func CheckAndInsertTag(tags []string, user string) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		SELECT
+			tag_value
+		FROM tags
+		WHERE status = ?
+	`
+
+	var resv []string
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	exist := false
+	for _, v := range tags {
+		for _, vv := range resv {
+			if v == vv {
+				exist = true
+			}
+		}
+
+		if !exist && v != "" {
+			q := `
+			INSERT INTO tags(
+				tag_value
+				, created_by
+				, status
+			)
+			VALUES (?, ?, ?)
+		`
+
+			_, err := tx.Exec(tx.Rebind(q), v, user, StatusCreated)
+			if err != nil {
+				fmt.Println(err.Error())
+				return ErrServerInternal
+			}
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
 }
 
 func InsertTag(tag, user string) error {

@@ -94,7 +94,7 @@ function deletePartner(id) {
             console.log(e.target.value);
             swal({
                     title: 'Are you sure?',
-                    text: 'Do you want insert new partner?',
+                    text: 'Do you want delete partner?',
                     type: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#DD6B55',

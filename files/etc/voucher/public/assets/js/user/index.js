@@ -9,7 +9,7 @@ $('#user-login').submit(function(e) {
 
 function login(){
   $.ajax({
-      url: '/v1/token',
+      url: '/v1/ui/user/login',
       type: 'get',
       dataType: 'json',
       contentType: "application/json",
@@ -18,10 +18,16 @@ function login(){
       },
       success: function (data){
 
-        var token = data.data.token;
+        var token = data.data.token.token;
+        var role = data.data.role;
         console.log(token);
         if (typeof(Storage) !== "undefined") {
           localStorage.setItem("token", token);
+          tempRole = "";
+          for(var i = 0; i < role.length; i++){
+          	tempRole += role[i].id+",";
+	  }
+          localStorage.setItem("r", tempRole);
         }
 
         window.location = "/variant/index?token="+token;

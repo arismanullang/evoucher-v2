@@ -65,10 +65,12 @@ function getTransactionByPartner(partnerId) {
 	    if(username.length == 0){
 		usernameExist = true;
 	    }else{
-	    	for( y = 0; y < username.length; y++){
-			if(username[y] != arrData[i].username.String.toUpperCase()){
-				usernameExist = true;
+	    	for( var y = 0; y < username.length; y++){
+			if(username[y] == arrData[i].username.String.toUpperCase()){
+				usernameExist = false;
+				break;
 			}
+			usernameExist = true;
 		}
 	    }
 

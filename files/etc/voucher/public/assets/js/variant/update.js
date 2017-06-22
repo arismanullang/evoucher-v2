@@ -344,9 +344,6 @@ function getPartner(id) {
         });
       }
      });
-
-
-
 }
 
 function convertToDate(date){

@@ -113,6 +113,7 @@ function toTwoDigit(val){
 
 function send() {
   error = false;
+  var errorMessage = "";
   var i;
   var listDay = "";
   if($("#redeem-validity-type").val() == "all"){
@@ -155,6 +156,11 @@ function send() {
     periodEnd = $("#voucher-valid-to").val();
   }else if($("#voucher-validity-type").val() == "lifetime"){
     lifetime = $("#voucher-lifetime").val();
+
+    if(lifetime == "" || lifetime == "0"){
+    	errorMessage = "Lifetime can't be empty or 0. "
+    	error = true;
+    }
     periodStart = "01/01/0001";
     periodEnd = "01/01/0001";
   }
@@ -199,7 +205,7 @@ function send() {
   });
 
   if(error){
-    alert("Please check your input.");
+    $("#error-message").html(errorMessage+"Please check your input.");
     return
   }
 

@@ -41,7 +41,7 @@ function getVoucher(id) {
             var dateExpired = new Date(arrData[i].expired_at);
 	    dataSet[i] = [
 		  arrData[i].voucher_code
-		  , arrData[i].holder.toUpperCase()
+		  , arrData[i].holder_description.toUpperCase()
 		  , dateValid.toDateString().toUpperCase()
 		  , dateExpired.toDateString().toUpperCase()
 		  , arrData[i].state.toUpperCase()

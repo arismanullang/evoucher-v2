@@ -24,27 +24,12 @@ func setRoutes() http.Handler {
 	r.GetFunc("/report/:page", viewReport)
 	r.GetFunc("/public/:page", viewPublic)
 	r.GetFunc("/", login)
-	//r.PostFunc("/v1/query", controller.CustomQuery)
 
 	//report
 	//r.GetFunc("/v1/api/report", controller.MakeReport)
 	//r.GetFunc("/v1/api/report/variant", controller.MakeReportVariant)
 	//r.GetFunc("/v1/api/report/voucher/variant", controller.MakeCompleteReportVoucherByUser)
 	//r.GetFunc("/v1/api/report/vouchers/variant", controller.MakeReportVoucherByUser)
-
-	//r.PostFunc("/v1/create/variant", controller.CreateVariant)
-	//r.GetFunc("/v1/api/get/allVariant", controller.GetAllVariants)
-	//r.GetFunc("/v1/api/get/variant", controller.GetVariants)
-	//r.GetFunc("/v1/api/get/totalVariant", controller.GetTotalVariant)
-	//r.GetFunc("/v1/api/get/variantByDate", controller.GetVariantDetailsByDate)
-	//r.GetFunc("/v1/api/get/variantByDate", controller.GetVariantDetailsByDate)
-	//r.GetFunc("/v1/api/get/variantDetails/custom", controller.GetVariantDetailsCustom)
-	//r.GetFunc("/v1/api/get/variant/:id", controller.GetVariantDetailsById)
-	//r.GetFunc("/v1/ui/variant", controller.GetVariantDetailsById)
-	//r.PostFunc("/v1/update/variant/:id", controller.UpdateVariant)
-	//r.PostFunc("/v1/update/variant/:id/broadcastUser", controller.UpdateVariantBroadcast)
-	//r.PostFunc("/v1/update/variant/:id/tenant", controller.UpdateVariantTenant)
-	//r.GetFunc("/v1/delete/variant/:id", controller.DeleteVariant)
 
 	//variant
 	r.PostFunc("/v1/ui/variant/create", controller.CreateVariant)
@@ -61,33 +46,18 @@ func setRoutes() http.Handler {
 	r.PostFunc("/v1/ui/transaction/cashout/update", controller.CashoutTransactions)
 	r.GetFunc("/v1/ui/transaction/cashout/print", controller.PrintCashoutTransaction)
 
-	//r.PostFunc("/v1/update/transaction/:id", controller.UpdateTransaction)
-	//r.PostFunc("/v1/delete/transaction/:id", controller.DeleteTransaction)
-	//r.GetFunc("/v1/get/transaction", controller.GetAllTransactions)
-	//r.GetFunc("/v1/get/transaction/partner", controller.GetAllTransactionsByPartner)
-	//r.GetFunc("/v1/get/transaction/cashout/:id", controller.CashoutTransactionDetails)
-	//r.GetFunc("/v1/update/transaction/cashout/:id", controller.CashoutTransaction)
-	//r.PostFunc("/v1/update/transaction/cashout", controller.CashoutTransactions)
-	//r.GetFunc("/v1/print/transaction/cashout", controller.PrintCashoutTransaction)
-
 	//user
+	r.GetFunc("/v1/ui/user/login", controller.Login)
 	r.PostFunc("/v1/ui/user/create", controller.RegisterUser)
 	r.PostFunc("/v1/ui/user/update", controller.UpdateUserRoute)
+	r.PostFunc("/v1/ui/user/block", controller.BlockUser)
+	r.PostFunc("/v1/ui/user/activate", controller.ActivateUser)
 	r.GetFunc("/v1/ui/user/all", controller.GetUser)
 	r.GetFunc("/v1/ui/user", controller.GetUserDetails)
+	r.GetFunc("/v1/ui/user/other", controller.GetOtherUserDetails)
 	r.GetFunc("/v1/ui/user/forgot/mail", controller.SendMailForgotPassword)
 	r.PostFunc("/v1/ui/user/forgot/password", controller.ForgotPassword)
 	r.PostFunc("/v1/ui/user/create/broadcast", controller.InsertBroadcastUser)
-
-	//r.PostFunc("/v1/create/user", controller.RegisterUser)
-	//r.PostFunc("/v1/update/user", controller.UpdateUser)
-	//r.PostFunc("/v1/update/user/password", controller.ChangePassword)
-	//r.GetFunc("/v1/api/get/userByRole", controller.FindUserByRole)
-	//r.GetFunc("/v1/api/get/users", controller.GetUser)
-	//r.GetFunc("/v1/api/get/userDetails", controller.GetUserDetails)
-	//r.GetFunc("/v1/api/mail", controller.ForgotPassword)
-	//r.PostFunc("/v1/password", controller.UpdatePassword)
-	//r.PostFunc("/v1/upload/user", controller.InsertBroadcastUser)
 
 	//partner
 	r.PostFunc("/v1/ui/partner/create", controller.AddPartner)
@@ -103,21 +73,10 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/ui/tag/delete", controller.DeleteTag)
 	r.PostFunc("/v1/ui/tag/delete", controller.DeleteTagBulk)
 
-	//r.PostFunc("/v1/create/partner", controller.AddPartner)
-	//r.GetFunc("/v1/get/partner", controller.GetAllPartners)
-	//r.GetFunc("/v1/get/partner/:id", controller.GetPartnerDetails)
-	//r.PostFunc("/v1/update/partner/:id", controller.UpdatePartner)
-	//r.GetFunc("/v1/delete/partner/:id", controller.DeletePartner)
-
 	//account
 	r.GetFunc("/v1/ui/account/all", controller.GetAllAccount)
 	r.GetFunc("/v1/ui/account", controller.GetAccountDetailByUser)
 	r.GetFunc("/v1/ui/role/all", controller.GetAllAccountRoles)
-
-	//r.GetFunc("/v1/api/get/account", controller.GetAccount)
-	//r.GetFunc("/v1/api/get/accountsDetail", controller.GetAccountDetailByUser)
-	//r.GetFunc("/v1/api/get/accountsByUser", controller.GetAccountsByUser)
-	//r.GetFunc("/v1/api/get/role", controller.GetAllAccountRoles)
 
 	//open API
 	r.GetFunc("/v1/api/get/partner", controller.GetAllPartnersCustomParam)
@@ -137,13 +96,6 @@ func setRoutes() http.Handler {
 	r.PostFunc("/v1/voucher/generate/single", controller.GenerateVoucherOnDemand)
 	r.PostFunc("/v1/transaction/redeem", controller.MobileCreateTransaction)
 
-	//r.GetFunc("/v1/variants", controller.ListVariants)
-	//r.GetFunc("/v1/variants/:id", controller.ListVariantsDetails)
-	//r.GetFunc("/v1/variant/vouchers", controller.GetVoucherOfVariant)
-	//r.GetFunc("/v1/variant/vouchers/:id", controller.GetVoucherOfVariantDetails)
-	//r.PostFunc("/v1/voucher/generate/single", controller.GenerateVoucherOnDemand)
-	//r.PostFunc("/v1/transaction/redeem", controller.MobileCreateTransaction)
-
 	//public API
 	r.GetFunc("/v1/public/challenge", controller.GetChallenge)
 	r.GetFunc("/v1/public/redeem/profile", controller.GetRedeemData)
@@ -157,8 +109,6 @@ func setRoutes() http.Handler {
 	//custom
 	r.GetFunc("/view/", viewHandler)
 	r.GetFunc("/viewNoLayout", viewNoLayoutHandler)
-
-	// r.NotFoundFunc(errorHandler)
 
 	// r.GetFunc("/test", controller.UploadFormTest)
 	r.PostFunc("/file/upload", controller.UploadFile)
@@ -221,11 +171,11 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 	if page == "login" {
 		render.FileInLayout(w, "layout.html", "user/login.html", nil)
 	} else if page == "forgot-password" {
-		render.File(w, "user/forgot.html", nil)
+		render.File(w, "user/forgot/forgot.html", nil)
 	} else if page == "mail-send" {
-		render.File(w, "user/forgot_succ.html", nil)
+		render.File(w, "user/forgot/forgot_succ.html", nil)
 	} else if page == "recover" {
-		render.File(w, "user/recover.html", nil)
+		render.File(w, "user/forgot/recover.html", nil)
 	} else {
 		valid := false
 		a := controller.AuthToken(w, r)
@@ -243,7 +193,7 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 			if page == "register" {
 				render.FileInLayout(w, "layout.html", "user/create.html", nil)
 			} else if page == "search" {
-				render.FileInLayout(w, "layout.html", "user/check.html", nil)
+				render.FileInLayout(w, "layout.html", "user/search.html", nil)
 			} else if page == "update" {
 				render.FileInLayout(w, "layout.html", "user/update.html", nil)
 			} else if page == "change-password" {
@@ -388,7 +338,7 @@ func viewPublic(w http.ResponseWriter, r *http.Request) {
 	} else if page == "redeem" {
 		render.File(w, "public/index.html", nil)
 	} else if page == "check" {
-		render.FileInLayout(w, "layout.html", "public/check.html", nil)
+		render.File(w, "public/check.html", nil)
 	} else if page == "" || page == "index" {
 		render.File(w, "public/index.html", nil)
 	} else {

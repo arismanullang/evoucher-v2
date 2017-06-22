@@ -32,7 +32,7 @@ func GenerateToken(u User) Token {
 	c := redisPool.Get()
 	defer c.Close()
 
-	if _, err := c.Do("SET", "TOKENS"+u.AccountID+u.ID, t.Token); err != nil {
+	if _, err := c.Do("SET", "TOKENS"+u.Account.Id+u.ID, t.Token); err != nil {
 		c.Close()
 		panic(err)
 	}
@@ -83,7 +83,7 @@ func IsExistToken(token string) bool {
 func getToken(u User) (string, error) {
 	c := redisPool.Get()
 	defer c.Close()
-	t, err := redis.String(c.Do("GET", "TOKENS"+u.AccountID+u.ID))
+	t, err := redis.String(c.Do("GET", "TOKENS"+u.Account.Id+u.ID))
 	if err != nil {
 		c.Close()
 		return "", ErrTokenNotFound
@@ -156,7 +156,7 @@ func DeleteSession(u User) {
 		panic(err)
 	}
 
-	if _, err := c.Do("DEL", "TOKENS"+u.AccountID+u.ID); err != nil {
+	if _, err := c.Do("DEL", "TOKENS"+u.Account.Id+u.ID); err != nil {
 		c.Close()
 		panic(err)
 	}

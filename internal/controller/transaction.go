@@ -194,7 +194,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	txCode := randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
 	d := model.Transaction{
-		AccountId:       a.User.AccountID,
+		AccountId:       a.User.Account.Id,
 		PartnerId:       rd.Partner,
 		TransactionCode: txCode,
 		DiscountValue:   stf(rd.DiscountValue),
@@ -211,7 +211,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rv := RedeemVoucherRequest{
-		AccountID: a.User.AccountID,
+		AccountID: a.User.Account.Id,
 		User:      a.User.ID,
 		State:     model.VoucherStateUsed,
 		Vouchers:  rd.Vouchers,
@@ -433,7 +433,7 @@ func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 
 		if valid {
 			status = http.StatusOK
-			transaction, _ := model.FindAllTransactionByPartner(a.User.AccountID, partnerId)
+			transaction, _ := model.FindAllTransactionByPartner(a.User.Account.Id, partnerId)
 			res = NewResponse(transaction)
 		}
 	} else {
@@ -587,7 +587,7 @@ func PrintCashoutTransaction(w http.ResponseWriter, r *http.Request) {
 
 		if valid {
 			status = http.StatusOK
-			transaction, _ := model.PrintCashout(a.User.AccountID, transactionCodeArr)
+			transaction, _ := model.PrintCashout(a.User.Account.Id, transactionCodeArr)
 			res = NewResponse(transaction)
 		}
 	} else {

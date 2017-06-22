@@ -305,7 +305,7 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 					Valid:  true,
 				},
 			}
-			err := model.InsertPartner(param)
+			err = model.InsertPartner(param)
 			if err != nil {
 				status = http.StatusInternalServerError
 				errorTitle = model.ErrCodeInternalError
