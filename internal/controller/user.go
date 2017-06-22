@@ -20,6 +20,7 @@ import (
 
 type (
 	User struct {
+		Id        string   `json:"id"`
 		AccountId string   `json:"account_id"`
 		Username  string   `json:"username"`
 		Password  string   `json:"password"`
@@ -53,6 +54,10 @@ type (
 
 	PasswordReq struct {
 		Password string `json:"password"`
+	}
+
+	ChangeUserStatusReq struct {
+		Id string `json:"id"`
 	}
 )
 
@@ -141,7 +146,36 @@ func FindUserByRole(w http.ResponseWriter, r *http.Request) {
 	a := AuthToken(w, r)
 	if a.Valid {
 		status = http.StatusOK
-		user, err := model.FindUsersByRole(role, a.User.AccountID)
+		user, err := model.FindUsersByRole(role, a.User.Account.Id)
+		if err != nil {
+			status = http.StatusInternalServerError
+			if err != model.ErrResourceNotFound {
+				status = http.StatusNotFound
+			}
+
+			res.AddError(its(status), its(status), err.Error(), "user")
+		} else {
+			res = NewResponse(user)
+		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
+	}
+
+	render.JSON(w, res, status)
+}
+
+func GetOtherUserDetails(w http.ResponseWriter, r *http.Request) {
+	id := r.FormValue("id")
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
+
+	res.AddError(its(status), its(status), err.Error(), "user")
+	a := AuthToken(w, r)
+	if a.Valid {
+		status = http.StatusOK
+		user, err := model.FindUserDetail(id)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
@@ -169,7 +203,7 @@ func GetUserDetails(w http.ResponseWriter, r *http.Request) {
 	a := AuthToken(w, r)
 	if a.Valid {
 		status = http.StatusOK
-		user, err := model.FindUserDetail(a.User.AccountID)
+		user, err := model.FindUserDetail(a.User.ID)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
@@ -198,7 +232,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	a := AuthToken(w, r)
 	if a.Valid {
 		status = http.StatusOK
-		user, err := model.FindAllUsers(a.User.AccountID)
+		user, err := model.FindAllUsers(a.User.Account.Id)
 		if err != nil {
 			status = http.StatusInternalServerError
 			if err != model.ErrResourceNotFound {
@@ -274,26 +308,15 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 		if valid {
 			status = http.StatusOK
-			role := []model.Role{}
-			for _, v := range rd.RoleId {
-				tempRole := model.Role{
-					Id:         v,
-					RoleDetail: "",
-				}
-
-				role = append(role, tempRole)
-			}
-			param := model.User{
-				AccountID: a.User.AccountID,
-				Username:  rd.Username,
-				Password:  hash(rd.Password),
-				Email:     rd.Email,
-				Phone:     rd.Phone,
-				Role:      role,
-				CreatedBy: a.User.ID,
+			param := model.RegisterUser{
+				Username: rd.Username,
+				Password: hash(rd.Password),
+				Email:    rd.Email,
+				Phone:    rd.Phone,
+				Role:     rd.RoleId,
 			}
 
-			if err := model.AddUser(param); err != nil {
+			if err := model.AddUser(param, a.User.ID, a.User.Account.Id); err != nil {
 				status = http.StatusInternalServerError
 				if err == model.ErrResourceNotFound {
 					status = http.StatusNotFound
@@ -325,13 +348,86 @@ func UpdateUserRoute(w http.ResponseWriter, r *http.Request) {
 	} else {
 		if types == "detail" {
 			UpdateUser(w, r)
+		} else if types == "other" {
+			UpdateOtherUser(w, r)
 		} else if types == "password" {
 			ChangePassword(w, r)
+		} else if types == "reset" {
+			ResetOtherPassword(w, r)
 		} else {
 			res.AddError(its(status), errTitle, err.Error(), "Update type not allowed")
 			render.JSON(w, res, status)
 		}
 	}
+}
+
+func UpdateOtherUser(w http.ResponseWriter, r *http.Request) {
+	apiName := "user_update"
+	valid := false
+
+	status := http.StatusUnauthorized
+	err := model.ErrInvalidRole
+	errTitle := model.ErrCodeInvalidRole
+	res := NewResponse(nil)
+
+	res.AddError(its(status), errTitle, err.Error(), "user")
+
+	var rd User
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	a := AuthToken(w, r)
+	if a.Valid {
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
+			}
+		}
+
+		if valid {
+			fmt.Println("Valid")
+			status = http.StatusOK
+			roles := []model.Role{}
+			for _, v := range rd.RoleId {
+				tempRole := model.Role{
+					Id:         v,
+					RoleDetail: "",
+				}
+				roles = append(roles, tempRole)
+			}
+
+			param := model.User{
+				ID:        rd.Id,
+				Username:  rd.Username,
+				Email:     rd.Email,
+				Phone:     rd.Phone,
+				Role:      roles,
+				CreatedBy: a.User.ID,
+			}
+
+			if err := model.UpdateOtherUser(param); err != nil {
+				fmt.Print(err.Error())
+				status = http.StatusInternalServerError
+				if err == model.ErrResourceNotFound {
+					status = http.StatusNotFound
+				}
+
+				res.AddError(its(status), its(status), err.Error(), "user")
+			} else {
+				res = NewResponse(a.User.ID)
+			}
+		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
+	}
+
+	render.JSON(w, res, status)
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
@@ -351,6 +447,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	if a.Valid {
 		fmt.Println("Valid")
 		status = http.StatusOK
+
 		param := model.User{
 			Username:  rd.Username,
 			Email:     rd.Email,
@@ -368,6 +465,106 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 			res.AddError(its(status), its(status), err.Error(), "user")
 		} else {
 			res = NewResponse(a.User.ID)
+		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
+	}
+
+	render.JSON(w, res, status)
+}
+
+func BlockUser(w http.ResponseWriter, r *http.Request) {
+	apiName := "user_block"
+	valid := false
+
+	status := http.StatusUnauthorized
+	err := model.ErrInvalidRole
+	errTitle := model.ErrCodeInvalidRole
+	res := NewResponse(nil)
+
+	res.AddError(its(status), errTitle, err.Error(), "user")
+
+	var rd ChangeUserStatusReq
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	a := AuthToken(w, r)
+	if a.Valid {
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
+			}
+		}
+
+		if valid {
+			status = http.StatusOK
+			if err := model.BlockUser(rd.Id); err != nil {
+				fmt.Print(err.Error())
+				status = http.StatusInternalServerError
+				if err == model.ErrResourceNotFound {
+					status = http.StatusNotFound
+				}
+
+				res.AddError(its(status), its(status), err.Error(), "user")
+			} else {
+				res = NewResponse("Success")
+			}
+		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
+	}
+
+	render.JSON(w, res, status)
+}
+
+func ActivateUser(w http.ResponseWriter, r *http.Request) {
+	apiName := "user_release"
+	valid := false
+
+	status := http.StatusUnauthorized
+	err := model.ErrInvalidRole
+	errTitle := model.ErrCodeInvalidRole
+	res := NewResponse(nil)
+
+	res.AddError(its(status), errTitle, err.Error(), "user")
+
+	var rd ChangeUserStatusReq
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	a := AuthToken(w, r)
+	if a.Valid {
+		for _, valueRole := range a.User.Role {
+			features := model.ApiFeatures[valueRole.RoleDetail]
+			for _, valueFeature := range features {
+				if apiName == valueFeature {
+					valid = true
+				}
+			}
+		}
+
+		if valid {
+			status = http.StatusOK
+			if err := model.ReleaseUser(rd.Id); err != nil {
+				fmt.Print(err.Error())
+				status = http.StatusInternalServerError
+				if err == model.ErrResourceNotFound {
+					status = http.StatusNotFound
+				}
+
+				res.AddError(its(status), its(status), err.Error(), "user")
+			} else {
+				res = NewResponse("Success")
+			}
 		}
 	} else {
 		res = a.res
@@ -434,6 +631,42 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 			res.AddError(its(status), its(status), err.Error(), "user")
 		} else {
 			res = NewResponse(a.User.ID)
+		}
+	} else {
+		res = a.res
+		status = http.StatusUnauthorized
+	}
+
+	render.JSON(w, res, status)
+}
+
+func ResetOtherPassword(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusUnauthorized
+	err := model.ErrTokenNotFound
+	res := NewResponse(nil)
+
+	res.AddError(its(status), its(status), err.Error(), "user")
+
+	var rd ChangeUserStatusReq
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	a := AuthToken(w, r)
+	if a.Valid {
+		status = http.StatusOK
+		newPass := strings.ToLower(randStr(8, "Alphanumeric"))
+		if err := model.ResetPassword(rd.Id, hash(newPass)); err != nil {
+			fmt.Print(err.Error())
+			status = http.StatusInternalServerError
+			if err == model.ErrResourceNotFound {
+				status = http.StatusNotFound
+			}
+
+			res.AddError(its(status), its(status), err.Error(), "user")
+		} else {
+			res = NewResponse(newPass)
 		}
 	} else {
 		res = a.res

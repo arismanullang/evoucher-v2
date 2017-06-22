@@ -674,7 +674,7 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gvd.AccountID = a.User.AccountID
+	gvd.AccountID = a.User.Account.Id
 	gvd.VariantID = vrID
 	gvd.Quantity = 1
 	gvd.CreatedBy = a.User.ID

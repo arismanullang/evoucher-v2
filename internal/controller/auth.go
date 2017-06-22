@@ -15,6 +15,10 @@ type (
 		res   *Response
 		Valid bool
 	}
+	LoginResponse struct {
+		Token model.Token  `json:"token"`
+		Role  []model.Role `json:"role"`
+	}
 )
 
 func basicAuth(r *http.Request) (model.User, bool) {
@@ -43,11 +47,11 @@ func basicAuth(r *http.Request) (model.User, bool) {
 		return model.User{}, false
 	}
 
-	ac, err := model.GetAccountsByUser(login)
+	ac, err := model.GetAccountDetailByUser(login)
 	if err != nil {
 		return model.User{}, false
 	}
-	user.AccountID = ac[0]
+	user.Account = ac[0]
 
 	return user, true
 }
@@ -94,6 +98,27 @@ func GetToken(w http.ResponseWriter, r *http.Request) {
 
 	d := model.GenerateToken(u)
 	res = NewResponse(d)
+	render.JSON(w, res, status)
+}
+
+func Login(w http.ResponseWriter, r *http.Request) {
+	res := NewResponse(nil)
+	status := http.StatusOK
+
+	u, ok := basicAuth(r)
+	if !ok {
+		status = http.StatusUnauthorized
+		res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidUser, model.ErrMessageInvalidUser, "token")
+		render.JSON(w, res, status)
+		return
+	}
+
+	d := model.GenerateToken(u)
+	login := LoginResponse{
+		Token: d,
+		Role:  u.Role,
+	}
+	res = NewResponse(login)
 	render.JSON(w, res, status)
 }
 

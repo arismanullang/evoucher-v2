@@ -62,18 +62,18 @@
     <!-- sidebar-->
     <aside class="sidebar-container">
         <div class="sidebar-header">
-            <div class="pull-right pt-lg text-muted hidden"><em class="ion-close-round"></em></div><a href="/variant/" class="sidebar-header-logo"><img src="/assets/img/elys_icon.png" data-svg-replace="/assets/img/elys_icon.png" alt="Logo"><span class="sidebar-header-logo-text">E-Voucher</span></a>
+            <div class="pull-right pt-lg text-muted hidden"><em class="ion-close-round"></em></div><a href="/variant/index" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="sidebar-header-logo"><img src="/assets/img/elys_icon.png" data-svg-replace="/assets/img/elys_icon.png" alt="Logo"><span class="sidebar-header-logo-text">E-Voucher</span></a>
         </div>
         <div class="sidebar-content">
             <nav class="sidebar-nav">
-                <ul>
-                    <li><a href="/variant/search" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="/assets/img/icons/connection-bars.svg" alt="MenuItem" class="hidden"></span><span>Program</span></a></li>
-                    <li><a href="/partner/search" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="/assets/img/icons/aperture.svg" alt="MenuItem" class="hidden"></span><span>Partner</span></a></li>
-                    <li><a href="/report/transaction" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Report</span></a></li>
-                    <li><a href="/voucher/cashout" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Cashout</span></a></li>
-                    <li><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/planet.svg" alt="MenuItem" class="hidden"></span><span>Setting</span></a>
+                <ul id="sidenav">
+                    <li r="X4OhAIJz" style="display:none"><a href="/variant/search" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="/assets/img/icons/connection-bars.svg" alt="MenuItem" class="hidden"></span><span>Program</span></a></li>
+                    <li r="X4OhAIJz" style="display:none"><a href="/partner/search" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="/assets/img/icons/aperture.svg" alt="MenuItem" class="hidden"></span><span>Partner</span></a></li>
+                    <li r="X4OhAIJz" style="display:none"><a href="/report/transaction" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Report</span></a></li>
+                    <li r="X4OhAIJz_xgeNk_P" style="display:none"><a href="/voucher/cashout" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Cashout</span></a></li>
+                    <li r="X4OhAIJz" style="display:none"><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/planet.svg" alt="MenuItem" class="hidden"></span><span>Setting</span></a>
                         <ul class="sidebar-subnav">
-                          <li><a href="/user/register" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="pull-right nav-label"></span><span>User</span></a></li>
+                          <li><a href="/user/search" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="pull-right nav-label"></span><span>User</span></a></li>
                           <li><a href="/tag/search" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="pull-right nav-label"></span><span>Tag</span></a></li>
                         </ul>
                     </li>
