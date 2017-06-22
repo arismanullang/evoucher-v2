@@ -520,13 +520,13 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	var status int
 	res := NewResponse(nil)
 
-	err := gvd.Validate()
-	if err !=nil {
-		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
-		render.JSON(w, res, status)
-		return
-	}
+	//err := gvd.Validate()
+	//if err !=nil {
+	//	status = http.StatusBadRequest
+	//	res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
+	//	render.JSON(w, res, status)
+	//	return
+	//}
 
 	//Token Authentocation
 	a := AuthToken(w, r)
@@ -818,11 +818,15 @@ func GetCsvSample(w http.ResponseWriter, r *http.Request) {
 func (gv GenerateVoucherRequest) Validate() error{
 	return validation.ValidateStruct(&gv,
 		validation.Field(&gv.VariantID, validation.Required),
+		validation.Field(&gv.AccountID, validation.Skip),
+		validation.Field(&gv.Quantity, validation.Skip),
+		validation.Field(&gv.Holder, validation.Skip),
 		validation.Field(&gv.ReferenceNo, validation.Required,validation.Length(1,64)),
 		validation.Field(&gv.Holder.Key, validation.Required),
 		validation.Field(&gv.Holder.Phone, validation.Skip,validation.Length(0,8)),
 		validation.Field(&gv.Holder.Email, validation.Skip),
 		validation.Field(&gv.Holder.Description, validation.Skip,validation.Length(0,64)),
+		validation.Field(&gv.CreatedBy, validation.Skip),
 	)
 }
 
