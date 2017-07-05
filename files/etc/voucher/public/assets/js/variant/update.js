@@ -175,7 +175,7 @@ function send() {
       }
     });
 
-    var str = $("#list-rule").summernote('code');
+    var str = $("#variant-tnc").summernote('code');
     var tnc = str.replace(/^\s+|\s+$|(\r?\n|\r)/g, '');
 
     if(error){
