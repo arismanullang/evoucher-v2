@@ -173,15 +173,16 @@ function send() {
     length: 5
   }
 
-  var tncTd = $('tr').find('td.tnc');
-  var tnc = "<p>";
-  for (i = 0; i < tncTd.length; i++) {
-    if(tncTd[i].innerHTML != ""){
-      var decoded = $("<div/>").html((i+1) + ". " + tncTd[i].innerHTML).text();
-      tnc += decoded + " <br>";
-    }
-  }
-  tnc += "</p>";
+  // var tncTd = $('tr').find('td.tnc');
+  // var tnc = "<p>";
+  // for (i = 0; i < tncTd.length; i++) {
+  //   if(tncTd[i].innerHTML != ""){
+  //     var decoded = $("<div/>").html((i+1) + ". " + tncTd[i].innerHTML).text();
+  //     tnc += decoded + " <br>";
+  //   }
+  // }
+  var str = $("#list-rule").summernote('code');
+  var tnc = str.replace(/^\s+|\s+$|(\r?\n|\r)/g, '');
 
   var maxUsage = 1;
 
@@ -370,10 +371,10 @@ function getPartner() {
   });
 }
 
-function removeElem(elem){
-  console.log("remove");
-  $(elem).parent().closest('tr').remove();
-}
+// function removeElem(elem){
+//   console.log("remove");
+//   $(elem).parent().closest('tr').remove();
+// }
 
 (function() {
     'use strict';
@@ -405,6 +406,13 @@ function removeElem(elem){
         $('main').scroll(function() {
             cpInput.clockpicker('hide');
         });
+
+    	$('.summernote').each(function(){
+	    $(this).summernote({
+		    height: 380,
+		    placeholder: 'Any Message...'
+	    });
+	});
     }
 
 })();

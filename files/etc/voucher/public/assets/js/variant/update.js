@@ -5,6 +5,8 @@ $( window ).ready(function() {
   $("#image-url").change(function() {
 	readURL(this);
   });
+
+
   // getPartner();
 });
 
@@ -39,7 +41,7 @@ function searchById(id) {
           $("#variant-valid-from").val(convertToDate(variant.start_date));
           $("#variant-valid-to").val(convertToDate(variant.end_date));
           $("#voucher-value").val(variant.discount_value);
-          $("#variant-tnc").val(variant.variant_tnc);
+          $("#variant-tnc").html(variant.variant_tnc);
           $("#variant-description").val(variant.variant_description);
           $("#start-hour").val(variant.start_hour);
           $("#end-hour").val(variant.end_hour);
@@ -107,6 +109,13 @@ function searchById(id) {
 	    $("#voucher_price").removeAttr("disabled","");
 	  }
 
+
+	  $('.summernote').each(function(){
+		$(this).summernote({
+			height: 380,
+			placeholder: 'Any Message...'
+		});
+	  });
         }
     });
 }
@@ -166,6 +175,9 @@ function send() {
       }
     });
 
+    var str = $("#variant-tnc").summernote('code');
+    var tnc = str.replace(/^\s+|\s+$|(\r?\n|\r)/g, '');
+
     if(error){
       alert("Please check your input.");
       return
@@ -203,7 +215,7 @@ function send() {
 		 end_hour: $("#end-hour").val(),
 		 discount_value: parseInt($("#voucher-value").val()),
 		 image_url: img,
-		 variant_tnc: $("#variant-tnc").val(),
+		 variant_tnc: tnc,
 		 variant_description: $("#variant-description").val(),
 		 validity_days: listDay,
 		 valid_voucher_start: periodStart,
@@ -257,7 +269,7 @@ function send() {
 		    end_hour: $("#end-hour").val(),
 		    discount_value: parseInt($("#voucher-value").val()),
 		    image_url: img,
-		    variant_tnc: $("#variant-tnc").val(),
+		    variant_tnc: tnc,
 		    variant_description: $("#variant-description").val(),
 		    validity_days: listDay,
 		    valid_voucher_start: periodStart,
@@ -394,6 +406,8 @@ function convertToUpperCase(upperCase){
         $('main').scroll(function() {
             cpInput.clockpicker('hide');
         });
+
+
     }
 
 })();
