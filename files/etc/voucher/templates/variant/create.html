@@ -349,25 +349,12 @@
               </div>
               <div id="collapseFour" role="tabpanel" aria-labelledby="headingFour" class="panel-collapse collapse">
                 <div class="panel-body">
-                  <div class="row ">
-                    <div class="col-sm-12">
-                      <div class="input-group">
-                        <input class="form-control" id="input-term-condition" type="text">
-                        <span class="input-group-btn">
-                          <button type="button" onclick="addRule()" class="btn btn-default redeem-rules-button">Add</button>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
                   <div class="row">
                     <div class="col-sm-12">
-                      <table class="table table-hover table-fixed va-middle">
-                        <tbody id="list-rule">
-
-                        </tbody>
-                      </table>
+                      <div id="list-rule" class="summernote"></div>
                     </div>
                   </div>
+
                 </div>
               </div>
             </div>
@@ -385,6 +372,7 @@
 <script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
 <script type="text/javascript" src="/assets/vendor/clockpicker/dist/bootstrap-clockpicker.js"></script>
 <script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="/assets/vendor/summernote/dist/summernote.js"></script>
 <script type="text/javascript" src="/assets/js/variant/create.js"></script>
 
 {{ end }}
@@ -392,5 +380,6 @@
 {{ define "stylesheets" }}
 <link rel="stylesheet" href="/assets/vendor/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css">
 <link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
+<link rel="stylesheet" href="/assets/vendor/summernote/dist/summernote.css">
 <link rel="stylesheet" href="/assets/vendor/clockpicker/dist/bootstrap-clockpicker.css">
 {{ end }}
