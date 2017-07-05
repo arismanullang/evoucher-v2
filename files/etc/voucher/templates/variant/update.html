@@ -103,15 +103,14 @@
                       </div>
                     </div>
                   </div>
+                  <div class="row ">
+                    <div class="col-sm-12">
+                      <label>Terms & Conditions</label>
+                    </div>
+                  </div>
                   <div class="row">
                     <div class="col-sm-12">
-                      <div class="mda-form-group">
-                        <div class="mda-form-control">
-                          <textarea id="variant-tnc" name="variant-tnc" rows="6" aria-multiline="true" tabindex="0" class="form-control"></textarea>
-                          <div class="mda-form-control-line"></div>
-                          <label>Term And Condition</label><span class="mda-form-msg right">Any message here</span>
-                        </div>
-                      </div>
+                      <div id="variant-tnc" class="summernote"></div>
                     </div>
                   </div>
                 </div>
@@ -201,7 +200,7 @@
                         <div class="mda-form-control">
                           <input id="voucher-price" name="voucher-price" check="true" tabindex="0" aria-invalid="false" class="form-control">
                           <div class="mda-form-control-line"></div>
-                          <label>Conversion Rate from Currency or Poin to Voucher</label>
+                          <label>Conversion Rate from Currency or Point to Voucher</label>
                         </div>
                       </div>
                     </div>
@@ -326,11 +325,13 @@
 <script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
 <script type="text/javascript" src="/assets/vendor/clockpicker/dist/bootstrap-clockpicker.js"></script>
 <script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="/assets/vendor/summernote/dist/summernote.js"></script>
 <script type="text/javascript" src="/assets/js/variant/update.js"></script>
 {{ end }}
 
 {{ define "stylesheets" }}
 <link rel="stylesheet" href="/assets/vendor/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css">
 <link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
+<link rel="stylesheet" href="/assets/vendor/summernote/dist/summernote.css">
 <link rel="stylesheet" href="/assets/vendor/clockpicker/dist/bootstrap-clockpicker.css">
 {{ end }}
