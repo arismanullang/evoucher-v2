@@ -1,7 +1,6 @@
 $( document ).ready(function() {
   getUserDetails();
-  getAccount();
-  getUser();
+  //getUser();
   getVariant();
 
   $('#profileForm').submit(function(e) {
@@ -21,21 +20,22 @@ function getUserDetails() {
           console.log(data.data);
           var i;
           var result = data.data;
-          var limit = result.RoleId.length;
+          var limit = result.role.length;
           var desc = "Act as ";
           for ( i = 0; i < limit; i++){
-            desc += result.RoleId[i];
+            desc += result.role[i].role_detail;
             if( i != limit-1){
               desc += ", ";
             }
           }
           desc += ".";
-	  var date = new Date(result.CreatedAt);
+	  var date = new Date(result.created_at);
 
+	  $("#user-accounts").html(result.account.account_name);
           $("#user-desc").html(desc);
-          $("#user-name").html(result.Username);
-          $("#user-email").html(result.Email);
-          $("#user-phone").html(result.Phone);
+          $("#user-name").html(result.username);
+          $("#user-email").html(result.email);
+          $("#user-phone").html(result.phone);
           $("#user-date").html(date.toDateString() + ", " + toTwoDigit(date.getHours()) + ":" + toTwoDigit(date.getMinutes()));
         },
         error: function (data) {
@@ -68,33 +68,6 @@ function getUser() {
         },
         error: function (data) {
           alert("Teammates Not Found.");
-        }
-    });
-}
-
-function getAccount() {
-    console.log("Get Account Data");
-
-    $.ajax({
-        url: '/v1/ui/account?token='+token,
-        type: 'get',
-        success: function (data) {
-          console.log(data.data);
-          var result = data.data;
-
-          var limit = result.length;
-          var desc = "";
-          for ( i = 0; i < limit; i++){
-            desc += result[i].AccountName;
-            if( i != limit-1){
-              desc += ", ";
-            }
-          }
-
-          $("#user-accounts").html(desc.toUpperCase());
-        },
-        error: function (data) {
-          alert("Account Not Found.");
         }
     });
 }

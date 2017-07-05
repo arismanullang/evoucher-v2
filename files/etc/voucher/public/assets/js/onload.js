@@ -19,7 +19,26 @@ $( window ).ready(function() {
   });
 
   getSession();
+  setSideNavBar();
 });
+
+function setSideNavBar() {
+	var role = localStorage.getItem("r").split(",");
+	var li = $("#sidenav").children("li");
+	var bool = false;
+	for(var i = 0; i < li.length; i++){
+		for(var y = 0; y < role.length-1; y ++) {
+			bool = false;
+			if (li[i].getAttribute("r").includes(role[y])) {
+				bool = true;
+			}
+		}
+
+		if(bool){
+			li[i].setAttribute("style", "display:block");
+		}
+	}
+}
 
 function getSession() {
     $.ajax({

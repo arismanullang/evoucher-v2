@@ -62,7 +62,9 @@ function send() {
     $(runSweetAlert);
     //onclick='deleteVariant(\""+arrData[i].Id+"\")'
     function runSweetAlert() {
-    	$('.select2').select2();
+    	$('.select2').select2({
+		tags:true
+	});
         $(document).on('click', '.swal-demo4', function(e) {
             e.preventDefault();
             var html;

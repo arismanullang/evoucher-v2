@@ -125,6 +125,42 @@ func GetAccountDetailByUser(userID string) ([]Account, error) {
 	return resd, nil
 }
 
+func GetAccountDetailByAccountId(accountId string) ([]Account, error) {
+	vc, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err)
+		return []Account{}, ErrServerInternal
+	}
+	defer vc.Rollback()
+
+	q := `
+		SELECT
+			a.id
+			, a.account_name
+			, a.billing
+			, a.alias
+			, a.created_at
+		FROM
+			accounts as a
+		JOIN
+			user_accounts as ua
+		ON
+			a.id = ua.account_id
+		WHERE
+			a.id = ?
+			AND a.status = ?
+	`
+	var resd []Account
+	if err := db.Select(&resd, db.Rebind(q), accountId, StatusCreated); err != nil {
+		fmt.Println(err)
+		return []Account{}, ErrServerInternal
+	}
+	if len(resd) == 0 {
+		return []Account{}, ErrResourceNotFound
+	}
+	return resd, nil
+}
+
 func GetAccountsByUser(userID string) ([]string, error) {
 	vc, err := db.Beginx()
 	if err != nil {

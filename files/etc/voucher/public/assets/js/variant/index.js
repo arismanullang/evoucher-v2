@@ -5,7 +5,7 @@ $(document).ready(function() {
 function getVariant() {
     console.log("Get Variant Data");
     $.ajax({
-        url: '/v1/api/get/allVariant?token='+token,
+        url: '/v1/ui/variant/all?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -27,12 +27,21 @@ function getVariant() {
               var one_day = 1000*60*60*24;
               var diffNow = Math.round((dateEnd_ms-dateNow_ms)/one_day);
 
-              var html = "<h5 class='mb-sm'><a href='/variant/check?id='"+result[i].Id+">"+result[i].variant_name+"</a></h5>"
+              var html = "<h5 class='mb-sm'><a href='/variant/check?id='"+result[i].Id+"'&token='"+token+"'>"+result[i].variant_name+"</a></h5>"
               + "<p class='text-muted'>End in "+diffNow+" days</p>";
-              if(parseInt(result[i].voucher) == 0){
+              if(result[i].vouchers == null){
                 html += "<p>No voucher generated</p>";
               } else {
-                html += "<p>"+parseInt(result[i].voucher)+" vouchers have generated. "+(result[i].max_quantity_voucher - parseInt(result[i].voucher))+" vouchers left.</p>";
+              	var voucher = 0;
+              	for(var y = 0; y < result[i].vouchers.length; y++){
+			voucher += parseInt(result[i].vouchers[y].voucher);
+			totalGeneratedVoucher += parseInt(result[i].vouchers[y].voucher);
+
+			if(result[i].state.String != "created"){
+				totalUsedVoucher += parseInt(result[i].vouchers[y].voucher);
+			}
+		}
+                html += "<p>"+voucher+" vouchers have distributed. "+(result[i].max_quantity_voucher - voucher)+" vouchers left.</p>";
               }
               var li = $("<li class='list-group-item'></li>").html(html);
               if(dateEnd_ms > dateNow_ms){
@@ -45,11 +54,7 @@ function getVariant() {
               programList.push(result[i].id);
               totalVoucher += parseInt(result[i].max_quantity_voucher);
             }
-            if(result[i].state.String == "used"){
-              totalUsedVoucher += parseInt(result[i].voucher);
-            }
 
-            totalGeneratedVoucher += parseInt(result[i].voucher);
           }
 
           $("#total-variant").html(result.length);
@@ -64,7 +69,7 @@ function getVariant() {
 }
 
 function addVariant(){
-  window.location = "/variant/create";
+  window.location = "/variant/create?token="+token;
 }
 
 (function() {
