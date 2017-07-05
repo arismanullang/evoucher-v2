@@ -1,89 +1,124 @@
-{{ template "layout" . }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Bootstrap Admin Template">
+  <meta name="keywords" content="app, responsive, jquery, bootstrap, dashboard, admin">
+  <title>Elys eVoucher - Check Transaction</title>
 
-{{ define "title" }}Check Voucher{{ end }}
-{{ define "header-title" }}Check Voucher{{ end }}
+  <link rel="stylesheet" href="/assets/vendor/animate.css/animate.css">
+  <link rel="stylesheet" href="/assets/vendor/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/assets/vendor/ionicons/css/ionicons.css">
+  <link rel="stylesheet" href="/assets/vendor/material-colors/dist/colors.css">
+  <link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
+  <link rel="stylesheet" href="/assets/vendor/sweetalert/dist/sweetalert.css">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/app.css">
 
-{{ define "content" }}
-<!-- Page content-->
-<section>
-  <div class="container-fluid">
-    <form id="transaction" name="transaction" novalidate="" class="card b0 form-validate">
-      <div class="col-sm-4">
-        <div class="card">
-          <div class="card-heading bg-amber-500">
-          </div>
-          <div class="card-body">
-            <div class="row">
-              <div class="col-sm-12">
-                <div class="mda-form-group">
-                  <div class="mda-form-control">
-                    <input id="transaction-code" name="transaction-code" check="true" tabindex="0" aria-invalid="false" class="form-control">
-                    <div class="mda-form-control-line"></div>
-                    <label>Transaction Code</label>
+</head>
+<body>
+<div class="layout-container">
+  <div class="page-container bg-white-grey">
+    <div class="container-full">
+      <div class="container">
+        <img src="/assets/img/elys.png" class="mv-lg block-center img-responsive thumb">
+        <section>
+          <div class="container-fluid">
+            <form id="transaction" name="transaction" novalidate="" class="card b0 form-validate">
+              <div class="col-sm-4">
+                <div class="card">
+                  <div class="card-heading bg-amber-500">
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <div class="mda-form-group">
+                          <div class="mda-form-control">
+                            <input id="transaction-code" name="transaction-code" check="true" tabindex="0" aria-invalid="false" class="form-control">
+                            <div class="mda-form-control-line"></div>
+                            <label>Transaction Code</label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class=" pull-right pr">
+                        <button type="button" onclick="addElem()" class="btn btn-raised btn-primary ripple">Submit</button>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <span id="error" class="text-danger"></span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="row">
-              <div class=" pull-right pr">
-                <button type="button" onclick="addElem()" class="btn btn-raised btn-primary ripple">Submit</button>
+              <div class="col-sm-8">
+                <div class="card">
+                  <div class="card-heading bg-amber-500">
+                    <div class="card-title text-center">Transaction Detail</div>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <table class="table table-striped table-fixed va-middle">
+                          <tbody id="list-transaction">
+                          <tr>
+                            <td><em class="ion-asterisk icon-fw mr"></em>Transaction Code</td>
+                            <td id="label-transaction-code"></td>
+                          </tr>
+                          <tr>
+                            <td><em class="icon-fw mr"></em>Partner</td>
+                            <td id="partner-name"></td>
+                          </tr>
+                          <tr>
+                            <td><em class="icon-fw mr"></em>Customer</td>
+                            <td id="member-name"></td>
+                          </tr>
+                          <tr>
+                            <td><em class="ion-cash icon-fw mr"></em>Voucher Value</td>
+                            <td id="voucher-value"></td>
+                          </tr>
+                          <tr>
+                            <td><em class="ion-ios-calendar icon-fw mr"></em>Transaction Date</td>
+                            <td id="transaction-date"></td>
+                          </tr>
+                          <tr>
+                            <td><em class="icon-fw mr"></em>Status</td>
+                            <td id="voucher-status"></td>
+                          </tr>
+                          <tr>
+                            <td><em class="ion-pricetags icon-fw mr"></em>Voucher Code</td>
+                            <td id="voucher-code"></td>
+                          </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="row">
-              <div class="col-sm-12">
-                <span id="error" class="text-danger"></span>
-              </div>
-            </div>
+            </form>
           </div>
-        </div>
+        </section>
+
+        <footer><span>E-Voucher. 2017 - &copy;Gilkor</span></footer>
       </div>
-      <div class="col-sm-8">
-        <div class="card">
-          <div class="card-heading bg-amber-500">
-            <div class="card-title text-center">Transaction Detail</div>
-          </div>
-          <div class="card-body">
-            <div class="row">
-              <div class="col-sm-12">
-                <table class="table table-striped table-fixed va-middle">
-                  <tbody id="list-transaction">
-                    <tr>
-                      <td><em class="ion-asterisk icon-fw mr"></em>Partner Name</td>
-                      <td id="partner-name"></td>
-                    </tr>
-                    <tr>
-                      <td><em class="ion-cash icon-fw mr"></em>Voucher Value</td>
-                      <td id="voucher-value"></td>
-                    </tr>
-                    <tr>
-                      <td><em class="ion-ios-calendar icon-fw mr"></em>Transaction Date</td>
-                      <td id="transaction-date"></td>
-                    </tr>
-                    <tr>
-                      <td><em class="icon-fw mr"></em>Status</td>
-                      <td id="voucher-status"></td>
-                    </tr>
-                    <tr>
-                      <td><em class="ion-pricetags icon-fw mr"></em>Voucher Code</td>
-                      <td id="voucher-code"></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </form>
+    </div>
   </div>
-</section>
-{{ end }}
-
-{{ define "scripts" }}
-<script type="text/javascript" src="/assets/vendor/sweetalert/dist/sweetalert-dev.js"></script>
-<script type="text/javascript" src="/assets/js/public-check.js"></script>
-{{ end }}
-
-{{ define "stylesheets" }}
-<link rel="stylesheet" href="/assets/vendor/sweetalert/dist/sweetalert.css">
-{{ end }}
+</div>
+<!-- build:js(../app) js/vendor-user.js-->
+<script src="/assets/vendor/modernizr/modernizr.custom.js"></script>
+<script src="/assets/vendor/jquery/dist/jquery.js"></script>
+<script src="/assets/vendor/select2/dist/js/select2.js"></script>
+<script src="/assets/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="/assets/vendor/jquery.browser/dist/jquery.browser.js"></script>
+<script src="/assets/vendor/material-colors/dist/colors.js"></script>
+<script src="/assets/vendor/jquery-validation/dist/jquery.validate.js"></script>
+<script src="/assets/vendor/jquery-validation/dist/additional-methods.js"></script>
+<script src="/assets/vendor/sweetalert/dist/sweetalert-dev.js"></script>
+<script src="/assets/js/public-check.js"></script>
+</body>
+</html>

@@ -13,23 +13,18 @@ function toTwoDigit(val){
 
 function send() {
   var i;
-  var listRole = [];
-  var li = $( "ul.select2-selection__rendered" ).find( "li" );
 
-  if(li.length == 0){
+  var listRole = [];
+  var li = $( "input[type=checkbox]:checked" );
+
+  if(li.length == 0 || parseInt($("#length").val()) < 8){
     error = true;
   }
 
-  for (i = 0; i < li.length-1; i++) {
-      var text = li[i].getAttribute("title");
-      var value = $("option").filter(function() {
-        return $(this).text() === text;
-      }).first().attr("value");
-
-      listRole[i] = value;
+  for (i = 0; i < li.length; i++) {
+    listRole[i] = li[i].value;
   }
 
-  listRole.splice(0, 1);
   var error = false;
   $('input[check="true"]').each(function() {
     if($(this).val() == ""){
@@ -61,7 +56,14 @@ function send() {
        data: JSON.stringify(userReq),
        success: function () {
            alert("User created.");
-       }
+           window.location = "/user/search?token="+token;
+       },
+    	error: function (data) {
+		var a = JSON.parse(data.responseText);
+		if(a.errors.detail == "Duplicate Entry."){
+			alert("Username already used.");
+		}
+    	}
    });
 }
 
@@ -78,8 +80,13 @@ function getRole() {
 
         var i;
         for (i = 0; i < arrData.length; i++){
-          var li = $("<option value='"+arrData[i].Id+"'>"+arrData[i].RoleDetail+"</option>");
-          li.appendTo('#role');
+		var li = $("<div class='col-sm-4'></div>");
+		var html = "<label class='checkbox-inline c-checkbox'>"
+			+ "<input type='checkbox' value='"+arrData[i].id+"' text='"+arrData[i].role_detail+"'>"
+			+ "<span class='ion-checkmark-round'></span>" + arrData[i].role_detail
+			+ "</label>";
+		li.html(html);
+		li.appendTo('#role');
         }
       }
   });

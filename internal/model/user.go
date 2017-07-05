@@ -1,22 +1,32 @@
 package model
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type (
+	RegisterUser struct {
+		Username string   `db:"username" json:"username"`
+		Password string   `db:"password" json:"password"`
+		Email    string   `db:"email" json:"email"`
+		Phone    string   `db:"phone" json:"phone"`
+		Role     []string `db:"-" json:"role"`
+	}
 	User struct {
-		ID        string `db:"id"`
-		AccountID string `db:"account_id"`
-		Username  string `db:"username"`
-		Password  string `db:"password"`
-		Email     string `db:"email"`
-		Phone     string `db:"phone"`
-		Role      []Role `db:"-"`
-		CreatedBy string `db:"created_by"`
-		CreatedAt string `db:"created_at"`
+		ID        string  `db:"id" json:"id"`
+		Account   Account `db:"_" json:"account"`
+		Username  string  `db:"username" json:"username"`
+		Password  string  `db:"password" json:"password"`
+		Email     string  `db:"email" json:"email"`
+		Phone     string  `db:"phone" json:"phone"`
+		Role      []Role  `db:"-" json:"role"`
+		Status    string  `db:"status" json:"status"`
+		CreatedBy string  `db:"created_by" json:"created_by"`
+		CreatedAt string  `db:"created_at" json:"created_at"`
 	}
 	Role struct {
-		Id         string `db:"id"`
-		RoleDetail string `db:"role_detail"`
+		Id         string `db:"id" json:"id"`
+		RoleDetail string `db:"role_detail" json:"role_detail"`
 	}
 
 	UserRes struct {
@@ -25,7 +35,7 @@ type (
 	}
 )
 
-func AddUser(u User) error {
+func AddUser(u RegisterUser, user, accountId string) error {
 	fmt.Println("Add")
 	tx, err := db.Beginx()
 	if err != nil {
@@ -51,7 +61,7 @@ func AddUser(u User) error {
 				id
 		`
 		var res []string
-		if err := tx.Select(&res, tx.Rebind(q), u.Username, u.Password, u.Email, u.Phone, u.CreatedBy, StatusCreated); err != nil {
+		if err := tx.Select(&res, tx.Rebind(q), u.Username, u.Password, u.Email, u.Phone, user, StatusCreated); err != nil {
 			fmt.Println(err)
 			return ErrServerInternal
 		}
@@ -67,7 +77,7 @@ func AddUser(u User) error {
 				VALUES (?, ?, ?, ?)
 			`
 
-			_, err := tx.Exec(tx.Rebind(q), res[0], v, u.CreatedBy, StatusCreated)
+			_, err := tx.Exec(tx.Rebind(q), res[0], v, user, StatusCreated)
 			if err != nil {
 				fmt.Println(err)
 				return ErrServerInternal
@@ -84,7 +94,7 @@ func AddUser(u User) error {
 			VALUES (?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q2), res[0], u.AccountID, u.CreatedBy, StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q2), res[0], accountId, user, StatusCreated)
 		if err != nil {
 			fmt.Println(err)
 			return ErrServerInternal
@@ -105,10 +115,9 @@ func CheckUsername(username string) (string, error) {
 		SELECT id FROM users
 		WHERE
 			username = ?
-			AND status = ?
 	`
 	var res []string
-	if err := db.Select(&res, db.Rebind(q), username, StatusCreated); err != nil {
+	if err := db.Select(&res, db.Rebind(q), username); err != nil {
 		fmt.Println(err)
 		return "", ErrServerInternal
 	}
@@ -118,26 +127,65 @@ func CheckUsername(username string) (string, error) {
 	return res[0], nil
 }
 
-func FindAllUsers(accountId string) ([]UserRes, error) {
-	fmt.Println("Select User " + accountId)
+func FindAllUsers(accountId string) ([]User, error) {
 	q := `
-		SELECT DISTINCT u.id, u.username FROM users as u
-		JOIN user_accounts as ua ON u.id = ua.user_id
-		JOIN user_roles as ur ON u.id = ur.user_id
-		WHERE ua.account_id = ?
-		AND u.status = ?
+		SELECT
+			u.id
+			, u.username
+			, u.email
+			, u.phone
+			, u.created_at
+			, u.created_by
+			, u.status
+		FROM
+			users as u
+		JOIN
+			user_accounts as ua
+		ON
+			u.id = ua.user_id
+		WHERE
+			ua.account_id = ?
 	`
-
-	var resv []UserRes
-	if err := db.Select(&resv, db.Rebind(q), accountId, StatusCreated); err != nil {
+	var res []User
+	if err := db.Select(&res, db.Rebind(q), accountId); err != nil {
 		fmt.Println(err)
-		return []UserRes{}, ErrServerInternal
-	}
-	if len(resv) < 1 {
-		return []UserRes{}, ErrResourceNotFound
+		return []User{}, ErrServerInternal
 	}
 
-	return resv, nil
+	for i, v := range res {
+		q1 := `
+		SELECT
+		  	u.id id,
+		  	r.role_detail role_detail
+		FROM
+		  	users u
+		JOIN
+			user_roles ur
+		ON
+			u.id = ur.user_id
+		JOIN
+			roles r
+	    	ON
+	    		ur.role_id = r.id
+		WHERE
+		  	u.id = ?
+
+	`
+		var role []Role
+		if err := db.Select(&role, db.Rebind(q1), v.ID); err != nil {
+			fmt.Println(err)
+			return []User{}, ErrServerInternal
+		}
+		res[i].Role = role
+		account, err := GetAccountDetailByAccountId(accountId)
+		if err != nil {
+			fmt.Println(err)
+			return []User{}, ErrServerInternal
+		}
+		res[i].Account = account[0]
+	}
+
+	return res, nil
 }
 
 func FindUsersByRole(role, accountId string) ([]UserRes, error) {
@@ -213,20 +261,21 @@ func FindUserDetail(userId string) (User, error) {
 
 	q1 := `
 		SELECT
-		  	u.id id,
+		  	r.id id,
 		  	r.role_detail role_detail
 		FROM
 		  	users u
 		JOIN
 			user_roles ur
-		ON  	u.id = ur.user_id
+		ON
+			u.id = ur.user_id
 		JOIN
 			roles r
-		    ON  ur.role_id = r.id
+	    	ON
+	    		ur.role_id = r.id
 		WHERE
 		  	u.id = ?
-		  AND
-		  	u.status = ?
+	  		AND ur.status = ?
 
 	`
 	var role []Role
@@ -234,12 +283,13 @@ func FindUserDetail(userId string) (User, error) {
 		fmt.Println(err)
 		return User{}, ErrServerInternal
 	}
-
-	res[0].Role = make([]Role, len(role))
-	for k, v := range role {
-		res[0].Role[k].Id = v.Id
-		res[0].Role[k].RoleDetail = v.RoleDetail
+	res[0].Role = role
+	account, err := GetAccountDetailByUser(userId)
+	if err != nil {
+		fmt.Println(err)
+		return User{}, ErrServerInternal
 	}
+	res[0].Account = account[0]
 
 	return res[0], nil
 }
@@ -332,14 +382,126 @@ func ChangePassword(id, oldPassword, newPassword string) error {
 			password = ?
 		WHERE
 			id = ?
-			And password = ?
 			AND status = ?
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), newPassword, id, oldPassword, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), newPassword, id, StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
+}
+
+func ResetPassword(id, newPassword string) error {
+	fmt.Println("Change Password")
+
+	q := `
+		SELECT
+			id
+		FROM
+			users
+		WHERE
+			id = ?
+			AND status = ?
+	`
+	var res []string
+	if err := db.Select(&res, db.Rebind(q), id, StatusCreated); err != nil {
+		fmt.Println(err)
+		return ErrServerInternal
+	}
+	if len(res) == 0 {
+		return ErrResourceNotFound
+	}
+
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q = `
+		UPDATE users
+		SET
+			password = ?
+		WHERE
+			id = ?
+			AND status = ?
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), newPassword, id, StatusCreated)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
+}
+
+func UpdateOtherUser(user User) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE users
+		SET
+			email = ?
+			, phone = ?
+		WHERE
+			username = ?
+			AND status = ?
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), user.Email, user.Phone, user.Username, StatusCreated)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	q = `
+		UPDATE user_roles
+		SET
+			status = ?
+		WHERE
+			user_id = ?
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, user.ID)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	for _, v := range user.Role {
+		q := `
+				INSERT INTO user_roles(
+					user_id
+					, role_id
+					, created_by
+					, status
+				)
+				VALUES (?, ?, ?, ?)
+			`
+
+		_, err := tx.Exec(tx.Rebind(q), user.ID, v.Id, user.CreatedBy, StatusCreated)
+		if err != nil {
+			fmt.Println(err)
+			return ErrServerInternal
+		}
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -368,6 +530,64 @@ func UpdateUser(user User) error {
 	`
 
 	_, err = tx.Exec(tx.Rebind(q), user.Email, user.Phone, user.Username, StatusCreated)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
+}
+
+func BlockUser(userId string) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE users
+		SET
+			status = ?
+		WHERE
+			id = ?
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, userId)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
+}
+
+func ReleaseUser(userId string) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE users
+		SET
+			status = ?
+		WHERE
+			id = ?
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), StatusCreated, userId)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal

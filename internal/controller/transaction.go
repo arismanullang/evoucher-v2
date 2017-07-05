@@ -11,19 +11,18 @@ import (
 	"github.com/ruizu/render"
 
 	"github.com/gilkor/evoucher/internal/model"
-	"github.com/go-ozzo/ozzo-validation"
-	"github.com/go-ozzo/ozzo-validation/is"
+	"github.com/asaskevich/govalidator"
 )
 
 type (
 	TransactionRequest struct {
-		VariantID     string   `json:"variant_id"`
-		RedeemMethod  string   `json:"redeem_method"`
-		Partner       string   `json:"partner"`
-		Challenge     string   `json:"challenge"`
-		Response      string   `json:"response"`
-		DiscountValue string   `json:"discount_value"`
-		Vouchers      []string `json:"vouchers"`
+		VariantID     string   `json:"variant_id" valid:"alphanum,required"`
+		RedeemMethod  string   `json:"redeem_method" valid:"in(qr|token),required"`
+		Partner       string   `json:"partner" valid:"alphanum,required"`
+		Challenge     string   `json:"challenge" valid:"numeric,optional"`
+		Response      string   `json:"response" valid:"numeric,optional"`
+		DiscountValue string   `json:"discount_value" valid:"float,required"`
+		Vouchers      []string `json:"vouchers" valid:"alphanum,required"`
 	}
 	DeleteTransactionRequest struct {
 		User string `json:"requested_by"`
@@ -40,19 +39,6 @@ type (
 	}
 )
 
-func (t TransactionRequest) validate() error {
-	return validation.ValidateStruct(&t,
-		validation.Field(&t.VariantID,validation.Required),
-		validation.Field(&t.RedeemMethod,validation.Required,validation.In("qr","token")),
-		validation.Field(&t.Partner,validation.Required),
-		validation.Field(&t.Challenge,is.Digit,),
-		validation.Field(&t.Response,is.Digit,),
-		validation.Field(&t.DiscountValue,validation.Required,is.Float),
-		validation.Field(&t.Vouchers,validation.Required),
-	)
-
-}
-
 func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	var rd TransactionRequest
 	status := http.StatusCreated
@@ -66,14 +52,14 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//validate request param
-	err := rd.validate()
-	if err !=nil {
+	_, err := govalidator.ValidateStruct(rd)
+	if err != nil {
 		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
 		render.JSON(w, res, status)
 		return
 	}
+
 
 	//Token Authentocation
 	a := AuthToken(w, r)
@@ -113,7 +99,6 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			return
 		} else {
 			fmt.Println("panrner data : ", p[0].SerialNumber.String)
-
 
 			if !OTPAuth(p[0].SerialNumber.String, rd.Challenge, rd.Response) {
 				status = http.StatusBadRequest
@@ -195,7 +180,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	txCode := randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
 	d := model.Transaction{
-		AccountId:       a.User.AccountID,
+		AccountId:       a.User.Account.Id,
 		PartnerId:       rd.Partner,
 		TransactionCode: txCode,
 		DiscountValue:   stf(rd.DiscountValue),
@@ -212,7 +197,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rv := RedeemVoucherRequest{
-		AccountID: a.User.AccountID,
+		AccountID: a.User.Account.Id,
 		User:      a.User.ID,
 		State:     model.VoucherStateUsed,
 		Vouchers:  rd.Vouchers,
@@ -248,8 +233,8 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := rd.validate()
-	if err !=nil {
+	_, err := govalidator.ValidateStruct(rd)
+	if err != nil {
 		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
 		render.JSON(w, res, status)
@@ -434,7 +419,7 @@ func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 
 		if valid {
 			status = http.StatusOK
-			transaction, _ := model.FindAllTransactionByPartner(a.User.AccountID, partnerId)
+			transaction, _ := model.FindAllTransactionByPartner(a.User.Account.Id, partnerId)
 			res = NewResponse(transaction)
 		}
 	} else {
@@ -588,7 +573,7 @@ func PrintCashoutTransaction(w http.ResponseWriter, r *http.Request) {
 
 		if valid {
 			status = http.StatusOK
-			transaction, _ := model.PrintCashout(a.User.AccountID, transactionCodeArr)
+			transaction, _ := model.PrintCashout(a.User.Account.Id, transactionCodeArr)
 			res = NewResponse(transaction)
 		}
 	} else {

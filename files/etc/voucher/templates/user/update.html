@@ -10,22 +10,13 @@
 </div>
 <div class="container container-md">
   <form id="create-user" name="create-user" novalidate="" class="card b0 form-validate">
+    <input type="hidden" id="id">
+    <input type="hidden" id="type">
     <div class="card">
       <div class="card-heading bg-amber-500">
-        <div class="card-title text-center">Edit Profile</div>
+        <div class="card-title text-center">Edit Profile : <span id="username"></span></div>
       </div>
       <div class="card-body">
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="mda-form-group">
-              <div id="username-card" class="mda-form-control">
-                <input id="username" name="username" check="true" disabled="" tabindex="0" aria-invalid="false" aria-required="true" class="form-control">
-                <div class="mda-form-control-line"></div>
-                <label>Username</label>
-              </div>
-            </div>
-          </div>
-        </div>
         <div class="row">
           <div class="col-sm-12">
             <div class="mda-form-group">
@@ -45,6 +36,15 @@
                 <div class="mda-form-control-line"></div>
                 <label>Phone</label>
               </div>
+            </div>
+          </div>
+        </div>
+        <div id="row-role" class="row">
+          <div class="col-sm-2">
+            <label class="control-label">Role</label>
+          </div>
+          <div class="col-sm-10 border">
+            <div id="role" class="mda-form-group checkbox-add-padding">
             </div>
           </div>
         </div>

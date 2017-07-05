@@ -14,7 +14,7 @@ import (
 	"github.com/gilkor/evoucher/internal/model"
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
-	"github.com/go-ozzo/ozzo-validation"
+	"github.com/asaskevich/govalidator"
 )
 
 type (
@@ -37,17 +37,17 @@ type (
 	}
 	// GenerateVoucherRequest represent a Request of GenerateVoucher
 	GenerateVoucherRequest struct {
-		AccountID string `json:"account_id"`
-		VariantID string `json:"variant_id"`
-		Quantity  int    `json:"quantity"`
+		AccountID string `json:"account_id" valid:"alphanum,optional"`
+		VariantID string `json:"variant_id" valid:"alphanum,required"`
+		Quantity  int    `json:"quantity" valid:"numeric,optional"`
 		Holder    struct {
-			Key         string `json:"id"`
-			Phone       string `json:"phone"`
-			Email       string `json:"email"`
-			Description string `json:"description"`
+			Key         string `json:"id" valid:"alphanum,required"`
+			Phone       string `json:"phone" valid:"numeric,optional"`
+			Email       string `json:"email" valid:"email,optional"`
+			Description string `json:"description" valid:"alphanum,optional"`
 		} `json:"holder"`
-		ReferenceNo string `json:"reference_no"`
-		CreatedBy   string `json:"user"`
+		ReferenceNo string `json:"reference_no" valid:"alphanum,required"`
+		CreatedBy   string `json:"user" valid:"alphanum,optional"`
 	}
 
 	GetVoucherOfVariatList []GetVoucherOfVariatdata
@@ -520,13 +520,14 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	var status int
 	res := NewResponse(nil)
 
-	//err := gvd.Validate()
-	//if err !=nil {
-	//	status = http.StatusBadRequest
-	//	res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
-	//	render.JSON(w, res, status)
-	//	return
-	//}
+	_, err := govalidator.ValidateStruct(gvd)
+	if err != nil {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
+		render.JSON(w, res, status)
+		return
+	}
+
 
 	//Token Authentocation
 	a := AuthToken(w, r)
@@ -674,7 +675,7 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gvd.AccountID = a.User.AccountID
+	gvd.AccountID = a.User.Account.Id
 	gvd.VariantID = vrID
 	gvd.Quantity = 1
 	gvd.CreatedBy = a.User.ID
@@ -815,21 +816,6 @@ func GetCsvSample(w http.ResponseWriter, r *http.Request) {
 
 // ## ### ##//
 
-func (gv GenerateVoucherRequest) Validate() error{
-	return validation.ValidateStruct(&gv,
-		validation.Field(&gv.VariantID, validation.Required),
-		validation.Field(&gv.AccountID, validation.Skip),
-		validation.Field(&gv.Quantity, validation.Skip),
-		validation.Field(&gv.Holder, validation.Skip),
-		validation.Field(&gv.ReferenceNo, validation.Required,validation.Length(1,64)),
-		validation.Field(&gv.Holder.Key, validation.Required),
-		validation.Field(&gv.Holder.Phone, validation.Skip,validation.Length(0,8)),
-		validation.Field(&gv.Holder.Email, validation.Skip),
-		validation.Field(&gv.Holder.Description, validation.Skip,validation.Length(0,64)),
-		validation.Field(&gv.CreatedBy, validation.Skip),
-	)
-}
-
 //CheckVoucherRedeemtion validation
 func (r *TransactionRequest) CheckVoucherRedeemtion(voucherID string) (bool, error) {
 
@@ -842,7 +828,7 @@ func (r *TransactionRequest) CheckVoucherRedeemtion(voucherID string) (bool, err
 	} else if voucher.VoucherData[0].State == model.VoucherStatePaid {
 		return false, errors.New(model.ErrMessageVoucherAlreadyPaid)
 	} else if !voucher.VoucherData[0].ExpiredAt.After(time.Now()) {
-		fmt.Println("expired date : ", voucher.VoucherData[0].ExpiredAt , voucher.VoucherData[0].ID)
+		fmt.Println("expired date : ", voucher.VoucherData[0].ExpiredAt, voucher.VoucherData[0].ID)
 		return false, errors.New(model.ErrMessageVoucherExpired)
 	}
 
