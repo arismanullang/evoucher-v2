@@ -5,9 +5,6 @@ $( window ).ready(function() {
   $("#image-url").change(function() {
 	readURL(this);
   });
-
-
-  // getPartner();
 });
 
 function readURL(input) {
@@ -108,12 +105,27 @@ function searchById(id) {
 	    $("#max_usage_voucher").removeAttr("disabled","");
 	    $("#voucher_price").removeAttr("disabled","");
 	  }
+	  if(variant.allow_accumulative){
+		  $("#allow-accumulative").attr("checked",true);
+	  }
 
 
 	  $('.summernote').each(function(){
 		$(this).summernote({
 			height: 380,
-			placeholder: 'Any Message...'
+			placeholder: 'Any Message...',
+			callbacks: {
+				onPaste: function (e) {
+					var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData('Text');
+
+					e.preventDefault();
+
+					// Firefox fix
+					setTimeout(function () {
+						document.execCommand('insertText', false, bufferText);
+					}, 10);
+				}
+			}
 		});
 	  });
         }
@@ -178,6 +190,10 @@ function send() {
     var str = $("#variant-tnc").summernote('code');
     var tnc = str.replace(/^\s+|\s+$|(\r?\n|\r)/g, '');
 
+    if(!str.includes("<p>")){
+    	tnc = '<p>'+tnc+'</p>';
+    }
+
     if(error){
       alert("Please check your input.");
       return
@@ -207,7 +223,7 @@ function send() {
 		 voucher_price: parseInt($("#voucher-price").val()),
 		 max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
 		 max_usage_voucher: 1,
-		 allowAccumulative: $("#allow-accumulative").is(":checked"),
+		 allow_accumulative: $("#allow-accumulative").is(":checked"),
 		 redeemtion_method: $("#redeemtion-method").find(":selected").val(),
 		 start_date: $("#variant-valid-from").val(),
 		 end_date: $("#variant-valid-to").val(),
@@ -261,7 +277,7 @@ function send() {
 		    voucher_price: parseInt($("#voucher-price").val()),
 		    max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
 		    max_usage_voucher: 1,
-		    allowAccumulative: $("#allow-accumulative").is(":checked"),
+		    allow_accumulative: $("#allow-accumulative").is(":checked"),
 		    redeemtion_method: $("#redeemtion-method").find(":selected").val(),
 		    start_date: $("#variant-valid-from").val(),
 		    end_date: $("#variant-valid-to").val(),
@@ -385,6 +401,7 @@ function convertToUpperCase(upperCase){
         $("#validity-day").attr("style","display:none");
         $("#collapseThree").removeClass("in");
         $("#collapseTwo").removeClass("in");
+    	$("#collapseFour").removeClass("in");
         $('.datepicker4').datepicker({
                 container:'#example-datepicker-container-4',
                 autoclose: true,

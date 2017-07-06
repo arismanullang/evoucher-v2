@@ -604,6 +604,7 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 			EndDate:            te.Format("2006-01-02 15:04:05.000"),
 			StartHour:          rd.StartHour,
 			EndHour:            rd.EndHour,
+			AllowAccumulative:  rd.AllowAccumulative,
 			ValidVoucherStart:  tvs.Format("2006-01-02 15:04:05.000"),
 			ValidVoucherEnd:    tve.Format("2006-01-02 15:04:05.000"),
 			VoucherLifetime:    rd.VoucherLifetime,
@@ -614,7 +615,6 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 			CreatedBy:          a.User.ID,
 		}
 		if err := model.UpdateVariant(vr); err != nil {
-			//log.Panic(err)
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
