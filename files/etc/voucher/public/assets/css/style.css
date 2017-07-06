@@ -168,6 +168,12 @@ th {
   padding-top: 6px;
 }
 
+.checkbox-label {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .up-5px {
   margin-top: -5px;
 }

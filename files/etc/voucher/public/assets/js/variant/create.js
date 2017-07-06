@@ -233,7 +233,7 @@ function send() {
 	       voucher_price: parseInt($("#voucher-price").val()),
 	       max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
 	       max_usage_voucher: maxUsage,
-	       allowAccumulative: $("#allow-accumulative").is(":checked"),
+	       allow_accumulative: $("#allow-accumulative").is(":checked"),
 	       redeemtion_method: $("#redeemtion-method").find(":selected").val(),
 	       start_date: $("#variant-valid-from").val(),
 	       end_date: $("#variant-valid-to").val(),
@@ -294,7 +294,7 @@ function send() {
 		  voucher_price: parseInt($("#voucher-price").val()),
 		  max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
 		  max_usage_voucher: maxUsage,
-		  allowAccumulative: $("#allow-accumulative").is(":checked"),
+		  allow_accumulative: $("#allow-accumulative").is(":checked"),
 		  redeemtion_method: $("#redeemtion-method").find(":selected").val(),
 		  start_date: $("#variant-valid-from").val(),
 		  end_date: $("#variant-valid-to").val(),
@@ -410,7 +410,19 @@ function getPartner() {
     	$('.summernote').each(function(){
 	    $(this).summernote({
 		    height: 380,
-		    placeholder: 'Any Message...'
+		    placeholder: 'Any Message...',
+		    callbacks: {
+			    onPaste: function (e) {
+				    var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData('Text');
+
+				    e.preventDefault();
+
+				    // Firefox fix
+				    setTimeout(function () {
+					    document.execCommand('insertText', false, bufferText);
+				    }, 10);
+			    }
+		    }
 	    });
 	});
     }
