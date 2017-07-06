@@ -85,7 +85,7 @@ type (
 		StartDate     string                 `db:"start_date" json:"start_date"`
 		EndDate       string                 `db:"end_date" json:"end_date"`
 		Vouchers      []SearchVariantVoucher `db:"-" json:"vouchers"`
-		Voucher	      string		     `db:"voucher" json:"voucher"`
+		Voucher       string                 `db:"voucher" json:"voucher"`
 		State         sql.NullString         `db:"state" json:"state"`
 		Status        string                 `db:"status" json:"status"`
 		CreatedAt     string                 `db:"created_at" json:"created_at"`
@@ -279,6 +279,7 @@ func UpdateVariant(d Variant) error {
 			, end_date = ?
 			, start_hour = ?
 			, end_hour = ?
+			, allow_accumulative = ?
 			, valid_voucher_start = ?
 			, valid_voucher_end = ?
 			, voucher_lifetime = ?
@@ -297,7 +298,7 @@ func UpdateVariant(d Variant) error {
 			AND status = ?
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), d.VariantName, d.VariantType, d.VoucherType, d.VoucherPrice, d.StartDate, d.EndDate, d.StartHour, d.EndHour, d.ValidVoucherStart, d.ValidVoucherEnd, d.VoucherLifetime, d.ValidityDays, d.DiscountValue, d.MaxQuantityVoucher, d.MaxUsageVoucher, d.RedeemtionMethod, d.ImgUrl, d.VariantTnc, d.VariantDescription, d.CreatedBy, time.Now(), d.Id, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), d.VariantName, d.VariantType, d.VoucherType, d.VoucherPrice, d.StartDate, d.EndDate, d.StartHour, d.EndHour, d.AllowAccumulative, d.ValidVoucherStart, d.ValidVoucherEnd, d.VoucherLifetime, d.ValidityDays, d.DiscountValue, d.MaxQuantityVoucher, d.MaxUsageVoucher, d.RedeemtionMethod, d.ImgUrl, d.VariantTnc, d.VariantDescription, d.CreatedBy, time.Now(), d.Id, StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal

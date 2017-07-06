@@ -103,16 +103,6 @@
                       </div>
                     </div>
                   </div>
-                  <div class="row ">
-                    <div class="col-sm-12">
-                      <label>Terms & Conditions</label>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-sm-12">
-                      <div id="variant-tnc" class="summernote"></div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -225,19 +215,27 @@
               </div>
               <div id="collapseThree" role="tabpanel" aria-labelledby="headingThree" class="panel-collapse collapse in">
                 <div class="panel-body">
-
-                  <div class="row">
-                    <div class="col-sm-12">
-                      <div class="mda-form-group">
-                        <div class="mda-form-control">
+                  <div class="row form-horizontal">
+                    <div class="col-sm-2">
+                      <label class="control-label">Redemption Method</label>
+                    </div>
+                    <div class="col-sm-2">
+                      <div class="form-group">
+                        <div class="form-control no-border">
                           <select id="redeemtion-method" name="redeemtion-method" class="form-control select2" tabindex="0">
                             <option value="qr">QR</option>
                             <option value="token">Token</option>
                           </select>
-                          <div class="mda-form-control-line"></div>
-                          <label>Redemption Method</label>
                         </div>
                       </div>
+                    </div>
+
+                    <div class="col-sm-6 col-sm-offset-2">
+                      <label class='checkbox-inline c-checkbox'>
+                        <input type='checkbox' id="allow-accumulative">
+                        <span class='ion-checkmark-round'></span>
+                        <label class='checkbox-label'>Multiple Voucher</label>
+                      </label>
                     </div>
                   </div>
                   <div class="row">
@@ -306,6 +304,21 @@
                     <div class="col-sm-8 border">
                       <div id="partner-list" class="mda-form-group checkbox-add-padding">
                       </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="panel-tnc" class="panel panel-default">
+              <div id="headingFour" role="tab" class="panel-heading card-heading">
+                <h4 class="panel-title"><a class="header-button" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false" aria-controls="collapseThree" class="collapsed">Term and Condition</a></h4>
+              </div>
+              <div id="collapseFour" role="tabpanel" aria-labelledby="headingFour" class="panel-collapse collapse">
+                <div class="panel-body">
+                  <div class="row">
+                    <div class="col-sm-12">
+                      <div id="variant-tnc" class="summernote"></div>
                     </div>
                   </div>
                 </div>

@@ -105,7 +105,7 @@ const (
 
 	//default config tx code
 	DEFAULT_TXCODE   string = "Numerals"
-	DEFAULT_TXLENGTH int    = 10
+	DEFAULT_TXLENGTH int    = 6
 
 	// Redis token life time
 	TOKENLIFE int = 1440
