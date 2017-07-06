@@ -184,6 +184,9 @@ function send() {
   var str = $("#list-rule").summernote('code');
   var tnc = str.replace(/^\s+|\s+$|(\r?\n|\r)/g, '');
 
+  if(!str.includes("<p>")){
+	tnc = '<p>'+tnc+'</p>';
+  }
   var maxUsage = 1;
 
   $('input[check="true"]').each(function() {
