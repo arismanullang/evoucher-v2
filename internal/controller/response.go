@@ -6,10 +6,10 @@ import (
 )
 
 type errorData struct {
-	Code   string `json:"code"`
-	Title  string `json:"title"`
-	Detail string `json:"detail"`
-	Name   string `json:"name"`
+	Code   	string `json:"code"`
+	Title  	string `json:"title"`
+	Detail 	string `json:"detail"`
+	TraceID string `json:"traceID"`
 }
 
 type paginationData struct {
@@ -52,8 +52,8 @@ func (r *Response) SetPagination(req *http.Request, page int, next bool) {
 	}
 }
 
-func (r *Response) AddError(code, title, detail, name string) {
-	r.Errors = &errorData{code, title, detail, name}
+func (r *Response) AddError(code, title, detail, traceID string) {
+	r.Errors = &errorData{code, title, detail, traceID}
 }
 
 //func (r *Response) AddGovalidatorErrors(errs govalidator.Errors) {
