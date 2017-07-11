@@ -15,6 +15,21 @@ var (
 	ErrTokenNotFound    = errors.New("Token Not Found.")
 	ErrServerInternal   = errors.New("Server Internal Error.")
 	ErrInvalidRole      = errors.New("Invalid Role.")
+
+	// Google Cloud Storage Config
+	GCS_BUCKET	string
+	GCS_PROJECT_ID	string
+	PUBLIC_URL	string
+
+	//OCRA config
+	OCRA_URL		string
+	OCRA_EVOUCHER_APPS_KEY	string
+
+	//voucher config
+	VOUCHER_URL string
+
+	//Logger config
+	LN_TRACE_ID int = 16
 )
 
 const (
@@ -110,21 +125,8 @@ const (
 	// Redis token life time
 	TOKENLIFE int = 1440
 
-	// Google Cloud Storage Config
-	GCS_BUCKET     string = "e-voucher"
-	GCS_PROJECT_ID string = "shared-project-159515"
-	PublicURL      string = "https://storage.googleapis.com/%s/%s"
-
-	//Voucher link
-	VOUCHER_URL string = "voucher.elys.id/public/redeem"
-
 	//Challenge code config
 	CHALLENGE_FORMAT string = "Numerals"
 	CHALLENGE_LENGTH int    = 4
 	TIMEOUT_DURATION int    = 120 //in Second
-
-	//OCRA config
-	OCRA_URL string = "http://ocra-staging.elys.id"
-	//OCRA_URL string = "http://localhost:8887"
-	OCRA_EVOUCHER_APPS_KEY string = "uuvdqHUa5VHXOGxrMHYvym1OUBETZwT4r2S7YfxmQOSL9dgIhxJAH8vTrNNVwGxi"
 )
