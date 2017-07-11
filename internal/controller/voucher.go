@@ -41,13 +41,13 @@ type (
 		VariantID string `json:"variant_id" valid:"alphanum,required"`
 		Quantity  int    `json:"quantity" valid:"numeric,optional"`
 		Holder    struct {
-			Key         string `json:"id" valid:"alphanum,required"`
+			Key         string `json:"id" valid:"required"`
 			Phone       string `json:"phone" valid:"numeric,optional"`
 			Email       string `json:"email" valid:"email,optional"`
-			Description string `json:"description" valid:"alphanum,optional"`
+			Description string `json:"description" valid:"-"`
 		} `json:"holder"`
-		ReferenceNo string `json:"reference_no" valid:"alphanum,required"`
-		CreatedBy   string `json:"user" valid:"alphanum,optional"`
+		ReferenceNo string `json:"reference_no" valid:"required"`
+		CreatedBy   string `json:"user" valid:"-"`
 	}
 
 	GetVoucherOfVariatList []GetVoucherOfVariatdata
@@ -173,6 +173,11 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("My Voucher")
+
 	param := getUrlParam(r.URL.String())
 	delete(param, "token")
 
@@ -180,19 +185,22 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 		voucher, err = model.FindAvailableVoucher(param)
 	} else {
 		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, "voucher")
+		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, logger.TraceID)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
 	// fmt.Println(voucher, err)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, logger.TraceID)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -256,6 +264,7 @@ func GetVoucherOfVariant(w http.ResponseWriter, r *http.Request) {
 	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
 	status = http.StatusOK
 	res = NewResponse(d)
+	logger.SetStatus(status).Log("param :", param , "response :" , d)
 	render.JSON(w, res, status)
 }
 
@@ -272,6 +281,11 @@ func GetVoucherOfVariantDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("My-Voucher-Details")
+
 	param := getUrlParam(r.URL.String())
 	param["state"] = model.VoucherStateCreated
 	param["variant_id"] = variant
@@ -279,7 +293,8 @@ func GetVoucherOfVariantDetails(w http.ResponseWriter, r *http.Request) {
 
 	if len(param) < 0 || variant == "" {
 		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, "voucher")
+		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, logger.TraceID)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -287,36 +302,42 @@ func GetVoucherOfVariantDetails(w http.ResponseWriter, r *http.Request) {
 	voucher, err := model.FindVoucher(param)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidHolder, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidHolder, logger.TraceID)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
 	dt, err := model.FindVariantDetailsById(variant)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, logger.TraceID)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
 	p, err := model.FindVariantPartner(map[string]string{"variant_id": variant})
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant+"(Partner of Variant Not Found)", "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant+"(Partner of Variant Not Found)", logger.TraceID)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -363,6 +384,7 @@ func GetVoucherOfVariantDetails(w http.ResponseWriter, r *http.Request) {
 	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
 	status = http.StatusOK
 	res = NewResponse(d)
+	logger.SetStatus(status).Log("param :", param , "response :" , d)
 	render.JSON(w, res, status)
 }
 
@@ -380,6 +402,11 @@ func GetVoucherList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Voucher-List")
+
 	param := getUrlParam(r.URL.String())
 	delete(param, "token")
 
@@ -387,19 +414,22 @@ func GetVoucherList(w http.ResponseWriter, r *http.Request) {
 		voucher, err = model.FindVoucher(param)
 	} else {
 		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, "voucher")
+		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, logger.TraceID)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
 	// fmt.Println(voucher, err)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, logger.TraceID)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if voucher.Message != "" {
@@ -428,6 +458,7 @@ func GetVoucherList(w http.ResponseWriter, r *http.Request) {
 		}
 		status = http.StatusOK
 		res = NewResponse(dvr)
+		logger.SetStatus(status).Log("param :", param , "response :" , dvr)
 		render.JSON(w, res, status)
 		return
 	}
@@ -444,16 +475,23 @@ func GetVoucherDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Voucher-Details")
+
 	d, err := model.FindVoucher(map[string]string{"id": vc})
 
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, logger.TraceID)
+		logger.SetStatus(status).Log("param :", vc , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", vc , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -461,12 +499,14 @@ func GetVoucherDetails(w http.ResponseWriter, r *http.Request) {
 	dt, err := model.FindVariantDetailsById(d.VoucherData[0].VariantID)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, logger.TraceID)
+		logger.SetStatus(status).Log("param :", vc , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", vc , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -510,6 +550,7 @@ func GetVoucherDetails(w http.ResponseWriter, r *http.Request) {
 
 	status = http.StatusOK
 	res = NewResponse(dvr)
+	logger.SetStatus(status).Log("param :", vc , "response :" , dvr)
 	render.JSON(w, res, status)
 	return
 }
@@ -519,15 +560,6 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	var gvd GenerateVoucherRequest
 	var status int
 	res := NewResponse(nil)
-
-	_, err := govalidator.ValidateStruct(gvd)
-	if err != nil {
-		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
-		render.JSON(w, res, status)
-		return
-	}
-
 
 	//Token Authentocation
 	a := AuthToken(w, r)
@@ -544,15 +576,31 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Generate-Voucher-Single")
+
+	_, err := govalidator.ValidateStruct(gvd)
+	if err != nil {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", gvd , "response :" , res.Errors)
+		render.JSON(w, res, status)
+		return
+	}
+
 	dt, err := model.FindVariantDetailsById(gvd.VariantID)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, logger.TraceID)
+		logger.SetStatus(status).Log("param :", gvd , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInvalidVariant+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInvalidVariant+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", gvd , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -560,29 +608,34 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	ed, err := time.Parse(time.RFC3339Nano, dt.EndDate)
 	if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInvalidVariant+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInvalidVariant+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", gvd , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
 
 	if (int(dt.MaxQuantityVoucher) - getCountVoucher(gvd.VariantID) - 1) < 0 {
 		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, "voucher")
+		res.AddError(its(status), model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, logger.TraceID)
+		logger.SetStatus(status).Log("param :", gvd , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if dt.VariantType != model.VariantTypeOnDemand {
 		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeVoucherRulesViolated, model.ErrMessageVoucherRulesViolated, "voucher")
+		res.AddError(its(status), model.ErrCodeVoucherRulesViolated, model.ErrMessageVoucherRulesViolated, logger.TraceID)
+		logger.SetStatus(status).Log("param :", gvd , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if !sd.Before(time.Now()) {
 		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeVoucherNotActive, model.ErrMessageVoucherNotActive, "voucher")
+		res.AddError(its(status), model.ErrCodeVoucherNotActive, model.ErrMessageVoucherNotActive, logger.TraceID)
+		logger.SetStatus(status).Log("param :", gvd , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if !ed.After(time.Now()) {
 		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeVoucherExpired, model.ErrMessageVoucherExpired, "voucher")
+		res.AddError(its(status), model.ErrCodeVoucherExpired, model.ErrMessageVoucherExpired, logger.TraceID)
+		logger.SetStatus(status).Log("param :", gvd , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -597,7 +650,8 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	voucher, err = gvd.generateVoucher(&dt)
 	if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"( failed Genarate Voucher :"+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"( failed Genarate Voucher :"+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", gvd , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -609,6 +663,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 
 	status = http.StatusCreated
 	res = NewResponse(gvr)
+	logger.SetStatus(status).Log("param :", gvd , "response :" , gvr)
 	render.JSON(w, res, status)
 	return
 
@@ -623,14 +678,19 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	vrID := r.FormValue("variant")
 	fmt.Println("variant id = ", vrID)
+
 	//Token Authentocation
 	a := AuthToken(w, r)
 	if !a.Valid {
-
 		render.JSON(w, a.res, http.StatusUnauthorized)
 		return
-
 	}
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Generate-Voucher-Bulk")
+
 
 	for _, valueRole := range a.User.Role {
 		features := model.ApiFeatures[valueRole.RoleDetail]
@@ -648,7 +708,8 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 
 	if getCountVoucher(vrID) > 0 {
 		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeInvalidVariant, model.ErrMessageVariantHasBeenUsed, "voucher")
+		res.AddError(its(status), model.ErrCodeInvalidVariant, model.ErrMessageVariantHasBeenUsed, logger.TraceID)
+		logger.SetStatus(status).Log("param :", vrID , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -656,12 +717,14 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 	variant, err := model.FindVariantDetailsById(vrID)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "variant")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, logger.TraceID)
+		logger.SetStatus(status).Log("param :", vrID , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "variant")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", vrID , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -670,7 +733,8 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 	listBroadcast, err = model.FindBroadcastUser(map[string]string{"variant_id": vrID})
 	if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "broadcast")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", vrID , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -692,7 +756,8 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 			rollback(vrID)
 
 			status = http.StatusInternalServerError
-			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+			logger.SetStatus(status).Log("param :", vrID , "response :" , res.Errors)
 			render.JSON(w, res, status)
 			return
 		}
@@ -700,6 +765,7 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 
 	status = http.StatusCreated
 	res = NewResponse("success")
+	logger.SetStatus(status).Log("param :", vrID , "response :" , res.Data)
 	render.JSON(w, res, status)
 	return
 
@@ -719,6 +785,11 @@ func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Generate-Voucher-Link")
+
 	for _, valueRole := range a.User.Role {
 		features := model.ApiFeatures[valueRole.RoleDetail]
 		for _, valueFeature := range features {
@@ -736,12 +807,14 @@ func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 	v, err := model.FindVoucher(map[string]string{"variant_id": varID})
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidHolder, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidHolder, logger.TraceID)
+		logger.SetStatus(status).Log("param :", varID , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", varID , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -781,6 +854,9 @@ func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Disposition", "attachment;filename=Report.csv")
 	w.Write(b.Bytes())
+
+	logger.SetStatus(status).Log("param :", varID , "response :" , vl)
+
 	return
 }
 

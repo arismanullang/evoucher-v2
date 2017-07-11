@@ -107,6 +107,12 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, a.res, http.StatusUnauthorized)
 		return
 	}
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Variant-List")
+
 	param := getUrlParam(r.URL.String())
 
 	param["variant_type"] = model.VariantTypeOnDemand
@@ -116,12 +122,14 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 	variant, err := model.FindAvailableVariants()
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilVariant, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilVariant, logger.TraceID)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -147,6 +155,7 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 
 	status = http.StatusOK
 	res = NewResponse(d)
+	logger.SetStatus(status).Log("param :", param , "response :" , d)
 	render.JSON(w, res, status)
 }
 
@@ -161,27 +170,36 @@ func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Variant-Details")
+
 	dt, err := model.FindVariantDetailsById(variant)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, logger.TraceID)
+		logger.SetStatus(status).Log("param :", variant , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", variant , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
 	p, err := model.FindVariantPartner(map[string]string{"variant_id": variant})
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant+"(Partner of Variant Not Found)", "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant+"(Partner of Variant Not Found)", logger.TraceID)
+		logger.SetStatus(status).Log("param :", variant , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", variant , "response :" , res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -215,6 +233,7 @@ func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
 
 	status = http.StatusOK
 	res = NewResponse(d)
+	logger.SetStatus(status).Log("param :", variant , "response :" , d)
 	render.JSON(w, res, status)
 }
 

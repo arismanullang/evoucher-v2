@@ -73,7 +73,7 @@ func UploadFileFromForm(r *http.Request) (url string, err error) {
 		return "", err
 	}
 
-	return fmt.Sprintf(model.PublicURL, model.GCS_BUCKET, name), nil
+	return fmt.Sprintf(model.PUBLIC_URL, model.GCS_BUCKET, name), nil
 }
 
 func DeleteFile(w http.ResponseWriter, r *http.Request) {

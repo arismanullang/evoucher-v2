@@ -13,3 +13,19 @@ mailgun:
   mailgun_key: "key-7uktwep6lt-ma6emewjgcwx8bjjkrke8"
   mailgun_public_key: "pubkey-2slaf2guxlloalnpb3qtkruac9beajd9"
   root_mail_template: "files/etc/voucher/public/assets/mail/"
+
+logger:
+  path: "/var/log/"
+  filename: "logger-evoucher"
+
+gcs:
+  bucket: "e-voucher"
+  project_id: "shared-project-159515"
+  public_url: "https://storage.googleapis.com/%s/%s"
+
+ocra:
+  endpoint: "http://ocra-staging.elys.id"
+  apps_key: "uuvdqHUa5VHXOGxrMHYvym1OUBETZwT4r2S7YfxmQOSL9dgIhxJAH8vTrNNVwGxi"
+
+voucher:
+  link: "voucher.elys.id/public/redeem"
