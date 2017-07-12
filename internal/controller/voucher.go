@@ -37,8 +37,8 @@ type (
 	}
 	// GenerateVoucherRequest represent a Request of GenerateVoucher
 	GenerateVoucherRequest struct {
-		AccountID string `json:"account_id" valid:"alphanum,optional"`
-		VariantID string `json:"variant_id" valid:"alphanum,required"`
+		AccountID string `json:"account_id" valid:"-"`
+		VariantID string `json:"variant_id" valid:"required"`
 		Quantity  int    `json:"quantity" valid:"numeric,optional"`
 		Holder    struct {
 			Key         string `json:"id" valid:"required"`
