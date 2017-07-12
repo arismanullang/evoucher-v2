@@ -107,6 +107,12 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, a.res, http.StatusUnauthorized)
 		return
 	}
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Variant-List")
+
 	param := getUrlParam(r.URL.String())
 
 	param["variant_type"] = model.VariantTypeOnDemand
@@ -116,12 +122,14 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 	variant, err := model.FindAvailableVariants()
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilVariant, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilVariant, logger.TraceID)
+		logger.SetStatus(status).Log("param :", param, "response :", res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", param, "response :", res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -147,6 +155,7 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 
 	status = http.StatusOK
 	res = NewResponse(d)
+	logger.SetStatus(status).Log("param :", param, "response :", d)
 	render.JSON(w, res, status)
 }
 
@@ -161,27 +170,36 @@ func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Variant-Details")
+
 	dt, err := model.FindVariantDetailsById(variant)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, logger.TraceID)
+		logger.SetStatus(status).Log("param :", variant, "response :", res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", variant, "response :", res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
 	p, err := model.FindVariantPartner(map[string]string{"variant_id": variant})
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant+"(Partner of Variant Not Found)", "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant+"(Partner of Variant Not Found)", logger.TraceID)
+		logger.SetStatus(status).Log("param :", variant, "response :", res.Errors)
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", variant, "response :", res.Errors)
 		render.JSON(w, res, status)
 		return
 	}
@@ -215,6 +233,7 @@ func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
 
 	status = http.StatusOK
 	res = NewResponse(d)
+	logger.SetStatus(status).Log("param :", variant, "response :", d)
 	render.JSON(w, res, status)
 }
 
@@ -228,6 +247,12 @@ func GetAllVariants(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("Check Session")
 	a := AuthToken(w, r)
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Variant All")
+
 	if a.Valid {
 		status = http.StatusOK
 		variant, err := model.FindAllVariants(a.User.Account.Id)
@@ -240,9 +265,11 @@ func GetAllVariants(w http.ResponseWriter, r *http.Request) {
 				errTitle = model.ErrCodeResourceNotFound
 			}
 
-			res.AddError(its(status), errTitle, err.Error(), "Get Variant")
+			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+			logger.SetStatus(status).Log("param account ID from token :", a.User.Account.Id, "response :", res.Errors)
 		} else {
 			res = NewResponse(variant)
+			logger.SetStatus(status).Log("param account ID from token :", a.User.Account.Id, "response :", variant)
 		}
 	}
 	render.JSON(w, res, status)
@@ -258,7 +285,6 @@ func GetTotalVariant(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("Check Session")
 	a := AuthToken(w, r)
-
 	if a.Valid {
 		status = http.StatusOK
 		variant, err := model.FindAllVariants(a.User.Account.Id)
@@ -288,6 +314,12 @@ func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Get Variant")
 
 	a := AuthToken(w, r)
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Variant Custom Param")
+
 	if a.Valid {
 		status = http.StatusOK
 		variant, err := model.FindVariantDetailsCustomParam(param)
@@ -299,9 +331,11 @@ func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
 				errTitle = model.ErrCodeResourceNotFound
 			}
 
-			res.AddError(its(status), errTitle, err.Error(), "Get Variant")
+			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+			logger.SetStatus(status).Log("param :", param, "response :", res.Errors)
 		} else {
 			res = NewResponse(variant)
+			logger.SetStatus(status).Log("param :", param, "response :", variant)
 		}
 	} else {
 		res = a.res
@@ -321,6 +355,12 @@ func GetVariants(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Get Variant")
 
 	a := AuthToken(w, r)
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Variant")
+
 	if a.Valid {
 		status = http.StatusOK
 		variant, err := model.FindVariantsCustomParam(param)
@@ -332,9 +372,11 @@ func GetVariants(w http.ResponseWriter, r *http.Request) {
 				errTitle = model.ErrCodeResourceNotFound
 			}
 
-			res.AddError(its(status), errTitle, err.Error(), "Get Variant")
+			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+			logger.SetStatus(status).Log("param :", param, "response :", res.Errors)
 		} else {
 			res = NewResponse(variant)
+			logger.SetStatus(status).Log("param :", param, "response :", variant)
 		}
 	} else {
 		res = a.res
@@ -424,6 +466,11 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Create Variant")
 
 	a := AuthToken(w, r)
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Create Variant")
 	if a.Valid {
 		for _, valueRole := range a.User.Role {
 			features := model.ApiFeatures[valueRole.RoleDetail]
@@ -440,25 +487,30 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 			var rd Variant
 			decoder := json.NewDecoder(r.Body)
 			if err := decoder.Decode(&rd); err != nil {
-				log.Panic(err)
+				//log.Panic(err)
+				logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 			}
 
 			ts, err := time.Parse("01/02/2006", rd.StartDate)
 			if err != nil {
-				log.Panic(err)
+				//log.Panic(err)
+				logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 			}
 			te, err := time.Parse("01/02/2006", rd.EndDate)
 			if err != nil {
 				log.Panic(err)
+				logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 			}
 			fmt.Println(rd.ValidVoucherStart)
 			tvs, err := time.Parse("01/02/2006", rd.ValidVoucherStart)
 			if err != nil {
-				log.Panic(err)
+				//log.Panic(err)
+				logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 			}
 			tve, err := time.Parse("01/02/2006", rd.ValidVoucherEnd)
 			if err != nil {
-				log.Panic(err)
+				//log.Panic(err)
+				logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 			}
 
 			vr := model.VariantReq{
@@ -498,9 +550,11 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 				//log.Panic(err)
 				status = http.StatusInternalServerError
 				errTitle = model.ErrCodeInternalError
-				res.AddError(its(status), errTitle, err.Error(), "Create Variant")
+				res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+				logger.SetStatus(status).Panic("param :", rd, "response :", res.Errors)
 			} else {
 				res = NewResponse(id)
+				logger.SetStatus(status).Panic("param :", rd, "response :", id)
 			}
 		}
 	} else {
@@ -521,6 +575,12 @@ func UpdateVariantRoute(w http.ResponseWriter, r *http.Request) {
 	err := model.ErrInvalidRole
 	errTitle := model.ErrCodeInvalidRole
 	a := AuthToken(w, r)
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Update Variant")
+
 	if a.Valid {
 		for _, valueRole := range a.User.Role {
 			features := model.ApiFeatures[valueRole.RoleDetail]
@@ -533,7 +593,8 @@ func UpdateVariantRoute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if types == "" {
-		res.AddError(its(status), errTitle, err.Error(), "Update type not found")
+		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Log("param :", "response :", res.Errors)
 		render.JSON(w, res, status)
 	} else {
 		if valid {
@@ -544,11 +605,13 @@ func UpdateVariantRoute(w http.ResponseWriter, r *http.Request) {
 			} else if types == "broadcast" {
 				UpdateVariantBroadcast(w, r)
 			} else {
-				res.AddError(its(status), errTitle, err.Error(), "Update type not allowed")
+				res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+				logger.SetStatus(status).Panic("param :", "response :", err.Error())
 				render.JSON(w, res, status)
 			}
 		} else {
-			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
+			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+			logger.SetStatus(status).Log("param :", "response :", res.Errors)
 			render.JSON(w, res, status)
 		}
 	}
@@ -563,6 +626,12 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 	errTitle := model.ErrCodeInvalidToken
 	res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 	a := AuthToken(w, r)
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Update Variant")
+
 	if a.Valid {
 		status = http.StatusOK
 		var rd Variant
@@ -574,20 +643,24 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(rd)
 		ts, err := time.Parse("01/02/2006", rd.StartDate)
 		if err != nil {
-			log.Panic(err)
+			//log.Panic(err)
+			logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 		}
 		te, err := time.Parse("01/02/2006", rd.EndDate)
 		if err != nil {
-			log.Panic(err)
+			//log.Panic(err)
+			logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 		}
 
 		tvs, err := time.Parse("2006-01-02T00:00:00Z", rd.ValidVoucherStart)
 		if err != nil {
-			log.Panic(err)
+			//log.Panic(err)
+			logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 		}
 		tve, err := time.Parse("2006-01-02T00:00:00Z", rd.ValidVoucherEnd)
 		if err != nil {
-			log.Panic(err)
+			//log.Panic(err)
+			logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 		}
 
 		vr := model.Variant{
@@ -617,8 +690,10 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 		if err := model.UpdateVariant(vr); err != nil {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
-			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
+			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+			logger.SetStatus(status).Panic("param :", rd, "response :", res.Errors)
 		}
+		logger.SetStatus(status).Panic("param :", rd, "response : success ")
 		res = NewResponse("")
 	} else {
 		res = a.res
@@ -643,6 +718,12 @@ func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 
 	a := AuthToken(w, r)
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Update Variant Broadcast")
+
 	if a.Valid {
 		status = http.StatusOK
 		d := model.UpdateVariantArrayRequest{
@@ -655,9 +736,11 @@ func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {
 			//log.Panic(err)
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
-			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
+			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+			logger.SetStatus(status).Log("param :", d, "response :", res.Errors)
 		}
 		res = NewResponse("")
+		logger.SetStatus(status).Log("param :", d, "response : success")
 	} else {
 		res = a.res
 		status = http.StatusUnauthorized
@@ -682,6 +765,11 @@ func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Update Variant")
 	a := AuthToken(w, r)
 
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Update Variant Tenant")
+
 	if a.Valid {
 		status = http.StatusOK
 		d := model.UpdateVariantArrayRequest{
@@ -694,8 +782,10 @@ func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
+			logger.SetStatus(status).Log("param :", d, "response :", res.Errors)
 		}
 		res = NewResponse("")
+		logger.SetStatus(status).Log("param :", d, "response :", res.Errors)
 	} else {
 		res = a.res
 		status = http.StatusUnauthorized
@@ -716,6 +806,12 @@ func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 	errTitle := model.ErrCodeInvalidRole
 	res.AddError(its(status), errTitle, err.Error(), "Delete Variant")
 	a := AuthToken(w, r)
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Delete Variant")
+
 	if a.Valid {
 		for _, valueRole := range a.User.Role {
 			features := model.ApiFeatures[valueRole.RoleDetail]
@@ -736,6 +832,7 @@ func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 				status = http.StatusInternalServerError
 				errTitle = model.ErrCodeInternalError
 				res.AddError(its(status), errTitle, err.Error(), "Delete Variant")
+				logger.SetStatus(status).Log("param :", d, "response :", res.Errors)
 
 			}
 			objName := strings.Split(d.Img_url, "/")
@@ -743,6 +840,7 @@ func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			res = NewResponse("")
+			logger.SetStatus(status).Log("param :", d, "response : success")
 		}
 	} else {
 		res = a.res

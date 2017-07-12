@@ -86,6 +86,19 @@ func main() {
 	model.PublicApiKey = config.Mailgun.MailgunPublicKey
 	model.RootTemplate = config.Mailgun.RootTemplate
 
+	//logger config
+	model.Path = config.Logger.Path
+	model.FileName = config.Logger.FileName
+	//voucher config
+	model.VOUCHER_URL = config.Voucher.Link
+	//GCS
+	model.GCS_BUCKET = config.Gcs.bucket
+	model.GCS_PROJECT_ID = config.Gcs.ProjectID
+	model.PUBLIC_URL = config.Gcs.PublicURL
+	//OCRA
+	model.OCRA_EVOUCHER_APPS_KEY = config.Ocra.AppsKey
+	model.OCRA_URL = config.Ocra.Endpoint
+
 	r := setRoutes()
 	m := negroni.New()
 	m.Use(negroni.NewRecovery())

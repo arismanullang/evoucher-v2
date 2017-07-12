@@ -28,6 +28,26 @@ type Config struct {
 		MailgunPublicKey string `yaml:"mailgun_public_key"`
 		RootTemplate     string `yaml:"root_mail_template"`
 	}
+
+	Logger struct {
+		Path     string
+		FileName string
+	}
+
+	Gcs struct {
+		bucket    string
+		ProjectID string `yaml:"project_id"`
+		PublicURL string `yaml:"public_url"`
+	}
+
+	Ocra struct {
+		Endpoint string
+		AppsKey  string `yaml:"apps_key"`
+	}
+
+	Voucher struct {
+		Link string
+	}
 }
 
 func ReadConfig(f string, c *Config) error {
