@@ -231,7 +231,27 @@ func InsertVariant(vr VariantReq, fr FormatReq, user string) (string, error) {
 		return "", ErrServerInternal
 	}
 
-	if len(vr.ValidPartners) > 0 {
+	if len(vr.ValidPartners) == 1 && vr.ValidPartners[0] == "all" {
+
+		for _, v := range vr.ValidPartners {
+			q := `
+				INSERT INTO variant_partners(
+					variant_id
+					, partner_id
+					, created_by
+					, status
+				)
+				VALUES (?, ?, ?, ?)
+			`
+
+			_, err := tx.Exec(tx.Rebind(q), res2[0], v, user, StatusCreated)
+			if err != nil {
+				fmt.Println("data :", res2[0], v, user)
+				fmt.Println(err.Error(), "(insert variant_partner)")
+				return "", ErrServerInternal
+			}
+		}
+	} else if len(vr.ValidPartners) > 0 {
 		for _, v := range vr.ValidPartners {
 			q := `
 				INSERT INTO variant_partners(
@@ -813,6 +833,51 @@ func FindVariantDetailsCustomParam(param map[string]string) ([]Variant, error) {
 	}
 	if len(resv) < 1 {
 		return []Variant{}, ErrResourceNotFound
+	}
+
+	return resv, nil
+}
+
+func FindVariantsPartner(parterId, accountId string) ([]SearchVariant, error) {
+	q := `
+		SELECT
+			va.id
+			, va.account_id
+			, va.variant_name
+			, va.voucher_type
+			, va.voucher_price
+			, va.discount_value
+			, va.max_quantity_voucher
+			, va.img_url
+			, va.start_date
+			, va.end_date
+			, count (vo.id) as voucher
+		FROM
+			variants as va
+		LEFT JOIN
+			vouchers as vo
+		ON
+			va.id = vo.variant_id
+		JOIN
+			variant_partners as vp
+		ON
+			va.id = vp.variant_id
+		WHERE
+			vp.partner_id = ?
+			AND va.account_id = ?
+			AND va.status = ?
+		GROUP BY
+			va.id
+		ORDER BY
+			va.start_date DESC
+	`
+
+	var resv []SearchVariant
+	if err := db.Select(&resv, db.Rebind(q), parterId, accountId, StatusCreated); err != nil {
+		return []SearchVariant{}, ErrServerInternal
+	}
+	if len(resv) < 1 {
+		return []SearchVariant{}, ErrResourceNotFound
 	}
 
 	return resv, nil

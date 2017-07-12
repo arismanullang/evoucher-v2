@@ -18,6 +18,8 @@ $( window ).ready(function() {
     }
   });
 
+  $( 'input' ).attr("autocomplete","off");
+
   getSession();
   setSideNavBar();
 });

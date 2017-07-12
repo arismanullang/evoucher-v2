@@ -2,6 +2,20 @@ $( document ).ready(function() {
   getPartner();
 
   $("#token").val(token);
+
+  $("#all-tenant").change(function() {
+  	console.log("a");
+  	var lis = $( "input[class=partner]" );
+	if($("#all-tenant").is(':checked')){
+		for (var i = 0; i < lis.length; i++) {
+			lis[i].checked = true;
+		}
+	} else{
+		for (var i = 0; i < lis.length; i++) {
+			lis[i].checked = false;
+		}
+	}
+  });
   $("#voucher-validity-type").change(function() {
     if(this.value == "lifetime"){
       $("#validity-lifetime").attr("style","display:block");
@@ -136,14 +150,16 @@ function send() {
   }
 
   var listPartner = [];
-  var li = $( "input[type=checkbox]:checked" );
+  var li = $( "input[class=partner]:checked" );
 
   if(li.length == 0 || parseInt($("#length").val()) < 8){
     error = true;
   }
 
   for (i = 0; i < li.length; i++) {
-      listPartner[i] = li[i].value;
+    if(li[i].value != "on") {
+	    listPartner[i] = li[i].value;
+    }
   }
 
   var lifetime = 0;
@@ -364,7 +380,7 @@ function getPartner() {
         for (i = 0; i < arrData.length; i++){
           var li = $("<div class='col-sm-4'></div>");
           var html = "<label class='checkbox-inline c-checkbox'>"
-                    + "<input type='checkbox' value='"+arrData[i].id+"'>"
+                    + "<input type='checkbox' class='partner' value='"+arrData[i].id+"'>"
                     + "<span class='ion-checkmark-round'></span>" + arrData[i].partner_name
                     + "</label>";
           li.html(html);

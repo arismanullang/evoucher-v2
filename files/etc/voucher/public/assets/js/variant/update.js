@@ -5,6 +5,20 @@ $( window ).ready(function() {
   $("#image-url").change(function() {
 	readURL(this);
   });
+
+  $("#all-tenant").change(function() {
+	console.log("a");
+	var lis = $( "input[class=partner]" );
+	if($("#all-tenant").is(':checked')){
+		for (var i = 0; i < lis.length; i++) {
+			lis[i].checked = true;
+		}
+	} else{
+		for (var i = 0; i < lis.length; i++) {
+			lis[i].checked = false;
+		}
+	}
+  });
 });
 
 function readURL(input) {
@@ -45,6 +59,7 @@ function searchById(id) {
 	  $("#image-url-default").val(variant.image_url);
 	  $("#voucher-valid-from").val(variant.valid_voucher_start);
 	  $("#voucher-valid-to").val(variant.valid_voucher_end);
+	  $("#all-tenant").prop("checked", false);
 
 	  $("#voucher-price").attr("disabled","");
 	  $("#max-quantity-voucher").attr("disabled","");
@@ -154,7 +169,7 @@ function send() {
   }
 
   var listPartner = [];
-  var li = $( "input[type=checkbox]:checked" );
+  var li = $( "input[class=partner]:checked" );
 
   if(li.length == 0 || parseInt($("#length").val()) < 8){
 	error = true;
@@ -338,7 +353,7 @@ function getPartner(id) {
         for (i = 0; i < arrData.length; i++){
           var li = $("<div class='col-sm-4'></div>");
           var html = "<label class='checkbox-inline c-checkbox'>"
-                    + "<input type='checkbox' value='"+arrData[i].id+"' text='"+arrData[i].partner_name+"'>"
+                    + "<input type='checkbox' class='partner' value='"+arrData[i].id+"' text='"+arrData[i].partner_name+"'>"
                     + "<span class='ion-checkmark-round'></span>" + arrData[i].partner_name
                     + "</label>";
           li.html(html);

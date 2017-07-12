@@ -11,10 +11,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/gilkor/evoucher/internal/model"
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
-	"github.com/asaskevich/govalidator"
 )
 
 type (
@@ -528,7 +528,6 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	//Token Authentocation
 	a := AuthToken(w, r)
 	if !a.Valid {
@@ -793,7 +792,7 @@ func GetCsvSample(w http.ResponseWriter, r *http.Request) {
 
 	vl := [][]string{}
 	for i := 0; i < 3; i++ {
-		tempArray := []string{"index", "Email", "Name"}
+		tempArray := []string{"index", "Name", "Email"}
 		vl = append(vl, tempArray)
 	}
 

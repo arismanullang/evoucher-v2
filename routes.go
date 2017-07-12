@@ -63,6 +63,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/ui/partner/all", controller.GetAllPartners)
 	r.GetFunc("/v1/ui/partner/variant", controller.GetVariantPartners)
 	r.GetFunc("/v1/ui/partner", controller.GetPartners)
+	r.GetFunc("/v1/ui/partner/performance", controller.GetPerformancePartner)
 	r.PostFunc("/v1/ui/partner/update", controller.UpdatePartner)
 	r.GetFunc("/v1/ui/partner/delete", controller.DeletePartner)
 
@@ -122,7 +123,7 @@ func ping(w http.ResponseWriter, r *http.Request) {
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
-	render.FileInLayout(w, "layout.html", "view/index.html", nil)
+	render.FileInLayout(w, "layout.html", "partner/check.html", nil)
 }
 
 func viewNoLayoutHandler(w http.ResponseWriter, r *http.Request) {
@@ -143,6 +144,9 @@ func viewVariant(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+	} else {
+		render.File(w, "notfound.html", nil, 404)
+		return
 	}
 
 	if valid {
@@ -157,7 +161,7 @@ func viewVariant(w http.ResponseWriter, r *http.Request) {
 		} else if page == "" || page == "index" {
 			render.FileInLayout(w, "layout.html", "variant/index.html", nil)
 		} else {
-			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+			render.File(w, "notfound.html", nil, 404)
 		}
 	} else {
 		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
@@ -187,7 +191,11 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
+		} else {
+			render.File(w, "notfound.html", nil, 404)
+			return
 		}
+
 		if valid {
 			if page == "register" {
 				render.FileInLayout(w, "layout.html", "user/create.html", nil)
@@ -200,7 +208,7 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 			} else if page == "profile" {
 				render.FileInLayout(w, "layout.html", "user/profile.html", nil)
 			} else {
-				render.FileInLayout(w, "layout.html", "notfound.html", nil)
+				render.File(w, "notfound.html", nil, 404)
 			}
 		} else {
 			render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
@@ -223,16 +231,22 @@ func viewPartner(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+	} else {
+		render.File(w, "notfound.html", nil, 404)
+		return
 	}
+
 	if valid {
 		if page == "create" {
 			render.FileInLayout(w, "layout.html", "partner/create.html", nil)
 		} else if page == "search" {
 			render.FileInLayout(w, "layout.html", "partner/search.html", nil)
+		} else if page == "check" {
+			render.FileInLayout(w, "layout.html", "partner/check.html", nil)
 		} else if page == "update" {
 			render.FileInLayout(w, "layout.html", "partner/update.html", nil)
 		} else {
-			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+			render.File(w, "notfound.html", nil, 404)
 		}
 	} else {
 		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
@@ -253,12 +267,16 @@ func viewTag(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+	} else {
+		render.File(w, "notfound.html", nil, 404)
+		return
 	}
+
 	if valid {
 		if page == "search" {
 			render.FileInLayout(w, "layout.html", "tag/search.html", nil)
 		} else {
-			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+			render.File(w, "notfound.html", nil, 404)
 		}
 	} else {
 		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
@@ -279,7 +297,11 @@ func viewVoucher(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+	} else {
+		render.File(w, "notfound.html", nil, 404)
+		return
 	}
+
 	if valid {
 		if page == "search" {
 			render.FileInLayout(w, "layout.html", "voucher/search.html", nil)
@@ -290,7 +312,7 @@ func viewVoucher(w http.ResponseWriter, r *http.Request) {
 		} else if page == "print" {
 			render.FileInLayout(w, "layout.html", "voucher/print.html", nil)
 		} else {
-			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+			render.File(w, "notfound.html", nil, 404)
 		}
 	} else {
 		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
@@ -311,7 +333,11 @@ func viewReport(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+	} else {
+		render.File(w, "notfound.html", nil, 404)
+		return
 	}
+
 	if valid {
 		if page == "variant" {
 			render.FileInLayout(w, "layout.html", "report/variant.html", nil)
@@ -320,7 +346,7 @@ func viewReport(w http.ResponseWriter, r *http.Request) {
 		} else if page == "" || page == "index" {
 			render.FileInLayout(w, "layout.html", "report/test.html", nil)
 		} else {
-			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+			render.File(w, "notfound.html", nil, 404)
 		}
 	} else {
 		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
@@ -341,7 +367,7 @@ func viewPublic(w http.ResponseWriter, r *http.Request) {
 	} else if page == "" || page == "index" {
 		render.File(w, "public/index.html", nil)
 	} else {
-		render.FileInLayout(w, "layout.html", "notfound.html", nil)
+		render.File(w, "notfound.html", nil, 404)
 	}
 }
 
@@ -350,5 +376,5 @@ func login(w http.ResponseWriter, r *http.Request) {
 }
 
 func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
-	render.FileInLayout(w, "layout.html", "notfound.html", nil)
+	render.File(w, "notfound.html", nil, 404)
 }
