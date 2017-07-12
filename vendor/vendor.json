@@ -171,10 +171,10 @@
 			"revisionTime": "2017-03-21T23:07:31Z"
 		},
 		{
-			"checksumSHA1": "ho8ucmWbGD+13GkZ8thMqfiCehE=",
+			"checksumSHA1": "zhNzuRzvloh6oWKEVOFrUrjrVBM=",
 			"path": "github.com/sirupsen/logrus",
-			"revision": "59d0ca41e5faad81cac03f7a7d84ba80d9cc9673",
-			"revisionTime": "2017-07-06T13:44:07Z"
+			"revision": "7f976d3a76720c4c27af2ba716b85d2e0a7e38b1",
+			"revisionTime": "2017-07-10T14:32:56Z"
 		},
 		{
 			"path": "github.com/staori/go.uuid",
@@ -263,10 +263,10 @@
 			"revisionTime": "2017-03-21T01:28:43Z"
 		},
 		{
-			"checksumSHA1": "Sypcm+UJjiKcT7P7kSp87nVuDtI=",
+			"checksumSHA1": "nf+CWRQfmxmZkdYRpxEuA8u+qwI=",
 			"path": "golang.org/x/sys/unix",
-			"revision": "6faef541c73732f438fb660a212750a9ba9f9362",
-			"revisionTime": "2017-06-30T11:05:18Z"
+			"revision": "abf9c25f54453410d0c6668e519582a9e1115027",
+			"revisionTime": "2017-07-10T15:57:01Z"
 		},
 		{
 			"checksumSHA1": "ZQdHbB9VYCXwQ+9/CmZPhJv0+SM=",
