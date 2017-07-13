@@ -64,6 +64,12 @@ func GetAccountDetailByUser(w http.ResponseWriter, r *http.Request) {
 	res.AddError(its(status), errTitle, err.Error(), "Get Account")
 
 	a := AuthToken(w, r)
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Get Account By User")
+
 	if a.Valid {
 		status = http.StatusOK
 		account, err := model.GetAccountDetailByUser(a.User.ID)
@@ -75,9 +81,11 @@ func GetAccountDetailByUser(w http.ResponseWriter, r *http.Request) {
 				errTitle = model.ErrCodeResourceNotFound
 			}
 
-			res.AddError(its(status), errTitle, err.Error(), "Get Acccount")
+			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+			logger.SetStatus(status).Log("param :", a.User.ID , "response :" , err.Error())
 		} else {
 			res = NewResponse(account)
+			logger.SetStatus(status).Log("param :", a.User.ID , "response :" , err.Error())
 		}
 	} else {
 		res = a.res
