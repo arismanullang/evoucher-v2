@@ -123,13 +123,13 @@ func ListVariants(w http.ResponseWriter, r *http.Request) {
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilVariant, logger.TraceID)
-		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
-		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
+		logger.SetStatus(status).Log("param :", param , "response :" , res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
@@ -179,13 +179,13 @@ func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, logger.TraceID)
-		logger.SetStatus(status).Log("param :", variant , "response :" , res.Errors)
+		logger.SetStatus(status).Log("param :", variant , "response :" , res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
-		logger.SetStatus(status).Log("param :", variant , "response :" , res.Errors)
+		logger.SetStatus(status).Log("param :", variant , "response :" , res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
@@ -193,13 +193,13 @@ func ListVariantsDetails(w http.ResponseWriter, r *http.Request) {
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant+"(Partner of Variant Not Found)", logger.TraceID)
-		logger.SetStatus(status).Log("param :", variant , "response :" , res.Errors)
+		logger.SetStatus(status).Log("param :", variant , "response :" , res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
-		logger.SetStatus(status).Log("param :", variant , "response :" , res.Errors)
+		logger.SetStatus(status).Log("param :", variant , "response :" , res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
@@ -266,7 +266,7 @@ func GetAllVariants(w http.ResponseWriter, r *http.Request) {
 			}
 
 			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-			logger.SetStatus(status).Log("param account ID from token :" , a.User.Account.Id , "response :" , res.Errors)
+			logger.SetStatus(status).Log("param account ID from token :" , a.User.Account.Id , "response :" , res.Errors.ToString())
 		} else {
 			res = NewResponse(variant)
 			logger.SetStatus(status).Log("param account ID from token :" , a.User.Account.Id , "response :" , variant)
@@ -332,7 +332,7 @@ func GetVariantDetailsCustom(w http.ResponseWriter, r *http.Request) {
 			}
 
 			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-			logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
+			logger.SetStatus(status).Log("param :", param , "response :" , res.Errors.ToString())
 		} else {
 			res = NewResponse(variant)
 			logger.SetStatus(status).Log("param :", param , "response :" , variant)
@@ -373,7 +373,7 @@ func GetVariants(w http.ResponseWriter, r *http.Request) {
 			}
 
 			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-			logger.SetStatus(status).Log("param :", param , "response :" , res.Errors)
+			logger.SetStatus(status).Log("param :", param , "response :" , res.Errors.ToString())
 		} else {
 			res = NewResponse(variant)
 			logger.SetStatus(status).Log("param :", param , "response :" , variant)
@@ -551,7 +551,7 @@ func CreateVariant(w http.ResponseWriter, r *http.Request) {
 				status = http.StatusInternalServerError
 				errTitle = model.ErrCodeInternalError
 				res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-				logger.SetStatus(status).Panic("param :", rd , "response :" , res.Errors)
+				logger.SetStatus(status).Panic("param :", rd , "response :" , res.Errors.ToString())
 			} else {
 				res = NewResponse(id)
 				logger.SetStatus(status).Panic("param :", rd , "response :" , id)
@@ -594,7 +594,7 @@ func UpdateVariantRoute(w http.ResponseWriter, r *http.Request) {
 
 	if types == "" {
 		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-		logger.SetStatus(status).Log("param :" , "response :" , res.Errors)
+		logger.SetStatus(status).Log("param :" , "response :" , res.Errors.ToString())
 		render.JSON(w, res, status)
 	} else {
 		if valid {
@@ -611,7 +611,7 @@ func UpdateVariantRoute(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-			logger.SetStatus(status).Log("param :" , "response :" , res.Errors)
+			logger.SetStatus(status).Log("param :" , "response :" , res.Errors.ToString())
 			render.JSON(w, res, status)
 		}
 	}
@@ -691,7 +691,7 @@ func UpdateVariant(w http.ResponseWriter, r *http.Request) {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
 			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-			logger.SetStatus(status).Panic("param :", rd , "response :" , res.Errors)
+			logger.SetStatus(status).Panic("param :", rd , "response :" , res.Errors.ToString())
 		}
 		logger.SetStatus(status).Panic("param :", rd , "response : success ")
 		res = NewResponse("")
@@ -737,7 +737,7 @@ func UpdateVariantBroadcast(w http.ResponseWriter, r *http.Request) {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
 			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-			logger.SetStatus(status).Log("param :", d , "response :" , res.Errors)
+			logger.SetStatus(status).Log("param :", d , "response :" , res.Errors.ToString())
 		}
 		res = NewResponse("")
 		logger.SetStatus(status).Log("param :", d , "response : success" )
@@ -782,10 +782,10 @@ func UpdateVariantTenant(w http.ResponseWriter, r *http.Request) {
 			status = http.StatusInternalServerError
 			errTitle = model.ErrCodeInternalError
 			res.AddError(its(status), errTitle, err.Error(), "Update Variant")
-			logger.SetStatus(status).Log("param :", d , "response :" , res.Errors)
+			logger.SetStatus(status).Log("param :", d , "response :" , res.Errors.ToString())
 		}
 		res = NewResponse("")
-		logger.SetStatus(status).Log("param :", d , "response :" , res.Errors)
+		logger.SetStatus(status).Log("param :", d , "response :" , res.Errors.ToString())
 	} else {
 		res = a.res
 		status = http.StatusUnauthorized
@@ -832,7 +832,7 @@ func DeleteVariant(w http.ResponseWriter, r *http.Request) {
 				status = http.StatusInternalServerError
 				errTitle = model.ErrCodeInternalError
 				res.AddError(its(status), errTitle, err.Error(), "Delete Variant")
-				logger.SetStatus(status).Log("param :", d , "response :" , res.Errors)
+				logger.SetStatus(status).Log("param :", d , "response :" , res.Errors.ToString())
 
 			}
 			objName := strings.Split(d.Img_url, "/")
