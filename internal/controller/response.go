@@ -56,6 +56,11 @@ func (r *Response) AddError(code, title, detail, traceID string) {
 	r.Errors = &errorData{code, title, detail, traceID}
 }
 
+func (e *errorData) ToString() string{
+	str := fmt.Sprintf("%#v", e)
+	return str
+}
+
 //func (r *Response) AddGovalidatorErrors(errs govalidator.Errors) {
 //	for _, v := range errs {
 //		te := v.(govalidator.Error)
