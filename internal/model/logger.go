@@ -112,7 +112,7 @@ func (d *LogField) Warn(m ...interface{}){
 }
 
 func (d *LogField) Log(m ...interface{}){
-	//f := initialFile("log")
+	f := initialFile("log")
 	l.WithFields(logrus.Fields{
 		"trace-ID" : d.TraceID,
 		"time": d.Time,
@@ -122,7 +122,7 @@ func (d *LogField) Log(m ...interface{}){
 		"method": d.Method,
 		"result":d.Status,
 	}).Info(m)
-	//f.Close()
+	f.Close()
 }
 
 

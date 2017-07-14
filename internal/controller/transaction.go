@@ -16,13 +16,13 @@ import (
 
 type (
 	TransactionRequest struct {
-		VariantID     string   `json:"variant_id" valid:"alphanum,required"`
+		VariantID     string   `json:"variant_id" valid:"required"`
 		RedeemMethod  string   `json:"redeem_method" valid:"in(qr|token),required"`
-		Partner       string   `json:"partner" valid:"alphanum,required"`
+		Partner       string   `json:"partner" valid:"required"`
 		Challenge     string   `json:"challenge" valid:"numeric,optional"`
 		Response      string   `json:"response" valid:"numeric,optional"`
 		DiscountValue string   `json:"discount_value" valid:"float,required"`
-		Vouchers      []string `json:"vouchers" valid:"alphanum,required"`
+		Vouchers      []string `json:"vouchers" valid:"required"`
 	}
 	DeleteTransactionRequest struct {
 		User string `json:"requested_by"`
