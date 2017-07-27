@@ -37,44 +37,45 @@ function searchById(id) {
     var arrData = [];
 
     $.ajax({
-        url: '/v1/ui/variant/detail?id='+id+'&token='+token,
+        url: '/v1/ui/program/detail?id='+id+'&token='+token,
         type: 'get',
         success: function (data) {
           console.log(data);
-          var variant = data.data[0];
-	  $("#variant-id").val(id);
-          $("#variant-name").val(variant.variant_name);
-          $("#variant-type").val(variant.variant_type);
-          $("#voucher-type").val(variant.voucher_type);
-          $("#voucher-price").val(variant.voucher_price);
-          $("#max-quantity-voucher").val(variant.max_quantity_voucher);
-          $("#redemption-method").val(variant.redeemtion_method);
-          $("#variant-valid-from").val(convertToDate(variant.start_date));
-          $("#variant-valid-to").val(convertToDate(variant.end_date));
-          $("#voucher-value").val(variant.discount_value);
-          $("#variant-tnc").html(variant.variant_tnc);
-          $("#variant-description").val(variant.variant_description);
-          $("#start-hour").val(variant.start_hour);
-          $("#end-hour").val(variant.end_hour);
-	  $("#image-url-default").val(variant.image_url);
-	  $("#voucher-valid-from").val(variant.valid_voucher_start);
-	  $("#voucher-valid-to").val(variant.valid_voucher_end);
+          var program = data.data[0];
+	  $("#program-id").val(id);
+          $("#program-name").val(program.name);
+          $("#program-type").val(program.type);
+          $("#voucher-type").val(program.voucher_type);
+          $("#voucher-price").val(program.voucher_price);
+          $("#max-quantity-voucher").val(program.max_quantity_voucher);
+          $("#redemption-method").val(program.redeemtion_method);
+          $("#program-valid-from").val(convertToDate(program.start_date));
+          $("#program-valid-to").val(convertToDate(program.end_date));
+          $("#voucher-value").val(program.voucher_value);
+          $("#program-tnc").html(program.tnc);
+          $("#program-description").val(program.description);
+          $("#start-hour").val(program.start_hour);
+          $("#end-hour").val(program.end_hour);
+	  $("#image-url-default").val(program.image_url);
+	  $("#voucher-valid-from").val(program.valid_voucher_start);
+	  $("#voucher-valid-to").val(program.valid_voucher_end);
 	  $("#all-tenant").prop("checked", false);
 
+	  $("#program-type").attr("disabled","");
 	  $("#voucher-price").attr("disabled","");
 	  $("#max-quantity-voucher").attr("disabled","");
           $("#voucher-value").attr("disabled","");
           $("#start-hour").attr("disabled","");
           $("#end-hour").attr("disabled","");
-          $("#variant-valid-from").attr("disabled","");
-          $("#variant-valid-to").attr("disabled","");
+          $("#program-valid-from").attr("disabled","");
+          $("#program-valid-to").attr("disabled","");
 	  $("#voucher-validity-type").attr("disabled","");
 	  $("#voucher-valid-from").attr("disabled","");
 	  $("#voucher-valid-to").attr("disabled","");
 
-	  if(variant.voucher_lifetime != 0){
+	  if(program.voucher_lifetime != 0){
 		$("#voucher-lifetime").attr("disabled","");
-		$("#voucher-lifetime").val(variant.voucher_lifetime);
+		$("#voucher-lifetime").val(program.voucher_lifetime);
 		$("#validity-lifetime").attr("style","display:block");
 		$("#validity-date").attr("style","display:none");
 		$("#voucher-valid-from").val("");
@@ -108,19 +109,21 @@ function searchById(id) {
 	    $("#validity-day").attr("style","display:none");
 	  }
 
-	  $("#variant-type").attr("disabled","");
-	  if($("#variant-type").val() == "bulk"){
+	  $("#program-type").attr("disabled","");
+	  if($("#program-type").val() == "bulk"){
 	    $("#target").attr("style","display:block");
+	    $("#conversion-row").attr("style","display:none");
+	    $("#generate-row").attr("style","display:none");
 	    $("#max-quantity-voucher").attr("disabled","");
-	    $("#max-usage-voucher").attr("disabled","");
 	    $("#voucher-price").attr("disabled","");
 	  } else{
 	    $("#target").attr("style","display:none");
+	    $("#conversion-row").attr("style","display:block");
+	    $("#generate-row").attr("style","display:block");
 	    $("#max_quantity_voucher").removeAttr("disabled","");
-	    $("#max_usage_voucher").removeAttr("disabled","");
 	    $("#voucher_price").removeAttr("disabled","");
 	  }
-	  if(variant.allow_accumulative){
+	  if(program.allow_accumulative){
 		  $("#allow-accumulative").attr("checked",true);
 	  }
 
@@ -193,30 +196,46 @@ function send() {
     periodEnd = "1001-01-01T00:00:00Z";
   }
 
-    $('input[check="true"]').each(function() {
+  var maxRedeem = parseInt($("#max-redeem-voucher").val());
+  var maxGenerate = parseInt($("#max-generate-voucher").val());
+
+  $('input[check="true"]').each(function() {
+      if($("#program-type").val() == "bulk"){
+	    if(this.getAttribute("id") == "max-quantity-voucher" || this.getAttribute("id") == "max-generate-voucher" || this.getAttribute("id") == "voucher-price" || this.getAttribute("id") == "max-redeem-voucher"){
+		    maxGenerate = 1;
+		    maxRedeem = 1;
+		    return true;
+	    }
+      }
+
       if($(this).val() == ""){
         $(this).addClass("error");
         $(this).parent().closest('div').addClass("input-error");
-        alert($(this).val());
+        alert($(this).attr("id") + " : " + $(this).val());
         error = true;
       }
-    });
+  });
 
-    var str = $("#variant-tnc").summernote('code');
-    var tnc = str.replace(/^\s+|\s+$|(\r?\n|\r)/g, '');
 
-    if(!str.includes("<p>")){
+  if (maxRedeem < 1 || maxGenerate < 1){
+	error = true;
+  }
+
+  var str = $("#program-tnc").summernote('code');
+  var tnc = str.replace(/^\s+|\s+$|(\r?\n|\r)/g, '');
+
+  if(!str.includes("<p>")){
     	tnc = '<p>'+tnc+'</p>';
-    }
+  }
 
-    if(error){
+  if(error){
       alert("Please check your input.");
       return
-    }
+  }
 
-    var formData = new FormData();
-    var img = $('#image-url-default').val();
-    if($('#image-url')[0].files[0] != null){
+  var formData = new FormData();
+  var img = $('#image-url-default').val();
+  if($('#image-url')[0].files[0] != null){
 
      formData.append('image-url', $('#image-url')[0].files[0]);
 
@@ -230,38 +249,39 @@ function send() {
            console.log(data.data);
            img = data.data;
 
-  	   var id = $("#variant-id").val();
-	   var variant = {
-		 variant_name: $("#variant-name").val(),
-		 variant_type: $("#variant-type").find(":selected").val(),
+  	   var id = $("#program-id").val();
+	   var program = {
+		 name: $("#program-name").val(),
+		 type: $("#program-type").find(":selected").val(),
 		 voucher_type: $("#voucher-type").find(":selected").val(),
 		 voucher_price: parseInt($("#voucher-price").val()),
 		 max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
-		 max_usage_voucher: 1,
+		 max_redeem_voucher: maxRedeem,
+		 max_generate_voucher: maxGenerate,
 		 allow_accumulative: $("#allow-accumulative").is(":checked"),
 		 redeemtion_method: $("#redeemtion-method").find(":selected").val(),
-		 start_date: $("#variant-valid-from").val(),
-		 end_date: $("#variant-valid-to").val(),
+		 start_date: $("#program-valid-from").val(),
+		 end_date: $("#program-valid-to").val(),
 		 start_hour: $("#start-hour").val(),
 		 end_hour: $("#end-hour").val(),
-		 discount_value: parseInt($("#voucher-value").val()),
+		 voucher_value: parseInt($("#voucher-value").val()),
 		 image_url: img,
-		 variant_tnc: tnc,
-		 variant_description: $("#variant-description").val(),
+		 tnc: tnc,
+		 description: $("#program-description").val(),
 		 validity_days: listDay,
 		 valid_voucher_start: periodStart,
 		 valid_voucher_end: periodEnd,
 		 voucher_lifetime: parseInt(lifetime)
 	   };
 
-	   console.log(variant);
+	   console.log(program);
 
 	   $.ajax({
-		 url: '/v1/ui/variant/update?id='+id+'&type=detail&token='+token,
+		 url: '/v1/ui/program/update?id='+id+'&type=detail&token='+token,
 		 type: 'post',
 		 dataType: 'json',
 		 contentType: "application/json",
-		 data: JSON.stringify(variant),
+		 data: JSON.stringify(program),
 		 success: function () {
 			 var partner = {
 				 user: "user",
@@ -269,53 +289,54 @@ function send() {
 			 };
 
 			 $.ajax({
-				 url: '/v1/ui/variant/update?id='+id+'&type=tenant&token='+token,
+				 url: '/v1/ui/program/update?id='+id+'&type=tenant&token='+token,
 				 type: 'post',
 				 dataType: 'json',
 				 contentType: "application/json",
 				 data: JSON.stringify(partner),
 				 success: function () {
 					 var id = findGetParameter("id");
-					 window.location = "/variant/check?id="+id+"&token="+token;
+					 window.location = "/program/check?id="+id+"&token="+token;
 				 }
 			 });
 		 }
 	   });
          }
      });
-    }else {
-	    var id = $("#variant-id").val();
-	    var variant = {
-		    variant_name: $("#variant-name").val(),
-		    variant_type: $("#variant-type").find(":selected").val(),
+  }else {
+	    var id = $("#program-id").val();
+	    var program = {
+		    name: $("#program-name").val(),
+		    type: $("#program-type").find(":selected").val(),
 		    voucher_type: $("#voucher-type").find(":selected").val(),
 		    voucher_price: parseInt($("#voucher-price").val()),
 		    max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
-		    max_usage_voucher: 1,
+		    max_redeem_voucher: maxRedeem,
+		    max_generate_voucher: maxGenerate,
 		    allow_accumulative: $("#allow-accumulative").is(":checked"),
 		    redeemtion_method: $("#redeemtion-method").find(":selected").val(),
-		    start_date: $("#variant-valid-from").val(),
-		    end_date: $("#variant-valid-to").val(),
+		    start_date: $("#program-valid-from").val(),
+		    end_date: $("#program-valid-to").val(),
 		    start_hour: $("#start-hour").val(),
 		    end_hour: $("#end-hour").val(),
-		    discount_value: parseInt($("#voucher-value").val()),
+		    voucher_value: parseInt($("#voucher-value").val()),
 		    image_url: img,
-		    variant_tnc: tnc,
-		    variant_description: $("#variant-description").val(),
+		    tnc: tnc,
+		    description: $("#program-description").val(),
 		    validity_days: listDay,
 		    valid_voucher_start: periodStart,
 		    valid_voucher_end: periodEnd,
 		    voucher_lifetime: parseInt(lifetime)
 	    };
 
-	    console.log(variant);
+	    console.log(program);
 
 	    $.ajax({
-		    url: '/v1/ui/variant/update?id='+id+'&type=detail&token='+token,
+		    url: '/v1/ui/program/update?id='+id+'&type=detail&token='+token,
 		    type: 'post',
 		    dataType: 'json',
 		    contentType: "application/json",
-		    data: JSON.stringify(variant),
+		    data: JSON.stringify(program),
 		    success: function () {
 			    var partner = {
 				    user: "user",
@@ -323,26 +344,26 @@ function send() {
 			    };
 
 			    $.ajax({
-				    url: '/v1/ui/variant/update?id='+id+'&type=tenant&token='+token,
+				    url: '/v1/ui/program/update?id='+id+'&type=tenant&token='+token,
 				    type: 'post',
 				    dataType: 'json',
 				    contentType: "application/json",
 				    data: JSON.stringify(partner),
 				    success: function () {
 					    var id = findGetParameter("id");
-					    window.location = "/variant/check?id="+id+"&token="+token;
+					    window.location = "/program/check?id="+id+"&token="+token;
 				    }
 			    });
 		    }
 	    });
-    }
+  }
 }
 
 function getPartner(id) {
     console.log("Get Partner Data");
 
     $.ajax({
-      url: '/v1/ui/partner/all',
+      url: '/v1/ui/partner/all?token='+token,
       type: 'get',
       success: function (data) {
         console.log("Render Data");
@@ -353,15 +374,15 @@ function getPartner(id) {
         for (i = 0; i < arrData.length; i++){
           var li = $("<div class='col-sm-4'></div>");
           var html = "<label class='checkbox-inline c-checkbox'>"
-                    + "<input type='checkbox' class='partner' value='"+arrData[i].id+"' text='"+arrData[i].partner_name+"'>"
-                    + "<span class='ion-checkmark-round'></span>" + arrData[i].partner_name
+                    + "<input type='checkbox' class='partner' value='"+arrData[i].id+"' text='"+arrData[i].name+"'>"
+                    + "<span class='ion-checkmark-round'></span>" + arrData[i].name
                     + "</label>";
           li.html(html);
           li.appendTo('#partner-list');
         }
 
 	$.ajax({
-            url: '/v1/ui/partner/variant?variant_id='+id+'&token='+token,
+            url: '/v1/ui/partner/program?program_id='+id+'&token='+token,
             type: 'get',
             success: function (data) {
               var i;
@@ -374,7 +395,7 @@ function getPartner(id) {
                   var arrData = data.data;
                   var limit = arrData.length;
                   for ( y = 0; y < limit; y++){
-   		       if(tempElem.getAttribute("text") == arrData[y].partner_name){
+   		       if(tempElem.getAttribute("text") == arrData[y].name){
    			       tempElem.checked = true;
    		       }
                   }

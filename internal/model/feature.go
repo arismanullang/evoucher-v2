@@ -9,16 +9,18 @@ var (
 
 type (
 	Feature struct {
-		Role     string `db:"role_detail"`
-		Category string `db:"feature_category"`
-		Detail   string `db:"feature_detail"`
+		Id       string `db:"id"`
+		Role     string `db:"role"`
+		Category string `db:"category"`
+		Detail   string `db:"detail"`
+		Type     string `db:"type"`
 	}
 )
 
 func GetAllUiFeatures() ([]Feature, error) {
 	q := `
 		SELECT
-			r.role_detail, f.feature_category, f.feature_detail
+			f.id, f.type, r.detail as role, f.category, f.detail
 		FROM roles AS r
 		JOIN role_features AS rf
 		ON
@@ -27,11 +29,12 @@ func GetAllUiFeatures() ([]Feature, error) {
 		ON
 			f.id = rf.feature_id
 		WHERE
-			f.feature_type = 'ui'
+			f.type = 'ui'
+			AND f.status = ?
 	`
 
 	var resv []Feature
-	if err := db.Select(&resv, db.Rebind(q)); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
 		return []Feature{}, ErrServerInternal
 	}
 	if len(resv) < 1 {
@@ -44,7 +47,7 @@ func GetAllUiFeatures() ([]Feature, error) {
 func GetAllApiFeatures() ([]Feature, error) {
 	q := `
 		SELECT
-			r.role_detail, f.feature_category, f.feature_detail
+			f.id, f.type, r.detail as role, f.category, f.detail
 		FROM roles AS r
 		JOIN role_features AS rf
 		ON
@@ -53,11 +56,12 @@ func GetAllApiFeatures() ([]Feature, error) {
 		ON
 			f.id = rf.feature_id
 		WHERE
-			f.feature_type = 'api'
+			f.type = 'api'
+			AND f.status = ?
 	`
 
 	var resv []Feature
-	if err := db.Select(&resv, db.Rebind(q)); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
 		return []Feature{}, ErrServerInternal
 	}
 	if len(resv) < 1 {

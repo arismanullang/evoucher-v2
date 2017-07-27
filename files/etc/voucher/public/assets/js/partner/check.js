@@ -13,9 +13,9 @@ function getPartner(id) {
 		success: function (data) {
 			console.log(data.data);
 			var arrData = data.data[0];
-			$("#initial").html(arrData.partner_name.charAt(0).toUpperCase());
-			$("#partner-title").html(arrData.partner_name.toUpperCase());
-			$("#partner-name").html(arrData.partner_name);
+			$("#initial").html(arrData.name.charAt(0).toUpperCase());
+			$("#partner-title").html(arrData.name.toUpperCase());
+			$("#partner-name").html(arrData.name);
 			$("#serial-number").html(arrData.serial_number.String);
 			$("#tag").html(arrData.tag.String);
 			$("#desciption").html(arrData.description.String);
@@ -44,16 +44,16 @@ function getPerformance(id) {
 	});
 }
 
-function getVariant() {
+function getProgram() {
 	console.log("Get Account Data");
 
 	$.ajax({
-		url: '/v1/ui/variant/all?token='+token,
+		url: '/v1/ui/program/all?token='+token,
 		type: 'get',
 		success: function (data) {
 			console.log(data.data);
 			var result = data.data;
-			$("#user-variant").html(result.length);
+			$("#user-program").html(result.length);
 		},
 		error: function (data) {
 			alert("Account Not Found.");
@@ -61,6 +61,6 @@ function getVariant() {
 	});
 }
 
-function updateUser(){
-	window.location = "/user/update?token="+token;
+function edit(){
+	window.location = "/partner/update?id="+findGetParameter('id')+"&token="+token;
 }

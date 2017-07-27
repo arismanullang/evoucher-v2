@@ -13,7 +13,7 @@ function getPartner() {
     console.log("Get Partner Data");
 
     $.ajax({
-      url: '/v1/ui/partner/all',
+      url: '/v1/ui/partner/all?token='+token,
       type: 'get',
       success: function (data) {
         console.log("Render Data");
@@ -22,7 +22,7 @@ function getPartner() {
 
         var i;
         for (i = 0; i < arrData.length; i++){
-          var li = $("<option value='"+arrData[i].partner_name+"'>"+arrData[i].partner_name+"</div>");
+          var li = $("<option value='"+arrData[i].name+"'>"+arrData[i].name+"</div>");
           li.appendTo('#partner-id');
         }
       }
@@ -30,7 +30,7 @@ function getPartner() {
 }
 
 function getTransactionByPartner(partnerId) {
-    console.log("Get Variant Data");
+    console.log("Get Program Data");
 
     var arrData = [];
     $.ajax({
@@ -82,7 +82,7 @@ function getTransactionByPartner(partnerId) {
 		    dataSet[i] = [
 			    arrData[i].partner_name.toUpperCase()
 			    , arrData[i].transaction_code
-			    , arrData[i].variant_name.toUpperCase()
+			    , arrData[i].program_name.toUpperCase()
 			    , arrData[i].voucher[y].VoucherCode
 			    //, addDecimalPoints(arrData[i].discount_value)
 			    , date1[2] + " " + months[parseInt(date1[1])-1] + " " + date1[0]
@@ -108,7 +108,7 @@ function getTransactionByPartner(partnerId) {
               buttons: [
                   'copy', 'csv', 'excel', 'pdf', 'print'
               ],
-              "order": [[ 0, "asc" ]],
+              "order": [[ 8, "desc" ]],
               columns: [
                   { title: "PARTNER" },
                   { title: "TRANSACTION CODE" },

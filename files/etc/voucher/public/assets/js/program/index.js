@@ -1,11 +1,11 @@
 $(document).ready(function() {
-  getVariant();
+  getProgram();
 });
 
-function getVariant() {
-    console.log("Get Variant Data");
+function getProgram() {
+    console.log("Get Program Data");
     $.ajax({
-        url: '/v1/ui/variant/all?token='+token,
+        url: '/v1/ui/program/all?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -27,25 +27,26 @@ function getVariant() {
               var one_day = 1000*60*60*24;
               var diffNow = Math.round((dateEnd_ms-dateNow_ms)/one_day);
 
-              var html = "<h5 class='mb-sm'><a href='/variant/check?id='"+result[i].Id+"'&token='"+token+"'>"+result[i].variant_name+"</a></h5>"
+              var html = "<h5 class='mb-sm'><a href='/program/check?id="+result[i].id+"&token="+token+"'>"+result[i].name+"</a></h5>"
               + "<p class='text-muted'>End in "+diffNow+" days</p>";
               if(result[i].vouchers == null){
                 html += "<p>No voucher generated</p>";
               } else {
               	var voucher = 0;
               	for(var y = 0; y < result[i].vouchers.length; y++){
-			voucher += parseInt(result[i].vouchers[y].voucher);
-			totalGeneratedVoucher += parseInt(result[i].vouchers[y].voucher);
+				voucher += parseInt(result[i].vouchers[y].voucher);
 
-			if(result[i].state.String != "created"){
+			if(result[i].vouchers[y].state != "created"){
 				totalUsedVoucher += parseInt(result[i].vouchers[y].voucher);
+			}else{
+				totalGeneratedVoucher += parseInt(result[i].vouchers[y].voucher);
 			}
 		}
                 html += "<p>"+voucher+" vouchers have distributed. "+(result[i].max_quantity_voucher - voucher)+" vouchers left.</p>";
               }
               var li = $("<li class='list-group-item'></li>").html(html);
               if(dateEnd_ms > dateNow_ms){
-                  li.appendTo('#upcomming-variant');
+                  li.appendTo('#upcomming-program');
                   totalProgram++;
               }
             }
@@ -57,19 +58,19 @@ function getVariant() {
 
           }
 
-          $("#total-variant").html(result.length);
+          $("#total-program").html(result.length);
           $("#total-voucher").html(totalVoucher);
           $("#total-generated").html(totalGeneratedVoucher);
           $("#total-used").html(totalUsedVoucher);
         },
         error: function (data) {
-          alert("Variant Not Found.");
+          alert("Program Not Found.");
         }
     });
 }
 
-function addVariant(){
-  window.location = "/variant/create?token="+token;
+function addProgram(){
+  window.location = "/program/create?token="+token;
 }
 
 (function() {

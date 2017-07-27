@@ -17,10 +17,10 @@ type (
 		HolderPhone       sql.NullString `db:"holder_phone"`
 		HolderEmail       sql.NullString `db:"holder_email"`
 		HolderDescription sql.NullString `db:"holder_description"`
-		VariantID         string         `db:"variant_id"`
+		ProgramID         string         `db:"program_id"`
 		ValidAt           time.Time      `db:"valid_at"`
 		ExpiredAt         time.Time      `db:"expired_at"`
-		DiscountValue     float64        `db:"discount_value"`
+		VoucherValue      float64        `db:"voucher_value"`
 		State             string         `db:"state"`
 		CreatedBy         string         `db:"created_by"`
 		CreatedAt         time.Time      `db:"created_at"`
@@ -61,10 +61,10 @@ func FindAvailableVoucher(param map[string]string) (VoucherResponse, error) {
 			, holder_phone
 			, holder_email
 			, holder_description
-			, variant_id
+			, program_id
 			, valid_at
 			, expired_at
-			, discount_value
+			, voucher_value
 			, state
 			, created_by
 			, created_at
@@ -114,10 +114,10 @@ func FindVoucher(param map[string]string) (VoucherResponse, error) {
 			, holder_phone
 			, holder_email
 			, holder_description
-			, variant_id
+			, program_id
 			, valid_at
 			, expired_at
-			, discount_value
+			, voucher_value
 			, state
 			, created_by
 			, created_at
@@ -170,10 +170,10 @@ func (d *Voucher) InsertVc() error {
 			      , holder_phone
 			      , holder_email
 			      , holder_description
-			      , variant_id
+			      , program_id
 			      , valid_at
 			      , expired_at
-			      , discount_value
+			      , voucher_value
 			      , state
 			      , created_by
 	      		)
@@ -186,10 +186,10 @@ func (d *Voucher) InsertVc() error {
 			      , holder_phone
 			      , holder_email
 			      , holder_description
-			      , variant_id
+			      , program_id
 			      , valid_at
 			      , expired_at
-			      , discount_value
+			      , voucher_value
 			      , state
 			      , created_by
 			      , created_at
@@ -201,7 +201,7 @@ func (d *Voucher) InsertVc() error {
       `
 	var res []Voucher
 	// fmt.Println("insert data =>", d)
-	if err := vc.Select(&res, vc.Rebind(q), d.VoucherCode, d.ReferenceNo, d.Holder, d.HolderPhone, d.HolderEmail, d.HolderDescription, d.VariantID, d.ValidAt, d.ExpiredAt, d.DiscountValue, VoucherStateCreated, d.CreatedBy); err != nil {
+	if err := vc.Select(&res, vc.Rebind(q), d.VoucherCode, d.ReferenceNo, d.Holder, d.HolderPhone, d.HolderEmail, d.HolderDescription, d.ProgramID, d.ValidAt, d.ExpiredAt, d.VoucherValue, VoucherStateCreated, d.CreatedBy); err != nil {
 		return err
 	}
 
@@ -267,10 +267,10 @@ func (d *UpdateDeleteRequest) UpdateVc() (Voucher, error) {
 			, voucher_code
 			, reference_no
 			, holder
-			, variant_id
+			, program_id
 			, valid_at
 			, expired_at
-			, discount_value
+			, voucher_value
 			, state
 			, created_by
 			, created_at
@@ -334,7 +334,7 @@ func CountVoucher(varID string) int {
 		FROM
 			vouchers
 		WHERE
-			variant_id = ?
+			program_id = ?
 			AND status = ?
 	`
 	var resd []int
@@ -345,7 +345,32 @@ func CountVoucher(varID string) int {
 	return resd[0]
 }
 
-func HardDelete(variant string) error {
+func CountHolderVoucher(programId, holder string) int {
+	vc, err := db.Beginx()
+	if err != nil {
+		return 0
+	}
+	defer vc.Rollback()
+
+	q := `
+		SELECT
+			count(1)
+		FROM
+			vouchers
+		WHERE
+			program_id = ?
+			AND holder = ?
+			AND status = ?
+	`
+	var resd []int
+	if err := db.Select(&resd, db.Rebind(q), programId, holder, StatusCreated); err != nil {
+		log.Panic(err)
+		return 0
+	}
+	return resd[0]
+}
+
+func HardDelete(program string) error {
 	vc, err := db.Beginx()
 	if err != nil {
 		return err
@@ -355,13 +380,13 @@ func HardDelete(variant string) error {
 	q := `
 		DELETE 	vouchers
 		WHERE
-			variant_id = ?
+			program_id = ?
 		AND
 			status = ?
 		RETURNING id
       `
 	var result []string
-	if err := vc.Select(&result, vc.Rebind(q), variant, StatusCreated); err != nil {
+	if err := vc.Select(&result, vc.Rebind(q), program, StatusCreated); err != nil {
 		return err
 	}
 

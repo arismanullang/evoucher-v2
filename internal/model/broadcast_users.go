@@ -4,13 +4,13 @@ import "time"
 
 type (
 	BroadcastUser struct {
-		ID              int       `db:"id"`
-		State           string    `db:"state"`
-		VariantID       string    `db:"variant_id"`
-		BroadcastTarget string    `db:"broadcast_target"`
-		Description     string    `db:"description"`
-		CreatedBy       string    `db:"created_by"`
-		CreatedAt       time.Time `db:"created_at"`
+		ID          int       `db:"id"`
+		State       string    `db:"state"`
+		ProgramID   string    `db:"program_id"`
+		Target      string    `db:"target"`
+		Description string    `db:"description"`
+		CreatedBy   string    `db:"created_by"`
+		CreatedAt   time.Time `db:"created_at"`
 	}
 )
 
@@ -19,8 +19,8 @@ func FindBroadcastUser(param map[string]string) ([]BroadcastUser, error) {
 		SELECT
 			id
 			, state
-			, variant_id
-			, broadcast_target
+			, program_id
+			, target
 			, description
 		FROM
 			broadcast_users

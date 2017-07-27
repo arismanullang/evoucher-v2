@@ -14,7 +14,7 @@ function recover(){
   }
 
   $.ajax({
-      url: '/v1/ui/user/mail?username='+user,
+      url: '/v1/ui/user/forgot/mail?username='+user,
       type: 'get',
       dataType: 'json',
       success: function (data){

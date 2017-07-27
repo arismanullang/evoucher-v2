@@ -3,8 +3,6 @@ package controller
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/go-zoo/bone"
@@ -21,16 +19,16 @@ type (
 	}
 	Partner struct {
 		ID           string `json:"id"`
-		PartnerName  string `json:"partner_name"`
+		Name         string `json:"name"`
 		SerialNumber string `json:"serial_number"`
 		Tag          string `json:"tag"`
 		Description  string `json:"description"`
 	}
 	PartnerResponseDetails []PartnerResponse
 	PartnerResponse        struct {
-		PartnerName  string `json:"partner_name"`
+		Name         string `json:"name"`
 		SerialNumber string `json:"serial_number"`
-		VariantID    string `json:"variant_id"`
+		ProgramID    string `json:"program_id"`
 		CreatedBy    string `json:"created_by"`
 	}
 	Tag struct {
@@ -49,13 +47,19 @@ type (
 	}
 )
 
-func GetVariantPartners(w http.ResponseWriter, r *http.Request) {
+func GetProgramPartners(w http.ResponseWriter, r *http.Request) {
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("partner_get_program")
+
 	param := getUrlParam(r.URL.String())
 	status := http.StatusOK
 	res := NewResponse(nil)
-	partner, err := model.FindVariantPartner(param)
+
+	partner, err := model.FindProgramPartner(param)
+	res = NewResponse(partner)
 	if err != nil {
-		fmt.Println(err.Error())
 		status = http.StatusInternalServerError
 		errorTitle := model.ErrCodeInternalError
 		if err == model.ErrResourceNotFound {
@@ -63,21 +67,25 @@ func GetVariantPartners(w http.ResponseWriter, r *http.Request) {
 			errorTitle = model.ErrCodeResourceNotFound
 		}
 
-		res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
-	} else {
-		res = NewResponse(partner)
+		res.AddError(its(status), errorTitle, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", param, "response :", err.Error())
 	}
 
 	render.JSON(w, res, status)
 }
 
 func GetPartners(w http.ResponseWriter, r *http.Request) {
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("partner_get")
+
 	param := getUrlParam(r.URL.String())
 	status := http.StatusOK
 	res := NewResponse(nil)
 	partner, err := model.FindPartners(param)
+	res = NewResponse(partner)
 	if err != nil {
-		fmt.Println(err.Error())
 		status = http.StatusInternalServerError
 		errorTitle := model.ErrCodeInternalError
 		if err == model.ErrResourceNotFound {
@@ -86,8 +94,7 @@ func GetPartners(w http.ResponseWriter, r *http.Request) {
 		}
 
 		res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
-	} else {
-		res = NewResponse(partner)
+		logger.SetStatus(status).Info("param :", param, "response :", err.Error())
 	}
 
 	render.JSON(w, res, status)
@@ -96,9 +103,23 @@ func GetPartners(w http.ResponseWriter, r *http.Request) {
 func GetAllPartners(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	res := NewResponse(nil)
-	partner, err := model.FindAllPartners()
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("partner_all")
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	partner, err := model.FindAllPartners(a.User.Account.Id)
+	res = NewResponse(partner)
 	if err != nil {
-		fmt.Println(err.Error())
 		status = http.StatusInternalServerError
 		errorTitle := model.ErrCodeInternalError
 		if err == model.ErrResourceNotFound {
@@ -106,16 +127,14 @@ func GetAllPartners(w http.ResponseWriter, r *http.Request) {
 			errorTitle = model.ErrCodeResourceNotFound
 		}
 
-		res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
-	} else {
-		res = NewResponse(partner)
+		res.AddError(its(status), errorTitle, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", a.User.Account.Id, "response :", err.Error())
 	}
 
 	render.JSON(w, res, status)
 }
 
 func GetAllPartnersCustomParam(w http.ResponseWriter, r *http.Request) {
-
 	res := NewResponse(nil)
 	var status int
 	var err error
@@ -132,7 +151,7 @@ func GetAllPartnersCustomParam(w http.ResponseWriter, r *http.Request) {
 
 	p := []model.Partner{}
 	if len(param) > 0 {
-		p, err = model.FindVariantPartner(param)
+		p, err = model.FindProgramPartner(param)
 	} else {
 		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, "partner")
@@ -154,9 +173,9 @@ func GetAllPartnersCustomParam(w http.ResponseWriter, r *http.Request) {
 
 	d := make(PartnerResponseDetails, len(p))
 	for i, v := range p {
-		d[i].PartnerName = v.PartnerName
+		d[i].Name = v.Name
 		d[i].SerialNumber = v.SerialNumber.String
-		d[i].VariantID = v.VariantID
+		d[i].ProgramID = v.ProgramID
 		d[i].CreatedBy = v.CreatedBy.String
 	}
 
@@ -169,50 +188,74 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	apiName := "partner_update"
 	valid := false
 
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
 	id := r.FormValue("id")
 	var rd Partner
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
+		logger.SetStatus(http.StatusInternalServerError).Panic("param :", r.Body, "response :", err.Error())
 	}
 
-	status := http.StatusUnauthorized
-	err := model.ErrInvalidRole
-	errorTitle := model.ErrCodeInvalidRole
+	status := http.StatusOK
 	res := NewResponse(nil)
-	res.AddError(its(status), errorTitle, err.Error(), "Update Partner")
 
-	a := AuthToken(w, r)
-	if a.Valid {
-		for _, valueRole := range a.User.Role {
-			features := model.ApiFeatures[valueRole.RoleDetail]
-			for _, valueFeature := range features {
-				if apiName == valueFeature {
-					valid = true
-				}
-			}
-		}
-
-		if valid {
-			status = http.StatusOK
-			err := model.UpdatePartner(id, rd.SerialNumber, a.User.ID)
-			if err != nil {
-				status = http.StatusInternalServerError
-				errorTitle = model.ErrCodeInternalError
-				if err == model.ErrResourceNotFound {
-					status = http.StatusNotFound
-					errorTitle = model.ErrCodeResourceNotFound
-				}
-
-				res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
-			} else {
-				res = NewResponse("Success")
-			}
-
-		}
-	} else {
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
 		res = a.res
 		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	for _, valueRole := range a.User.Role {
+		features := model.ApiFeatures[valueRole.Detail]
+		for _, valueFeature := range features {
+			if apiName == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if !valid {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	var serial, desc sql.NullString
+
+	if rd.SerialNumber != "" {
+		serial = sql.NullString{rd.SerialNumber, true}
+	}
+
+	if rd.Description != "" {
+		desc = sql.NullString{rd.Description, true}
+	}
+
+	partner := model.Partner{
+		Id:           id,
+		SerialNumber: serial,
+		Description:  desc,
+	}
+
+	err := model.UpdatePartner(partner, a.User.ID)
+	if err != nil {
+		status = http.StatusInternalServerError
+		errorTitle := model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errorTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errorTitle, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", id+" || "+rd.SerialNumber, "response :", err.Error())
 	}
 
 	render.JSON(w, res, status)
@@ -223,44 +266,54 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 	valid := false
 
 	id := r.FormValue("id")
-
-	status := http.StatusUnauthorized
-	err := model.ErrInvalidRole
-	errorTitle := model.ErrCodeInvalidRole
+	status := http.StatusOK
 	res := NewResponse(nil)
-	res.AddError(its(status), errorTitle, err.Error(), "Delete Partner")
 
-	a := AuthToken(w, r)
-	if a.Valid {
-		for _, valueRole := range a.User.Role {
-			features := model.ApiFeatures[valueRole.RoleDetail]
-			for _, valueFeature := range features {
-				if apiName == valueFeature {
-					valid = true
-				}
-			}
-		}
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
 
-		if valid {
-			status = http.StatusOK
-			err := model.DeletePartner(id, a.User.ID)
-			if err != nil {
-				status = http.StatusInternalServerError
-				errorTitle = model.ErrCodeInternalError
-				if err == model.ErrResourceNotFound {
-					status = http.StatusNotFound
-					errorTitle = model.ErrCodeResourceNotFound
-				}
-
-				res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
-			} else {
-				res = NewResponse("Success")
-			}
-		}
-	} else {
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
 		res = a.res
 		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
 	}
+
+	for _, valueRole := range a.User.Role {
+		features := model.ApiFeatures[valueRole.Detail]
+		for _, valueFeature := range features {
+			if apiName == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if !valid {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	status = http.StatusOK
+	err := model.DeletePartner(id, a.User.ID)
+	if err != nil {
+		status = http.StatusInternalServerError
+		errorTitle := model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errorTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errorTitle, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", id, "response :", err.Error())
+	}
+
 	render.JSON(w, res, status)
 }
 
@@ -269,69 +322,79 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 	apiName := "partner_create"
 	valid := false
 
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
 	var rd Partner
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
+		logger.SetStatus(http.StatusInternalServerError).Panic("param :", r.Body, "response :", err.Error())
 	}
 
-	status := http.StatusUnauthorized
-	err := model.ErrInvalidRole
-	errorTitle := model.ErrCodeInvalidRole
+	status := http.StatusCreated
 	res := NewResponse(nil)
-	res.AddError(its(status), errorTitle, err.Error(), "Create Partner")
 
-	a := AuthToken(w, r)
-	if a.Valid {
-		for _, valueRole := range a.User.Role {
-			features := model.ApiFeatures[valueRole.RoleDetail]
-			for _, valueFeature := range features {
-				if apiName == valueFeature {
-					valid = true
-				}
-			}
-		}
-
-		if valid {
-
-			status = http.StatusCreated
-			param := model.Partner{
-				PartnerName: rd.PartnerName,
-				SerialNumber: sql.NullString{
-					String: rd.SerialNumber,
-					Valid:  true,
-				},
-				CreatedBy: sql.NullString{
-					String: a.User.ID,
-					Valid:  true,
-				},
-				Tag: sql.NullString{
-					String: rd.Tag,
-					Valid:  true,
-				},
-				Description: sql.NullString{
-					String: rd.Description,
-					Valid:  true,
-				},
-			}
-			err = model.InsertPartner(param)
-			if err != nil {
-				status = http.StatusInternalServerError
-				errorTitle = model.ErrCodeInternalError
-				if err == model.ErrResourceNotFound {
-					status = http.StatusNotFound
-					errorTitle = model.ErrCodeResourceNotFound
-				}
-
-				res.AddError(its(status), errorTitle, err.Error(), "Add Partner")
-			} else {
-				res = NewResponse("Success")
-			}
-		}
-	} else {
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
 		res = a.res
 		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
 	}
+
+	for _, valueRole := range a.User.Role {
+		features := model.ApiFeatures[valueRole.Detail]
+		for _, valueFeature := range features {
+			if apiName == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if !valid {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	param := model.Partner{
+		Name:      rd.Name,
+		AccountId: a.User.Account.Id,
+		SerialNumber: sql.NullString{
+			String: rd.SerialNumber,
+			Valid:  true,
+		},
+		CreatedBy: sql.NullString{
+			String: a.User.ID,
+			Valid:  true,
+		},
+		Tag: sql.NullString{
+			String: rd.Tag,
+			Valid:  true,
+		},
+		Description: sql.NullString{
+			String: rd.Description,
+			Valid:  true,
+		},
+	}
+	err := model.InsertPartner(param)
+	if err != nil {
+		status = http.StatusInternalServerError
+		errorTitle := model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errorTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errorTitle, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", param, "response :", err.Error())
+	}
+
 	render.JSON(w, res, status)
 }
 
@@ -341,90 +404,112 @@ func GetPerformancePartner(w http.ResponseWriter, r *http.Request) {
 
 	id := r.FormValue("id")
 
-	status := http.StatusUnauthorized
-	err := model.ErrInvalidRole
-	errorTitle := model.ErrCodeInvalidRole
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
+	status := http.StatusOK
 	res := NewResponse(nil)
-	res.AddError(its(status), errorTitle, err.Error(), "Get Partner")
 
 	a := AuthToken(w, r)
-	if a.Valid {
-		for _, valueRole := range a.User.Role {
-			features := model.ApiFeatures[valueRole.RoleDetail]
-			for _, valueFeature := range features {
-				if apiName == valueFeature {
-					valid = true
-				}
-			}
-		}
-
-		if valid {
-			status = http.StatusOK
-			var result PartnerPerformance
-
-			transactions, err := model.FindAllTransactionByPartner(a.User.Account.Id, id)
-			if err != nil {
-				status = http.StatusInternalServerError
-				errorTitle = model.ErrCodeInternalError
-				if err == model.ErrResourceNotFound {
-					status = http.StatusNotFound
-					errorTitle = model.ErrCodeResourceNotFound
-				}
-
-				res.AddError(its(status), errorTitle, err.Error(), "Get Transaction")
-			}
-			result.TransactionCode = len(transactions)
-
-			var trValue float32
-			for _, v := range transactions {
-				trValue += v.VoucherValue
-			}
-			result.TransactionValue = trValue
-
-			programs, err := model.FindVariantsPartner(id, a.User.Account.Id)
-			if err != nil {
-				status = http.StatusInternalServerError
-				errorTitle = model.ErrCodeInternalError
-				if err == model.ErrResourceNotFound {
-					status = http.StatusNotFound
-					errorTitle = model.ErrCodeResourceNotFound
-				}
-
-				res.AddError(its(status), errorTitle, err.Error(), "Get Program")
-			}
-			result.Program = len(programs)
-
-			var tVoucher int
-			for _, v := range programs {
-				tempVoucher, _ := strconv.Atoi(v.Voucher)
-				tVoucher += tempVoucher
-			}
-			result.VoucherGenerated = tVoucher
-			result.VoucherUsed = len(transactions)
-
-			var nameList []string
-			for _, v := range transactions {
-				for _, vv := range v.Voucher {
-					exist := false
-					for _, name := range nameList {
-						if vv.HolderDescription.String == name {
-							exist = true
-						}
-					}
-
-					if !exist {
-						nameList = append(nameList, vv.HolderDescription.String)
-					}
-				}
-			}
-			result.Customer = len(nameList)
-
-			res = NewResponse(result)
-		}
-	} else {
+	if !a.Valid {
 		res = a.res
 		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
 	}
+
+	for _, valueRole := range a.User.Role {
+		features := model.ApiFeatures[valueRole.Detail]
+		for _, valueFeature := range features {
+			if apiName == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if !valid {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	var result PartnerPerformance
+
+	transactions, err := model.FindAllTransactionByPartner(a.User.Account.Id, id)
+	if err != nil {
+		if err != model.ErrResourceNotFound {
+			status = http.StatusInternalServerError
+			errorTitle := model.ErrCodeInternalError
+
+			res.AddError(its(status), errorTitle, err.Error(), logger.TraceID)
+			logger.SetStatus(status).Info("param :", id+" || "+a.User.Account.Id, "response :", err.Error())
+			render.JSON(w, res, status)
+			return
+		}
+
+		result.TransactionCode = 0
+		result.TransactionValue = 0
+		result.Customer = 0
+	} else {
+		result.TransactionCode = len(transactions)
+
+		var trValue float32
+		for _, v := range transactions {
+			trValue += v.VoucherValue
+		}
+		result.TransactionValue = trValue
+
+		var nameList []string
+		for _, v := range transactions {
+			for _, vv := range v.Voucher {
+				exist := false
+				for _, name := range nameList {
+					if vv.HolderDescription.String == name {
+						exist = true
+					}
+				}
+
+				if !exist {
+					nameList = append(nameList, vv.HolderDescription.String)
+				}
+			}
+		}
+		result.Customer = len(nameList)
+	}
+
+	programs, err := model.FindProgramsPartner(id, a.User.Account.Id)
+	if err != nil {
+		if err != model.ErrResourceNotFound {
+			status = http.StatusInternalServerError
+			errorTitle := model.ErrCodeInternalError
+
+			res.AddError(its(status), errorTitle, err.Error(), logger.TraceID)
+			logger.SetStatus(status).Info("param :", id+" || "+a.User.Account.Id, "response :", err.Error())
+			render.JSON(w, res, status)
+			return
+		}
+
+		result.Program = 0
+		result.VoucherGenerated = 0
+		result.VoucherUsed = 0
+	} else {
+		result.Program = len(programs)
+
+		var tVoucher int
+		for _, v := range programs {
+			tempVoucher, _ := strconv.Atoi(v.Voucher)
+			tVoucher += tempVoucher
+		}
+		result.VoucherGenerated = tVoucher
+		result.VoucherUsed = len(transactions)
+	}
+
+	res = NewResponse(result)
 	render.JSON(w, res, status)
 }
 
@@ -432,11 +517,16 @@ func GetPerformancePartner(w http.ResponseWriter, r *http.Request) {
 // Tag
 
 func GetAllTags(w http.ResponseWriter, r *http.Request) {
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("tag_all")
+
 	status := http.StatusOK
 	res := NewResponse(nil)
 	tag, err := model.FindAllTags()
+	res = NewResponse(tag)
 	if err != nil {
-		fmt.Println(err.Error())
 		status = http.StatusInternalServerError
 		errorTitle := model.ErrCodeInternalError
 		if err == model.ErrResourceNotFound {
@@ -445,8 +535,7 @@ func GetAllTags(w http.ResponseWriter, r *http.Request) {
 		}
 
 		res.AddError(its(status), errorTitle, err.Error(), "Get Tags")
-	} else {
-		res = NewResponse(tag)
+		logger.SetStatus(status).Info("param :", "", "response :", err.Error())
 	}
 
 	render.JSON(w, res, status)
@@ -456,50 +545,59 @@ func AddTag(w http.ResponseWriter, r *http.Request) {
 	apiName := "tag_create"
 	valid := false
 
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
 	var rd Tag
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
+		logger.SetStatus(http.StatusInternalServerError).Panic("param :", r.Body, "response :", err.Error())
 	}
 
-	status := http.StatusUnauthorized
-	err := model.ErrInvalidRole
-	errorTitle := model.ErrCodeInvalidRole
+	status := http.StatusCreated
 	res := NewResponse(nil)
-	res.AddError(its(status), errorTitle, err.Error(), "Add Tag")
 
 	a := AuthToken(w, r)
-	if a.Valid {
-		for _, valueRole := range a.User.Role {
-			features := model.ApiFeatures[valueRole.RoleDetail]
-			for _, valueFeature := range features {
-				if apiName == valueFeature {
-					valid = true
-				}
-			}
-		}
-
-		if valid {
-			status = http.StatusCreated
-			err := model.InsertTag(rd.Value, a.User.ID)
-			if err != nil {
-				status = http.StatusInternalServerError
-				errorTitle = model.ErrCodeInternalError
-				if err == model.ErrResourceNotFound {
-					status = http.StatusNotFound
-					errorTitle = model.ErrCodeResourceNotFound
-				}
-
-				res.AddError(its(status), errorTitle, err.Error(), "Add Tag")
-			}
-
-		} else {
-			res = NewResponse("Success")
-		}
-	} else {
+	if !a.Valid {
 		res = a.res
 		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
 	}
+
+	for _, valueRole := range a.User.Role {
+		features := model.ApiFeatures[valueRole.Detail]
+		for _, valueFeature := range features {
+			if apiName == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if !valid {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	err := model.InsertTag(rd.Value, a.User.ID)
+	if err != nil {
+		status = http.StatusInternalServerError
+		errorTitle := model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errorTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errorTitle, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", rd.Value, "response :", logger.TraceID)
+	}
+
 	render.JSON(w, res, status)
 }
 
@@ -509,43 +607,53 @@ func DeleteTag(w http.ResponseWriter, r *http.Request) {
 
 	id := bone.GetValue(r, "id")
 
-	status := http.StatusUnauthorized
-	err := model.ErrInvalidRole
-	errorTitle := model.ErrCodeInvalidRole
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
+	status := http.StatusOK
 	res := NewResponse(nil)
-	res.AddError(its(status), errorTitle, err.Error(), "Delete Tag")
 
 	a := AuthToken(w, r)
-	if a.Valid {
-		for _, valueRole := range a.User.Role {
-			features := model.ApiFeatures[valueRole.RoleDetail]
-			for _, valueFeature := range features {
-				if apiName == valueFeature {
-					valid = true
-				}
-			}
-		}
-
-		if valid {
-			status = http.StatusOK
-			err := model.DeleteTag(id, a.User.ID)
-			if err != nil {
-				status = http.StatusInternalServerError
-				errorTitle = model.ErrCodeInternalError
-				if err == model.ErrResourceNotFound {
-					status = http.StatusNotFound
-					errorTitle = model.ErrCodeResourceNotFound
-				}
-
-				res.AddError(its(status), errorTitle, err.Error(), "Get tag")
-			} else {
-				res = NewResponse("Success")
-			}
-		}
-	} else {
+	if !a.Valid {
 		res = a.res
 		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
 	}
+
+	for _, valueRole := range a.User.Role {
+		features := model.ApiFeatures[valueRole.Detail]
+		for _, valueFeature := range features {
+			if apiName == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if !valid {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	err := model.DeleteTag(id, a.User.ID)
+	if err != nil {
+		status = http.StatusInternalServerError
+		errorTitle := model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errorTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errorTitle, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", id, "response :", err.Error())
+	}
+
 	render.JSON(w, res, status)
 }
 
@@ -553,48 +661,59 @@ func DeleteTagBulk(w http.ResponseWriter, r *http.Request) {
 	apiName := "tag_delete"
 	valid := false
 
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
 	var rd Tags
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
-		log.Panic(err)
+		logger.SetStatus(http.StatusInternalServerError).Panic("param :", r.Body, "response :", err.Error())
 	}
 
-	status := http.StatusUnauthorized
-	err := model.ErrInvalidRole
-	errorTitle := model.ErrCodeInvalidRole
+	status := http.StatusOK
 	res := NewResponse(nil)
-	res.AddError(its(status), errorTitle, err.Error(), "Delete Tag")
 
-	a := AuthToken(w, r)
-	if a.Valid {
-		for _, valueRole := range a.User.Role {
-			features := model.ApiFeatures[valueRole.RoleDetail]
-			for _, valueFeature := range features {
-				if apiName == valueFeature {
-					valid = true
-				}
-			}
-		}
-
-		if valid {
-			status = http.StatusOK
-			err := model.DeleteTagBulk(rd.Value, a.User.ID)
-			if err != nil {
-				status = http.StatusInternalServerError
-				errorTitle = model.ErrCodeInternalError
-				if err == model.ErrResourceNotFound {
-					status = http.StatusNotFound
-					errorTitle = model.ErrCodeResourceNotFound
-				}
-
-				res.AddError(its(status), errorTitle, err.Error(), "Get tag")
-			} else {
-				res = NewResponse("Success")
-			}
-		}
-	} else {
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
 		res = a.res
 		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
 	}
+
+	for _, valueRole := range a.User.Role {
+		features := model.ApiFeatures[valueRole.Detail]
+		for _, valueFeature := range features {
+			if apiName == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if !valid {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	status = http.StatusOK
+	err := model.DeleteTagBulk(rd.Value, a.User.ID)
+	if err != nil {
+		status = http.StatusInternalServerError
+		errorTitle := model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errorTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errorTitle, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", rd.Value, "response :", err.Error())
+	}
+
 	render.JSON(w, res, status)
 }

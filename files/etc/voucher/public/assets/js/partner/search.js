@@ -6,7 +6,7 @@ function getPartner() {
     console.log("Get Partner Data");
 
     $.ajax({
-      url: '/v1/ui/partner/all',
+      url: '/v1/ui/partner/all?token='+token,
       type: 'get',
       success: function (data) {
         console.log("Render Data");
@@ -21,7 +21,7 @@ function getPartner() {
 		"<button value='"+arrData[i].id+"' type='button' class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>";
 
 	  dataSet[i] = [
-		arrData[i].partner_name
+		arrData[i].name
 		, arrData[i].serial_number.String
 		, arrData[i].tag.String
 		, button
@@ -92,7 +92,7 @@ function deletePartner(id) {
     'use strict';
 
     $(runSweetAlert);
-    //onclick='deleteVariant(\""+arrData[i].Id+"\")'
+    //onclick='deleteProgram(\""+arrData[i].Id+"\")'
     function runSweetAlert() {
         $(document).on('click', '.swal-demo4', function(e) {
             e.preventDefault();

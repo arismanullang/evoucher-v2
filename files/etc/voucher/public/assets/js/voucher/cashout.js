@@ -16,7 +16,6 @@ function cashout(){
 		transactions += elem[i].innerHTML + ';';
 	}
 
-
 	var transaction = {
 		transaction_code: transactionCode
 	};
@@ -37,7 +36,11 @@ function cashout(){
 		success: function () {
 			localStorage.setItem("transaction_cashout", "");
 			localStorage.setItem("transaction_cashout", transactions);
-			window.location = "/voucher/print?token="+token;
+			$("#success-page").attr("style","display:block");
+			$("#transaction").attr("style","display:none");
+		},
+		error: function () {
+			alert("Error");
 		}
 	});
 }
@@ -79,7 +82,7 @@ function addElem(){
 		},
 		error: function (data) {
 			$('#transaction-code').val('');
-			$("#error").html(data.responseJSON.errors.detail);
+			$("#error").html(data.responseJSON.errors.title);
 		}
 	});
 }
@@ -87,4 +90,12 @@ function addElem(){
 function removeElem(elem){
 	console.log("remove");
 	$(elem).parent().closest('tr').remove();
+}
+
+function print(){
+	window.location = "/voucher/print?token="+token;
+}
+
+function next(){
+	window.location.reload();
 }

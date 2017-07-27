@@ -27,6 +27,8 @@ type Config struct {
 		MailgunKey       string `yaml:"mailgun_key"`
 		MailgunPublicKey string `yaml:"mailgun_public_key"`
 		RootTemplate     string `yaml:"root_mail_template"`
+		RootUrl          string `yaml:"root_url"`
+		Email            string `yaml:"email"`
 	}
 
 	Logger struct {

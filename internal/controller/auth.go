@@ -101,6 +101,38 @@ func AuthToken(w http.ResponseWriter, r *http.Request) Auth {
 	//return "NNJs3Nfo", "IEC1cL77", time.Now().Add(time.Duration(model.TOKENLIFE) * time.Minute), true
 }
 
+func AuthTokenWithLogger(w http.ResponseWriter, r *http.Request, logger *model.LogField) Auth {
+	res := NewResponse(nil)
+	token := r.FormValue("token")
+
+	if len(token) < 1 {
+		res.AddError(its(http.StatusUnauthorized), model.ErrCodeMissingToken, model.ErrMessageTokenNotFound, logger.TraceID)
+		logger.SetStatus(http.StatusUnauthorized).Log("token :"+token+" # response :", res.Errors)
+		return Auth{User: model.User{}, res: res, Valid: false}
+	}
+	// Return : SessionData{ user_id, account_id, expired} , error
+	s, err := model.GetSession(token)
+	if err != nil {
+		switch err {
+		case model.ErrTokenNotFound:
+			res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenNotFound, logger.TraceID)
+		case model.ErrTokenExpired:
+			res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, logger.TraceID)
+		}
+		logger.SetStatus(http.StatusUnauthorized).Log("token :"+token+" # response :", res.Errors)
+		return Auth{User: model.User{}, res: res, Valid: false}
+	} else if !model.IsExistToken(token) {
+		res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, logger.TraceID)
+		logger.SetStatus(http.StatusUnauthorized).Log("token :"+token+" # response :", res.Errors)
+		//render.JSON(w, res, http.StatusUnauthorized)
+		return Auth{User: model.User{}, res: res, Valid: false}
+	}
+
+	logger.SetStatus(http.StatusUnauthorized).Log("token :" + token + " # response : Authentication success")
+	return Auth{User: s.User, res: res, Valid: true}
+	//return "NNJs3Nfo", "IEC1cL77", time.Now().Add(time.Duration(model.TOKENLIFE) * time.Minute), true
+}
+
 func GetToken(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	status := http.StatusOK

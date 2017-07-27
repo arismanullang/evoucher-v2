@@ -43,9 +43,9 @@ type (
 		PartnerName     string         `db:"partner_name" json:"partner_name"`
 		TransactionId   string         `db:"transaction_id" json:"transaction_id"`
 		TransactionCode string         `db:"transaction_code" json:"transaction_code"`
-		VariantName     string         `db:"variant_name" json:"variant_name"`
+		ProgramName     string         `db:"program_name" json:"program_name"`
 		Voucher         []Voucher      `db:"-" json:"voucher"`
-		VoucherValue    float32        `db:"discount_value" json:"discount_value"`
+		VoucherValue    float32        `db:"voucher_value" json:"voucher_value"`
 		Issued          string         `db:"issued" json:"issued"`
 		Redeem          string         `db:"redeemed" json:"redeemed"`
 		CashOut         sql.NullString `db:"cashout" json:"cashout"`
@@ -198,7 +198,7 @@ func (d *DeleteTransactionRequest) Delete() error {
 			, updated_at = ?
 			, status = ?
 		WHERE
-			variant_id = ?
+			program_id = ?
 			AND status = ?;
 	`
 	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.Id, StatusCreated)
@@ -258,59 +258,11 @@ func FindTransactionDetailsById(id string) ([]Transaction, error) {
 	return resv, nil
 }
 
-func FindTransactionDetailsByTransactionCode(transactionCode string) (Transaction, error) {
-	q := `
-		SELECT
-			t.id
-			, t.account_id
-			, p.partner_name
-			, t.transaction_code
-			, t.discount_value
-			, t.created_by
-			, t.created_at
-		FROM transactions as t
-		JOIN partners as p
-		ON
-			p.id = t.partner_id
-		WHERE
-			t.transaction_code = ?
-			AND t.status = ?
-	`
-
-	var resv []Transaction
-	if err := db.Select(&resv, db.Rebind(q), transactionCode, StatusCreated); err != nil {
-		return Transaction{}, err
-	}
-	if len(resv) < 1 {
-		return Transaction{}, ErrResourceNotFound
-	}
-
-	q = `
-		SELECT
-			voucher_id
-		FROM
-			transaction_details
-		WHERE
-			transaction_id = ?
-			AND status = ?
-	`
-	var resd []string
-	if err := db.Select(&resd, db.Rebind(q), resv[0].Id, StatusCreated); err != nil {
-		return Transaction{}, err
-	}
-	if len(resd) < 1 {
-		return Transaction{}, ErrResourceNotFound
-	}
-	resv[0].Vouchers = resd
-
-	return resv[0], nil
-}
-
 func FindCashoutTransactionDetails(transactionCode string) (Cashout, error) {
 	q := `
 		SELECT
 			t.id
-			, p.partner_name
+			, p.name as partner_name
 			, t.transaction_code
 			, t.discount_value
 			, t.created_at
@@ -357,41 +309,10 @@ func FindCashoutTransactionDetails(transactionCode string) (Cashout, error) {
 	return resv[0], nil
 }
 
-func FindTransactionDetailsByDate(start, end string) ([]Transaction, error) {
-	q := `
-		SELECT
-			transaction_code
-			, company_id
-			, pic_merchant
-			, total_transaction
-			, discount_value
-			, token
-			, payment_type
-			, created_by
-			, created_at
-		FROM
-			transactions
-		WHERE
-			(start_date > ? AND start_date < ?)
-			OR (end_date > ? AND end_date < ?)
-			AND status = ?
-	`
-
-	var resv []Transaction
-	if err := db.Select(&resv, db.Rebind(q), start, end, start, end, StatusCreated); err != nil {
-		return []Transaction{}, err
-	}
-	if len(resv) < 1 {
-		return []Transaction{}, ErrResourceNotFound
-	}
-
-	return resv, nil
-}
-
 func FindAllTransactionByPartner(accountId, partnerId string) ([]TransactionList, error) {
 	q := `
 		SELECT
-			 t.id as transaction_id, p.partner_name, va.variant_name, t.transaction_code as transaction_code, vo.discount_value, va.created_at as issued, t.created_at as redeemed, vo.updated_at as cashout, u.username, vo.state
+			 t.id as transaction_id, p.name as partner_name, va.name as program_name, t.transaction_code, vo.voucher_value, va.created_at as issued, t.created_at as redeemed, vo.updated_at as cashout, u.username, vo.state
 		FROM transactions as t
 		JOIN transaction_details as dt
 		ON
@@ -402,9 +323,9 @@ func FindAllTransactionByPartner(accountId, partnerId string) ([]TransactionList
 		JOIN users as u
 		ON
 			vo.updated_by = u.id
-		JOIN variants as va
+		JOIN programs as va
 		ON
-			va.id = vo.variant_id
+			va.id = vo.program_id
 		JOIN partners as p
 		ON
 			p.id = t.partner_id
@@ -418,7 +339,7 @@ func FindAllTransactionByPartner(accountId, partnerId string) ([]TransactionList
 	var resv []TransactionList
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId); err != nil {
 		fmt.Println(err.Error())
-		return resv, ErrServerInternal
+		return resv, err
 	}
 	if len(resv) < 1 {
 		return resv, ErrResourceNotFound
@@ -434,10 +355,10 @@ func FindAllTransactionByPartner(accountId, partnerId string) ([]TransactionList
 			, v.holder_phone
 			, v.holder_email
 			, v.holder_description
-			, v.variant_id
+			, v.program_id
 			, v.valid_at
 			, v.expired_at
-			, v.discount_value
+			, v.voucher_value
 			, v.state
 			, v.created_by
 			, v.created_at
@@ -457,7 +378,7 @@ func FindAllTransactionByPartner(accountId, partnerId string) ([]TransactionList
 		//fmt.Println(q)
 		var resv1 []Voucher
 		if err := db.Select(&resv1, db.Rebind(q), StatusCreated, v.TransactionId); err != nil {
-			return resv, ErrServerInternal
+			return resv, err
 		}
 		if len(resv) < 1 {
 			return resv, ErrResourceNotFound
@@ -576,7 +497,7 @@ func UpdateCashoutTransactions(transactionCode []string, user string) error {
 func PrintCashout(accountId string, transactionCode []string) ([]TransactionList, error) {
 	q := `
 		SELECT
-			t.id as transaction_id, p.partner_name, t.transaction_code as transaction, vo.discount_value, va.created_at as issued, t.created_at as redeemed, vo.updated_at as cashout, u.username, vo.state
+			t.id as transaction_id, p.name as partner_name, t.transaction_code, vo.voucher_value, va.created_at as issued, t.created_at as redeemed, vo.updated_at as cashout, u.username, vo.state
 		FROM transactions as t
 		JOIN transaction_details as dt
 		ON
@@ -587,9 +508,9 @@ func PrintCashout(accountId string, transactionCode []string) ([]TransactionList
 		JOIN users as u
 		ON
 			vo.updated_by = u.id
-		JOIN variants as va
+		JOIN programs as va
 		ON
-			va.id = vo.variant_id
+			va.id = vo.program_id
 		JOIN partners as p
 		ON
 			p.id = t.partner_id
@@ -610,7 +531,7 @@ func PrintCashout(accountId string, transactionCode []string) ([]TransactionList
 	var resv []TransactionList
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId, VoucherStatePaid); err != nil {
 		fmt.Println(err.Error())
-		return resv, ErrServerInternal
+		return resv, err
 	}
 	if len(resv) < 1 {
 		return resv, ErrResourceNotFound
@@ -626,10 +547,10 @@ func PrintCashout(accountId string, transactionCode []string) ([]TransactionList
 			, v.holder_phone
 			, v.holder_email
 			, v.holder_description
-			, v.variant_id
+			, v.program_id
 			, v.valid_at
 			, v.expired_at
-			, v.discount_value
+			, v.voucher_value
 			, v.state
 			, v.created_by
 			, v.created_at
@@ -649,7 +570,7 @@ func PrintCashout(accountId string, transactionCode []string) ([]TransactionList
 		//fmt.Println(q)
 		var resv1 []Voucher
 		if err := db.Select(&resv1, db.Rebind(q), StatusCreated, v.TransactionId); err != nil {
-			return resv, ErrServerInternal
+			return resv, err
 		}
 		if len(resv) < 1 {
 			return resv, ErrResourceNotFound

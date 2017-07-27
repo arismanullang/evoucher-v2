@@ -45,10 +45,10 @@ func GetRedeemData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	variant, err := model.FindVariantDetailsById(voucher.VoucherData[0].VariantID)
+	program, err := model.FindProgramDetailsById(voucher.VoucherData[0].ProgramID)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidProgram, "voucher")
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
@@ -57,10 +57,10 @@ func GetRedeemData(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
-	partner, err := model.FindVariantPartner(map[string]string{"variant_id": variant.Id})
+	partner, err := model.FindProgramPartner(map[string]string{"program_id": program.Id})
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidVariant+"(Partner of Variant Not Found)", "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidProgram+"(Partner of Program Not Found)", "voucher")
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
@@ -75,21 +75,21 @@ func GetRedeemData(w http.ResponseWriter, r *http.Request) {
 	vcr[0].State = voucher.VoucherData[0].State
 
 	d := GetVoucherOfVariatListDetails{
-		VariantID:          variant.Id,
-		AccountId:          variant.AccountId,
-		VariantName:        variant.VariantName,
-		VoucherType:        variant.VoucherType,
-		VoucherPrice:       variant.VoucherPrice,
-		AllowAccumulative:  variant.AllowAccumulative,
-		StartDate:          variant.StartDate,
-		EndDate:            variant.EndDate,
-		DiscountValue:      variant.DiscountValue,
-		MaxQuantityVoucher: variant.MaxQuantityVoucher,
-		MaxUsageVoucher:    variant.MaxUsageVoucher,
-		RedeemtionMethod:   variant.RedeemtionMethod,
-		ImgUrl:             variant.ImgUrl,
-		VariantTnc:         variant.VariantTnc,
-		VariantDescription: variant.VariantDescription,
+		ProgramID:          program.Id,
+		AccountId:          program.AccountId,
+		ProgramName:        program.Name,
+		VoucherType:        program.VoucherType,
+		VoucherPrice:       program.VoucherPrice,
+		AllowAccumulative:  program.AllowAccumulative,
+		StartDate:          program.StartDate,
+		EndDate:            program.EndDate,
+		VoucherValue:       program.VoucherValue,
+		MaxQuantityVoucher: program.MaxQuantityVoucher,
+		MaxGenerateVoucher: program.MaxGenerateVoucher,
+		RedeemtionMethod:   program.RedeemtionMethod,
+		ImgUrl:             program.ImgUrl,
+		ProgramTnc:         program.Tnc,
+		ProgramDescription: program.Description,
 		State:              voucher.VoucherData[0].State,
 		Holder:             voucher.VoucherData[0].Holder.String,
 		HolderDescription:  voucher.VoucherData[0].HolderDescription.String,
@@ -99,11 +99,11 @@ func GetRedeemData(w http.ResponseWriter, r *http.Request) {
 	d.Partners = make([]Partner, len(partner))
 	for i, pd := range partner {
 		d.Partners[i].ID = pd.Id
-		d.Partners[i].PartnerName = pd.PartnerName
+		d.Partners[i].Name = pd.Name
 		d.Partners[i].SerialNumber = pd.SerialNumber.String
 	}
 
-	d.Used = getCountVoucher(variant.Id)
+	d.Used = getCountVoucher(program.Id)
 
 	res = NewResponse(d)
 	render.JSON(w, res, status)

@@ -85,6 +85,8 @@ func main() {
 	model.ApiKey = config.Mailgun.MailgunKey
 	model.PublicApiKey = config.Mailgun.MailgunPublicKey
 	model.RootTemplate = config.Mailgun.RootTemplate
+	model.Email = config.Mailgun.Email
+	model.RootUrl = config.Mailgun.RootUrl
 
 	//logger config
 	model.Path = config.Logger.Path
@@ -123,7 +125,6 @@ func getUiRole() map[string][]string {
 	if err == nil {
 		for _, value := range roles {
 			m[value.Role] = append(m[value.Role], "/"+value.Category+"/"+value.Detail)
-
 		}
 
 	}

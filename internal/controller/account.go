@@ -16,9 +16,9 @@ import (
 
 type (
 	Account struct {
-		AccountName string         `json:"account_name"`
-		Billing     sql.NullString `json:"billing"`
-		CreatedBy   string         `json:"created_by"`
+		Name      string         `json:"name"`
+		Billing   sql.NullString `json:"billing"`
+		CreatedBy string         `json:"created_by"`
 	}
 )
 
@@ -31,8 +31,8 @@ func RegisterAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	param := model.Account{
-		AccountName: rd.AccountName,
-		Billing:     rd.Billing,
+		Name:    rd.Name,
+		Billing: rd.Billing,
 	}
 
 	if err := model.AddAccount(param, rd.CreatedBy); err != nil {

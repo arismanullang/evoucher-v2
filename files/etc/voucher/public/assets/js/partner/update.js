@@ -12,8 +12,9 @@ function getPartner(id) {
       success: function (data) {
         console.log(data.data);
         var arrData = data.data[0];
-        $("#partner-name").html(arrData.partner_name);
+        $("#partner-name").html(arrData.name);
         $("#serial-number").val(arrData.serial_number.String);
+        $("#description").val(arrData.description.String);
       }
   });
 }
@@ -36,17 +37,18 @@ function update() {
     return
   }
 
-  var userReq = {
-      serial_number: $("#serial-number").val()
+  var partner = {
+      serial_number: $("#serial-number").val(),
+      description: $("#description").val()
     };
 
-    console.log(userReq);
+    console.log(partner);
     $.ajax({
        url: '/v1/ui/partner/update?id='+id+'&token='+token,
        type: 'post',
        dataType: 'json',
        contentType: "application/json",
-       data: JSON.stringify(userReq),
+       data: JSON.stringify(partner),
        success: function () {
            alert("Partner Updated.");
            window.location = "/partner/search?token="+token;

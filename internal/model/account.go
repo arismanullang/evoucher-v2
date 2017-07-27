@@ -7,15 +7,15 @@ import (
 
 type (
 	AccountRes struct {
-		Id          string `db:"id"`
-		AccountName string `db:"account_name"`
+		Id   string `db:"id"`
+		Name string `db:"name"`
 	}
 	Account struct {
-		Id          string         `db:"id" json:"id"`
-		AccountName string         `db:"account_name" json:"account_name"`
-		Billing     sql.NullString `db:"billing" json:"billing"`
-		Alias       string         `db:"alias" json:"alias"`
-		CreatedAt   string         `db:"created_at" json:"created_at"`
+		Id        string         `db:"id" json:"id"`
+		Name      string         `db:"name" json:"name"`
+		Billing   sql.NullString `db:"billing" json:"billing"`
+		Alias     string         `db:"alias" json:"alias"`
+		CreatedAt string         `db:"created_at" json:"created_at"`
 	}
 )
 
@@ -27,12 +27,15 @@ func AddAccount(a Account, user string) error {
 	}
 	defer tx.Rollback()
 
-	accountName, err := checkAccountName(a.AccountName)
+	name, err := checkName(a.Name)
 
-	if accountName == "" {
-		q := `
+	if name != "" {
+		return ErrDuplicateEntry
+	}
+
+	q := `
 			INSERT INTO accounts(
-				account_name
+				name
 				, billing
 				, alias
 				, created_by
@@ -40,24 +43,21 @@ func AddAccount(a Account, user string) error {
 			)
 			VALUES (?, ?, ?, ?, ?)
 		`
-		if _, err := tx.Exec(tx.Rebind(q), a.AccountName, a.Billing, a.Alias, user, StatusCreated); err != nil {
-			return err
-		}
-
-		if err := tx.Commit(); err != nil {
-			return err
-		}
-		return nil
-	} else {
-		return ErrDuplicateEntry
+	if _, err := tx.Exec(tx.Rebind(q), a.Name, a.Billing, a.Alias, user, StatusCreated); err != nil {
+		return err
 	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	return nil
 }
 
-func checkAccountName(name string) (string, error) {
+func checkName(name string) (string, error) {
 	q := `
 		SELECT id FROM users
 		WHERE
-			account_name = ?
+			name = ?
 			AND status = ?
 	`
 	var res []string
@@ -73,7 +73,7 @@ func checkAccountName(name string) (string, error) {
 func FindAllAccounts() ([]AccountRes, error) {
 	fmt.Println("Select All Account")
 	q := `
-		SELECT id, account_name
+		SELECT id, name
 		FROM accounts
 		WHERE status = ?
 	`
@@ -100,7 +100,7 @@ func GetAccountDetailByUser(userID string) ([]Account, error) {
 	q := `
 		SELECT
 			a.id
-			, a.account_name
+			, a.name
 			, a.billing
 			, a.alias
 			, a.created_at
@@ -136,7 +136,7 @@ func GetAccountDetailByAccountId(accountId string) ([]Account, error) {
 	q := `
 		SELECT
 			a.id
-			, a.account_name
+			, a.name
 			, a.billing
 			, a.alias
 			, a.created_at
