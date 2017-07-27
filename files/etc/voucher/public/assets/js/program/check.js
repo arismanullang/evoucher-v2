@@ -1,6 +1,6 @@
 $( document ).ready(function() {
   var id = findGetParameter('id');
-  $("#variant-id").val(id);
+  $("#program-id").val(id);
   $("#token").val(token);
   getVoucher(id);
   getPartner(id);
@@ -16,7 +16,7 @@ function getVoucher(id) {
 
     var arrData = [];
     $.ajax({
-        url: '/v1/ui/voucher?variant_id='+id+'&token='+token,
+        url: '/v1/ui/voucher?program_id='+id+'&token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -93,11 +93,11 @@ function getVoucher(id) {
 		}
 	  }
 
-          getVariant(id, arrData.length, used, paid);
+          getProgram(id, arrData.length, used, paid);
         },
         error: function (data) {
           console.log(data.data);
-          getVariant(id, 0, 0, 0);
+          getProgram(id, 0, 0, 0);
         }
     });
 }
@@ -107,7 +107,7 @@ function getPartner(id) {
 
     var arrData = [];
     $.ajax({
-        url: '/v1/ui/partner/variant?variant_id='+id+'&token='+token,
+        url: '/v1/ui/partner/program?program_id='+id+'&token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -116,29 +116,34 @@ function getPartner(id) {
           var limit = arrData.length;
 
           for ( i = 0; i < limit; i++){
-            var html = "<div class='mda-list-item-icon'><em class='ion-ios-person icon-2x'></em></div>"
-            +  "<div class='mda-list-item-text'>"
-            +  "<h3><a href='#'>"+arrData[i].partner_name+"</a></h3>"
-            +  "<div class='text-muted text-ellipsis'>"+arrData[i].serial_number.String+"</div>"
-            +"</div>";
+            var sn = arrData[i].serial_number.String;
+	    if(sn == ""){
+	    	sn = "-";
+	    }
+
+            var html = "<div class='mda-list-item-icon mt0'><div class='text-lg initial64 bg-blue-500'>"+arrData[i].name.charAt(0).toUpperCase()+"</div></div>"
+            + "<div class='mda-list-item-text'>"
+            + "<h3>"+arrData[i].name+"</h3>"
+            + "<div class='text-muted text-ellipsis'>Serial Number : "+sn+"</div>"
+            + "</div>";
             var li = $("<div class='mda-list-item'></div>").html(html);
-            li.appendTo('#listPartner');
+            li.appendTo('#list-partner');
           }
         },
         error: function (data) {
           console.log(data.data);
-          $("<div class='card-body text-center'>No Partner Found</div>").appendTo('#cardPartner');
+          $("<div class='card-body text-center'>No Partner Found</div>").appendTo('#card-partner');
         }
     });
 }
 
-function getVariant(id, voucher, used, paid) {
-    console.log("Get Variant Data");
+function getProgram(id, voucher, used, paid) {
+    console.log("Get Program Data");
     console.log(voucher);
     var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     var arrData = [];
     $.ajax({
-        url: '/v1/ui/variant/detail?id='+id+'&token='+token,
+        url: '/v1/ui/program/detail?id='+id+'&token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -150,50 +155,48 @@ function getVariant(id, voucher, used, paid) {
           var endDate = date2[2] + " " + months[parseInt(date2[1])-1] + " " + date2[0];
 
           var period = startDate + " - " + endDate;
-	  var variantType = "Email Blast"
+	  var programType = "Email Blast"
           var remainingVoucher = result.max_quantity_voucher;
           if( voucher != null){
 			remainingVoucher = result.max_quantity_voucher - voucher;
 	  }
 
-	  if(result.variant_type != 'bulk'){
-	        variantType = "Mobile App"
-		$("#button-link").attr("style","display:none");
+	  if(result.type != 'bulk'){
+	        programType = "Mobile App"
 		$("#button-voucher").attr("style","display:none");
 	  }
 
-          $('#variantName').html(result.variant_name);
-          $('#variantDescription').html(result.variant_description);
-          $('#variantType').html(variantType);
-          $('#voucherType').html(result.voucher_type);
-          $('#conversionRate').html(result.voucher_price);
-          $('#maxQuantityVoucher').html(result.max_quantity_voucher);
-          $('#voucherValue').html(result.discount_value);
+          $('#program-name').html(result.name);
+          $('#program-description').html(result.description);
+          $('#program-type').html(programType);
+          $('#voucher-type').html(result.voucher_type);
+          $('#conversion-rate').html(result.voucher_price);
+          $('#max-quantity-voucher').html(result.max_quantity_voucher);
+          $('#voucher-value').html('Rp. '+addDecimalPoints(result.voucher_value)+',00');
           $('#period').html(period);
-          $('#variantTnc').html(result.variant_tnc);
-          $('#remainingVoucher').html(remainingVoucher);
-          $('#createdVoucher').html(voucher);
-          $('#usedVoucher').html(used);
-          $('#paidVoucher').html(paid);
-        //   $('#variant-image').attr("src",result.image_url);
+          $('#program-tnc').html(result.tnc);
+          $('#remaining-voucher').html(remainingVoucher);
+          $('#created-voucher').html(voucher);
+          $('#used-voucher').html(used);
+          $('#paid-voucher').html(paid);
         }
     });
 }
 
 function generateVoucher() {
-	var id = $('#variant-id').val();
-	console.log("Get Variant Data");
+	var id = $('#program-id').val();
+	console.log("Get Program Data");
+	swal("Sending Voucher");
 	$.ajax({
-		url: '/v1/ui/voucher/generate/bulk?variant='+id+'&token='+token,
-		type: 'get',
+		url: '/v1/ui/voucher/send-voucher?program='+id+'&token='+token,
+		type: 'post',
 		success: function (data) {
-			console.log(data);
 			location.reload();
 		}
 	});
 }
 
-function editVariant(){
+function editProgram(){
   var id = findGetParameter("id");
-  window.location = "/variant/update?id="+id+"&token="+token;
+  window.location = "/program/update?id="+id+"&token="+token;
 }

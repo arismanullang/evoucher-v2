@@ -30,7 +30,7 @@ function login(){
           localStorage.setItem("r", tempRole);
         }
 
-        window.location = "/variant/index?token="+token;
+        window.location = "/program/index?token="+token;
       },
       error: function (data){
         alert("Invalid Username or Password");

@@ -89,7 +89,6 @@ function deleteTagBulk(param) {
     'use strict';
 
     $(runSweetAlert);
-    //onclick='deleteVariant(\""+arrData[i].Id+"\")'
     function runSweetAlert() {
 	$(document).on('click', '.swal-demo4', function(e) {
             	e.preventDefault();

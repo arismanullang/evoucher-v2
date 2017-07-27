@@ -9,21 +9,26 @@ var (
 	ErrInvalidPassword = errors.New("invalid password.")
 	ErrNotModified     = errors.New("data not modified.")
 
-	ErrResourceNotFound = errors.New("Resource Not Found.")
-	ErrDuplicateEntry   = errors.New("Duplicate Entry.")
-	ErrTokenExpired     = errors.New("Token Expired.")
-	ErrTokenNotFound    = errors.New("Token Not Found.")
-	ErrServerInternal   = errors.New("Server Internal Error.")
-	ErrInvalidRole      = errors.New("Invalid Role.")
+	ErrResourceNotFound = errors.New("resource not found.")
+	ErrRouteNotFound    = errors.New("route not found.")
+	ErrDuplicateEntry   = errors.New("duplicate entry.")
+	ErrTokenExpired     = errors.New("token expired.")
+	ErrTokenNotFound    = errors.New("token not found.")
+	ErrServerInternal   = errors.New("server internal error.")
+	ErrInvalidRole      = errors.New("invalid role.")
+	ErrBadRequest       = errors.New("bad request.")
+
+	// custom
+	ErrProgramNotNull = errors.New("Voucher Already Generated")
 
 	// Google Cloud Storage Config
-	GCS_BUCKET	string
-	GCS_PROJECT_ID	string
-	PUBLIC_URL	string
+	GCS_BUCKET     string
+	GCS_PROJECT_ID string
+	PUBLIC_URL     string
 
 	//OCRA config
-	OCRA_URL		string
-	OCRA_EVOUCHER_APPS_KEY	string
+	OCRA_URL               string
+	OCRA_EVOUCHER_APPS_KEY string
 
 	//voucher config
 	VOUCHER_URL string
@@ -42,6 +47,7 @@ const (
 	ErrCodeAllowAccumulativeDisable string = "accumulation_is_not_allowed"
 	ErrCodeInvalidRedeemMethod      string = "invalid_redeem_method"
 	ErrCodeResourceNotFound         string = "resource_not_found"
+	ErrCodeRouteNotFound            string = "route_not_found"
 	ErrCodeInternalError            string = "internal_error"
 	ErrCodeVoucherNotActive         string = "voucher_not_active"
 	ErrCodeVoucherDisabled          string = "voucher_disabled"
@@ -53,44 +59,43 @@ const (
 	ErrCodeMissingOrderItem         string = "missing_order_items"
 	ErrCodeMissingToken             string = "missing_token"
 	ErrCodeInvalidToken             string = "invalid_token"
-	ErrCodeOTPFailed                string = "OTP_Failed"
+	ErrCodeOTPFailed                string = "OTP_failed"
 	ErrCodeInvalidPartnerQr         string = "invalid_partner_qr"
 	ErrCodeInvalidPartner           string = "invalid_partner"
-	ErrCodeInvalidVariant           string = "invalid_variant"
+	ErrCodeInvalidProgram           string = "invalid_program"
 	ErrCodeInvalidUser              string = "invalid_username_and_password"
 	ErrCodeInvalidRole              string = "invalid_role"
 	ErrCodeRedeemNotValidDay        string = "voucher_cannot_be_used_today"
 	ErrCodeRedeemNotValidHour       string = "voucher_cannot_be_used_at_current_time"
-	ErrCodeValidationError		string = "validation_Error"
+	ErrCodeValidationError          string = "validation_Error"
 
-	ErrMessageAllowAccumulativeDisable string = "accumulation is not allowed"
-	ErrMessageResourceNotFound         string = "resource not found"
-	ErrMessageInternalError            string = "internal error "
-	ErrMessageVoucherNotActive         string = "voucher is not active yet (before start date)"
-	ErrMessageVoucherDisabled          string = "voucher has been disabled (has already been used or paid)"
-	ErrMessageVoucherExpired           string = "voucher has already expired (after expiration date)"
-	ErrMessageVoucherAlreadyUsed       string = "voucher has already Used "
-	ErrMessageVoucherAlreadyPaid       string = "voucher has already Paid"
-	ErrMessageInvalidVoucher           string = "invalid voucher , VariantID not found"
-	ErrMessageVoucherQtyExceeded       string = "voucher's quantities limit has been exceeded"
-	ErrMessageVoucherRulesViolated     string = "order did not match validation rules"
-	ErrMessageMissingOrderItem         string = "order items was not specified"
+	ErrMessageAllowAccumulativeDisable string = "Accumulation is not allowed"
+	ErrMessageResourceNotFound         string = "Resource not found"
+	ErrMessageInternalError            string = "Internal error "
+	ErrMessageVoucherNotActive         string = "Voucher is not active yet (before start date)"
+	ErrMessageVoucherDisabled          string = "Voucher has been disabled (has already been used or paid)"
+	ErrMessageVoucherExpired           string = "Voucher has already expired (after expiration date)"
+	ErrMessageVoucherAlreadyUsed       string = "Voucher has already used "
+	ErrMessageVoucherAlreadyPaid       string = "Voucher has already paid"
+	ErrMessageInvalidVoucher           string = "Invalid voucher, program id not found"
+	ErrMessageVoucherQtyExceeded       string = "Voucher's quantities limit has been exceeded"
+	ErrMessageVoucherRulesViolated     string = "Order did not match validation rules"
+	ErrMessageMissingOrderItem         string = "Order items was not specified"
 	ErrMessageTokenNotFound            string = "Token not found"
 	ErrMessageTokenExpired             string = "Token has been expired"
-	ErrMessageInvalidVariant           string = "Invalid Variant ID."
+	ErrMessageInvalidProgram           string = "Invalid Program ID."
 	ErrMessageInvalidHolder            string = "Invalid Holder."
 	ErrMessageInvalidPaerner           string = "Invalid Patner."
-	ErrMessageNilVariant               string = "Account doesn't have any Variant."
-	ErrMessageNilPartner               string = " doesn't have any Partner."
+	ErrMessageNilProgram               string = "Account doesn't have any program."
+	ErrMessageNilPartner               string = "Program doesn't have any partner."
 	ErrMessageOTPFailed                string = "Doesn't match OTP"
 	ErrMessageInvalidQr                string = "Invalid partner QR"
-	ErrMessageInvalidRedeemMethod      string = "Invalid Redeemtion Method"
-	ErrMessageInvalidUser              string = "Invalid Username and Password."
+	ErrMessageInvalidRedeemMethod      string = "Invalid redeemtion method"
+	ErrMessageInvalidUser              string = "Invalid username and password."
 	ErrMessageRedeemNotValidDay        string = "Voucher cannot be used today."
 	ErrMessageRedeemNotValidHour       string = "voucher cannot be used at current time."
-	ErrMessageVariantHasBeenUsed       string = "Variant Has been Used"
-	ErrMessageValidationError	   string = "Validation Error"
-
+	ErrMessageProgramHasBeenUsed       string = "Program has been used"
+	ErrMessageValidationError          string = "Validation error"
 
 	StatusCreated string = "created"
 	StatusDeleted string = "deleted"
@@ -105,8 +110,8 @@ const (
 	VoucherStatePaid    string = "paid"
 	VoucherStateDeleted string = "deleted"
 
-	VariantTypeBulk     string = "bulk"
-	VariantTypeOnDemand string = "on-demand"
+	ProgramTypeBulk     string = "bulk"
+	ProgramTypeOnDemand string = "on-demand"
 
 	ALPHABET     = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 	NUMERALS     = "1234567890"

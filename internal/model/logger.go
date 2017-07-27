@@ -1,32 +1,32 @@
 package model
 
 import (
-	"os"
-	"log"
 	"github.com/sirupsen/logrus"
-	"time"
+	"log"
 	"math/rand"
+	"os"
+	"time"
 )
-type(
+
+type (
 	LogField struct {
-		TraceID	string
-		Time	time.Time
-		Delta	float64
-		Service	string
-		Method	string
-		Tag	string
-		Status	int
+		TraceID string
+		Time    time.Time
+		Delta   float64
+		Service string
+		Method  string
+		Tag     string
+		Status  int
 	}
 )
 
 var (
-	l = logrus.New()
-	Path string
+	l        = logrus.New()
+	Path     string
 	FileName string
-
 )
 
-func NewLog() *LogField{
+func NewLog() *LogField {
 	d := LogField{}
 	d.TraceID = getTraceID()
 	d.Time = time.Now()
@@ -34,16 +34,14 @@ func NewLog() *LogField{
 	return startNewLog(d)
 }
 
-
-func startNewLog(f LogField) *LogField{
+func startNewLog(f LogField) *LogField {
 	return &LogField{
 		TraceID: f.TraceID,
-		Time: f.Time,
+		Time:    f.Time,
 	}
 }
 
-
-func initialFile(ext string) *os.File{
+func initialFile(ext string) *os.File {
 	f, err := os.OpenFile(getFileName(ext), os.O_CREATE|os.O_WRONLY, 0666)
 	if err == nil {
 		l.Out = f
@@ -55,76 +53,75 @@ func initialFile(ext string) *os.File{
 	return f
 }
 
-func (d *LogField) Debug(m ...interface{}){
+func (d *LogField) Debug(m ...interface{}) {
 	f := initialFile("log")
 	l.WithFields(logrus.Fields{
-		"trace-ID" : d.TraceID,
-		"time": d.Time,
-		"delta": d.getDeltaTime(),
-		"service": d.Service,
-		"tag": d.Tag,
-		"method": d.Method,
-		"result":d.Status,
+		"trace-ID": d.TraceID,
+		"time":     d.Time,
+		"delta":    d.getDeltaTime(),
+		"service":  d.Service,
+		"tag":      d.Tag,
+		"method":   d.Method,
+		"result":   d.Status,
 	}).Debug(m)
 	f.Close()
 }
 
-func (d *LogField) Info(m ...interface{}){
+func (d *LogField) Info(m ...interface{}) {
 	f := initialFile("log")
 	l.WithFields(logrus.Fields{
-		"trace-ID" : d.TraceID,
-		"time": d.Time,
-		"delta": d.getDeltaTime(),
-		"service": d.Service,
-		"tag": d.Tag,
-		"method": d.Method,
-		"result":d.Status,
+		"trace-ID": d.TraceID,
+		"time":     d.Time,
+		"delta":    d.getDeltaTime(),
+		"service":  d.Service,
+		"tag":      d.Tag,
+		"method":   d.Method,
+		"result":   d.Status,
 	}).Info(m)
 	f.Close()
 }
 
-func (d *LogField) Panic(m ...interface{}){
+func (d *LogField) Panic(m ...interface{}) {
 	f := initialFile("log")
 	l.WithFields(logrus.Fields{
-		"trace-ID" : d.TraceID,
-		"time": d.Time,
-		"delta": d.getDeltaTime(),
-		"service": d.Service,
-		"tag": d.Tag,
-		"method": d.Method,
-		"result":d.Status,
+		"trace-ID": d.TraceID,
+		"time":     d.Time,
+		"delta":    d.getDeltaTime(),
+		"service":  d.Service,
+		"tag":      d.Tag,
+		"method":   d.Method,
+		"result":   d.Status,
 	}).Panic(m)
 	f.Close()
 }
 
-func (d *LogField) Warn(m ...interface{}){
+func (d *LogField) Warn(m ...interface{}) {
 	f := initialFile("log")
 	l.WithFields(logrus.Fields{
-		"trace-ID" : d.TraceID,
-		"time": d.Time,
-		"delta": d.getDeltaTime(),
-		"service": d.Service,
-		"tag": d.Tag,
-		"method": d.Method,
-		"result":d.Status,
+		"trace-ID": d.TraceID,
+		"time":     d.Time,
+		"delta":    d.getDeltaTime(),
+		"service":  d.Service,
+		"tag":      d.Tag,
+		"method":   d.Method,
+		"result":   d.Status,
 	}).Warn(m)
 	f.Close()
 }
 
-func (d *LogField) Log(m ...interface{}){
+func (d *LogField) Log(m ...interface{}) {
 	f := initialFile("log")
 	l.WithFields(logrus.Fields{
-		"trace-ID" : d.TraceID,
-		"time": d.Time,
-		"delta": d.getDeltaTime(),
-		"service": d.Service,
-		"tag": d.Tag,
-		"method": d.Method,
-		"result":d.Status,
+		"trace-ID": d.TraceID,
+		"time":     d.Time,
+		"delta":    d.getDeltaTime(),
+		"service":  d.Service,
+		"tag":      d.Tag,
+		"method":   d.Method,
+		"result":   d.Status,
 	}).Info(m)
 	f.Close()
 }
-
 
 func getTraceID() string {
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -136,11 +133,11 @@ func getTraceID() string {
 	return string(result)
 }
 
-func getFileName(ext string) string{
+func getFileName(ext string) string {
 	t := time.Now()
 	periode := t.Format("20060102")
-	filename :=FileName+"-"+periode+"."+ext
-	return Path+filename
+	filename := FileName + "-" + periode + "." + ext
+	return Path + filename
 }
 
 func (d *LogField) getDeltaTime() float64 {

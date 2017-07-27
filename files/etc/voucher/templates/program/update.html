@@ -1,7 +1,7 @@
 {{ template "layout" . }}
 
-{{ define "title" }}Create Program{{ end }}
-{{ define "header-title" }}Create Program{{ end }}
+{{ define "title" }}Edit Program{{ end }}
+{{ define "header-title" }}Edit Program{{ end }}
 
 {{ define "content" }}
 <!-- Page content-->
@@ -9,24 +9,23 @@
 <div class="container-overlap bg-white">
 </div>
 <div class="container container-md">
-  <form id="create-variant" name="create-variant" novalidate="" class="card b0 form-validate redeem-rules-form" action="/v1/ui/sample/link" method="get">
+  <form id="update-program" name="update-program" novalidate="" class="card b0 form-validate redeem-rules-form">
     <div class="row">
       <div class="card">
         <!-- Nav tabs-->
         <div class="card-heading text-center">
           <div class=" pull-right pr">
-            <span id="error-message" class="text-danger"></span>
-            <button type="button" onclick="send()" class="btn btn-raised btn-primary ripple">Create</button>
+            <button type="button" onclick="send()" class="btn btn-raised btn-primary ripple">Update</button>
           </div>
           <div class="card-title">Setting</div>
         </div>
         <!-- Tab panes-->
         <div class="card-body">
           <div id="accordion" role="tablist" aria-multiselectable="true" class="panel-group">
-            <div id="panel-variant" class="panel panel-default">
+            <div id="panel-program" class="panel panel-default">
               <div id="headingOne" role="tab" class="panel-heading card-heading">
                 <h4 class="panel-title">
-                  <a class="header-button" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">Program</a>
+                  <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">Program</a>
                 </h4>
               </div>
               <div id="collapseOne" role="tabpanel" aria-labelledby="headingOne" class="panel-collapse collapse in">
@@ -35,7 +34,8 @@
                     <div class="col-sm-6">
                       <div class="mda-form-group">
                         <div class="mda-form-control">
-                          <input id="variant-name" name="variant-name" placeholder="Program Name" check="true" tabindex="0" aria-invalid="false" class="form-control">
+                          <input id="program-name" name="program-name" check="true" tabindex="0" aria-invalid="false" class="form-control">
+                          <input id="program-id" name="program-id" type="hidden">
                           <div class="mda-form-control-line"></div>
                           <label>Program Name</label>
                         </div>
@@ -44,8 +44,8 @@
                     <div class="col-sm-6">
                       <div class="mda-form-group">
                         <div class="mda-form-control">
-                          <select id="variant-type" name="variant-type" check="true" class="form-control select2" tabindex="0">
-                            <option value="on-demand">Mobile App</option>
+                          <select id="program-type" name="program-type" check="true" class="form-control select2" tabindex="0">
+                            <option value="on-demand">Mobile Apps</option>
                             <option value="bulk">Email Blast</option>
                           </select>
                           <div class="mda-form-control-line"></div>
@@ -63,7 +63,7 @@
                     <div class="col-sm-6">
                       <div class="mda-form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
                         <div id="example-datepicker-container-4" class="mda-form-control">
-                          <input id="variant-valid-from" name="start-date" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepicker4">
+                          <input id="program-valid-from" name="start-date" tabindex="0" aria-invalid="false" class="form-control datepicker4">
                           <div class="mda-form-control-line"></div>
                           <label>From</label>
                         </div>
@@ -72,7 +72,7 @@
                     <div class="col-sm-6">
                       <div class="mda-form-group">
                         <div class="mda-form-control">
-                          <input id="variant-valid-to" name="end-date" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepicker4">
+                          <input id="program-valid-to" name="end-date" tabindex="0" aria-invalid="false" class="form-control datepicker4">
                           <div class="mda-form-control-line"></div>
                           <label>To</label>
                         </div>
@@ -85,26 +85,10 @@
                         <div class="mda-form-control no-border-bottom">
                           <span><img id="image-preview" class="image-preview" src="/assets/img/Default_image_blank_voucher.jpg"></img></span>
                           <input id="image-url" name="image-url" type="file" tabindex="0" aria-invalid="false" class="form-control">
+                          <input id="image-url-default" name="image-url-default" type="hidden">
                           <div class="mda-form-control-line"></div>
                           <label>Voucher Image</label>
                         </div>
-                      </div>
-                    </div>
-
-                    <div id="target" class="col-sm-6 form-horizontal" style="display:none">
-                      <div class="row">
-                        <div class="col-sm-4">
-                          <label class="control-label">List Target</label>
-                        </div>
-                        <div class="col-sm-8">
-                          <div class="form-group">
-                            <input id="list-target" name="list-target" type="file" tabindex="0" aria-invalid="false" class="no-border form-control">
-                          </div>
-                        </div>
-                      </div>
-                      <div class="row">
-                        <button type="submit" class="btn btn-raised btn-primary ripple">Download Sample CSV</button>
-                        <input type="hidden" id="token" name="token">
                       </div>
                     </div>
                   </div>
@@ -112,7 +96,7 @@
                     <div class="col-sm-12">
                       <div class="mda-form-group">
                         <div class="mda-form-control">
-                          <textarea id="variant-description" name="variant-description" rows="6" aria-multiline="true" tabindex="0" class="form-control"></textarea>
+                          <textarea id="program-description" name="program-description" rows="6" aria-multiline="true" tabindex="0" class="form-control"></textarea>
                           <div class="mda-form-control-line"></div>
                           <label>Description</label><span class="mda-form-msg right">Any message here</span>
                         </div>
@@ -124,7 +108,7 @@
             </div>
             <div id="panel-voucher" class="panel panel-default">
               <div id="headingTwo" role="tab" class="panel-heading card-heading">
-                <h4 class="panel-title"><a class="header-button" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo" class="collapsed">Voucher</a></h4>
+                <h4 class="panel-title"><a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo" class="collapsed">Voucher</a></h4>
               </div>
               <div id="collapseTwo" role="tabpanel" aria-labelledby="headingTwo" class="panel-collapse collapse in">
                 <div class="panel-body">
@@ -136,8 +120,8 @@
                       <div class="form-group">
                         <div class="form-control no-border">
                           <select id="voucher-validity-type" name="voucher-type" class="form-control select2" tabindex="0">
-                            <option value="lifetime">Lifetime</option>
                             <option value="period">Period</option>
+                            <option value="lifetime">Lifetime</option>
                           </select>
                         </div>
                       </div>
@@ -176,32 +160,21 @@
                     </div>
                   </div>
                   <div class="row">
-                    <div class="col-sm-6">
+                    <div class="col-sm-12">
                       <div class="mda-form-group">
                         <div class="mda-form-control">
                           <select id="voucher-type" name="voucher-type" class="form-control select2" tabindex="0">
                             <option value="cash">Cash Back</option>
+                            <option value="discount">Discount</option>
                           </select>
                           <div class="mda-form-control-line"></div>
                           <label>Voucher Type</label>
                         </div>
                       </div>
                     </div>
-                    <div class="col-sm-6">
-                      <div class="form-group">
-                        <div class="col-sm-4">
-                          <label class="control-label">Voucher Value</label>
-                        </div>
-                        <div class="col-sm-8">
-                          <div class="input-group"><span class="input-group-addon">Rp.</span>
-                            <input id="voucher-value" class="form-control" type="text" check="true" placeholder="0"><span class="input-group-addon">.00</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
-                  <div id="max-row" class="row">
-                    <div class="col-sm-12">
+                  <div id="generate-row" class="row">
+                    <div class="col-sm-6">
                       <div class="mda-form-group">
                         <div class="mda-form-control">
                           <input id="max-quantity-voucher" name="max-quantity-voucher" placeholder="Min 1" check="true" tabindex="0" aria-invalid="false" class="form-control">
@@ -210,9 +183,18 @@
                         </div>
                       </div>
                     </div>
+                    <div class="col-sm-6">
+                      <div class="mda-form-group">
+                        <div class="mda-form-control">
+                          <input id="max-generate-voucher" name="max-generate-voucher" placeholder="Min 1" check="true" tabindex="0" aria-invalid="false" class="form-control">
+                          <div class="mda-form-control-line"></div>
+                          <label>Maximum Generate</label>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div id="conversion-row"  class="row">
-                    <div class="col-sm-12">
+                  <div id="conversion-row" class="row">
+                    <div class="col-sm-6">
                       <div class="mda-form-group">
                         <div class="mda-form-control">
                           <input id="voucher-price" name="voucher-price" placeholder="0" check="true" tabindex="0" aria-invalid="false" class="form-control">
@@ -221,29 +203,23 @@
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="row">
                     <div class="col-sm-6">
                       <div class="mda-form-group">
                         <div class="mda-form-control">
-                          <select id="voucher-format" name="voucher-format" class="form-control select2" tabindex="0">
-                            <option value="Alphanumeric">Alphanumeric</option>
-                            <option value="Alphabet">Alphabetic</option>
-                            <option value="Numerals">Numeric</option>
-                          </select>
+                          <input id="max-redeem-voucher" name="max-redeem-voucher" placeholder="Min 1" check="true" tabindex="0" aria-invalid="false" class="form-control">
                           <div class="mda-form-control-line"></div>
-                          <label>Voucher Format</label>
+                          <label>Maximum Redeem</label>
                         </div>
                       </div>
                     </div>
-                    <div class="col-sm-6">
+                  </div>
+                  <div class="row">
+                    <div class="col-sm-12">
                       <div class="mda-form-group">
-                        <div class="mda-form-group">
-                          <div class="mda-form-control">
-                            <input id="prefix" name="prefix" tabindex="0" aria-invalid="false" class="form-control">
-                            <div class="mda-form-control-line"></div>
-                            <label>Prefix</label>
-                          </div>
+                        <div class="mda-form-control">
+                          <input id="voucher-value" name="voucher-value" check="true" tabindex="0" aria-invalid="false" class="form-control">
+                          <div class="mda-form-control-line"></div>
+                          <label>Voucher Value</label>
                         </div>
                       </div>
                     </div>
@@ -253,7 +229,7 @@
             </div>
             <div id="panel-redeem" class="panel panel-default">
               <div id="headingThree" role="tab" class="panel-heading card-heading">
-                <h4 class="panel-title"><a class="header-button" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree" class="collapsed">Redemption Rule</a></h4>
+                <h4 class="panel-title"><a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree" class="collapsed">Redemption Rule</a></h4>
               </div>
               <div id="collapseThree" role="tabpanel" aria-labelledby="headingThree" class="panel-collapse collapse in">
                 <div class="panel-body">
@@ -289,7 +265,7 @@
                     <div class="col-sm-6">
                       <div class="mda-form-group clockpicker" data-autoclose="true">
                         <div class="mda-form-control">
-                          <input id="start-hour" name="start-hour" placeholder="00:00" tabindex="0" aria-invalid="false" class="form-control">
+                          <input id="start-hour" name="start-hour" tabindex="0" aria-invalid="false" class="form-control">
                           <div class="mda-form-control-line"></div>
                           <label>From</label>
                         </div>
@@ -298,7 +274,7 @@
                     <div class="col-sm-6">
                       <div class="mda-form-group clockpicker" data-autoclose="true">
                         <div class="mda-form-control">
-                          <input id="end-hour" name="end-hour" placeholder="00:00" tabindex="0" aria-invalid="false" class="form-control">
+                          <input id="end-hour" name="end-hour" tabindex="0" aria-invalid="false" class="form-control">
                           <div class="mda-form-control-line"></div>
                           <label>To</label>
                         </div>
@@ -314,8 +290,8 @@
                       <div class="form-group">
                         <div class="form-control no-border">
                           <select id="redeem-validity-type" name="voucher-type" class="form-control select2" tabindex="0">
-                            <option value="selected">Select</option>
                             <option value="all">All Day</option>
+                            <option value="selected">Select</option>
                           </select>
                         </div>
                       </div>
@@ -345,12 +321,19 @@
                     </div>
                     <div class="col-sm-8 border">
                       <div id="partner-list" class="mda-form-group checkbox-add-padding">
+                        <div class='col-sm-12'>
+                          <label class='checkbox-inline c-checkbox'>
+                            <input type='checkbox' id="all-tenant">
+                            <span class='ion-checkmark-round'></span>All Tenant
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+
             <div id="panel-tnc" class="panel panel-default">
               <div id="headingFour" role="tab" class="panel-heading card-heading">
                 <h4 class="panel-title"><a class="header-button" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false" aria-controls="collapseThree" class="collapsed">Term and Condition</a></h4>
@@ -359,7 +342,7 @@
                 <div class="panel-body">
                   <div class="row">
                     <div class="col-sm-12">
-                      <div id="list-rule" class="summernote"></div>
+                      <div id="program-tnc" class="summernote"></div>
                     </div>
                   </div>
                 </div>
@@ -369,6 +352,7 @@
         </div>
       </div>
     </div>
+  </div>
   </form>
 </div>
 </section>
@@ -379,8 +363,7 @@
 <script type="text/javascript" src="/assets/vendor/clockpicker/dist/bootstrap-clockpicker.js"></script>
 <script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
 <script type="text/javascript" src="/assets/vendor/summernote/dist/summernote.js"></script>
-<script type="text/javascript" src="/assets/js/variant/create.js"></script>
-
+<script type="text/javascript" src="/assets/js/program/update.js"></script>
 {{ end }}
 
 {{ define "stylesheets" }}

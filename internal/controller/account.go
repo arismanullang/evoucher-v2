@@ -16,9 +16,9 @@ import (
 
 type (
 	Account struct {
-		AccountName string         `json:"account_name"`
-		Billing     sql.NullString `json:"billing"`
-		CreatedBy   string         `json:"created_by"`
+		Name      string         `json:"name"`
+		Billing   sql.NullString `json:"billing"`
+		CreatedBy string         `json:"created_by"`
 	}
 )
 
@@ -31,8 +31,8 @@ func RegisterAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	param := model.Account{
-		AccountName: rd.AccountName,
-		Billing:     rd.Billing,
+		Name:    rd.Name,
+		Billing: rd.Billing,
 	}
 
 	if err := model.AddAccount(param, rd.CreatedBy); err != nil {
@@ -82,10 +82,10 @@ func GetAccountDetailByUser(w http.ResponseWriter, r *http.Request) {
 			}
 
 			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-			logger.SetStatus(status).Log("param :", a.User.ID , "response :" , err.Error())
+			logger.SetStatus(status).Log("param :", a.User.ID, "response :", err.Error())
 		} else {
 			res = NewResponse(account)
-			logger.SetStatus(status).Log("param :", a.User.ID , "response :" , err.Error())
+			logger.SetStatus(status).Log("param :", a.User.ID, "response :", err.Error())
 		}
 	} else {
 		res = a.res

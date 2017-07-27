@@ -7,7 +7,7 @@ function getVoucher() {
     var holder = findGetParameter("holder");
     var arrData = [];
     $.ajax({
-        url: '/v1/vouchers?holder='+holder+'&token='+token,
+        url: '/v1/ui/vouchers?holder='+holder+'&token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -60,12 +60,12 @@ function getVoucher() {
               default:
                 status = "Issued";
             }
-// variant jangan id, name aja
+// program jangan id, name aja
             dataSet[i] = [
               arrData[i].voucher_code
               , arrData[i].holder
               , arrData[i].reference_no
-              , arrData[i].variant_id
+              , arrData[i].program_id
               , "<div class='progress'>"
                 + "<div role='progressbar progress-bar-success' aria-valuenow='"+diffNow+"' aria-valuemin='0' aria-valuemax='"+diffTotal+"' style='width: "+persen+"%;' class='progress-bar'>"+diffNow+"</div>"
                 + "</div>"
@@ -126,14 +126,14 @@ function detail(url){
     'use strict';
 
     $(runSweetAlert);
-    //onclick='deleteVariant(\""+arrData[i].Id+"\")'
+    //onclick='deleteProgram(\""+arrData[i].Id+"\")'
     function runSweetAlert() {
         $(document).on('click', '.swal-demo4', function(e) {
             e.preventDefault();
             console.log(e.target.value);
             swal({
                     title: 'Are you sure?',
-                    text: 'Do you want delete variant?',
+                    text: 'Do you want delete program?',
                     type: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#DD6B55',
@@ -141,7 +141,7 @@ function detail(url){
                     closeOnConfirm: false
                 },
                 function() {
-                    swal('Deleted!', 'Delete success.', deleteVariant(e.target.value));
+                    swal('Deleted!', 'Delete success.', deleteProgram(e.target.value));
                 });
 
         });

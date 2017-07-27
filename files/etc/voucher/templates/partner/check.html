@@ -1,0 +1,121 @@
+{{ template "layout" . }}
+
+{{ define "title" }}Partner{{ end }}
+{{ define "header-title" }}Partner{{ end }}
+
+{{ define "content" }}
+<!-- Page content-->
+<section>
+  <div class="content-heading bg-white">
+    <div class="row">
+      <div class="media m0 pv">
+        <div class="media-left">
+          <div id="initial" class="text-lg initial64 bg-blue-500"></div>
+        </div>
+        <div class="media-body media-middle">
+          <h4 id="partner-title" class="media-heading"></h4>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Left column-->
+      <div class="col-md-12 col-lg-12">
+        <form editable-form="" id="profileForm" method="post" action="/v1/ui/voucher/link" name="user.profileForm" class="card">
+          <h5 class="card-heading">
+            <ul id="myTabs" role="tablist" class="nav nav-tabs nav-justified">
+              <li role="presentation" class="active"><a id="detail-tab" href="#detail" role="tab" data-toggle="tab" aria-controls="detail" aria-expanded="true">Detail</a></li>
+              <li role="presentation"><a id="performance-tab" href="#performance" role="tab" data-toggle="tab" aria-controls="performance">Performance</a></li>
+              <li role="presentation">
+                <div class="pull-right">
+                  <button type="button" onclick="edit()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Edit"><em class="ion-edit"></em ></button>
+                </div>
+              </li>
+            </ul>
+            <input type="hidden" name="program" id="program-id">
+            <input type="hidden" name="token" id="token">
+          </h5>
+          <div class="card-body">
+            <div id="myTabContent" class="tab-content">
+              <div id="detail" role="tabpanel" aria-labelledby="home-tab" class="tab-pane fade in active">
+                <table id="dvData" class="table table-striped">
+                  <tbody>
+                    <tr>
+                      <td class="col-lg-4"><em class="ion-ios-home-outline icon-fw mr"></em>Partner Name</td>
+                      <td id="partner-name" class="col-lg-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="col-lg-4"><em class="ion-ios-barcode-outline icon-fw mr"></em>Serial Number</td>
+                      <td id="serial-number" class="col-lg-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="col-lg-4"><em class="ion-ios-eye-outline icon-fw mr"></em>Description</td>
+                      <td id="desciption" class="col-lg-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="col-lg-4"><em class="icon-fw mr"></em>Tag</td>
+                      <td id="tag" class="col-lg-8"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div id="performance" role="tabpanel" aria-labelledby="profile-tab" class="tab-pane fade">
+                <table class="table table-striped">
+                  <tbody>
+                    <tr>
+                      <td class="col-lg-4"><em class="ion-ios-cart-outline icon-fw mr"></em>Total Program</td>
+                      <td id="total-program" class="col-lg-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="col-lg-4"><em class="icon-fw mr"></em>Total Transaction</td>
+                      <td id="total-transaction" class="col-lg-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="col-lg-4"><em class="ion-ios-pricetags-outline icon-fw mr"></em>Total Valid Voucher</td>
+                      <td id="total-valid-voucher" class="col-lg-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="col-lg-4"><em class="icon-fw mr"></em>Total Used Voucher</td>
+                      <td id="total-used-voucher" class="col-lg-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="col-lg-4"><em class="icon-fw mr"></em>Total Voucher Value</td>
+                      <td id="total-voucher-value" class="col-lg-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="col-lg-4"><em class="ion-ios-person-outline icon-fw mr"></em>Total Customer</td>
+                      <td id="total-customer" class="col-lg-8"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{{ end }}
+
+{{ define "scripts" }}
+<script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/jquery.dataTables.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.flash.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/jszip.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/pdfmake.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/vfs_fonts.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.html5.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.print.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/nouislider/distribute/nouislider.js"></script>
+<script type="text/javascript" src="/assets/js/partner/check.js"></script>
+{{ end }}
+
+{{ define "stylesheets" }}
+<link rel="stylesheet" href="/assets/vendor/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css">
+<link rel="stylesheet" href="/assets/vendor/datatables/media/css/jquery.dataTables.css">
+<link rel="stylesheet" href="/assets/vendor/datatables/media/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
+{{ end }}
