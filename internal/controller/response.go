@@ -6,9 +6,9 @@ import (
 )
 
 type errorData struct {
-	Code   	string `json:"code"`
-	Title  	string `json:"title"`
-	Detail 	string `json:"detail"`
+	Code    string `json:"code"`
+	Title   string `json:"title"`
+	Detail  string `json:"detail"`
 	TraceID string `json:"traceID"`
 }
 
@@ -56,7 +56,7 @@ func (r *Response) AddError(code, title, detail, traceID string) {
 	r.Errors = &errorData{code, title, detail, traceID}
 }
 
-func (e *errorData) ToString() string{
+func (e *errorData) ToString() string {
 	str := fmt.Sprintf("%#v", e)
 	return str
 }

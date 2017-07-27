@@ -25,8 +25,8 @@ type (
 		CreatedAt string  `db:"created_at" json:"created_at"`
 	}
 	Role struct {
-		Id         string `db:"id" json:"id"`
-		RoleDetail string `db:"role_detail" json:"role_detail"`
+		Id     string `db:"id" json:"id"`
+		Detail string `db:"detail" json:"detail"`
 	}
 
 	UserRes struct {
@@ -156,7 +156,7 @@ func FindAllUsers(accountId string) ([]User, error) {
 		q1 := `
 		SELECT
 		  	u.id id,
-		  	r.role_detail role_detail
+		  	r.detail detail
 		FROM
 		  	users u
 		JOIN
@@ -251,18 +251,22 @@ func FindUserDetail(userId string) (User, error) {
 			users as u
 		WHERE
 			id = ?
+			OR username = ?
 			AND status = ?
 	`
 	var res []User
-	if err := db.Select(&res, db.Rebind(q), userId, StatusCreated); err != nil {
+	if err := db.Select(&res, db.Rebind(q), userId, userId, StatusCreated); err != nil {
 		fmt.Println(err)
 		return User{}, ErrServerInternal
+	}
+	if len(res) == 0 {
+		return User{}, ErrResourceNotFound
 	}
 
 	q1 := `
 		SELECT
 		  	r.id id,
-		  	r.role_detail role_detail
+		  	r.detail detail
 		FROM
 		  	users u
 		JOIN
@@ -279,15 +283,22 @@ func FindUserDetail(userId string) (User, error) {
 
 	`
 	var role []Role
-	if err := db.Select(&role, db.Rebind(q1), userId, StatusCreated); err != nil {
+	if err := db.Select(&role, db.Rebind(q1), res[0].ID, StatusCreated); err != nil {
 		fmt.Println(err)
 		return User{}, ErrServerInternal
 	}
+	if len(role) == 0 {
+		return User{}, ErrResourceNotFound
+	}
+
 	res[0].Role = role
 	account, err := GetAccountDetailByUser(userId)
 	if err != nil {
 		fmt.Println(err)
 		return User{}, ErrServerInternal
+	}
+	if len(account) == 0 {
+		return User{}, ErrResourceNotFound
 	}
 	res[0].Account = account[0]
 
@@ -605,7 +616,7 @@ func ReleaseUser(userId string) error {
 func FindAllRole() ([]Role, error) {
 	fmt.Println("Select All Role")
 	q := `
-		SELECT id, role_detail
+		SELECT id, detail
 		FROM roles
 		WHERE status = ?
 	`
@@ -636,8 +647,8 @@ func InsertBroadcastUser(variantId, user string, target, description []string) e
 	for i, v := range target {
 		q = q + `
 			INSERT INTO broadcast_users(
-				variant_id
-				, broadcast_target
+				program_id
+				, target
 				, description
 				, state
 				, created_by

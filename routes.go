@@ -16,7 +16,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/ping", ping)
 
 	//ui
-	r.GetFunc("/variant/:page", viewVariant)
+	r.GetFunc("/program/:page", viewProgram)
 	r.GetFunc("/user/:page", viewUser)
 	r.GetFunc("/partner/:page", viewPartner)
 	r.GetFunc("/tag/:page", viewTag)
@@ -27,17 +27,17 @@ func setRoutes() http.Handler {
 
 	//report
 	//r.GetFunc("/v1/api/report", controller.MakeReport)
-	//r.GetFunc("/v1/api/report/variant", controller.MakeReportVariant)
-	//r.GetFunc("/v1/api/report/voucher/variant", controller.MakeCompleteReportVoucherByUser)
-	//r.GetFunc("/v1/api/report/vouchers/variant", controller.MakeReportVoucherByUser)
+	//r.GetFunc("/v1/api/report/Program", controller.MakeReportProgram)
+	//r.GetFunc("/v1/api/report/voucher/Program", controller.MakeCompleteReportVoucherByUser)
+	//r.GetFunc("/v1/api/report/vouchers/Program", controller.MakeReportVoucherByUser)
 
-	//variant
-	r.PostFunc("/v1/ui/variant/create", controller.CreateVariant)
-	r.GetFunc("/v1/ui/variant/all", controller.GetAllVariants)
-	r.GetFunc("/v1/ui/variant", controller.GetVariants)
-	r.GetFunc("/v1/ui/variant/detail", controller.GetVariantDetailsCustom)
-	r.PostFunc("/v1/ui/variant/update", controller.UpdateVariantRoute)
-	r.GetFunc("/v1/ui/variant/delete", controller.DeleteVariant)
+	//program
+	r.PostFunc("/v1/ui/program/create", controller.CreateProgram)
+	r.GetFunc("/v1/ui/program/all", controller.GetAllPrograms)
+	r.GetFunc("/v1/ui/program", controller.GetPrograms)
+	r.GetFunc("/v1/ui/program/detail", controller.GetProgramDetailsCustom)
+	r.PostFunc("/v1/ui/program/update", controller.UpdateProgramRoute)
+	r.GetFunc("/v1/ui/program/delete", controller.DeleteProgram)
 
 	//transaction
 	r.GetFunc("/v1/ui/transaction/partner", controller.GetAllTransactionsByPartner)
@@ -54,15 +54,16 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/ui/user/all", controller.GetUser)
 	r.GetFunc("/v1/ui/user", controller.GetUserDetails)
 	r.GetFunc("/v1/ui/user/other", controller.GetOtherUserDetails)
-	r.GetFunc("/v1/ui/user/forgot/mail", controller.SendMailForgotPassword)
+	r.GetFunc("/v1/ui/user/forgot/mail", controller.SendForgotPasswordMail)
 	r.PostFunc("/v1/ui/user/forgot/password", controller.ForgotPassword)
 	r.PostFunc("/v1/ui/user/create/broadcast", controller.InsertBroadcastUser)
 
 	//partner
 	r.PostFunc("/v1/ui/partner/create", controller.AddPartner)
 	r.GetFunc("/v1/ui/partner/all", controller.GetAllPartners)
-	r.GetFunc("/v1/ui/partner/variant", controller.GetVariantPartners)
+	r.GetFunc("/v1/ui/partner/program", controller.GetProgramPartners)
 	r.GetFunc("/v1/ui/partner", controller.GetPartners)
+	r.GetFunc("/v1/ui/partner/performance", controller.GetPerformancePartner)
 	r.PostFunc("/v1/ui/partner/update", controller.UpdatePartner)
 	r.GetFunc("/v1/ui/partner/delete", controller.DeletePartner)
 
@@ -82,16 +83,17 @@ func setRoutes() http.Handler {
 
 	//voucher
 	r.GetFunc("/v1/ui/voucher", controller.GetVoucherList)
-	r.GetFunc("/v1/vouchers/:id", controller.GetVoucherDetails)
-	r.GetFunc("/v1/ui/voucher/generate/bulk", controller.GenerateVoucherBulk)
+	r.GetFunc("/v1/ui/voucher/:id", controller.GetVoucherDetails)
+	r.PostFunc("/v1/ui/voucher/generate/bulk", controller.GenerateVoucherBulk)
 	r.PostFunc("/v1/ui/voucher/link", controller.GetVoucherlink)
+	r.PostFunc("/v1/ui/voucher/send-voucher", controller.SendVoucherBulk)
 	r.GetFunc("/v1/sample/link", controller.GetCsvSample)
 
 	//mobile API
-	r.GetFunc("/v1/variants", controller.ListVariants)
-	r.GetFunc("/v1/variants/:id", controller.ListVariantsDetails)
-	r.GetFunc("/v1/variant/vouchers", controller.GetVoucherOfVariant)
-	r.GetFunc("/v1/variant/vouchers/:id", controller.GetVoucherOfVariantDetails)
+	r.GetFunc("/v1/program", controller.ListPrograms)
+	r.GetFunc("/v1/program/:id", controller.ListProgramsDetails)
+	r.GetFunc("/v1/voucher", controller.GetVoucherOfProgram)
+	r.GetFunc("/v1/voucher/:id", controller.GetVoucherOfProgramDetails)
 	r.PostFunc("/v1/voucher/generate/single", controller.GenerateVoucherOnDemand)
 	r.PostFunc("/v1/transaction/redeem", controller.MobileCreateTransaction)
 
@@ -108,6 +110,7 @@ func setRoutes() http.Handler {
 	//custom
 	r.GetFunc("/view/", viewHandler)
 	r.GetFunc("/viewNoLayout", viewNoLayoutHandler)
+	r.PostFunc("/v1/send/mail", controller.SendCustomMailRoute)
 
 	// r.GetFunc("/test", controller.UploadFormTest)
 	r.PostFunc("/file/upload", controller.UploadFile)
@@ -122,45 +125,48 @@ func ping(w http.ResponseWriter, r *http.Request) {
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
-	render.FileInLayout(w, "layout.html", "view/index.html", nil)
+	render.FileInLayout(w, "layout.html", "partner/check.html", nil)
 }
 
 func viewNoLayoutHandler(w http.ResponseWriter, r *http.Request) {
 	render.File(w, "view/noLayout.html", nil)
 }
 
-func viewVariant(w http.ResponseWriter, r *http.Request) {
+func viewProgram(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
 	valid := false
 	a := controller.AuthToken(w, r)
 	if a.Valid {
 		for _, valueRole := range a.User.Role {
-			features := model.UiFeatures[valueRole.RoleDetail]
+			features := model.UiFeatures[valueRole.Detail]
 			for _, valueFeature := range features {
 				if r.URL.Path == valueFeature {
 					valid = true
 				}
 			}
 		}
+	} else {
+		render.File(w, "notfound.html", nil, 404)
+		return
 	}
 
 	if valid {
 		if page == "create" {
-			render.FileInLayout(w, "layout.html", "variant/create.html", nil)
+			render.FileInLayout(w, "layout.html", "program/create.html", nil)
 		} else if page == "search" {
-			render.FileInLayout(w, "layout.html", "variant/search.html", nil)
+			render.FileInLayout(w, "layout.html", "program/search.html", nil)
 		} else if page == "check" {
-			render.FileInLayout(w, "layout.html", "variant/check.html", nil)
+			render.FileInLayout(w, "layout.html", "program/check.html", nil)
 		} else if page == "update" {
-			render.FileInLayout(w, "layout.html", "variant/update.html", nil)
+			render.FileInLayout(w, "layout.html", "program/update.html", nil)
 		} else if page == "" || page == "index" {
-			render.FileInLayout(w, "layout.html", "variant/index.html", nil)
+			render.FileInLayout(w, "layout.html", "program/index.html", nil)
 		} else {
-			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+			render.File(w, "notfound.html", nil, 404)
 		}
 	} else {
-		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
+		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil, 401)
 	}
 }
 
@@ -180,14 +186,18 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 		a := controller.AuthToken(w, r)
 		if a.Valid {
 			for _, valueRole := range a.User.Role {
-				features := model.UiFeatures[valueRole.RoleDetail]
+				features := model.UiFeatures[valueRole.Detail]
 				for _, valueFeature := range features {
 					if r.URL.Path == valueFeature {
 						valid = true
 					}
 				}
 			}
+		} else {
+			render.File(w, "notfound.html", nil, 404)
+			return
 		}
+
 		if valid {
 			if page == "register" {
 				render.FileInLayout(w, "layout.html", "user/create.html", nil)
@@ -200,10 +210,10 @@ func viewUser(w http.ResponseWriter, r *http.Request) {
 			} else if page == "profile" {
 				render.FileInLayout(w, "layout.html", "user/profile.html", nil)
 			} else {
-				render.FileInLayout(w, "layout.html", "notfound.html", nil)
+				render.File(w, "notfound.html", nil, 404)
 			}
 		} else {
-			render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
+			render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil, 401)
 		}
 	}
 
@@ -216,26 +226,32 @@ func viewPartner(w http.ResponseWriter, r *http.Request) {
 	a := controller.AuthToken(w, r)
 	if a.Valid {
 		for _, valueRole := range a.User.Role {
-			features := model.UiFeatures[valueRole.RoleDetail]
+			features := model.UiFeatures[valueRole.Detail]
 			for _, valueFeature := range features {
 				if r.URL.Path == valueFeature {
 					valid = true
 				}
 			}
 		}
+	} else {
+		render.File(w, "notfound.html", nil, 404)
+		return
 	}
+
 	if valid {
 		if page == "create" {
 			render.FileInLayout(w, "layout.html", "partner/create.html", nil)
 		} else if page == "search" {
 			render.FileInLayout(w, "layout.html", "partner/search.html", nil)
+		} else if page == "check" {
+			render.FileInLayout(w, "layout.html", "partner/check.html", nil)
 		} else if page == "update" {
 			render.FileInLayout(w, "layout.html", "partner/update.html", nil)
 		} else {
-			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+			render.File(w, "notfound.html", nil, 404)
 		}
 	} else {
-		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
+		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil, 401)
 	}
 }
 
@@ -246,22 +262,26 @@ func viewTag(w http.ResponseWriter, r *http.Request) {
 	a := controller.AuthToken(w, r)
 	if a.Valid {
 		for _, valueRole := range a.User.Role {
-			features := model.UiFeatures[valueRole.RoleDetail]
+			features := model.UiFeatures[valueRole.Detail]
 			for _, valueFeature := range features {
 				if r.URL.Path == valueFeature {
 					valid = true
 				}
 			}
 		}
+	} else {
+		render.File(w, "notfound.html", nil, 404)
+		return
 	}
+
 	if valid {
 		if page == "search" {
 			render.FileInLayout(w, "layout.html", "tag/search.html", nil)
 		} else {
-			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+			render.File(w, "notfound.html", nil, 404)
 		}
 	} else {
-		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
+		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil, 401)
 	}
 }
 
@@ -272,14 +292,18 @@ func viewVoucher(w http.ResponseWriter, r *http.Request) {
 	a := controller.AuthToken(w, r)
 	if a.Valid {
 		for _, valueRole := range a.User.Role {
-			features := model.UiFeatures[valueRole.RoleDetail]
+			features := model.UiFeatures[valueRole.Detail]
 			for _, valueFeature := range features {
 				if r.URL.Path == valueFeature {
 					valid = true
 				}
 			}
 		}
+	} else {
+		render.File(w, "notfound.html", nil, 404)
+		return
 	}
+
 	if valid {
 		if page == "search" {
 			render.FileInLayout(w, "layout.html", "voucher/search.html", nil)
@@ -290,10 +314,10 @@ func viewVoucher(w http.ResponseWriter, r *http.Request) {
 		} else if page == "print" {
 			render.FileInLayout(w, "layout.html", "voucher/print.html", nil)
 		} else {
-			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+			render.File(w, "notfound.html", nil, 404)
 		}
 	} else {
-		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
+		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil, 401)
 	}
 }
 
@@ -304,26 +328,30 @@ func viewReport(w http.ResponseWriter, r *http.Request) {
 	a := controller.AuthToken(w, r)
 	if a.Valid {
 		for _, valueRole := range a.User.Role {
-			features := model.UiFeatures[valueRole.RoleDetail]
+			features := model.UiFeatures[valueRole.Detail]
 			for _, valueFeature := range features {
 				if r.URL.Path == valueFeature {
 					valid = true
 				}
 			}
 		}
+	} else {
+		render.File(w, "notfound.html", nil, 404)
+		return
 	}
+
 	if valid {
-		if page == "variant" {
-			render.FileInLayout(w, "layout.html", "report/variant.html", nil)
+		if page == "program" {
+			render.FileInLayout(w, "layout.html", "report/program.html", nil)
 		} else if page == "transaction" {
 			render.FileInLayout(w, "layout.html", "report/transaction.html", nil)
 		} else if page == "" || page == "index" {
 			render.FileInLayout(w, "layout.html", "report/test.html", nil)
 		} else {
-			render.FileInLayout(w, "layout.html", "notfound.html", nil)
+			render.File(w, "notfound.html", nil, 404)
 		}
 	} else {
-		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil)
+		render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil, 401)
 	}
 }
 
@@ -341,7 +369,7 @@ func viewPublic(w http.ResponseWriter, r *http.Request) {
 	} else if page == "" || page == "index" {
 		render.File(w, "public/index.html", nil)
 	} else {
-		render.FileInLayout(w, "layout.html", "notfound.html", nil)
+		render.File(w, "notfound.html", nil, 404)
 	}
 }
 
@@ -350,5 +378,5 @@ func login(w http.ResponseWriter, r *http.Request) {
 }
 
 func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
-	render.FileInLayout(w, "layout.html", "notfound.html", nil)
+	render.File(w, "notfound.html", nil, 404)
 }

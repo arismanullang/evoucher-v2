@@ -5,7 +5,7 @@ $(document).ready(function() {
 function getVariant() {
     console.log("Get Variant Data");
     $.ajax({
-        url: '/v1/report/variant',
+        url: '/v1/report/program',
         type: 'get',
         success: function (data) {
           console.log(data.data.chart);
@@ -25,11 +25,11 @@ function getVariant() {
           }
           console.log(dataSet);
 
-          if ($.fn.DataTable.isDataTable("#variant-datatable")) {
-            $('#variant-datatable').DataTable().clear().destroy();
+          if ($.fn.DataTable.isDataTable("#program-datatable")) {
+            $('#program-datatable').DataTable().clear().destroy();
           }
 
-          var table = $('#variant-datatable').dataTable({
+          var table = $('#program-datatable').dataTable({
               data: dataSet,
               dom: 'Brt',
               buttons: [
@@ -63,7 +63,7 @@ function getVariant() {
 function getVoucher(id) {
     console.log("Get Variant Data");
     $.ajax({
-        url: '/v1/report/vouchers/variant?id='+id,
+        url: '/v1/report/vouchers/program?id='+id,
         type: 'get',
         success: function (data) {
           console.log(data.data.chart);
@@ -188,7 +188,7 @@ function initFlotBar(elem ,data){
   });
 
   $(chartName).bind("plotclick", function (event, pos, item) {
-    if(chartName == "#variant-flot-bar-chart"){
+    if(chartName == "#program-flot-bar-chart"){
       if (item) {
           getVoucher(item.series.label);
       }

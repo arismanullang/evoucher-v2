@@ -13,7 +13,7 @@ function getPartner() {
     console.log("Get Partner Data");
 
     $.ajax({
-      url: '/v1/ui/partner/all',
+      url: '/v1/ui/partner/all?token='+token,
       type: 'get',
       success: function (data) {
         console.log("Render Data");
@@ -22,7 +22,7 @@ function getPartner() {
 
         var i;
         for (i = 0; i < arrData.length; i++){
-          var li = $("<option value='"+arrData[i].partner_name+"'>"+arrData[i].partner_name+"</div>");
+          var li = $("<option value='"+arrData[i].name+"'>"+arrData[i].name+"</div>");
           li.appendTo('#partner-id');
         }
       }
@@ -30,7 +30,7 @@ function getPartner() {
 }
 
 function getTransactionByPartner(partnerId) {
-    console.log("Get Variant Data");
+    console.log("Get Program Data");
 
     var arrData = [];
     $.ajax({
@@ -77,19 +77,22 @@ function getTransactionByPartner(partnerId) {
 	    if(usernameExist){
 	    	username.push(arrData[i].username.String.toUpperCase());
 	    }
-
-            dataSet[i] = [
-              arrData[i].partner_name.toUpperCase()
-              , arrData[i].transaction_id
-              , arrData[i].variant_name.toUpperCase()
-              , arrData[i].voucher
-              //, addDecimalPoints(arrData[i].discount_value)
-              , date1[2] + " " + months[parseInt(date1[1])-1] + " " + date1[0]
-	      , date2[2] + " " + months[parseInt(date2[1])-1] + " " + date2[0]
-	      , cashoutDate
-              , cashoutCashier.toUpperCase()
-	      , status.toUpperCase()
-            ];
+	    var tempVoucherLength = arrData[i].voucher.length;
+	    for ( y = 0; y < tempVoucherLength; y++){
+		    dataSet[i] = [
+			    arrData[i].partner_name.toUpperCase()
+			    , arrData[i].transaction_code
+			    , arrData[i].program_name.toUpperCase()
+			    , arrData[i].voucher[y].VoucherCode
+			    //, addDecimalPoints(arrData[i].discount_value)
+			    , date1[2] + " " + months[parseInt(date1[1])-1] + " " + date1[0]
+			    , date2[2] + " " + months[parseInt(date2[1])-1] + " " + date2[0]
+			    , cashoutDate
+			    , cashoutCashier.toUpperCase()
+			    , status.toUpperCase()
+		    ];
+	    }
+	    i += tempVoucherLength-1;
           }
           console.log(dataSet);
 	  console.log(username);
@@ -105,10 +108,10 @@ function getTransactionByPartner(partnerId) {
               buttons: [
                   'copy', 'csv', 'excel', 'pdf', 'print'
               ],
-              "order": [[ 0, "asc" ]],
+              "order": [[ 8, "desc" ]],
               columns: [
                   { title: "PARTNER" },
-                  { title: "TRANSACTION ID" },
+                  { title: "TRANSACTION CODE" },
                   { title: "PROGRAM" },
                   { title: "VOUCHER" },
                   { title: "ISSUED" },

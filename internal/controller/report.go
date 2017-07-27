@@ -80,8 +80,8 @@ func MakeReport(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, http.StatusOK)
 }
 
-func MakeReportVariant(w http.ResponseWriter, r *http.Request) {
-	result, err := model.MakeReportVariant()
+func MakeReportProgram(w http.ResponseWriter, r *http.Request) {
+	result, err := model.MakeReportProgram()
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -271,7 +271,7 @@ func MakeReportVoucherByUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func MakeReportLine(w http.ResponseWriter, r *http.Request) {
-	result, err := model.MakeReportVariant()
+	result, err := model.MakeReportProgram()
 	if err != nil {
 		fmt.Println(err.Error())
 	}

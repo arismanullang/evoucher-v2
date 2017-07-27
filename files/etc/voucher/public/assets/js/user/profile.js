@@ -76,12 +76,12 @@ function getVariant() {
     console.log("Get Account Data");
 
     $.ajax({
-        url: '/v1/ui/variant/all?token='+token,
+        url: '/v1/ui/program/all?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
           var result = data.data;
-          $("#user-variant").html(result.length);
+          $("#user-program").html(result.length);
         },
         error: function (data) {
           alert("Account Not Found.");

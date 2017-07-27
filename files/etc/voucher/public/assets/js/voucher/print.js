@@ -21,7 +21,7 @@ function cashout(){
 				var li = $("<tr class='text-center'></tr>");
 				li.html(body);
 				li.appendTo('#list-transaction');
-				total += result[i].discount_value;
+				total += result[i].voucher_value;
 			}
 
 			$("#tenant").html(result[0].partner_name);

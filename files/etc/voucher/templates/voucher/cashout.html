@@ -26,7 +26,7 @@
             </div>
             <div class="row">
               <div class=" pull-right pr">
-                <button type="button" onclick="addElem()" class="btn btn-raised btn-primary ripple">Submit</button>
+                <button type="button" onclick="addElem()" class="btn btn-raised btn-primary ripple">Add</button>
               </div>
             </div>
             <div class="row">
@@ -53,13 +53,34 @@
             </div>
             <div class="row">
               <div class=" pull-right pr">
-                <button type="button" onclick="cashout()" class="btn btn-raised btn-primary ripple">Print</button>
+                <button type="button" onclick="cashout()" class="btn btn-raised btn-primary ripple">Submit</button>
               </div>
             </div>
           </div>
         </div>
       </div>
     </form>
+    <div id="success-page" class="col-sm-12" style="display: none">
+      <div class="card">
+        <div class="card-heading bg-amber-500">
+          <div class="card-title text-center">Cashout Success</div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-12 text-center">
+              <div class="row">
+                <h5>Cashout transactions for <span id="partner-name"></span> success.</h5>
+              </div>
+              <div class="row">
+                <button type="button" onclick="print()" class="btn btn-raised btn-success ripple">Print</button>
+                 OR
+                <button type="button" onclick="next()" class="btn btn-raised btn-primary ripple">Next Cashout</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 {{ end }}

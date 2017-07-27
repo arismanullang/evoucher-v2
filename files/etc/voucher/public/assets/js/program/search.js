@@ -1,13 +1,13 @@
 $( document ).ready(function() {
-  getVariant();
+  getProgram();
 });
 
-function getVariant() {
-    console.log("Get Variant Data");
+function getProgram() {
+    console.log("Get Program Data");
 
     var arrData = [];
     $.ajax({
-        url: '/v1/ui/variant/all?token='+token,
+        url: '/v1/ui/program/all?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -28,24 +28,21 @@ function getVariant() {
           var dataStatus = [];
 	  var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
           for ( i = 0; i < arrData.length; i++){
-            var tempIndex = dataId.indexOf(arrData[i].id);
-            if( tempIndex == -1){
-
 	      var date1 = arrData[i].start_date.substring(0, 10).split("-");
 	      var date2 = arrData[i].end_date.substring(0, 10).split("-");
 	      var date3 = arrData[i].created_at.substring(0, 10).split("-");
 	      var date4 = arrData[i].updated_at.String.substring(0, 10).split("-");
               dataId.push(arrData[i].id);
-              if(arrData[i].variant_type == "on-demand"){
+              if(arrData[i].type == "on-demand"){
 		dataType.push("Mobile App");
 	      }else{
               	dataType.push("Email Blast");
 	      }
               dataStart.push(date1[2] + " " + months[parseInt(date1[1])-1] + " " + date1[0]);
               dataEnd.push(date2[2] + " " + months[parseInt(date2[1])-1] + " " + date2[0]);
-              dataName.push(arrData[i].variant_name);
+              dataName.push(arrData[i].name);
               dataPrice.push(arrData[i].voucher_price);
-              dataValue.push(arrData[i].discount_value);
+              dataValue.push(arrData[i].voucher_value);
               dataMax.push(arrData[i].max_quantity_voucher);
 
               var created = 0;
@@ -82,10 +79,7 @@ function getVariant() {
 	      }else{
 		      dataModified.push(date3[2] + " " + months[parseInt(date3[1])-1] + " " + date3[0]);
 	      }
-            }
-            else{
-              //dataVoucher[tempIndex] = parseInt(dataVoucher[tempIndex]) + parseInt(arrData[i].voucher);
-            }
+
           }
 
           for ( i = 0; i < dataId.length; i++){
@@ -176,41 +170,46 @@ function getVariant() {
 }
 
 function edit(url){
-  window.location = "/variant/update?id="+url+"&token="+token;
+  window.location = "/program/update?id="+url+"&token="+token;
 }
 
 function detail(url){
-  window.location = "/variant/check?id="+url+"&token="+token;
+  window.location = "/program/check?id="+url+"&token="+token;
 }
 
-function addVariant(url){
-  window.location = "/variant/create?token="+token;
+function addProgram(url){
+  window.location = "/program/create?token="+token;
 }
 
-function deleteVariant(id) {
-    console.log("Delete Variant");
-
+function deleteProgram(id) {
+    console.log("Delete Program");
+	var status = ""
     $.ajax({
-        url: '/v1/ui/variant/delete?id='+id+'&token='+token,
+        url: '/v1/ui/program/delete?id='+id+'&token='+token,
         type: 'get',
         success: function (data) {
-          getVariant();
-        }
+          getProgram();
+		swal('Delete Success!');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+        	swal('Delete Error!', xhr.responseJSON.errors.detail);
+	}
     });
+	return status;
 }
 
 (function() {
     'use strict';
 
     $(runSweetAlert);
-    //onclick='deleteVariant(\""+arrData[i].Id+"\")'
+    //onclick='deleteProgram(\""+arrData[i].Id+"\")'
     function runSweetAlert() {
         $(document).on('click', '.swal-demo4', function(e) {
             e.preventDefault();
             console.log(e.target.value);
             swal({
                     title: 'Are you sure?',
-                    text: 'Do you want delete variant?',
+                    text: 'Do you want delete program?',
                     type: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#DD6B55',
@@ -218,7 +217,7 @@ function deleteVariant(id) {
                     closeOnConfirm: false
                 },
                 function() {
-                    swal('Deleted!', 'Delete success.', deleteVariant(e.target.value));
+			deleteProgram(e.target.value);
                 });
 
         });

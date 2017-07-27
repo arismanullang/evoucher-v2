@@ -13,18 +13,17 @@
         <form editable-form="" id="profileForm" method="post" action="/v1/ui/voucher/link" name="user.profileForm" class="card">
           <h5 class="card-heading">
             <ul id="myTabs" role="tablist" class="nav nav-tabs nav-justified">
-              <li role="presentation" class="active"><a id="home-tab" href="#program" role="tab" data-toggle="tab" aria-controls="home" aria-expanded="true">Program</a></li>
-              <li role="presentation"><a id="profile-tab" href="#voucher" role="tab" data-toggle="tab" aria-controls="profile">Voucher</a></li>
-              <li role="presentation"><a id="profile-tab" href="#partner" role="tab" data-toggle="tab" aria-controls="messages">Partner</a></li>
+              <li role="presentation" class="active"><a id="program-tab" href="#program" role="tab" data-toggle="tab" aria-controls="home" aria-expanded="true">Program</a></li>
+              <li role="presentation"><a id="voucher-tab" href="#voucher" role="tab" data-toggle="tab" aria-controls="profile">Voucher</a></li>
+              <li role="presentation"><a id="partner-tab" href="#partner" role="tab" data-toggle="tab" aria-controls="messages">Partner</a></li>
               <li role="presentation">
                 <div class="pull-right">
-                  <button type="button" onclick="editVariant()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Edit"><em class="ion-edit"></em ></button>
-                  <button type="button" id="button-voucher" onclick="generateVoucher()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Generate Voucher"><em class="ion-flash"></em></button>
-                  <button type="submit" id="button-link" name="button-voucher" value="generate" onclick="generateLink()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Download CSV"><em class="ion-archive"></em></button>
+                  <button type="button" onclick="editProgram()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Edit"><em class="ion-edit"></em ></button>
+                  <button type="button" id="button-voucher" onclick="generateVoucher()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Generate Voucher"><em class="ion-share"></em></button>
                 </div>
               </li>
             </ul>
-            <input type="hidden" name="variant" id="variant-id">
+            <input type="hidden" name="program" id="program-id">
             <input type="hidden" name="token" id="token">
           </h5>
           <div class="card-body">
@@ -34,23 +33,23 @@
                   <tbody>
                   <tr>
                     <td class="col-lg-4"><em class="ion-document-text icon-fw mr"></em>Program Name</td>
-                    <td id="variantName" class="col-lg-8"></td>
+                    <td id="program-name" class="col-lg-8"></td>
                   </tr>
                   <tr>
                     <td class="col-lg-4"><em class="icon-fw mr"></em>Program Type</td>
-                    <td id="variantType" class="col-lg-8"></td>
+                    <td id="program-type" class="col-lg-8"></td>
                   </tr>
                   <tr>
                     <td class="col-lg-4"><em class="icon-fw mr"></em>Voucher Type</td>
-                    <td id="voucherType" class="col-lg-8"></td>
+                    <td id="voucher-type" class="col-lg-8"></td>
                   </tr>
                   <tr>
                     <td class="col-lg-4"><em class="ion-calculator icon-fw mr"></em>Conversion Rate</td>
-                    <td id="conversionRate" class="col-lg-8"></td>
+                    <td id="conversion-rate" class="col-lg-8"></td>
                   </tr>
                   <tr>
                     <td class="col-lg-4"><em class="ion-cash icon-fw mr"></em>Voucher Value</td>
-                    <td id="voucherValue" class="col-lg-8"></td>
+                    <td id="voucher-value" class="col-lg-8"></td>
                   </tr>
                   <tr>
                     <td class="col-lg-4"><em class="ion-ios-calendar icon-fw mr"></em>Period</td>
@@ -58,7 +57,7 @@
                   </tr>
                   <tr>
                     <td class="col-lg-4"><em class="ion-asterisk icon-fw mr"></em>Term and Condition</td>
-                    <td id="variantTnc" class="col-lg-8"></td>
+                    <td id="program-tnc" class="col-lg-8"></td>
                   </tr>
                   </tbody>
                 </table>
@@ -68,28 +67,28 @@
                   <tbody>
                   <tr>
                     <td class="col-lg-4"><em class="ion-pricetags icon-fw mr"></em>Limit Voucher</td>
-                    <td id="maxQuantityVoucher" class="col-lg-8"></td>
+                    <td id="max-quantity-voucher" class="col-lg-8"></td>
                   </tr>
                   <tr>
                     <td class="col-lg-4"><em class="icon-fw mr"></em>Remaining Voucher</td>
-                    <td id="remainingVoucher" class="col-lg-8"></td>
+                    <td id="remaining-voucher" class="col-lg-8"></td>
                   </tr>
                   <tr>
                     <td class="col-lg-4"><em class="icon-fw mr"></em>Created Voucher</td>
-                    <td id="createdVoucher" class="col-lg-8"></td>
+                    <td id="created-voucher" class="col-lg-8"></td>
                   </tr>
                   <tr>
                     <td class="col-lg-4"><em class="icon-fw mr"></em>Used Voucher</td>
-                    <td id="usedVoucher" class="col-lg-8"></td>
+                    <td id="used-voucher" class="col-lg-8"></td>
                   </tr>
                   <tr>
                     <td class="col-lg-4"><em class="icon-fw mr"></em>Paid Voucher</td>
-                    <td id="paidVoucher" class="col-lg-8"></td>
+                    <td id="paid-voucher" class="col-lg-8"></td>
                   </tr>
                 </table>
               </div>
               <div id="partner" role="tabpanel" aria-labelledby="messages-tab" class="tab-pane fade">
-                <div id="listPartner" class="mda-list">
+                <div id="list-partner" class="mda-list">
 
                 </div>
               </div>
@@ -172,12 +171,14 @@
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.html5.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.print.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/nouislider/distribute/nouislider.js"></script>
-<script type="text/javascript" src="/assets/js/variant/check.js"></script>
+<script type="text/javascript" src="/assets/vendor/sweetalert/dist/sweetalert-dev.js"></script>
+<script type="text/javascript" src="/assets/js/program/check.js"></script>
 {{ end }}
 
 {{ define "stylesheets" }}
 <link rel="stylesheet" href="/assets/vendor/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css">
 <link rel="stylesheet" href="/assets/vendor/datatables/media/css/jquery.dataTables.css">
 <link rel="stylesheet" href="/assets/vendor/datatables/media/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="/assets/vendor/sweetalert/dist/sweetalert.css">
 <link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
 {{ end }}

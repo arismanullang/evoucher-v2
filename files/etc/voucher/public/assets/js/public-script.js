@@ -37,10 +37,10 @@ function getProfile(x){
 		success: function (data) {
 			console.log(data.data.Vouchers[0].voucher_id);
 			$("#holdername").html(data.data.holder);
-			$("#variant-id").val(data.data.variant_id);
+			$("#program-id").val(data.data.program_id);
 			$("#discount-value").val(data.data.discount_value);
 			$("#voucher").val(data.data.Vouchers[0].voucher_id);
-			$("#tnc").html(data.data.variant_tnc);
+			$("#tnc").html(data.data.program_tnc);
 		}
 	});
 }
@@ -75,8 +75,8 @@ function findGetParameter(parameterName) {
 }
 
 function send(){
-	var variant = {
-		variant_id:$("#variant-id").val(),
+	var program = {
+		program_id:$("#program-id").val(),
 		redeem_method:"token",
 		partner:$("#tenant").val(),
 		challenge:$("#challange-code").html(),
@@ -84,13 +84,13 @@ function send(){
 		discount_value:parseInt($("#discount-value").val()),
 		vouchers:[$("#voucher").val()]
 	};
-	console.log(variant);
+	console.log(program);
 	$.ajax({
 		url: '/v1/public/transaction',
 		type: 'post',
 		dataType: 'json',
 		contentType: "application/json",
-		data: JSON.stringify(variant),
+		data: JSON.stringify(program),
 		success: function (data) {
 			console.log(data);
 			window.location = '/public/success?transactioncode='+data.data.transaction_code;

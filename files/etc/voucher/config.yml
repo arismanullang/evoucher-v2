@@ -13,9 +13,12 @@ mailgun:
   mailgun_key: "key-7uktwep6lt-ma6emewjgcwx8bjjkrke8"
   mailgun_public_key: "pubkey-2slaf2guxlloalnpb3qtkruac9beajd9"
   root_mail_template: "files/etc/voucher/public/assets/mail/"
+  root_url: "voucher.elys.id"
+  email: "evoucher@gilkor.com"
 
 logger:
-  path: "/var/log/"
+#  path: "/var/log/"
+  path: "/home/richard/work/src/github.com/gilkor/evoucher/"
   filename: "logger-evoucher"
 
 gcs:

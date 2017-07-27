@@ -11,7 +11,7 @@
         <h4 class="m0">Welcome to our dashboard</h4>
       </div>
       <div class="col-sm-3 text-right hidden-xs">
-        <button type="button" onclick="addVariant()" class="btn btn-labeled btn-default ripple">Program<span class="btn-label btn-label-right"><i class="ion-plus-round"></i></span></button>
+        <button type="button" onclick="addProgram()" class="btn btn-labeled btn-default ripple">Program<span class="btn-label btn-label-right"><i class="ion-plus-round"></i></span></button>
       </div>
     </div>
   </div>
@@ -20,7 +20,7 @@
       <div class="card">
         <h5 class="card-heading">Upcoming Program</h5>
         <div class="card-body">
-          <ul id="upcomming-variant" class="list-group">
+          <ul id="upcomming-program" class="list-group">
 
           </ul>
         </div>
@@ -32,7 +32,7 @@
         <div class="card-body pv">
           <div class="clearfix">
             <div class="pull-left">
-              <h4 id="total-variant" class="m0">-</h4><small class="m0 text-muted"><em class="mr-sm ion-arrow-up-b"></em>Program</small>
+              <h4 id="total-program" class="m0">-</h4><small class="m0 text-muted"><em class="mr-sm ion-arrow-up-b"></em>Program</small>
             </div>
           </div>
         </div>
@@ -79,7 +79,7 @@
 <script src="/assets/vendor/flot/jquery.flot.pie.js"></script>
 <script src="/assets/vendor/flot/jquery.flot.time.js"></script>
 <script src="/assets/vendor/sidebysideimproved/jquery.flot.orderBars.js"></script>
-<script type="text/javascript" src="/assets/js/variant/index.js"></script>
+<script type="text/javascript" src="/assets/js/program/index.js"></script>
 {{ end }}
 
 {{ define "stylesheets" }}

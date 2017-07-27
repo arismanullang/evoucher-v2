@@ -2,6 +2,20 @@ $( document ).ready(function() {
   getPartner();
 
   $("#token").val(token);
+
+  $("#all-tenant").change(function() {
+  	console.log("a");
+  	var lis = $( "input[class=partner]" );
+	if($("#all-tenant").is(':checked')){
+		for (var i = 0; i < lis.length; i++) {
+			lis[i].checked = true;
+		}
+	} else{
+		for (var i = 0; i < lis.length; i++) {
+			lis[i].checked = false;
+		}
+	}
+  });
   $("#voucher-validity-type").change(function() {
     if(this.value == "lifetime"){
       $("#validity-lifetime").attr("style","display:block");
@@ -29,14 +43,14 @@ $( document ).ready(function() {
       $("#validity-day").attr("style","display:none");
     }
   });
-  $("#variant-type").change(function() {
+  $("#program-type").change(function() {
     if(this.value == "bulk"){
       $("#target").attr("style","display:block");
-      $("#max-row").attr("style","display:none");
+      $("#generate-row").attr("style","display:none");
       $("#conversion-row").attr("style","display:none");
     } else{
       $("#target").attr("style","display:none");
-      $("#max-row").attr("style","display:block");
+      $("#generate-row").attr("style","display:block");
       $("#conversion-row").attr("style","display:block");
     }
   });
@@ -69,7 +83,7 @@ $( document ).ready(function() {
    $("#validity-day").attr("style","display:none");
   }
 
-  if($("#variant-type").val() == "bulk"){
+  if($("#program-type").val() == "bulk"){
    $("#target").attr("style","display:block");
    $("#max-row").attr("style","display:none");
    $("#conversion-row").attr("style","display:none");
@@ -136,14 +150,16 @@ function send() {
   }
 
   var listPartner = [];
-  var li = $( "input[type=checkbox]:checked" );
+  var li = $( "input[class=partner]:checked" );
 
   if(li.length == 0 || parseInt($("#length").val()) < 8){
     error = true;
   }
 
   for (i = 0; i < li.length; i++) {
-      listPartner[i] = li[i].value;
+    if(li[i].value != "on") {
+	    listPartner[i] = li[i].value;
+    }
   }
 
   var lifetime = 0;
@@ -187,18 +203,30 @@ function send() {
   if(!str.includes("<p>")){
 	tnc = '<p>'+tnc+'</p>';
   }
-  var maxUsage = 1;
+  var maxGenerate = parseInt($("#max-generate-voucher").val());
+  var maxRedeem = parseInt($("#max-redeem-voucher").val());
 
   $('input[check="true"]').each(function() {
-    if($("#variant-type").val() == "bulk"){
-    	if(this.getAttribute("id") == "max-quantity-voucher" || this.getAttribute("id") == "max-usage-voucher" || this.getAttribute("id") == "voucher-price"){
-		return true;
+    if($("#program-type").val() == "bulk"){
+    	if(this.getAttribute("id") == "max-quantity-voucher" || this.getAttribute("id") == "max-generate-voucher" || this.getAttribute("id") == "voucher-price" || this.getAttribute("id") == "max-redeem-voucher"){
+		maxGenerate = 1;
+		maxRedeem = 1;
+    		return true;
 	}
     }
+
     if($(this).val() == ""){
       $(this).addClass("error");
       $(this).parent().closest('div').addClass("input-error");
       error = true;
+    }
+
+    if(this.getAttribute("id") == "max-quantity-voucher" || this.getAttribute("id") == "max-generate-voucher" || this.getAttribute("id") == "voucher-price" || this.getAttribute("id") == "max-redeem-voucher"){
+    	if($(this).val() < 1) {
+		$(this).addClass("error");
+		$(this).parent().closest('div').addClass("input-error");
+		error = true;
+	}
     }
 
     if($(this).attr("id") == "length"){
@@ -228,24 +256,25 @@ function send() {
        success: function(data){
          console.log(data.data);
          img = data.data;
-         var variant = {
-	       variant_name: $("#variant-name").val(),
-	       variant_type: $("#variant-type").find(":selected").val(),
+         var program = {
+	       name: $("#program-name").val(),
+	       type: $("#program-type").find(":selected").val(),
 	       voucher_format: voucherFormat,
 	       voucher_type: $("#voucher-type").find(":selected").val(),
 	       voucher_price: parseInt($("#voucher-price").val()),
 	       max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
-	       max_usage_voucher: maxUsage,
+	       max_redeem_voucher: maxRedeem,
+	       max_generate_voucher: maxGenerate,
 	       allow_accumulative: $("#allow-accumulative").is(":checked"),
 	       redeemtion_method: $("#redeemtion-method").find(":selected").val(),
-	       start_date: $("#variant-valid-from").val(),
-	       end_date: $("#variant-valid-to").val(),
+	       start_date: $("#program-valid-from").val(),
+	       end_date: $("#program-valid-to").val(),
 	       start_hour: $("#start-hour").val(),
 	       end_hour: $("#end-hour").val(),
-	       discount_value: parseInt($("#voucher-value").val()),
+	       voucher_value: parseInt($("#voucher-value").val()),
 	       image_url: img,
-	       variant_tnc: tnc,
-	       variant_description: $("#variant-description").val(),
+	       tnc: tnc,
+	       description: $("#program-description").val(),
 	       validity_day: listDay,
 	       valid_partners: listPartner,
 	       valid_voucher_start: periodStart,
@@ -253,22 +282,22 @@ function send() {
 	       voucher_lifetime: parseInt(lifetime)
          };
 
-         console.log(variant);
+         console.log(program);
 
          $.ajax({
-	       url: '/v1/ui/variant/create?token='+token,
+	       url: '/v1/ui/program/create?token='+token,
 	       type: 'post',
 	       dataType: 'json',
 	       contentType: "application/json",
-	       data: JSON.stringify(variant),
+	       data: JSON.stringify(program),
 	       success: function (data) {
-		       if($("#variant-type").find(":selected").val() == "bulk"){
+		       if($("#program-type").find(":selected").val() == "bulk"){
 
 			       var targets = new FormData();
 			       targets.append('list-target', $("#list-target")[0].files[0]);
 
 			       jQuery.ajax({
-				       url:'/v1/ui/user/create/broadcast?token='+token+'&variant-id='+data.data,
+				       url:'/v1/ui/user/create/broadcast?token='+token+'&program-id='+data.data,
 				       type:"POST",
 				       processData: false,
 				       contentType: false,
@@ -276,59 +305,60 @@ function send() {
 				       success: function(data){
 					       console.log(data);
 					       alert("Program created.");
-					       window.location = "/variant/search?token="+token;
+					       //window.location = "/program/search?token="+token;
 				       }
 			       });
 
 		       }else{
 			       alert("Program created.");
-			       window.location = "/variant/search?token="+token;
+			       //window.location = "/program/search?token="+token;
 		       }
 	       }
          });
        }
    });
   }else{
-	  var variant = {
-		  variant_name: $("#variant-name").val(),
-		  variant_type: $("#variant-type").find(":selected").val(),
+	  var program = {
+		  name: $("#program-name").val(),
+		  type: $("#program-type").find(":selected").val(),
 		  voucher_format: voucherFormat,
 		  voucher_type: $("#voucher-type").find(":selected").val(),
 		  voucher_price: parseInt($("#voucher-price").val()),
 		  max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
-		  max_usage_voucher: maxUsage,
+		  max_redeem_voucher: maxRedeem,
+		  max_generate_voucher: maxGenerate,
 		  allow_accumulative: $("#allow-accumulative").is(":checked"),
 		  redeemtion_method: $("#redeemtion-method").find(":selected").val(),
-		  start_date: $("#variant-valid-from").val(),
-		  end_date: $("#variant-valid-to").val(),
+		  start_date: $("#program-valid-from").val(),
+		  end_date: $("#program-valid-to").val(),
 		  start_hour: $("#start-hour").val(),
 		  end_hour: $("#end-hour").val(),
-		  discount_value: parseInt($("#voucher-value").val()),
+		  voucher_value: parseInt($("#voucher-value").val()),
 		  image_url: img,
-		  variant_tnc: tnc,
-		  variant_description: $("#variant-description").val(),
+		  tnc: tnc,
+		  description: $("#program-description").val(),
 		  validity_day: listDay,
 		  valid_partners: listPartner,
 		  valid_voucher_start: periodStart,
 		  valid_voucher_end: periodEnd,
 		  voucher_lifetime: parseInt(lifetime)
 	  };
-	  console.log(variant);
+	  console.log(program);
 
 	  $.ajax({
-		  url: '/v1/ui/variant/create?token='+token,
+		  url: '/v1/ui/program/create?token='+token,
 		  type: 'post',
 		  dataType: 'json',
 		  contentType: "application/json",
-		  data: JSON.stringify(variant),
+		  data: JSON.stringify(program),
 		  success: function (data) {
-			  if($("#variant-type").find(":selected").val() == "bulk"){
+			  if($("#program-type").find(":selected").val() == "bulk"){
 
 				  var targets = new FormData();
 				  targets.append('list-target', $("#list-target")[0].files[0]);
 
 				  jQuery.ajax({
-					  url:'/v1/ui/user/create/broadcast?token='+token+'&variant-id='+data.data,
+					  url:'/v1/ui/user/create/broadcast?token='+token+'&program-id='+data.data,
 					  type:"POST",
 					  processData: false,
 					  contentType: false,
@@ -336,13 +366,13 @@ function send() {
 					  success: function(data){
 						  console.log(data);
 						  alert("Program created.");
-						  window.location = "/variant/search?token="+token;
+						  //window.location = "/program/search?token="+token;
 					  }
 				  });
 
 			  }else{
 				  alert("Program created.");
-				  window.location = "/variant/search?token="+token;
+				  //window.location = "/program/search?token="+token;
 			  }
 		  }
 	  });
@@ -353,7 +383,7 @@ function getPartner() {
     console.log("Get Partner Data");
 
     $.ajax({
-      url: '/v1/ui/partner/all',
+      url: '/v1/ui/partner/all?token='+token,
       type: 'get',
       success: function (data) {
         console.log("Render Data");
@@ -364,8 +394,8 @@ function getPartner() {
         for (i = 0; i < arrData.length; i++){
           var li = $("<div class='col-sm-4'></div>");
           var html = "<label class='checkbox-inline c-checkbox'>"
-                    + "<input type='checkbox' value='"+arrData[i].id+"'>"
-                    + "<span class='ion-checkmark-round'></span>" + arrData[i].partner_name
+                    + "<input type='checkbox' class='partner' value='"+arrData[i].id+"'>"
+                    + "<span class='ion-checkmark-round'></span>" + arrData[i].name
                     + "</label>";
           li.html(html);
           li.appendTo('#partner-list');

@@ -10,7 +10,7 @@ type (
 		Creator string `db:"creator"`
 		State   string `db:"state"`
 	}
-	ReportVariant struct {
+	ReportProgram struct {
 		Month       string `db:"month" json:"month"`
 		MonthNumber string `db:"month_number" json:"month_number"`
 		Total       string `db:"total" json:"total"`
@@ -19,14 +19,14 @@ type (
 	}
 	ReportVoucherByUser struct {
 		Id      string `db:"id" json:"id"`
-		Name    string `db:"name" json:"variant_name"`
+		Name    string `db:"name" json:"program_name"`
 		Total   string `db:"total" json:"total"`
 		Quota   string `db:"quota" json:"quota"`
 		Creator string `db:"creator" json:"created_by"`
 	}
 	CompleteReportVoucherByUser struct {
 		Id      string `db:"id" json:"id"`
-		Name    string `db:"name" json:"variant_name"`
+		Name    string `db:"name" json:"program_name"`
 		Total   string `db:"total" json:"total"`
 		Quota   int    `db:"quota" json:"quota"`
 		Creator string `db:"creator" json:"created_by"`
@@ -35,18 +35,18 @@ type (
 )
 
 func MakeReport(id string) ([]TestReport, error) {
-	fmt.Println("Select Variant")
+	fmt.Println("Select Program")
 	q := `
 		select va.id as id,
-		va.variant_name as name,
+		va.program_name as name,
 		count(vo.voucher_code) as total,
 		va.created_by as creator,
 		vo.state
-		from variants va
+		from programs va
 		join vouchers vo
-		on va.id = vo.variant_id
+		on va.id = vo.program_id
 		where va.status = ?
-		and va.variant_type = 'on-demand'
+		and va.program_type = 'on-demand'
 		and va.created_by = ?
 		group by 1, 2, 4, 5
 	`
@@ -63,15 +63,15 @@ func MakeReport(id string) ([]TestReport, error) {
 	return resv, nil
 }
 
-func MakeReportVariant() ([]ReportVariant, error) {
-	fmt.Println("Select Variant")
+func MakeReportProgram() ([]ReportProgram, error) {
+	fmt.Println("Select Program")
 	q := `
 		select to_char(v.start_date,'Mon') as month,
 		EXTRACT(MONTH FROM v.start_date) as month_number,
-		count(v.variant_name) as total,
+		count(v.program_name) as total,
 		u.username,
 		v.created_by
-		from variants as v
+		from programs as v
 		join users as u
 		on u.id = v.created_by
 		where v.status = ?
@@ -79,34 +79,34 @@ func MakeReportVariant() ([]ReportVariant, error) {
 		order by u.username, month_number;
 	`
 
-	var resv []ReportVariant
+	var resv []ReportProgram
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
 		fmt.Println(err.Error())
-		return []ReportVariant{}, ErrServerInternal
+		return []ReportProgram{}, ErrServerInternal
 	}
 	if len(resv) < 1 {
-		return []ReportVariant{}, ErrResourceNotFound
+		return []ReportProgram{}, ErrResourceNotFound
 	}
 
 	return resv, nil
 }
 
 func MakeCompleteReportVoucherByUser(id string) ([]CompleteReportVoucherByUser, error) {
-	fmt.Println("Select Variant")
+	fmt.Println("Select Program")
 	q := `
 		select va.id as id,
-		va.variant_name as name,
+		va.program_name as name,
 		count(vo.voucher_code) as total,
 		va.created_by as creator,
 		vo.state,
-		CAST ((va.max_quantity_voucher - (select count(id) from vouchers where variant_id = va.id)) AS INTEGER) as quota
-		from variants va
+		CAST ((va.max_quantity_voucher - (select count(id) from vouchers where program_id = va.id)) AS INTEGER) as quota
+		from programs va
 		join vouchers vo
-		on va.id = vo.variant_id
+		on va.id = vo.program_id
 		join users u
 		on u.id = va.created_by
 		where va.status = ?
-		and va.variant_type = 'on-demand'
+		and va.program_type = 'on-demand'
 		and u.username = ?
 		group by 1, 2, 4, 5
 		order by vo.state
@@ -125,20 +125,20 @@ func MakeCompleteReportVoucherByUser(id string) ([]CompleteReportVoucherByUser, 
 }
 
 func MakeReportVoucherByUser(id string) ([]ReportVoucherByUser, error) {
-	fmt.Println("Select Variant")
+	fmt.Println("Select Program")
 	q := `
 		select va.id as id,
-		va.variant_name as name,
+		va.program_name as name,
 		count(vo.voucher_code) as total,
 		va.created_by as creator,
-		CAST ((va.max_quantity_voucher - (select count(id) from vouchers where variant_id = va.id)) AS INTEGER) as quota
-		from variants va
+		CAST ((va.max_quantity_voucher - (select count(id) from vouchers where program_id = va.id)) AS INTEGER) as quota
+		from programs va
 		join vouchers vo
-		on va.id = vo.variant_id
+		on va.id = vo.program_id
 		join users u
 		on u.id = va.created_by
 		where va.status = ?
-		and va.variant_type = 'on-demand'
+		and va.program_type = 'on-demand'
 		and u.username = ?
 		group by 1, 2, 4
 	`

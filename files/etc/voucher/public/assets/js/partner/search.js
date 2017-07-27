@@ -6,7 +6,7 @@ function getPartner() {
     console.log("Get Partner Data");
 
     $.ajax({
-      url: '/v1/ui/partner/all',
+      url: '/v1/ui/partner/all?token='+token,
       type: 'get',
       success: function (data) {
         console.log("Render Data");
@@ -16,11 +16,12 @@ function getPartner() {
         var i;
         var dataSet = [];
         for (i = 0; i < arrData.length; i++){
-	  var button = "<button type='button' class='btn btn-flat btn-sm btn-info' onclick='edit(\""+arrData[i].id+"\")'><em class='ion-edit'></em></button>"+
+	  var button = "<button type='button' onclick='detail(\""+arrData[i].id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"+
+		  "<button type='button' class='btn btn-flat btn-sm btn-info' onclick='edit(\""+arrData[i].id+"\")'><em class='ion-edit'></em></button>"+
 		"<button value='"+arrData[i].id+"' type='button' class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>";
 
 	  dataSet[i] = [
-		arrData[i].partner_name
+		arrData[i].name
 		, arrData[i].serial_number.String
 		, arrData[i].tag.String
 		, button
@@ -65,6 +66,10 @@ function getPartner() {
   });
 }
 
+function detail(url){
+	window.location = "/partner/check?id="+url+"&token="+token;
+}
+
 function edit(url){
   window.location = "/partner/update?id="+url+"&token="+token;
 }
@@ -87,7 +92,7 @@ function deletePartner(id) {
     'use strict';
 
     $(runSweetAlert);
-    //onclick='deleteVariant(\""+arrData[i].Id+"\")'
+    //onclick='deleteProgram(\""+arrData[i].Id+"\")'
     function runSweetAlert() {
         $(document).on('click', '.swal-demo4', function(e) {
             e.preventDefault();

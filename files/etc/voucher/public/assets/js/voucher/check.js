@@ -6,7 +6,7 @@ function getVoucher() {
     console.log("Get Voucher Data");
     var id = findGetParameter('id');
     $.ajax({
-        url: '/v1/vouchers/'+id+'?token='+token,
+        url: '/v1/ui/vouchers/'+id+'?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -52,7 +52,7 @@ function getVoucher() {
             console.log(e.target.value);
             swal({
                     title: 'Are you sure?',
-                    text: 'Do you want delete variant?',
+                    text: 'Do you want delete program?',
                     type: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#DD6B55',
@@ -60,7 +60,7 @@ function getVoucher() {
                     closeOnConfirm: false
                 },
                 function() {
-                    swal('Deleted!', 'Delete success.', deleteVariant(e.target.value));
+                    swal('Deleted!', 'Delete success.', 'delete');
                 });
 
         });

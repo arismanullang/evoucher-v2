@@ -85,20 +85,21 @@ func main() {
 	model.ApiKey = config.Mailgun.MailgunKey
 	model.PublicApiKey = config.Mailgun.MailgunPublicKey
 	model.RootTemplate = config.Mailgun.RootTemplate
-
+	model.Email = config.Mailgun.Email
+	model.RootUrl = config.Mailgun.RootUrl
 
 	//logger config
-	model.Path 			= config.Logger.Path
-	model.FileName 			= config.Logger.FileName
+	model.Path = config.Logger.Path
+	model.FileName = config.Logger.FileName
 	//voucher config
-	model.VOUCHER_URL 		= config.Voucher.Link
+	model.VOUCHER_URL = config.Voucher.Link
 	//GCS
-	model.GCS_BUCKET 		= config.Gcs.bucket
-	model.GCS_PROJECT_ID		= config.Gcs.ProjectID
-	model.PUBLIC_URL		= config.Gcs.PublicURL
+	model.GCS_BUCKET = config.Gcs.bucket
+	model.GCS_PROJECT_ID = config.Gcs.ProjectID
+	model.PUBLIC_URL = config.Gcs.PublicURL
 	//OCRA
-	model.OCRA_EVOUCHER_APPS_KEY	= config.Ocra.AppsKey
-	model.OCRA_URL			= config.Ocra.Endpoint
+	model.OCRA_EVOUCHER_APPS_KEY = config.Ocra.AppsKey
+	model.OCRA_URL = config.Ocra.Endpoint
 
 	r := setRoutes()
 	m := negroni.New()
@@ -124,7 +125,6 @@ func getUiRole() map[string][]string {
 	if err == nil {
 		for _, value := range roles {
 			m[value.Role] = append(m[value.Role], "/"+value.Category+"/"+value.Detail)
-
 		}
 
 	}

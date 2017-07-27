@@ -37,10 +37,10 @@ function send() {
   }
 
   var partner = {
-    partner_name: $("#partner-name").val(),
+    name: $("#partner-name").val(),
     serial_number: $("#serial-number").val(),
     tag: listTag,
-    description: "",
+    description: $("#description").val(),
   };
 
   console.log(partner);
@@ -60,7 +60,6 @@ function send() {
     'use strict';
 
     $(runSweetAlert);
-    //onclick='deleteVariant(\""+arrData[i].Id+"\")'
     function runSweetAlert() {
     	$('.select2').select2({
 		tags:true
