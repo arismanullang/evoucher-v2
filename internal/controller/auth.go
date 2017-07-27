@@ -23,7 +23,7 @@ type (
 
 func basicAuth(r *http.Request) (model.User, bool) {
 	logger := model.NewLog()
-	logger.SetService("AUTh").SetMethod(r.Method).SetTag("Basic-Authentication")
+	logger.SetService("AUTH").SetMethod(r.Method).SetTag("Basic-Authentication")
 
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 	if len(s) != 2 {

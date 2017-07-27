@@ -31,16 +31,22 @@ func GetRedeemData(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	res := NewResponse(nil)
 	VcID := r.FormValue("x")
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Get Redeem Data")
 
 	voucher, err := model.FindVoucher(map[string]string{"id": StrDecode(VcID)})
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidHolder, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidHolder, logger.TraceID)
+		logger.SetStatus(status).Log("param :", VcID, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", VcID, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
@@ -48,24 +54,28 @@ func GetRedeemData(w http.ResponseWriter, r *http.Request) {
 	program, err := model.FindProgramDetailsById(voucher.VoucherData[0].ProgramID)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidProgram, "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidProgram, logger.TraceID)
+		logger.SetStatus(status).Log("param :", VcID, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", VcID, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
 	partner, err := model.FindProgramPartner(map[string]string{"program_id": program.Id})
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidProgram+"(Partner of Program Not Found)", "voucher")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidProgram+"(Partner of Variant Not Found)", logger.TraceID)
+		logger.SetStatus(status).Log("param :", VcID, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", VcID, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
@@ -106,5 +116,6 @@ func GetRedeemData(w http.ResponseWriter, r *http.Request) {
 	d.Used = getCountVoucher(program.Id)
 
 	res = NewResponse(d)
+	logger.SetStatus(status).Log("param :", VcID, "response :", d)
 	render.JSON(w, res, status)
 }

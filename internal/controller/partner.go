@@ -14,7 +14,7 @@ import (
 
 type (
 	PartnerReq struct {
-		Partner   string `json:"partner"`
+		Partner   string `json:logger.TraceID`
 		CreatedBy string `json:"created_by"`
 	}
 	Partner struct {
@@ -146,6 +146,11 @@ func GetAllPartnersCustomParam(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Get All Partner Custom Param")
+
 	param := getUrlParam(r.URL.String())
 	delete(param, "token")
 
@@ -154,19 +159,22 @@ func GetAllPartnersCustomParam(w http.ResponseWriter, r *http.Request) {
 		p, err = model.FindProgramPartner(param)
 	} else {
 		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, "partner")
+		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, logger.TraceID)
+		logger.SetStatus(status).Log("param :", param, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
 
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, "partner")
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, logger.TraceID)
+		logger.SetStatus(status).Log("param :", param, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "partner")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", param, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
@@ -181,6 +189,7 @@ func GetAllPartnersCustomParam(w http.ResponseWriter, r *http.Request) {
 
 	status = http.StatusOK
 	res = NewResponse(d)
+	logger.SetStatus(status).Log("param :", param, "response :", d)
 	render.JSON(w, res, status)
 }
 

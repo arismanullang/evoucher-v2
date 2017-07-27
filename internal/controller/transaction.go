@@ -17,7 +17,7 @@ type (
 	TransactionRequest struct {
 		ProgramID     string   `json:"program_id" valid:"alphanum,required"`
 		RedeemMethod  string   `json:"redeem_method" valid:"in(qr|token),required"`
-		Partner       string   `json:"partner" valid:"alphanum,required"`
+		Partner       string   `json:"partner" valid:"required"`
 		Challenge     string   `json:"challenge" valid:"numeric,optional"`
 		Response      string   `json:"response" valid:"numeric,optional"`
 		DiscountValue string   `json:"discount_value" valid:"float,required"`
@@ -44,10 +44,23 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusCreated
 	res := NewResponse(nil)
 
+	//Token Authentocation
+	a := AuthToken(w, r)
+	if !a.Valid {
+		render.JSON(w, a.res, status)
+		return
+	}
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Mobile Redeem Transaction")
+
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
 		status = http.StatusBadRequest
-		res.AddError(its(status), http.StatusText(status), http.StatusText(status)+"("+err.Error()+")", "transaction")
+		res.AddError(its(status), http.StatusText(status), http.StatusText(status)+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", r.Body, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
@@ -55,15 +68,9 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	_, err := govalidator.ValidateStruct(rd)
 	if err != nil {
 		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
+		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
-		return
-	}
-
-	//Token Authentocation
-	a := AuthToken(w, r)
-	if !a.Valid {
-		render.JSON(w, a.res, status)
 		return
 	}
 
@@ -74,12 +81,14 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		par := map[string]string{"program_id": rd.ProgramID, "id": rd.Partner}
 		if _, err := model.FindProgramPartner(par); err == model.ErrResourceNotFound {
 			status = http.StatusBadRequest
-			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidQr, "partner")
+			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidQr, logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 			return
 		} else if err != nil {
 			status = http.StatusInternalServerError
-			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "partner")
+			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 			return
 		}
@@ -88,12 +97,14 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		par := map[string]string{"program_id": rd.ProgramID, "id": rd.Partner}
 		if p, err := model.FindProgramPartner(par); err == model.ErrResourceNotFound {
 			status = http.StatusBadRequest
-			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidPaerner, "partner")
+			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidPaerner, logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 			return
 		} else if err != nil {
 			status = http.StatusInternalServerError
-			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "partner")
+			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 			return
 		} else {
@@ -101,7 +112,8 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 			if !OTPAuth(p[0].SerialNumber.String, rd.Challenge, rd.Response) {
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, "transaction")
+				res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 				render.JSON(w, res, status)
 				return
 			}
@@ -113,32 +125,39 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		switch err.Error() {
 		case model.ErrCodeAllowAccumulativeDisable:
 			status = http.StatusBadRequest
-			res.AddError(its(status), err.Error(), model.ErrMessageAllowAccumulativeDisable, "program")
+			res.AddError(its(status), err.Error(), model.ErrMessageAllowAccumulativeDisable, logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 		case model.ErrCodeInvalidRedeemMethod:
 			status = http.StatusBadRequest
-			res.AddError(its(status), err.Error(), model.ErrMessageInvalidRedeemMethod, "program")
+			res.AddError(its(status), err.Error(), model.ErrMessageInvalidRedeemMethod, logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 		case model.ErrCodeVoucherNotActive:
 			status = http.StatusBadRequest
-			res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, "program")
+			res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 		case model.ErrResourceNotFound.Error():
 			status = http.StatusBadRequest
-			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidProgram, "program")
+			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidProgram, logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 		case model.ErrCodeRedeemNotValidDay:
 			status = http.StatusBadRequest
-			res.AddError(its(status), err.Error(), model.ErrMessageRedeemNotValidDay, "program")
+			res.AddError(its(status), err.Error(), model.ErrMessageRedeemNotValidDay, logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 		case model.ErrCodeRedeemNotValidHour:
 			status = http.StatusBadRequest
-			res.AddError(its(status), err.Error(), model.ErrMessageRedeemNotValidHour, "program")
+			res.AddError(its(status), err.Error(), model.ErrMessageRedeemNotValidHour, logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 
 		default:
 			status = http.StatusInternalServerError
-			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "program")
+			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 		}
 		return
@@ -150,27 +169,32 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			switch err.Error() {
 			case model.ErrCodeVoucherNotActive:
 				status = http.StatusBadRequest
-				res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, "transaction")
+				res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 				render.JSON(w, res, status)
 			case model.ErrResourceNotFound.Error():
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeResourceNotFound, err.Error(), "transaction")
+				res.AddError(its(status), model.ErrCodeResourceNotFound, err.Error(), logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 				render.JSON(w, res, status)
 			case model.ErrMessageVoucherAlreadyUsed:
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeVoucherDisabled, err.Error(), "transaction")
+				res.AddError(its(status), model.ErrCodeVoucherDisabled, err.Error(), logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 				render.JSON(w, res, status)
 			case model.ErrMessageVoucherAlreadyPaid:
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeVoucherDisabled, model.ErrMessageVoucherAlreadyUsed, "transaction")
+				res.AddError(its(status), model.ErrCodeVoucherDisabled, model.ErrMessageVoucherAlreadyUsed, logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 				render.JSON(w, res, status)
 			case model.ErrMessageVoucherExpired:
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeVoucherExpired, err.Error(), "transaction")
+				res.AddError(its(status), model.ErrCodeVoucherExpired, err.Error(), logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 				render.JSON(w, res, status)
 			default:
 				status = http.StatusInternalServerError
-				res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
+				res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
 				render.JSON(w, res, status)
 			}
 			return
@@ -187,10 +211,10 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		User:            a.User.ID,
 		Vouchers:        rd.Vouchers,
 	}
-	fmt.Println(d)
+	//fmt.Println(d)
 	if err := model.InsertTransaction(d); err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
 		render.JSON(w, res, status)
 		return
 	}
@@ -205,17 +229,20 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	// update voucher state "Used"
 	if ok, err := rv.UpdateVoucher(); !ok {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
 
 	res = NewResponse(TransactionResponse{TransactionCode: txCode})
+	logger.SetStatus(status).Log("param :", rd, "response :", TransactionResponse{TransactionCode: txCode})
 	render.JSON(w, res, status)
 }
 
@@ -224,10 +251,16 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusCreated
 	res := NewResponse(nil)
 
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("My Voucher")
+
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
 		status = http.StatusBadRequest
-		res.AddError(its(status), http.StatusText(status), http.StatusText(status)+"("+err.Error()+")", "transaction")
+		res.AddError(its(status), http.StatusText(status), http.StatusText(status)+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", r.Body, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
@@ -235,7 +268,8 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	_, err := govalidator.ValidateStruct(rd)
 	if err != nil {
 		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
+		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
@@ -247,12 +281,14 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		par := map[string]string{"program_id": rd.ProgramID, "id": rd.Partner}
 		if _, err := model.FindProgramPartner(par); err == model.ErrResourceNotFound {
 			status = http.StatusBadRequest
-			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidQr, "partner")
+			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidQr, logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 			return
 		} else if err != nil {
 			status = http.StatusInternalServerError
-			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "partner")
+			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 			return
 		}
@@ -262,18 +298,21 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		if p, err := model.FindProgramPartner(par); err == model.ErrResourceNotFound {
 			status = http.StatusBadRequest
 			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidQr, "partner")
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 			return
 		} else if err != nil {
 			status = http.StatusInternalServerError
 			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "partner")
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 			return
 		} else {
 			fmt.Println("panrner data : ", p[0].SerialNumber.String)
 			if !OTPAuth(p[0].SerialNumber.String, rd.Challenge, rd.Response) {
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, "transaction")
+				res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 				render.JSON(w, res, status)
 				return
 			}
@@ -285,32 +324,39 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		switch err.Error() {
 		case model.ErrCodeAllowAccumulativeDisable:
 			status = http.StatusBadRequest
-			res.AddError(its(status), err.Error(), model.ErrMessageAllowAccumulativeDisable, "program")
+			res.AddError(its(status), err.Error(), model.ErrMessageAllowAccumulativeDisable, logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 		case model.ErrCodeInvalidRedeemMethod:
 			status = http.StatusBadRequest
-			res.AddError(its(status), err.Error(), model.ErrMessageInvalidRedeemMethod, "program")
+			res.AddError(its(status), err.Error(), model.ErrMessageInvalidRedeemMethod, logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 		case model.ErrCodeVoucherNotActive:
 			status = http.StatusBadRequest
-			res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, "program")
+			res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 		case model.ErrResourceNotFound.Error():
 			status = http.StatusBadRequest
-			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidProgram, "program")
+			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidProgram, logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 		case model.ErrCodeRedeemNotValidDay:
 			status = http.StatusBadRequest
-			res.AddError(its(status), err.Error(), model.ErrMessageRedeemNotValidDay, "program")
+			res.AddError(its(status), err.Error(), model.ErrMessageRedeemNotValidDay, logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 		case model.ErrCodeRedeemNotValidHour:
 			status = http.StatusBadRequest
-			res.AddError(its(status), err.Error(), model.ErrMessageRedeemNotValidHour, "program")
+			res.AddError(its(status), err.Error(), model.ErrMessageRedeemNotValidHour, logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 
 		default:
 			status = http.StatusInternalServerError
-			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "program")
+			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 			render.JSON(w, res, status)
 		}
 		return
@@ -322,27 +368,33 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			switch err.Error() {
 			case model.ErrCodeVoucherNotActive:
 				status = http.StatusBadRequest
-				res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, "transaction")
+				res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 				render.JSON(w, res, status)
 			case model.ErrResourceNotFound.Error():
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeResourceNotFound, err.Error(), "transaction")
+				res.AddError(its(status), model.ErrCodeResourceNotFound, err.Error(), logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 				render.JSON(w, res, status)
 			case model.ErrMessageVoucherAlreadyUsed:
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeVoucherDisabled, err.Error(), "transaction")
+				res.AddError(its(status), model.ErrCodeVoucherDisabled, err.Error(), logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 				render.JSON(w, res, status)
 			case model.ErrMessageVoucherAlreadyPaid:
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeVoucherDisabled, model.ErrMessageVoucherAlreadyUsed, "transaction")
+				res.AddError(its(status), model.ErrCodeVoucherDisabled, model.ErrMessageVoucherAlreadyUsed, logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 				render.JSON(w, res, status)
 			case model.ErrMessageVoucherExpired:
 				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeVoucherExpired, err.Error(), "transaction")
+				res.AddError(its(status), model.ErrCodeVoucherExpired, err.Error(), logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 				render.JSON(w, res, status)
 			default:
 				status = http.StatusInternalServerError
-				res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
+				res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 				render.JSON(w, res, status)
 			}
 			return
@@ -365,7 +417,8 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(d)
 	if err := model.InsertTransaction(d); err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
@@ -380,17 +433,20 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	// update voucher state "Used"
 	if ok, err := rv.UpdateVoucher(); !ok {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "transaction")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
 
 	res = NewResponse(TransactionResponse{TransactionCode: txCode})
+	logger.SetStatus(status).Log("param :", rd, "response :", TransactionResponse{TransactionCode: txCode})
 	render.JSON(w, res, status)
 }
 
