@@ -48,7 +48,9 @@ function searchById(id) {
           $("#voucher-type").val(program.voucher_type);
           $("#voucher-price").val(program.voucher_price);
           $("#max-quantity-voucher").val(program.max_quantity_voucher);
-          $("#redemption-method").val(program.redemption_method);
+          $("#max-generate-voucher").val(program.max_generate_voucher);
+          $("#max-redeem-voucher").val(program.max_redeem_voucher);
+	  $("#redemption-method").val(program.redeem_method);
           $("#program-valid-from").val(convertToDate(program.start_date));
           $("#program-valid-to").val(convertToDate(program.end_date));
           $("#voucher-value").val(program.voucher_value);
@@ -127,7 +129,7 @@ function searchById(id) {
 		  $("#allow-accumulative").attr("checked",true);
 	  }
 
-
+	  $(".select2").select2();
 	  $('.summernote').each(function(){
 		$(this).summernote({
 			height: 380,
@@ -235,6 +237,7 @@ function send() {
 
   var formData = new FormData();
   var img = $('#image-url-default').val();
+  var redeem = $("#redemption-method").val();
   if($('#image-url')[0].files[0] != null){
 
      formData.append('image-url', $('#image-url')[0].files[0]);
@@ -259,7 +262,7 @@ function send() {
 		 max_redeem_voucher: maxRedeem,
 		 max_generate_voucher: maxGenerate,
 		 allow_accumulative: $("#allow-accumulative").is(":checked"),
-		 redemption_method: $("#redemption-method").find(":selected").val(),
+		 redemption_method: redeem,
 		 start_date: $("#program-valid-from").val(),
 		 end_date: $("#program-valid-to").val(),
 		 start_hour: $("#start-hour").val(),
@@ -314,7 +317,7 @@ function send() {
 		    max_redeem_voucher: maxRedeem,
 		    max_generate_voucher: maxGenerate,
 		    allow_accumulative: $("#allow-accumulative").is(":checked"),
-		    redemption_method: $("#redemption-method").find(":selected").val(),
+		    redemption_method: redeem,
 		    start_date: $("#program-valid-from").val(),
 		    end_date: $("#program-valid-to").val(),
 		    start_hour: $("#start-hour").val(),
