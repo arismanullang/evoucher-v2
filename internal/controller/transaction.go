@@ -15,14 +15,14 @@ import (
 
 type (
 	TransactionRequest struct {
-		ProgramID     string   `json:"program_id" valid:"alphanum,required"`
+		ProgramID     string   `json:"program_id" valid:"required"`
 		RedeemMethod  string   `json:"redeem_method" valid:"in(qr|token),required"`
 		Partner       string   `json:"partner" valid:"required"`
 		Challenge     string   `json:"challenge" valid:"numeric,optional"`
 		Response      string   `json:"response" valid:"numeric,optional"`
 		DiscountValue string   `json:"discount_value" valid:"float,required"`
-		Vouchers      []string `json:"vouchers" valid:"alphanum,required"`
-		CreatedBy     string   `json:"created_by" valid:"alphanum,optional"`
+		Vouchers      []string `json:"vouchers" valid:"required"`
+		CreatedBy     string   `json:"created_by" valid:"optional"`
 	}
 	DeleteTransactionRequest struct {
 		User string `json:"requested_by"`
