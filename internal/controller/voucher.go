@@ -359,6 +359,7 @@ func GetVoucherOfProgramDetails(w http.ResponseWriter, r *http.Request) {
 	d.VoucherValue = dt.VoucherValue
 	d.MaxQuantityVoucher = dt.MaxQuantityVoucher
 	d.MaxGenerateVoucher = dt.MaxGenerateVoucher
+	d.MaxRedeemVoucher = dt.MaxRedeemVoucher
 	d.RedemptionMethod = dt.RedemptionMethod
 	d.ImgUrl = dt.ImgUrl
 	d.ProgramTnc = dt.Tnc
