@@ -235,6 +235,8 @@ func GetVoucherOfProgram(w http.ResponseWriter, r *http.Request) {
 		tempGetVoucherOfVariatListDetails.ProgramTnc = dt.Tnc
 		tempGetVoucherOfVariatListDetails.ProgramDescription = dt.Description
 		tempGetVoucherOfVariatListDetails.MaxQuantityVoucher = dt.MaxQuantityVoucher
+		tempGetVoucherOfVariatListDetails.MaxRedeemVoucher = dt.MaxRedeemVoucher
+		tempGetVoucherOfVariatListDetails.MaxGenerateVoucher = dt.MaxGenerateVoucher
 		for _, vv := range voucher.VoucherData {
 			if vv.ProgramID == v {
 				tempVoucher := VoucerResponse{
@@ -343,6 +345,7 @@ func GetVoucherOfProgramDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println(dt)
 	d := GetVoucherOfVariatListDetails{}
 	d.ProgramID = dt.Id
 	d.AccountId = dt.AccountId
@@ -382,6 +385,7 @@ func GetVoucherOfProgramDetails(w http.ResponseWriter, r *http.Request) {
 		d.Voucher[j].State = vd.State
 	}
 
+	fmt.Println(d)
 	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
 	status = http.StatusOK
 	res = NewResponse(d)
