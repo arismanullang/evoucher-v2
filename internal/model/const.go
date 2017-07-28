@@ -41,8 +41,8 @@ const (
 	ResponseStateOk  string = "Ok"
 	ResponseStateNok string = "Nok"
 
-	RedeemtionMethodQr    string = "qr"
-	RedeemtionMethodToken string = "token"
+	RedemptionMethodQr    string = "qr"
+	RedemptionMethodToken string = "token"
 
 	ErrCodeAllowAccumulativeDisable string = "accumulation_is_not_allowed"
 	ErrCodeInvalidRedeemMethod      string = "invalid_redeem_method"
@@ -90,7 +90,7 @@ const (
 	ErrMessageNilPartner               string = "Program doesn't have any partner."
 	ErrMessageOTPFailed                string = "Doesn't match OTP"
 	ErrMessageInvalidQr                string = "Invalid partner QR"
-	ErrMessageInvalidRedeemMethod      string = "Invalid redeemtion method"
+	ErrMessageInvalidRedeemMethod      string = "Invalid redemption method"
 	ErrMessageInvalidUser              string = "Invalid username and password."
 	ErrMessageRedeemNotValidDay        string = "Voucher cannot be used today."
 	ErrMessageRedeemNotValidHour       string = "voucher cannot be used at current time."
