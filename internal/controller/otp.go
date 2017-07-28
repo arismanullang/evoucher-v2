@@ -51,7 +51,7 @@ func OTPAuth(key, challenge, response string) bool {
 }
 
 func ocra(param ReqParams) (AuthResponse,AuthResponseError, *http.Response, error) {
-	return server("/v1/ocra/ocra", param)
+	return server("/v1/device/ocra", param)
 }
 
 func server(path string, param ReqParams) (AuthResponse , AuthResponseError , *http.Response, error) {
