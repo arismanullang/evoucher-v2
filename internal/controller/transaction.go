@@ -74,9 +74,9 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//check redeemtion method
+	//check redemption method
 	switch rd.RedeemMethod {
-	case model.RedeemtionMethodQr:
+	case model.RedemptionMethodQr:
 		//to-do validate partner_id
 		par := map[string]string{"program_id": rd.ProgramID, "id": rd.Partner}
 		if _, err := model.FindProgramPartner(par); err == model.ErrResourceNotFound {
@@ -92,7 +92,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			render.JSON(w, res, status)
 			return
 		}
-	case model.RedeemtionMethodToken:
+	case model.RedemptionMethodToken:
 		//to-do validate token
 		par := map[string]string{"program_id": rd.ProgramID, "id": rd.Partner}
 		if p, err := model.FindProgramPartner(par); err == model.ErrResourceNotFound {
@@ -165,7 +165,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	// check validation all voucher & program
 	for _, v := range rd.Vouchers {
-		if ok, err := rd.CheckVoucherRedeemtion(v); !ok {
+		if ok, err := rd.CheckVoucherRedemption(v); !ok {
 			switch err.Error() {
 			case model.ErrCodeVoucherNotActive:
 				status = http.StatusBadRequest
@@ -274,9 +274,9 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//check redeemtion method
+	//check redemption method
 	switch rd.RedeemMethod {
-	case model.RedeemtionMethodQr:
+	case model.RedemptionMethodQr:
 		//to-do validate partner_id
 		par := map[string]string{"program_id": rd.ProgramID, "id": rd.Partner}
 		if _, err := model.FindProgramPartner(par); err == model.ErrResourceNotFound {
@@ -292,7 +292,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			render.JSON(w, res, status)
 			return
 		}
-	case model.RedeemtionMethodToken:
+	case model.RedemptionMethodToken:
 		//to-do validate token
 		par := map[string]string{"program_id": rd.ProgramID, "id": rd.Partner}
 		if p, err := model.FindProgramPartner(par); err == model.ErrResourceNotFound {
@@ -364,7 +364,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	// check validation all voucher & program
 	for _, v := range rd.Vouchers {
-		if ok, err := rd.CheckVoucherRedeemtion(v); !ok {
+		if ok, err := rd.CheckVoucherRedemption(v); !ok {
 			switch err.Error() {
 			case model.ErrCodeVoucherNotActive:
 				status = http.StatusBadRequest

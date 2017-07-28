@@ -48,7 +48,7 @@ function searchById(id) {
           $("#voucher-type").val(program.voucher_type);
           $("#voucher-price").val(program.voucher_price);
           $("#max-quantity-voucher").val(program.max_quantity_voucher);
-          $("#redemption-method").val(program.redeemtion_method);
+          $("#redemption-method").val(program.redemption_method);
           $("#program-valid-from").val(convertToDate(program.start_date));
           $("#program-valid-to").val(convertToDate(program.end_date));
           $("#voucher-value").val(program.voucher_value);
@@ -259,7 +259,7 @@ function send() {
 		 max_redeem_voucher: maxRedeem,
 		 max_generate_voucher: maxGenerate,
 		 allow_accumulative: $("#allow-accumulative").is(":checked"),
-		 redeemtion_method: $("#redeemtion-method").find(":selected").val(),
+		 redemption_method: $("#redemption-method").find(":selected").val(),
 		 start_date: $("#program-valid-from").val(),
 		 end_date: $("#program-valid-to").val(),
 		 start_hour: $("#start-hour").val(),
@@ -314,7 +314,7 @@ function send() {
 		    max_redeem_voucher: maxRedeem,
 		    max_generate_voucher: maxGenerate,
 		    allow_accumulative: $("#allow-accumulative").is(":checked"),
-		    redeemtion_method: $("#redeemtion-method").find(":selected").val(),
+		    redemption_method: $("#redemption-method").find(":selected").val(),
 		    start_date: $("#program-valid-from").val(),
 		    end_date: $("#program-valid-to").val(),
 		    start_hour: $("#start-hour").val(),

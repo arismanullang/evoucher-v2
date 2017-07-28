@@ -39,7 +39,7 @@ type (
 		MaxQuantityVoucher float64   `json:"max_quantity_voucher"`
 		MaxGenerateVoucher float64   `json:"max_generate_voucher"`
 		MaxRedeemVoucher   float64   `json:"max_redeem_voucher"`
-		RedeemtionMethod   string    `json:"redeemtion_method"`
+		RedemptionMethod   string    `json:"redemption_method"`
 		ImgUrl             string    `json:"image_url"`
 		Tnc                string    `json:"tnc"`
 		Description        string    `json:"description"`
@@ -60,7 +60,7 @@ type (
 		MaxQuantityVoucher float64 `json:"max_quantity_voucher"`
 		MaxGenerateVoucher float64 `json:"max_generate_voucher"`
 		MaxRedeemVoucher   float64 `json:"max_redeem_voucher"`
-		RedeemtionMethod   string  `json:"redeemtion_method"`
+		RedemptionMethod   string  `json:"redemption_method"`
 		ImgUrl             string  `json:"image_url"`
 		Tnc                string  `json:"tnc"`
 		Description        string  `json:"description"`
@@ -220,7 +220,7 @@ func ListProgramsDetails(w http.ResponseWriter, r *http.Request) {
 	d.MaxQuantityVoucher = dt.MaxQuantityVoucher
 	d.MaxGenerateVoucher = dt.MaxGenerateVoucher
 	d.MaxRedeemVoucher = dt.MaxRedeemVoucher
-	d.RedeemtionMethod = dt.RedeemtionMethod
+	d.RedemptionMethod = dt.RedemptionMethod
 	d.ImgUrl = dt.ImgUrl
 	d.ProgramTnc = dt.Tnc
 	d.ProgramDescription = dt.Description
@@ -416,7 +416,7 @@ func CreateProgram(w http.ResponseWriter, r *http.Request) {
 		MaxQuantityVoucher: rd.MaxQuantityVoucher,
 		MaxGenerateVoucher: rd.MaxGenerateVoucher,
 		AllowAccumulative:  rd.AllowAccumulative,
-		RedeemtionMethod:   rd.RedeemtionMethod,
+		RedemptionMethod:   rd.RedemptionMethod,
 		VoucherValue:       rd.VoucherValue,
 		StartDate:          ts.Format("2006-01-02 15:04:05.000"),
 		EndDate:            te.Format("2006-01-02 15:04:05.000"),
@@ -542,7 +542,7 @@ func UpdateProgram(w http.ResponseWriter, r *http.Request, logger *model.LogFiel
 		MaxQuantityVoucher: rd.MaxQuantityVoucher,
 		MaxGenerateVoucher: rd.MaxGenerateVoucher,
 		MaxRedeemVoucher:   rd.MaxRedeemVoucher,
-		RedeemtionMethod:   rd.RedeemtionMethod,
+		RedemptionMethod:   rd.RedemptionMethod,
 		VoucherValue:       rd.VoucherValue,
 		StartDate:          ts.Format("2006-01-02 15:04:05.000"),
 		EndDate:            te.Format("2006-01-02 15:04:05.000"),
@@ -714,7 +714,7 @@ func CheckProgram(rm, id string, qty int) (bool, error) {
 		return false, errors.New(model.ErrCodeAllowAccumulativeDisable)
 	}
 
-	if dt.RedeemtionMethod != rm {
+	if dt.RedemptionMethod != rm {
 		return false, errors.New(model.ErrCodeInvalidRedeemMethod)
 	}
 

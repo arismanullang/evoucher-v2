@@ -80,7 +80,7 @@ type (
 		MaxQuantityVoucher float64          `json:"max_quantity_voucher"`
 		MaxGenerateVoucher float64          `json:"max_generate_voucher"`
 		MaxRedeemVoucher   float64          `json:"max_redeem_voucher"`
-		RedeemtionMethod   string           `json:"redeemtion_method"`
+		RedemptionMethod   string           `json:"redemption_method"`
 		ImgUrl             string           `json:"image_url"`
 		ProgramTnc         string           `json:"program_tnc"`
 		ProgramDescription string           `json:"program_description"`
@@ -231,7 +231,7 @@ func GetVoucherOfProgram(w http.ResponseWriter, r *http.Request) {
 		tempGetVoucherOfVariatListDetails.EndDate = dt.EndDate
 		tempGetVoucherOfVariatListDetails.ImgUrl = dt.ImgUrl
 		tempGetVoucherOfVariatListDetails.AllowAccumulative = dt.AllowAccumulative
-		tempGetVoucherOfVariatListDetails.RedeemtionMethod = dt.RedeemtionMethod
+		tempGetVoucherOfVariatListDetails.RedemptionMethod = dt.RedemptionMethod
 		tempGetVoucherOfVariatListDetails.ProgramTnc = dt.Tnc
 		tempGetVoucherOfVariatListDetails.ProgramDescription = dt.Description
 		tempGetVoucherOfVariatListDetails.MaxQuantityVoucher = dt.MaxQuantityVoucher
@@ -359,7 +359,7 @@ func GetVoucherOfProgramDetails(w http.ResponseWriter, r *http.Request) {
 	d.VoucherValue = dt.VoucherValue
 	d.MaxQuantityVoucher = dt.MaxQuantityVoucher
 	d.MaxGenerateVoucher = dt.MaxGenerateVoucher
-	d.RedeemtionMethod = dt.RedeemtionMethod
+	d.RedemptionMethod = dt.RedemptionMethod
 	d.ImgUrl = dt.ImgUrl
 	d.ProgramTnc = dt.Tnc
 	d.ProgramDescription = dt.Description
@@ -889,8 +889,8 @@ func GetCsvSample(w http.ResponseWriter, r *http.Request) {
 
 // ## ### ##//
 
-//CheckVoucherRedeemtion validation
-func (r *TransactionRequest) CheckVoucherRedeemtion(voucherID string) (bool, error) {
+//CheckVoucherRedemption validation
+func (r *TransactionRequest) CheckVoucherRedemption(voucherID string) (bool, error) {
 
 	voucher, err := model.FindVoucher(map[string]string{"id": voucherID})
 

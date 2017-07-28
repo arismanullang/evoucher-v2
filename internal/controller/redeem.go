@@ -96,7 +96,7 @@ func GetRedeemData(w http.ResponseWriter, r *http.Request) {
 		VoucherValue:       program.VoucherValue,
 		MaxQuantityVoucher: program.MaxQuantityVoucher,
 		MaxGenerateVoucher: program.MaxGenerateVoucher,
-		RedeemtionMethod:   program.RedeemtionMethod,
+		RedemptionMethod:   program.RedemptionMethod,
 		ImgUrl:             program.ImgUrl,
 		ProgramTnc:         program.Tnc,
 		ProgramDescription: program.Description,

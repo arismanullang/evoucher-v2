@@ -17,8 +17,8 @@ mailgun:
   email: "evoucher@gilkor.com"
 
 logger:
-#  path: "/var/log/"
-  path: "/home/richard/work/src/github.com/gilkor/evoucher/"
+  path: "/var/log/"
+#  path: "/home/richard/work/src/github.com/gilkor/evoucher/"
   filename: "logger-evoucher"
 
 gcs:

@@ -32,7 +32,7 @@ type (
 		MaxQuantityVoucher float64 `db:"max_quantity_voucher" json:"max_quantity_voucher"`
 		MaxGenerateVoucher float64 `db:"max_generate_voucher" json:"max_generate_voucher"`
 		MaxRedeemVoucher   float64 `db:"max_redeem_voucher" json:"max_redeem_voucher"`
-		RedeemtionMethod   string  `db:"redeemtion_method" json:"redeem_method"`
+		RedemptionMethod   string  `db:"redemption_method" json:"redeem_method"`
 		ImgUrl             string  `db:"img_url" json:"image_url"`
 		Tnc                string  `db:"tnc" json:"tnc"`
 		Description        string  `db:"description" json:"description"`
@@ -58,7 +58,7 @@ type (
 		MaxQuantityVoucher float64  `db:"max_quantity_voucher"`
 		MaxGenerateVoucher float64  `db:"max_generate_voucher"`
 		MaxRedeemVoucher   float64  `db:"max_redeem_voucher"`
-		RedeemtionMethod   string   `db:"redeemtion_method"`
+		RedemptionMethod   string   `db:"redemption_method"`
 		ImgUrl             string   `db:"img_url"`
 		Tnc                string   `db:"tnc"`
 		Description        string   `db:"description"`
@@ -219,7 +219,7 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 			, max_quantity_voucher
 			, max_generate_voucher
 			, max_redeem_voucher
-			, redeemtion_method
+			, redemption_method
 			, img_url
 			, tnc
 			, description
@@ -231,7 +231,7 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 			id
 	`
 	var res2 []string
-	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.Name, vr.Type, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.StartHour, vr.EndHour, vr.ValidVoucherStart, vr.ValidVoucherEnd, vr.VoucherLifetime, vr.ValidityDays, vr.VoucherValue, vr.MaxQuantityVoucher, vr.MaxRedeemVoucher, vr.MaxGenerateVoucher, vr.RedeemtionMethod, vr.ImgUrl, vr.Tnc, vr.Description, user, StatusCreated); err != nil {
+	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.Name, vr.Type, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.StartHour, vr.EndHour, vr.ValidVoucherStart, vr.ValidVoucherEnd, vr.VoucherLifetime, vr.ValidityDays, vr.VoucherValue, vr.MaxQuantityVoucher, vr.MaxRedeemVoucher, vr.MaxGenerateVoucher, vr.RedemptionMethod, vr.ImgUrl, vr.Tnc, vr.Description, user, StatusCreated); err != nil {
 		fmt.Println(err.Error(), "(insert program)")
 		return "", ErrServerInternal
 	}
@@ -313,7 +313,7 @@ func UpdateProgram(d Program) error {
 			, max_quantity_voucher = ?
 			, max_redeem_voucher = ?
 			, max_generate_voucher = ?
-			, redeemtion_method = ?
+			, redemption_method = ?
 			, img_url = ?
 			, tnc = ?
 			, description = ?
@@ -324,7 +324,7 @@ func UpdateProgram(d Program) error {
 			AND status = ?
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), d.Name, d.Type, d.VoucherType, d.VoucherPrice, d.StartDate, d.EndDate, d.StartHour, d.EndHour, d.AllowAccumulative, d.ValidVoucherStart, d.ValidVoucherEnd, d.VoucherLifetime, d.ValidityDays, d.VoucherValue, d.MaxQuantityVoucher, d.MaxRedeemVoucher, d.MaxGenerateVoucher, d.RedeemtionMethod, d.ImgUrl, d.Tnc, d.Description, d.CreatedBy, time.Now(), d.Id, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), d.Name, d.Type, d.VoucherType, d.VoucherPrice, d.StartDate, d.EndDate, d.StartHour, d.EndHour, d.AllowAccumulative, d.ValidVoucherStart, d.ValidVoucherEnd, d.VoucherLifetime, d.ValidityDays, d.VoucherValue, d.MaxQuantityVoucher, d.MaxRedeemVoucher, d.MaxGenerateVoucher, d.RedemptionMethod, d.ImgUrl, d.Tnc, d.Description, d.CreatedBy, time.Now(), d.Id, StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
@@ -724,7 +724,7 @@ func FindProgramDetailsById(id string) (Program, error) {
 			, max_quantity_voucher
 			, max_redeem_voucher
 			, max_generate_voucher
-			, redeemtion_method
+			, redemption_method
 			, img_url
 			, tnc
 			, description
@@ -773,7 +773,7 @@ func FindProgramDetailsCustomParam(param map[string]string) ([]Program, error) {
 			, max_quantity_voucher
 			, max_redeem_voucher
 			, max_generate_voucher
-			, redeemtion_method
+			, redemption_method
 			, img_url
 			, tnc
 			, description
