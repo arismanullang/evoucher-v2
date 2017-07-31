@@ -287,9 +287,6 @@ func FindUserDetail(userId string) (User, error) {
 		fmt.Println(err)
 		return User{}, ErrServerInternal
 	}
-	if len(role) == 0 {
-		return User{}, ErrResourceNotFound
-	}
 
 	res[0].Role = role
 	account, err := GetAccountDetailByUser(userId)
@@ -298,7 +295,7 @@ func FindUserDetail(userId string) (User, error) {
 		return User{}, ErrServerInternal
 	}
 	if len(account) == 0 {
-		return User{}, ErrResourceNotFound
+		return User{}, ErrAccountNotFound
 	}
 	res[0].Account = account[0]
 

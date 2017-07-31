@@ -9,6 +9,7 @@ var (
 	ErrInvalidPassword = errors.New("invalid password.")
 	ErrNotModified     = errors.New("data not modified.")
 
+	ErrAccountNotFound  = errors.New("account not found.")
 	ErrResourceNotFound = errors.New("resource not found.")
 	ErrRouteNotFound    = errors.New("route not found.")
 	ErrDuplicateEntry   = errors.New("duplicate entry.")
