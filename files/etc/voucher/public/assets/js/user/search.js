@@ -15,8 +15,8 @@ function getUser() {
 			var dataSet = [];
 			for (i = 0; i < arrData.length; i++){
 				var button = "<button type='button' class='btn btn-flat btn-sm btn-info' onclick='edit(\""+arrData[i].id+"\")'><em class='ion-edit'></em></button>"+
-					"<button value='"+arrData[i].id+"' type='button' class='btn btn-flat btn-sm btn-danger swal-demo-reset'><em class='ion-locked'></em></button>"+
-					"<button value='"+arrData[i].id+"' type='button' status='"+arrData[i].status+"' class='btn btn-flat btn-sm btn-danger swal-demo-delete'><em class='ion-trash-a'></em></button>";
+					"<button value='"+arrData[i].id+"' type='button' class='btn btn-flat btn-sm btn-danger swal-demo-reset'><em class='ion-loop'></em></button>"+
+					"<button value='"+arrData[i].id+"' type='button' status='"+arrData[i].status+"' class='btn btn-flat btn-sm btn-danger swal-demo-delete'><em class='ion-locked'></em></button>";
 				var status = "INACTIVE";
 				if(arrData[i].status == "created"){
 					status = "ACTIVE";

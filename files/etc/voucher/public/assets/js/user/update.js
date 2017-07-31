@@ -69,8 +69,8 @@ function getRole() {
 			for (i = 0; i < arrData.length; i++){
 				var li = $("<div class='col-sm-4'></div>");
 				var html = "<label class='checkbox-inline c-checkbox'>"
-					+ "<input type='checkbox' value='"+arrData[i].id+"' text='"+arrData[i].role_detail+"'>"
-					+ "<span class='ion-checkmark-round'></span>" + arrData[i].role_detail
+					+ "<input type='checkbox' value='"+arrData[i].id+"' text='"+arrData[i].detail+"'>"
+					+ "<span class='ion-checkmark-round'></span>" + arrData[i].detail
 					+ "</label>";
 				li.html(html);
 				li.appendTo('#role');
