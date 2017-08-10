@@ -32,7 +32,8 @@ type (
 		End   string `json:"end"`
 	}
 	TransactionResponse struct {
-		TransactionCode string `json:"transaction_code"`
+		TransactionCode string   `json:"transaction_code"`
+		Vouchers        []string `json:"vouchers"`
 	}
 	TransactionCodeBulk struct {
 		TransactionCode []string `json:"transaction_code"`
@@ -241,8 +242,8 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res = NewResponse(TransactionResponse{TransactionCode: txCode})
-	logger.SetStatus(status).Log("param :", rd, "response :", TransactionResponse{TransactionCode: txCode})
+	res = NewResponse(TransactionResponse{TransactionCode: txCode, Vouchers: rd.Vouchers})
+	logger.SetStatus(status).Log("param :", rd, "response :", res)
 	render.JSON(w, res, status)
 }
 

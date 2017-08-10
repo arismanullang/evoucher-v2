@@ -589,7 +589,7 @@ func BlockUser(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	if err := model.BlockUser(rd.Id); err != nil {
+	if err := model.BlockUser(rd.Id, a.User.ID); err != nil {
 		status = http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError
 		if err == model.ErrResourceNotFound {
@@ -648,7 +648,7 @@ func ActivateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := model.ReleaseUser(rd.Id); err != nil {
+	if err := model.ReleaseUser(rd.Id, a.User.ID); err != nil {
 		status = http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError
 		if err == model.ErrResourceNotFound {
@@ -686,4 +686,110 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		logger.SetStatus(http.StatusInternalServerError).Info("param :", rd.Password, "response :", err.Error())
 	}
 	render.JSON(w, http.StatusOK)
+}
+
+// superadmin
+
+func SuperadminRegisterUser(w http.ResponseWriter, r *http.Request) {
+	//apiName := "user_create"
+	//valid := false
+	//
+	status := http.StatusCreated
+	res := NewResponse(nil)
+	//
+	//logger := model.NewLog()
+	//logger.SetService("API").
+	//	SetMethod(r.Method).
+	//	SetTag(apiName)
+	//
+	var rd User
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		fmt.Println(err.Error())
+		//logger.SetStatus(http.StatusInternalServerError).Panic("param :", r.Body, "response :", err.Error())
+	}
+
+	//a := AuthTokenWithLogger(w, r, logger)
+	a := AuthToken(w, r)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+	//
+	//for _, valueRole := range a.User.Role {
+	//	features := model.ApiFeatures[valueRole.Detail]
+	//	for _, valueFeature := range features {
+	//		if apiName == valueFeature {
+	//			valid = true
+	//		}
+	//	}
+	//}
+	//
+	//if !valid {
+	//	logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+	//
+	//	status = http.StatusUnauthorized
+	//	res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+	//	render.JSON(w, res, status)
+	//	return
+	//}
+
+	param := model.SuperAdminRegisterUser{
+		AccountId: rd.AccountId,
+		Username:  rd.Username,
+		Password:  hash(rd.Password),
+		Email:     rd.Email,
+		Phone:     rd.Phone,
+		Role:      rd.RoleId,
+	}
+
+	if err := model.SuperAdminAddUser(param, a.User.ID); err != nil {
+		status = http.StatusInternalServerError
+		errTitle := model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errTitle = model.ErrCodeResourceNotFound
+		}
+
+		fmt.Println(err.Error())
+		res.AddError(its(status), errTitle, err.Error(), "insert")
+		//res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+		//logger.SetStatus(status).Info("param :", param, "response :", err.Error())
+	}
+
+	render.JSON(w, res, status)
+}
+
+func SuperadminGetUser(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusOK
+	res := NewResponse(nil)
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("user_get")
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+	}
+
+	user, err := model.SuperAdminFindAllUsers()
+	res = NewResponse(user)
+	if err != nil {
+		status = http.StatusInternalServerError
+		errTitle := model.ErrCodeInternalError
+		if err != model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", a.User.Account.Id, "response :", err.Error())
+	}
+
+	render.JSON(w, res, status)
 }

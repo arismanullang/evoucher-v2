@@ -14,12 +14,14 @@ type (
 
 func SendForgotPasswordMail(w http.ResponseWriter, r *http.Request) {
 	var username = r.FormValue("username")
+	var accountId = r.FormValue("accountId")
+
 	logger := model.NewLog()
 	logger.SetService("API").
 		SetMethod(r.Method).
 		SetTag("Forgot Password : " + username)
 
-	if err := model.SendMailForgotPassword(model.Domain, model.ApiKey, model.PublicApiKey, username); err != nil {
+	if err := model.SendMailForgotPassword(model.Domain, model.ApiKey, model.PublicApiKey, username, accountId); err != nil {
 		res := NewResponse(nil)
 		status := http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError

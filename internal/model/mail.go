@@ -24,8 +24,8 @@ type (
 	}
 )
 
-func SendMailForgotPassword(domain, apiKey, publicApiKey, username string) error {
-	id, err := CheckUsername(username)
+func SendMailForgotPassword(domain, apiKey, publicApiKey, username, accountId string) error {
+	id, err := CheckUsername(username, accountId)
 	if err != nil {
 		fmt.Println(err.Error())
 		return err
@@ -63,7 +63,8 @@ func makeMessageForgotPassword(id string) string {
 		return ""
 	}
 
-	url := RootUrl + "/user/recover?key=" + tok.Token
+	url := "https://" + RootUrl + "/user/recover?key=" + tok.Token
+	//element := "<a href='"+url+"'>"+url+"</a>"
 	result := string(str) + url
 	return result
 }

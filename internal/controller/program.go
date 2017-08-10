@@ -414,6 +414,7 @@ func CreateProgram(w http.ResponseWriter, r *http.Request) {
 		VoucherType:        rd.VoucherType,
 		VoucherPrice:       rd.VoucherPrice,
 		MaxQuantityVoucher: rd.MaxQuantityVoucher,
+		MaxRedeemVoucher:   rd.MaxRedeemVoucher,
 		MaxGenerateVoucher: rd.MaxGenerateVoucher,
 		AllowAccumulative:  rd.AllowAccumulative,
 		RedemptionMethod:   rd.RedemptionMethod,

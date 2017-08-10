@@ -2,9 +2,30 @@ package model
 
 import (
 	"fmt"
+	"time"
 )
 
 type (
+	SuperAdminRegisterUser struct {
+		AccountId string   `db:"account_id" json:"account_id"`
+		Username  string   `db:"username" json:"username"`
+		Password  string   `db:"password" json:"password"`
+		Email     string   `db:"email" json:"email"`
+		Phone     string   `db:"phone" json:"phone"`
+		Role      []string `db:"-" json:"role"`
+	}
+	SuperAdminUser struct {
+		ID        string  `db:"id" json:"id"`
+		Account   Account `db:"_" json:"account"`
+		Username  string  `db:"username" json:"username"`
+		Password  string  `db:"password" json:"password"`
+		Email     string  `db:"email" json:"email"`
+		Phone     string  `db:"phone" json:"phone"`
+		Role      []Role  `db:"-" json:"role"`
+		Status    string  `db:"status" json:"status"`
+		CreatedBy string  `db:"created_by" json:"created_by"`
+		CreatedAt string  `db:"created_at" json:"created_at"`
+	}
 	RegisterUser struct {
 		Username string   `db:"username" json:"username"`
 		Password string   `db:"password" json:"password"`
@@ -44,7 +65,7 @@ func AddUser(u RegisterUser, user, accountId string) error {
 	}
 	defer tx.Rollback()
 
-	username, err := CheckUsername(u.Username)
+	username, err := CheckUsername(u.Username, accountId)
 
 	if username == "" {
 		q := `
@@ -110,14 +131,22 @@ func AddUser(u RegisterUser, user, accountId string) error {
 	return ErrDuplicateEntry
 }
 
-func CheckUsername(username string) (string, error) {
+func CheckUsername(username, accountId string) (string, error) {
 	q := `
-		SELECT id FROM users
+		SELECT
+			u.id
+		FROM
+			users as u
+		JOIN
+			user_accounts as ua
+		ON
+			u.id = ua.user_id
 		WHERE
-			username = ?
+			u.username = ?
+			AND ua.account_id = ?
 	`
 	var res []string
-	if err := db.Select(&res, db.Rebind(q), username); err != nil {
+	if err := db.Select(&res, db.Rebind(q), username, accountId); err != nil {
 		fmt.Println(err)
 		return "", ErrServerInternal
 	}
@@ -470,11 +499,11 @@ func UpdateOtherUser(user User) error {
 			email = ?
 			, phone = ?
 		WHERE
-			username = ?
+			id = ?
 			AND status = ?
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), user.Email, user.Phone, user.Username, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), user.Email, user.Phone, user.ID, StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
@@ -550,7 +579,7 @@ func UpdateUser(user User) error {
 	return nil
 }
 
-func BlockUser(userId string) error {
+func BlockUser(userId, user string) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -562,11 +591,13 @@ func BlockUser(userId string) error {
 		UPDATE users
 		SET
 			status = ?
+			, updated_by = ?
+			, updated_at = ?
 		WHERE
 			id = ?
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, userId)
+	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, user, time.Now(), userId)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
@@ -579,7 +610,7 @@ func BlockUser(userId string) error {
 	return nil
 }
 
-func ReleaseUser(userId string) error {
+func ReleaseUser(userId, user string) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -591,11 +622,13 @@ func ReleaseUser(userId string) error {
 		UPDATE users
 		SET
 			status = ?
+			, updated_by = ?
+			, updated_at = ?
 		WHERE
 			id = ?
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), StatusCreated, userId)
+	_, err = tx.Exec(tx.Rebind(q), StatusCreated, user, time.Now(), userId)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
@@ -611,11 +644,11 @@ func ReleaseUser(userId string) error {
 // Role -----------------------------------------------------------------------------------------------
 
 func FindAllRole() ([]Role, error) {
-	fmt.Println("Select All Role")
 	q := `
 		SELECT id, detail
 		FROM roles
 		WHERE status = ?
+		AND NOT detail = 'suadmin'
 	`
 
 	var resv []Role
@@ -667,4 +700,142 @@ func InsertBroadcastUser(variantId, user string, target, description []string) e
 		return ErrServerInternal
 	}
 	return nil
+}
+
+// superadmin
+
+func SuperAdminAddUser(u SuperAdminRegisterUser, user string) error {
+	fmt.Println("Add")
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err)
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	username, err := CheckUsername(u.Username, u.AccountId)
+
+	if username == "" {
+		q := `
+			INSERT INTO users(
+				username
+				, password
+				, email
+				, phone
+				, created_by
+				, status
+			)
+			VALUES (?, ?, ?, ?, ?, ?)
+			RETURNING
+				id
+		`
+		var res []string
+		if err := tx.Select(&res, tx.Rebind(q), u.Username, u.Password, u.Email, u.Phone, user, StatusCreated); err != nil {
+			fmt.Println(err)
+			return ErrServerInternal
+		}
+
+		for _, v := range u.Role {
+			q := `
+				INSERT INTO user_roles(
+					user_id
+					, role_id
+					, created_by
+					, status
+				)
+				VALUES (?, ?, ?, ?)
+			`
+
+			_, err := tx.Exec(tx.Rebind(q), res[0], v, user, StatusCreated)
+			if err != nil {
+				fmt.Println(err)
+				return ErrServerInternal
+			}
+		}
+
+		q2 := `
+			INSERT INTO user_accounts(
+				user_id
+				, account_id
+				, created_by
+				, status
+			)
+			VALUES (?, ?, ?, ?)
+		`
+
+		_, err := tx.Exec(tx.Rebind(q2), res[0], u.AccountId, user, StatusCreated)
+		if err != nil {
+			fmt.Println(err)
+			return ErrServerInternal
+		}
+
+		if err := tx.Commit(); err != nil {
+			fmt.Println(err)
+			return ErrServerInternal
+		}
+		return nil
+	}
+
+	return ErrDuplicateEntry
+}
+
+func SuperAdminFindAllUsers() ([]User, error) {
+	q := `
+		SELECT
+			u.id
+			, u.username
+			, u.email
+			, u.phone
+			, u.created_at
+			, u.created_by
+			, u.status
+		FROM
+			users as u
+		JOIN
+			user_accounts as ua
+		ON
+			u.id = ua.user_id
+		WHERE
+			NOT u.username = 'suadmin'
+	`
+	var res []User
+	if err := db.Select(&res, db.Rebind(q)); err != nil {
+		fmt.Println(err)
+		return []User{}, ErrServerInternal
+	}
+
+	for i, v := range res {
+		q1 := `
+		SELECT
+		  	u.id id,
+		  	r.detail detail
+		FROM
+		  	users u
+		JOIN
+			user_roles ur
+		ON
+			u.id = ur.user_id
+		JOIN
+			roles r
+	    	ON
+	    		ur.role_id = r.id
+		WHERE
+		  	u.id = ?
+		`
+
+		var role []Role
+		if err := db.Select(&role, db.Rebind(q1), v.ID); err != nil {
+			fmt.Println(err)
+			return []User{}, ErrServerInternal
+		}
+		res[i].Role = role
+		account, err := GetAccountDetailByUser(v.ID)
+		if err != nil {
+			fmt.Println(err)
+			return []User{}, ErrServerInternal
+		}
+		res[i].Account = account[0]
+	}
+
+	return res, nil
 }

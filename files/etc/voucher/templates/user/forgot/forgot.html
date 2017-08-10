@@ -3,9 +3,9 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="Bootstrap Admin Template">
+    <meta name="description" content="eVoucher by Elys">
     <meta name="keywords" content="app, responsive, jquery, bootstrap, dashboard, admin">
-    <title>Elys eVoucher - Login</title>
+    <title>Elys eVoucher - Reset Password</title>
 
     <link rel="stylesheet" href="/assets/vendor/animate.css/animate.css">
     <link rel="stylesheet" href="/assets/vendor/bootstrap/dist/css/bootstrap.min.css">
@@ -26,12 +26,20 @@
                 <div class="card-title text-center">Reset Password</div>
               </div>
               <div class="card-body">
-                <div class="mda-form-group float-label mda-input-group">
+                <div class="mda-form-group float-label">
+                  <div class="mda-form-control">
+                    <select id="account-id" name="account-id" check="true" class="form-control select2 select2-account-forgot-password" tabindex="0">
+                    </select>
+                    <div class="mda-form-control-line"></div>
+                    <label>Account</label>
+                  </div>
+                </div>
+                <div class="mda-form-group float-label">
                   <div class="mda-form-control">
                     <input type="text" id="username" name="username" required="" class="form-control">
                     <div class="mda-form-control-line"></div>
                     <label>Username</label>
-                  </div><span class="mda-input-group-addon"><em class="ion-ios-person-outline icon-lg"></em></span>
+                  </div>
                 </div>
               </div>
               <button onclick="recover()" class="btn btn-primary btn-flat">Reset This Username</button>

@@ -217,8 +217,8 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 			, validity_days
 			, voucher_value
 			, max_quantity_voucher
-			, max_generate_voucher
 			, max_redeem_voucher
+			, max_generate_voucher
 			, redemption_method
 			, img_url
 			, tnc

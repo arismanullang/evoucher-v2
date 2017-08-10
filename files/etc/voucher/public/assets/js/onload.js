@@ -1,7 +1,6 @@
 var token = localStorage.getItem("token");
 var error = true;
 $( window ).ready(function() {
-  console.log(token);
   if(token == null){
     window.location = "/user/login";
   }
@@ -19,9 +18,12 @@ $( window ).ready(function() {
   });
 
   $( 'input' ).attr("autocomplete","off");
+  $( '#token' ).val(token);
 
   getSession();
   setSideNavBar();
+
+  $('[data-toggle="tooltip"]').tooltip();
 });
 
 function setSideNavBar() {
@@ -44,19 +46,17 @@ function setSideNavBar() {
 
 function getSession() {
     $.ajax({
-      url: '/v1/token/check?token='+token,
+      url: '/v1/token/check?token='+token+'&url='+window.location.pathname,
       type: 'get',
       success: function (data) {
-        console.log(data.data);
         if(data.data == false){
           window.location = "/user/login";
         }
       },
       error:function (data) {
-        console.log(data.status);
         window.location = "/user/login";
       }
-  });
+    });
 }
 
 function logOut() {

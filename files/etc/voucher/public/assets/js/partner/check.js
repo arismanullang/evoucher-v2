@@ -2,7 +2,21 @@ $( document ).ready(function() {
 	var id = findGetParameter('id');
 	getPartner(id);
 	getPerformance(id);
+	makeCode(id);
 });
+
+
+function makeCode (id) {
+	var qrcode = new QRCode("qrcode", {
+		text: id,
+		width: 150,
+		height: 150,
+		colorDark : "#000000",
+		colorLight : "#ffffff",
+		correctLevel : QRCode.CorrectLevel.H
+	});
+	qrcode.makeCode(id);
+}
 
 function getPartner(id) {
 	console.log("Get Partner Data");
@@ -62,5 +76,5 @@ function getProgram() {
 }
 
 function edit(){
-	window.location = "/partner/update?id="+findGetParameter('id')+"&token="+token;
+	window.location = "/partner/update?id="+findGetParameter('id');
 }

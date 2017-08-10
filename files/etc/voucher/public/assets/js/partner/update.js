@@ -51,7 +51,7 @@ function update() {
        data: JSON.stringify(partner),
        success: function () {
            alert("Partner Updated.");
-           window.location = "/partner/search?token="+token;
+           window.location = "/partner/search";
        }
    });
 }

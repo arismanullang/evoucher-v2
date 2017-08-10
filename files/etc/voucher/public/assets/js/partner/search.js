@@ -20,12 +20,14 @@ function getPartner() {
 		  "<button type='button' class='btn btn-flat btn-sm btn-info' onclick='edit(\""+arrData[i].id+"\")'><em class='ion-edit'></em></button>"+
 		"<button value='"+arrData[i].id+"' type='button' class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>";
 
-	  dataSet[i] = [
+	  var tempArray = [
 		arrData[i].name
 		, arrData[i].serial_number.String
 		, arrData[i].tag.String
 		, button
 	  ];
+
+	  dataSet.push(tempArray);
         }
 
       	if ($.fn.DataTable.isDataTable("#datatable1")) {
@@ -67,20 +69,20 @@ function getPartner() {
 }
 
 function detail(url){
-	window.location = "/partner/check?id="+url+"&token="+token;
+	window.location = "/partner/check?id="+url;
 }
 
 function edit(url){
-  window.location = "/partner/update?id="+url+"&token="+token;
+  window.location = "/partner/update?id="+url;
 }
 
 function addPartner() {
-  window.location = "/partner/create?token="+token;
+  window.location = "/partner/create";
 }
 
 function deletePartner(id) {
 	$.ajax({
-		url: '/v1/ui/partner/delete?id='+id+'&token='+token,
+		url: '/v1/ui/partner/delete?id='+id,
 		type: 'get',
 		success: function (data) {
 			getPartner();
