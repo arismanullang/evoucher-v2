@@ -7,7 +7,7 @@ function getVoucher() {
     var holder = findGetParameter("holder");
     var arrData = [];
     $.ajax({
-        url: '/v1/ui/vouchers?holder='+holder+'&token='+token,
+        url: '/v1/ui/voucher?holder='+holder+'&token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -60,18 +60,17 @@ function getVoucher() {
               default:
                 status = "Issued";
             }
-// program jangan id, name aja
-            dataSet[i] = [
-              arrData[i].voucher_code
-              , arrData[i].holder
-              , arrData[i].reference_no
-              , arrData[i].program_id
-              , "<div class='progress'>"
-                + "<div role='progressbar progress-bar-success' aria-valuenow='"+diffNow+"' aria-valuemin='0' aria-valuemax='"+diffTotal+"' style='width: "+persen+"%;' class='progress-bar'>"+diffNow+"</div>"
-                + "</div>"
-              , status
+
+            var tempArray = [
+              arrData[i].voucher_code.toUpperCase()
+              , arrData[i].holder.toUpperCase()
+              , arrData[i].reference_no.toUpperCase()
+              , arrData[i].program_id.toUpperCase()
+              , status.toUpperCase()
               , "<button type='button' onclick='detail(\""+arrData[i].id+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"
               ];
+
+	    dataSet.push(tempArray);
           }
           console.log(dataSet);
 
@@ -85,12 +84,12 @@ function getVoucher() {
               buttons: [
                   'copy', 'csv', 'excel', 'pdf', 'print'
               ],
+	      "order": [[ 4, "desc" ]],
               columns: [
                   { title: "Voucher Code" },
                   { title: "Holder Name" },
                   { title: "Reference Code" },
                   { title: "Program" },
-                  { title: "Period" },
                   { title: "Status" },
                   { title: "Action" }
               ],

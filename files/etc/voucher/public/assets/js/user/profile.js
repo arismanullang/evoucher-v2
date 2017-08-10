@@ -23,7 +23,7 @@ function getUserDetails() {
           var limit = result.role.length;
           var desc = "Act as ";
           for ( i = 0; i < limit; i++){
-            desc += result.role[i].role_detail;
+            desc += result.role[i].detail;
             if( i != limit-1){
               desc += ", ";
             }

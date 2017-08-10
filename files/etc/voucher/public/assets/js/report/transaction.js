@@ -1,12 +1,6 @@
 $( document ).ready(function() {
   getTransactionByPartner("");
   getPartner();
-
-  // $("#partner-id").change(function() {
-	//   console.log($("#partner-id").value);
-	//   console.log($("#partner-id").val());
-	//   getTransactionByPartner($("#partner-id").val());
-  // });
 });
 
 function getPartner() {
@@ -79,11 +73,11 @@ function getTransactionByPartner(partnerId) {
 	    }
 	    var tempVoucherLength = arrData[i].voucher.length;
 	    for ( y = 0; y < tempVoucherLength; y++){
-		    var tempArray = [arrData[i].partner_name.toUpperCase()
+		    var tempArray = [
+			    arrData[i].partner_name.toUpperCase()
 			    , arrData[i].transaction_code
 			    , arrData[i].program_name.toUpperCase()
 			    , arrData[i].voucher[y].VoucherCode
-			    //, addDecimalPoints(arrData[i].discount_value)
 			    , date1[2] + " " + months[parseInt(date1[1])-1] + " " + date1[0]
 			    , date2[2] + " " + months[parseInt(date2[1])-1] + " " + date2[0]
 			    , cashoutDate

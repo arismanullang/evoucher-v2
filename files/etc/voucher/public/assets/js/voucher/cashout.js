@@ -67,15 +67,17 @@ function addElem(){
 				$("#error").html('Voucher Already Used');
 			}else{
 				var date = new Date(result.created_at);
-
-				var body = "<td name='list-transaction-code' class='text-ellipsis'>"+result.transaction_code+"</td>"
-					+ "<td name='list-transaction-partner' class='text-ellipsis'>"+result.partner_name+"</td>"
-					+ "<td name='list-transaction-value' class='text-ellipsis'>"+result.discount_value+"</td>"
-					+ "<td name='list-transaction-date' class='text-ellipsis'>"+date.toDateString() + ", " + date.getHours() + ":" + date.getMinutes()+"</td>"
-					+ "<td name='list-transaction-action'><button type='button' onclick='removeElem(this)' class='btn btn-flat btn-sm btn-info pull-right'><em class='ion-close-circled'></em></button></td>";
-				var li = $("<tr class='msg-display clickable'></tr>");
-				li.html(body);
-				li.appendTo('#list-transaction');
+				for(var i = 0; i < result.vouchers.length; i++){
+					var body = "<td name='list-transaction-partner' class='text-ellipsis'>"+result.partner_name+"</td>"
+						+ "<td name='list-transaction-code' class='text-ellipsis'>"+result.transaction_code+"</td>"
+						+ "<td name='list-voucher-code' class='text-ellipsis'>"+result.vouchers[i].voucher_code+"</td>"
+						+ "<td name='list-transaction-value' class='text-ellipsis'>"+result.discount_value+"</td>"
+						+ "<td name='list-transaction-date' class='text-ellipsis'>"+date.toDateString() + ", " + date.getHours() + ":" + date.getMinutes()+"</td>"
+						+ "<td name='list-transaction-action'><button type='button' onclick='removeElem(this)' class='btn btn-flat btn-sm btn-info pull-right'><em class='ion-close-circled'></em></button></td>";
+					var li = $("<tr class='msg-display clickable'></tr>");
+					li.html(body);
+					li.appendTo('#list-transaction');
+				}
 				$("#error").html('');
 
 			}
@@ -93,7 +95,7 @@ function removeElem(elem){
 }
 
 function print(){
-	window.location = "/voucher/print?token="+token;
+	window.location = "/voucher/print";
 }
 
 function next(){

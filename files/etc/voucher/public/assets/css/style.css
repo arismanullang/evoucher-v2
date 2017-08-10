@@ -10,8 +10,8 @@
   width: auto;
 }
 
-#select2-account-container {
-  padding-left: 35px;
+.select2-account-forgot-password {
+  padding-left: 40px;
 }
 
 .mda-form-control > input ~ label, .mda-form-control > textarea ~ label, .mda-form-control > select ~ label{
@@ -31,6 +31,23 @@
 body {
   font-family: 'Roboto', sans-serif;
   font-weight: 500;
+}
+
+.overflow-container{
+  overflow: scroll;
+  height: calc(100vh - 125px);
+}
+
+.overflow-side-container{
+  height: calc(100vh - 125px);
+}
+
+a{
+  color: #3f3f3f;
+}
+
+.qrcode > img{
+  display: inline !important;
 }
 
 footer{
@@ -129,7 +146,8 @@ footer{
 }
 
 .no-border{
-  border: none;
+  border: none !important;
+  border-radius: 0px !important;
 }
 
 .no-border-bottom{

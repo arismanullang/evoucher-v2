@@ -4,7 +4,7 @@ $( document ).ready(function() {
 
 function getUser() {
 	$.ajax({
-		url: '/v1/ui/user/all?token='+token,
+		url: '/v1/ui/sa/all?token='+token,
 		type: 'get',
 		success: function (data) {
 			console.log("Render Data");
@@ -13,6 +13,8 @@ function getUser() {
 			console.log(arrData);
 			var i;
 			var dataSet = [];
+			var accountList = [];
+			var accountExist = false;
 			for (i = 0; i < arrData.length; i++){
 				var button = "<button type='button' class='btn btn-flat btn-sm btn-info' onclick='edit(\""+arrData[i].id+"\")'><em class='ion-edit'></em></button>"+
 					"<button value='"+arrData[i].id+"' type='button' class='btn btn-flat btn-sm btn-danger swal-demo-reset'><em class='ion-loop'></em></button>"+
@@ -22,12 +24,32 @@ function getUser() {
 					status = "ACTIVE";
 				}
 				dataSet[i] = [
-					arrData[i].username
-					, arrData[i].email
-					, arrData[i].phone
-					, status
+					arrData[i].account.alias.toUpperCase()
+					, arrData[i].username.toUpperCase()
+					, arrData[i].email.toUpperCase()
+					, arrData[i].phone.toUpperCase()
+					, status.toUpperCase()
 					, button
 				];
+
+				if(accountList.length == 0){
+					accountExist = true;
+				}else{
+					for( var y = 0; y < accountList.length; y++){
+						if(accountList[y] == arrData[i].account.alias.toUpperCase()){
+							accountExist = false;
+							break;
+						}
+						accountExist = true;
+					}
+				}
+				if(accountExist){
+					accountList.push(arrData[i].account.alias.toUpperCase());
+
+					var li = $("<option value='"+arrData[i].account.alias.toUpperCase()+"'></option>");
+					li.html(arrData[i].account.alias.toUpperCase());
+					li.appendTo($('#filter-account'));
+				}
 			}
 
 			if ($.fn.DataTable.isDataTable("#datatable1")) {
@@ -37,8 +59,9 @@ function getUser() {
 			var table = $('#datatable1').dataTable({
 				data: dataSet,
 				dom: 'rtip',
-				"order": [[ 1, "desc" ]],
+				"order": [[ 0, "desc" ]],
 				columns: [
+					{ title: "ACCOUNT" },
 					{ title: "USERNAME" },
 					{ title: "EMAIL" },
 					{ title: "PHONE" },
@@ -61,20 +84,27 @@ function getUser() {
 			var inputSearchClass = 'datatable_input_col_search';
 			var columnInputs = $('thead .' + inputSearchClass);
 
-			columnInputs
-				.keyup(function() {
-					table.fnFilter(this.value, columnInputs.index(this));
-				});
+			for( i = 0; i < columnInputs.length; i++){
+				if(columnInputs.get(i).tagName.toLowerCase() == "select"){
+					columnInputs[i].onchange = function() {
+						table.fnFilter(this.value, columnInputs.index(this));
+					};
+				}else{
+					columnInputs[i].onkeyup = function() {
+						table.fnFilter(this.value, columnInputs.index(this));
+					};
+				}
+			}
 		}
 	});
 }
 
 function edit(url){
-	window.location = "/user/update?id="+url;
+	window.location = "/sa/update?id="+url+"&token="+token;
 }
 
 function addUser() {
-	window.location = "/user/register";
+	window.location = "/sa/register?token="+token;
 }
 
 function resetPassword(id) {
@@ -137,38 +167,38 @@ function activateUser(id) {
 		$(document).on('click', '.swal-demo-delete', function(e) {
 			e.preventDefault();
 			swal({
-				title: 'Are you sure?',
-				text: 'Do you want change user\'s status?',
-				type: 'warning',
-				showCancelButton: true,
-				confirmButtonColor: '#DD6B55',
-				confirmButtonText: 'Change!',
-				closeOnConfirm: false
-			},
-			function() {
-				if(e.target.getAttribute("status") == "created"){
-					swal('Blocked!', 'Blocked success.', deleteUser(e.target.value));
-				}else {
-					swal('Activated!', 'Activated success.', activateUser(e.target.value));
-				}
+					title: 'Are you sure?',
+					text: 'Do you want change user\'s status?',
+					type: 'warning',
+					showCancelButton: true,
+					confirmButtonColor: '#DD6B55',
+					confirmButtonText: 'Change!',
+					closeOnConfirm: false
+				},
+				function() {
+					if(e.target.getAttribute("status") == "created"){
+						swal('Blocked!', 'Blocked success.', deleteUser(e.target.value));
+					}else {
+						swal('Activated!', 'Activated success.', activateUser(e.target.value));
+					}
 
-			});
+				});
 
 		});
 		$(document).on('click', '.swal-demo-reset', function(e) {
 			e.preventDefault();
 			swal({
-				title: 'Are you sure?',
-				text: 'Do you want reset user\'s password?',
-				type: 'warning',
-				showCancelButton: true,
-				confirmButtonColor: '#DD6B55',
-				confirmButtonText: 'Reset!',
-				closeOnConfirm: false
-			},
-			function() {
-				resetPassword(e.target.value);
-			});
+					title: 'Are you sure?',
+					text: 'Do you want reset user\'s password?',
+					type: 'warning',
+					showCancelButton: true,
+					confirmButtonColor: '#DD6B55',
+					confirmButtonText: 'Reset!',
+					closeOnConfirm: false
+				},
+				function() {
+					resetPassword(e.target.value);
+				});
 
 		});
 	}

@@ -6,7 +6,7 @@ function getVoucher() {
     console.log("Get Voucher Data");
     var id = findGetParameter('id');
     $.ajax({
-        url: '/v1/ui/vouchers/'+id+'?token='+token,
+        url: '/v1/ui/voucher/'+id+'?token='+token,
         type: 'get',
         success: function (data) {
           console.log(data.data);
@@ -15,10 +15,10 @@ function getVoucher() {
           var date1 = data.valid_at.substring(0, 19).replace("T", " ");
           var date2 = data.expired_at.substring(0, 19).replace("T", " ");
 
-          $("#program-name").html(data.Variant_name);
+          $("#program-name").html(data.program_name);
           $("#voucher-code").html(data.voucher_code);
-          $("#voucher-type").html(data.Voucher_type);
-          $("#voucher-value").html("Rp " + addDecimalPoints(data.discount_value) + ",00");
+          $("#voucher-type").html(data.voucher_type);
+          $("#voucher-value").html("Rp " + addDecimalPoints(data.voucher_value) + ",00");
           $("#reference-no").html(data.reference_no);
           $("#period").html(date1 + "</br></br>To</br></br>" + date2)
 
@@ -31,7 +31,7 @@ function getVoucher() {
               phone = "Unknown";
           }
 
-          $("#holder-name").html(toTitleCase(data.holder));
+          $("#holder-name").html(toTitleCase(data.holder_description));
           $("#holder-email").html(email);
           $("#holder-phone").html(phone);
 

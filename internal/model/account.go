@@ -3,12 +3,13 @@ package model
 import (
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 type (
 	AccountRes struct {
-		Id   string `db:"id"`
-		Name string `db:"name"`
+		Id   string `db:"id" json:"id"`
+		Name string `db:"name" json:"name"`
 	}
 	Account struct {
 		Id        string         `db:"id" json:"id"`
@@ -16,11 +17,14 @@ type (
 		Billing   sql.NullString `db:"billing" json:"billing"`
 		Alias     string         `db:"alias" json:"alias"`
 		CreatedAt string         `db:"created_at" json:"created_at"`
+		CreatedBy string         `db:"created_by" json:"created_by"`
+		UpdatedAt sql.NullString `db:"updated_at" json:"updated_at"`
+		UpdatedBy sql.NullString `db:"updated_by" json:"updated_by"`
+		Status    string         `db:"status" json:"status"`
 	}
 )
 
 func AddAccount(a Account, user string) error {
-	fmt.Println("Add")
 	tx, err := db.Beginx()
 	if err != nil {
 		return err
@@ -71,11 +75,11 @@ func checkName(name string) (string, error) {
 }
 
 func FindAllAccounts() ([]AccountRes, error) {
-	fmt.Println("Select All Account")
 	q := `
 		SELECT id, name
 		FROM accounts
 		WHERE status = ?
+		AND NOT name = 'suadmin'
 	`
 
 	var resv []AccountRes
@@ -84,6 +88,24 @@ func FindAllAccounts() ([]AccountRes, error) {
 	}
 	if len(resv) < 1 {
 		return []AccountRes{}, ErrResourceNotFound
+	}
+
+	return resv, nil
+}
+
+func FindAllAccountsDetail() ([]Account, error) {
+	q := `
+		SELECT *
+		FROM accounts
+		WHERE NOT name = 'suadmin'
+	`
+
+	var resv []Account
+	if err := db.Select(&resv, db.Rebind(q)); err != nil {
+		return []Account{}, err
+	}
+	if len(resv) < 1 {
+		return []Account{}, ErrResourceNotFound
 	}
 
 	return resv, nil
@@ -191,4 +213,66 @@ func GetAccountsByUser(userID string) ([]string, error) {
 		return []string{}, ErrResourceNotFound
 	}
 	return resd, nil
+}
+
+func BlockAccount(accountId, userId string) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE accounts
+		SET
+			status = ?
+			, updated_by = ?
+			, updated_at = ?
+		WHERE
+			id = ?
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, userId, time.Now(), accountId)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
+}
+
+func ActivateAccount(accountId, userId string) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE accounts
+		SET
+			status = ?
+			, updated_by = ?
+			, updated_at = ?
+		WHERE
+			id = ?
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), StatusCreated, userId, time.Now(), accountId)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
 }

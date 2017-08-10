@@ -15,14 +15,19 @@ import (
 )
 
 type (
+	AccountId struct {
+		Id string `json:"id"`
+	}
 	Account struct {
 		Name      string         `json:"name"`
+		Alias     string         `json:"alias"`
 		Billing   sql.NullString `json:"billing"`
 		CreatedBy string         `json:"created_by"`
 	}
 )
 
 func RegisterAccount(w http.ResponseWriter, r *http.Request) {
+	apiName := "sa_a-create"
 	status := http.StatusCreated
 	var rd Account
 	decoder := json.NewDecoder(r.Body)
@@ -30,18 +35,66 @@ func RegisterAccount(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
+	res := NewResponse("")
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	valid := false
+	for _, valueRole := range a.User.Role {
+		features := model.ApiFeatures[valueRole.Detail]
+		for _, valueFeature := range features {
+			if apiName == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if !valid {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+
+	}
+
 	param := model.Account{
 		Name:    rd.Name,
 		Billing: rd.Billing,
+		Alias:   rd.Alias,
 	}
 
-	if err := model.AddAccount(param, rd.CreatedBy); err != nil {
-		//log.Panic(err)
+	err := model.AddAccount(param, a.User.ID)
+	if err != nil {
 		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Log("param :", param, "response :", err.Error())
+
 	}
 
-	res := NewResponse(nil)
+	res = NewResponse("Success")
 	render.JSON(w, res, status)
+}
+
+func GetAllAccountsDetail(w http.ResponseWriter, r *http.Request) {
+	account, err := model.FindAllAccountsDetail()
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
+	}
+
+	res := NewResponse(account)
+	render.JSON(w, res)
 }
 
 func GetAllAccount(w http.ResponseWriter, r *http.Request) {
@@ -56,72 +109,38 @@ func GetAllAccount(w http.ResponseWriter, r *http.Request) {
 
 func GetAccountDetailByUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Get Account Details")
-	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errTitle := model.ErrCodeInvalidToken
+	status := http.StatusOK
 	res := NewResponse(nil)
-
-	res.AddError(its(status), errTitle, err.Error(), "Get Account")
-
-	a := AuthToken(w, r)
 
 	logger := model.NewLog()
 	logger.SetService("API").
 		SetMethod(r.Method).
 		SetTag("Get Account By User")
 
-	if a.Valid {
-		status = http.StatusOK
-		account, err := model.GetAccountDetailByUser(a.User.ID)
-		if err != nil {
-			status = http.StatusInternalServerError
-			errTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
-				status = http.StatusNotFound
-				errTitle = model.ErrCodeResourceNotFound
-			}
-
-			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-			logger.SetStatus(status).Log("param :", a.User.ID, "response :", err.Error())
-		} else {
-			res = NewResponse(account)
-			logger.SetStatus(status).Log("param :", a.User.ID, "response :", err.Error())
-		}
-	} else {
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
 		res = a.res
 		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
 	}
-	render.JSON(w, res, status)
-}
 
-func GetAccountsByUser(w http.ResponseWriter, r *http.Request) {
-	status := http.StatusUnauthorized
-	err := model.ErrTokenNotFound
-	errTitle := model.ErrCodeInvalidToken
-	res := NewResponse(nil)
-
-	res.AddError(its(status), errTitle, err.Error(), "Get ccount")
-
-	a := AuthToken(w, r)
-	if a.Valid {
-		status = http.StatusOK
-		account, err := model.GetAccountsByUser(a.User.ID)
-		if err != nil {
-			status = http.StatusInternalServerError
-			errTitle = model.ErrCodeInternalError
-			if err != model.ErrResourceNotFound {
-				status = http.StatusNotFound
-				errTitle = model.ErrCodeResourceNotFound
-			}
-
-			res.AddError(its(status), errTitle, err.Error(), "Get ccount")
-		} else {
-			res = NewResponse(account)
+	account, err := model.GetAccountDetailByUser(a.User.ID)
+	if err != nil {
+		status = http.StatusInternalServerError
+		errTitle := model.ErrCodeInternalError
+		if err != model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errTitle = model.ErrCodeResourceNotFound
 		}
+
+		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Log("param :", a.User.ID, "response :", err.Error())
 	} else {
-		res = a.res
-		status = http.StatusUnauthorized
+		res = NewResponse(account)
+		logger.SetStatus(status).Log("param :", a.User.ID, "response :", err.Error())
 	}
+
 	render.JSON(w, res, status)
 }
 
@@ -133,4 +152,114 @@ func GetAllAccountRoles(w http.ResponseWriter, r *http.Request) {
 
 	res := NewResponse(role)
 	render.JSON(w, res)
+}
+
+func BlockAccount(w http.ResponseWriter, r *http.Request) {
+	apiName := "sa_a-delete"
+	status := http.StatusCreated
+	var rd AccountId
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	res := NewResponse("")
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	valid := false
+	for _, valueRole := range a.User.Role {
+		features := model.ApiFeatures[valueRole.Detail]
+		for _, valueFeature := range features {
+			if apiName == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if !valid {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+
+	}
+
+	err := model.BlockAccount(rd.Id, a.User.ID)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd.Id, "response :", err.Error())
+
+	}
+
+	res = NewResponse("Success")
+	render.JSON(w, res, status)
+}
+
+func ActivateAccount(w http.ResponseWriter, r *http.Request) {
+	apiName := "sa_a-delete"
+	status := http.StatusCreated
+	var rd AccountId
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&rd); err != nil {
+		log.Panic(err)
+	}
+
+	res := NewResponse("")
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	valid := false
+	for _, valueRole := range a.User.Role {
+		features := model.ApiFeatures[valueRole.Detail]
+		for _, valueFeature := range features {
+			if apiName == valueFeature {
+				valid = true
+			}
+		}
+	}
+
+	if !valid {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+
+	}
+
+	err := model.ActivateAccount(rd.Id, a.User.ID)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd.Id, "response :", err.Error())
+
+	}
+
+	res = NewResponse("Success")
+	render.JSON(w, res, status)
 }

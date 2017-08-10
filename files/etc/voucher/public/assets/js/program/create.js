@@ -34,6 +34,14 @@ $( document ).ready(function() {
       $("#voucher-lifetime").val("");
     }
   });
+  $("#program-valid-from").change(function () {
+	  $('.datepicker3').datepicker({
+		  container:'#example-datepicker-container-3',
+		  autoclose: true,
+		  startDate: 'd',
+		  setDate: new Date(this.value),
+	  });
+  });
   $("#redeem-validity-type").change(function() {
     if(this.value == "all"){
       $("#validity-day").attr("style","display:none");
@@ -46,13 +54,22 @@ $( document ).ready(function() {
   $("#program-type").change(function() {
     if(this.value == "bulk"){
       $("#target").attr("style","display:block");
-      $("#generate-row").attr("style","display:none");
       $("#conversion-row").attr("style","display:none");
+      $("#voucher-price").val(1);
+      $("#voucher-price").attr("disabled",true);
     } else{
       $("#target").attr("style","display:none");
-      $("#generate-row").attr("style","display:block");
       $("#conversion-row").attr("style","display:block");
+      $("#voucher-price").val("");
+      $("#voucher-price").attr("disabled",false);
     }
+  });
+  $("#allow-accumulative").change(function() {
+	if(this.checked == true){
+		$("#use-voucher").attr("style","display:block");
+	} else{
+		$("#use-voucher").attr("style","display:none");
+	}
   });
   $("#image-url").change(function() {
     readURL(this);
@@ -85,12 +102,17 @@ $( document ).ready(function() {
 
   if($("#program-type").val() == "bulk"){
    $("#target").attr("style","display:block");
-   $("#max-row").attr("style","display:none");
    $("#conversion-row").attr("style","display:none");
+   $("#voucher-price").attr("disabled",true);
   } else{
    $("#target").attr("style","display:none");
-   $("#max-row").attr("style","display:block");
    $("#conversion-row").attr("style","display:block");
+   $("#voucher-price").attr("disabled",false);
+  }
+  if($("#allow-accumulative").is(":checked")){
+	$("#use-voucher").attr("style","display:block");
+  } else{
+	$("#use-voucher").attr("style","display:none");
   }
 });
 
@@ -103,17 +125,6 @@ function readURL(input) {
 
         reader.readAsDataURL(input.files[0]);
     }
-}
-
-function addRule(){
-  console.log("add");
-  var body = "<td class='text-ellipsis td-index'>*</td>"
-            + "<td class='text-ellipsis tnc'><div>"+$("#input-term-condition").val()+"</div></td>"
-            + "<td><button type='button' onclick='removeElem(this)' class='btn btn-flat btn-sm btn-info pull-right'><em class='ion-close-circled'></em></button></td>";
-  var li = $("<tr class='msg-display clickable'></tr>");
-  li.html(body);
-  li.appendTo('#list-rule');
-  $('#input-term-condition').val('');
 }
 
 function toTwoDigit(val){
@@ -129,6 +140,8 @@ function send() {
   error = false;
   var errorMessage = "";
   var i;
+
+  // valid days
   var listDay = "";
   if($("#redeem-validity-type").val() == "all"){
     listDay = "all";
@@ -149,6 +162,7 @@ function send() {
     }
   }
 
+  // partner
   var listPartner = [];
   var li = $( "input[class=partner]:checked" );
 
@@ -162,6 +176,7 @@ function send() {
     }
   }
 
+  // expired
   var lifetime = 0;
   var periodStart = "";
   var periodEnd = "";
@@ -181,6 +196,7 @@ function send() {
     periodEnd = "01/01/0001";
   }
 
+  // voucher format
   var voucherFormat = {
     prefix: $("#prefix").val(),
     postfix: "",
@@ -189,27 +205,33 @@ function send() {
     length: 5
   }
 
-  // var tncTd = $('tr').find('td.tnc');
-  // var tnc = "<p>";
-  // for (i = 0; i < tncTd.length; i++) {
-  //   if(tncTd[i].innerHTML != ""){
-  //     var decoded = $("<div/>").html((i+1) + ". " + tncTd[i].innerHTML).text();
-  //     tnc += decoded + " <br>";
-  //   }
-  // }
+
+  // tnc
   var str = $("#list-rule").summernote('code');
   var tnc = str.replace(/^\s+|\s+$|(\r?\n|\r)/g, '');
 
   if(!str.includes("<p>")){
 	tnc = '<p>'+tnc+'</p>';
   }
+
+  // max generate and redeem
   var maxGenerate = parseInt($("#max-generate-voucher").val());
   var maxRedeem = parseInt($("#max-redeem-voucher").val());
+
+  // voucher type
+  var voucherType = "cash";
+
+  // allow accumulative
+  var allowAccumulative = $("#allow-accumulative").is(":checked");
+  if(allowAccumulative){
+  	maxRedeem = 1;
+  }
 
   $('input[check="true"]').each(function() {
     if($("#program-type").val() == "bulk"){
     	if(this.getAttribute("id") == "max-quantity-voucher" || this.getAttribute("id") == "max-generate-voucher" || this.getAttribute("id") == "voucher-price" || this.getAttribute("id") == "max-redeem-voucher"){
-		maxGenerate = 1;
+		allowAccumulative = false;
+    		maxGenerate = 1;
 		maxRedeem = 1;
     		return true;
 	}
@@ -241,6 +263,7 @@ function send() {
     return
   }
 
+  // image
   var formData = new FormData();
   var img = "https://storage.googleapis.com/e-voucher/Nd3QxH8El2Zuy12QhXs5Y305vPL4VZJJ.jpg";
   if($('#image-url')[0].files[0] != null){
@@ -260,12 +283,12 @@ function send() {
 	       name: $("#program-name").val(),
 	       type: $("#program-type").find(":selected").val(),
 	       voucher_format: voucherFormat,
-	       voucher_type: $("#voucher-type").find(":selected").val(),
+	       voucher_type: voucherType,
 	       voucher_price: parseInt($("#voucher-price").val()),
 	       max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
 	       max_redeem_voucher: maxRedeem,
 	       max_generate_voucher: maxGenerate,
-	       allow_accumulative: $("#allow-accumulative").is(":checked"),
+	       allow_accumulative: allowAccumulative,
 	       redemption_method: $("#redemption-method").find(":selected").val(),
 	       start_date: $("#program-valid-from").val(),
 	       end_date: $("#program-valid-to").val(),
@@ -275,7 +298,7 @@ function send() {
 	       image_url: img,
 	       tnc: tnc,
 	       description: $("#program-description").val(),
-	       validity_day: listDay,
+	       validity_days: listDay,
 	       valid_partners: listPartner,
 	       valid_voucher_start: periodStart,
 	       valid_voucher_end: periodEnd,
@@ -305,13 +328,13 @@ function send() {
 				       success: function(data){
 					       console.log(data);
 					       alert("Program created.");
-					       //window.location = "/program/search?token="+token;
+					       window.location = "/program/search";
 				       }
 			       });
 
 		       }else{
 			       alert("Program created.");
-			       //window.location = "/program/search?token="+token;
+			       window.location = "/program/search";
 		       }
 	       }
          });
@@ -322,12 +345,12 @@ function send() {
 		  name: $("#program-name").val(),
 		  type: $("#program-type").find(":selected").val(),
 		  voucher_format: voucherFormat,
-		  voucher_type: $("#voucher-type").find(":selected").val(),
+		  voucher_type: voucherType,
 		  voucher_price: parseInt($("#voucher-price").val()),
 		  max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
 		  max_redeem_voucher: maxRedeem,
 		  max_generate_voucher: maxGenerate,
-		  allow_accumulative: $("#allow-accumulative").is(":checked"),
+		  allow_accumulative: allowAccumulative,
 		  redemption_method: $("#redemption-method").find(":selected").val(),
 		  start_date: $("#program-valid-from").val(),
 		  end_date: $("#program-valid-to").val(),
@@ -337,7 +360,7 @@ function send() {
 		  image_url: img,
 		  tnc: tnc,
 		  description: $("#program-description").val(),
-		  validity_day: listDay,
+		  validity_days: listDay,
 		  valid_partners: listPartner,
 		  valid_voucher_start: periodStart,
 		  valid_voucher_end: periodEnd,
@@ -366,13 +389,13 @@ function send() {
 					  success: function(data){
 						  console.log(data);
 						  alert("Program created.");
-						  //window.location = "/program/search?token="+token;
+						  window.location = "/program/search";
 					  }
 				  });
 
 			  }else{
 				  alert("Program created.");
-				  //window.location = "/program/search?token="+token;
+				  window.location = "/program/search";
 			  }
 		  }
 	  });
@@ -416,23 +439,18 @@ function getPartner() {
 
     function formAdvanced() {
         $('.select2').select2();
-        $("#collapseThree").removeClass("in");
-        $("#collapseTwo").removeClass("in");
         $('.datepicker4').datepicker({
                 container:'#example-datepicker-container-4',
                 autoclose: true,
                 startDate: 'd',
                 setDate: new Date()
             });
-
         $('.datepicker3').datepicker({
                 container:'#example-datepicker-container-3',
                 autoclose: true,
                 startDate: 'd',
                 setDate: new Date()
             });
-        $('#startDate').datepicker('update', new Date());
-        $('#endDate').datepicker('update', '+1d');
 
         var cpInput = $('.clockpicker').clockpicker();
         // auto close picker on scroll

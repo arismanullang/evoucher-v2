@@ -1,10 +1,21 @@
 $( window ).ready(function() {
+	$('#user-login').submit(function(e) {
+		e.preventDefault();
+		e.returnValue = false;
+	});
 
-});
-
-$('#user-login').submit(function(e) {
-     e.preventDefault();
-     e.returnValue = false;
+	var token = localStorage.getItem("token");
+	if(token != null){
+		$.ajax({
+			url: '/v1/token/check?token='+token+'&url='+window.location.pathname,
+			type: 'get',
+			success: function (data) {
+				if(data.data == true){
+					window.location = "/program/index?token="+token;
+				}
+			}
+		});
+	}
 });
 
 function login(){
@@ -30,7 +41,11 @@ function login(){
           localStorage.setItem("r", tempRole);
         }
 
-        window.location = "/program/index?token="+token;
+        if(role[0].id != 'Mn78I1wc'){
+		window.location = "/program/index";
+	} else{
+        	window.location = "/sa/search";
+	}
       },
       error: function (data){
         alert("Invalid Username or Password");

@@ -4,11 +4,6 @@ $( document ).ready(function() {
   $("#token").val(token);
   getVoucher(id);
   getPartner(id);
-
-  // $('#profileForm').submit(function(e) {
-	//   e.preventDefault();
-	//   e.returnValue = false;
-  // });
 });
 
 function getVoucher(id) {
@@ -166,19 +161,47 @@ function getProgram(id, voucher, used, paid) {
 		$("#button-voucher").attr("style","display:none");
 	  }
 
+	  // Program
           $('#program-name').html(result.name);
           $('#program-description').html(result.description);
           $('#program-type').html(programType);
           $('#voucher-type').html(result.voucher_type);
           $('#conversion-rate').html(result.voucher_price);
-          $('#max-quantity-voucher').html(result.max_quantity_voucher);
           $('#voucher-value').html('Rp. '+addDecimalPoints(result.voucher_value)+',00');
           $('#period').html(period);
           $('#program-tnc').html(result.tnc);
-          $('#remaining-voucher').html(remainingVoucher);
+
+          // Voucher
+	  $('#max-quantity-voucher').html(result.max_quantity_voucher);
+	  $('#remaining-voucher').html(remainingVoucher);
           $('#created-voucher').html(voucher);
           $('#used-voucher').html(used);
           $('#paid-voucher').html(paid);
+
+	  // Cashflow
+	  totalMon = parseInt(result.voucher_value) * parseInt(result.max_quantity_voucher);
+          $('#total-money').html('Rp. '+addDecimalPoints(totalMon)+',00');
+
+          remainingMon = (parseInt(result.max_quantity_voucher) - parseInt(used) - parseInt(paid)) * parseInt(result.voucher_value);
+          $('#remaining-money').html('Rp. '+addDecimalPoints(remainingMon)+',00');
+
+	  pendingPay = parseInt(result.voucher_value) * parseInt(used);
+	  $('#pending-payment').html('Rp. '+addDecimalPoints(pendingPay)+',00');
+
+	  paidPay = parseInt(result.voucher_value) * parseInt(paid);
+	  $('#paid-payment').html('Rp. '+addDecimalPoints(paidPay)+',00');
+
+	  remainingPercent = remainingMon/totalMon*100;
+	  $('#remaining-bar').attr('style', 'width:'+remainingPercent+'%');
+	  $('#remaining-bar').attr('data-original-title', 'Remaining : ' + remainingPercent+'%');
+
+	  pendingPercent = pendingPay/totalMon*100;
+	  $('#pending-bar').attr('style', 'width:'+pendingPercent+'%');
+	  $('#pending-bar').attr('data-original-title', 'Pending : ' + pendingPercent+'%');
+
+	  paidPercent = paidPay/totalMon*100;
+	  $('#paid-bar').attr('style', 'width:'+paidPercent+'%');
+	  $('#paid-bar').attr('data-original-title', 'Paid : ' + paidPercent+'%');
         }
     });
 }
@@ -198,5 +221,5 @@ function generateVoucher() {
 
 function editProgram(){
   var id = findGetParameter("id");
-  window.location = "/program/update?id="+id+"&token="+token;
+  window.location = "/program/update?id="+id;
 }
