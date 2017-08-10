@@ -45,7 +45,6 @@ function searchById(id) {
 	  $("#program-id").val(id);
           $("#program-name").val(program.name);
           $("#program-type").val(program.type);
-          $("#voucher-type").val(program.voucher_type);
           $("#voucher-price").val(program.voucher_price);
           $("#max-quantity-voucher").val(program.max_quantity_voucher);
           $("#max-generate-voucher").val(program.max_generate_voucher);
@@ -54,7 +53,7 @@ function searchById(id) {
           $("#program-valid-from").val(convertToDate(program.start_date));
           $("#program-valid-to").val(convertToDate(program.end_date));
           $("#voucher-value").val(program.voucher_value);
-          $("#program-tnc").html(program.tnc);
+          $("#list-rule").html(program.tnc);
           $("#program-description").val(program.description);
           $("#start-hour").val(program.start_hour);
           $("#end-hour").val(program.end_hour);
@@ -127,7 +126,16 @@ function searchById(id) {
 	  }
 	  if(program.allow_accumulative){
 		  $("#allow-accumulative").attr("checked",true);
+		  $("#use-voucher").attr("style","display:block");
 	  }
+
+	  $("#allow-accumulative").change(function() {
+		if(this.checked == true){
+			$("#use-voucher").attr("style","display:block");
+		} else{
+			$("#use-voucher").attr("style","display:none");
+		}
+	  });
 
 	  $(".select2").select2();
 	  $('.summernote').each(function(){
@@ -154,6 +162,7 @@ function searchById(id) {
 
 function send() {
   error = false;
+  var listDay = "";
   if($("#redeem-validity-type").val() == "all"){
     listDay = "all";
   } else if($("#redeem-validity-type").val() == "selected"){
@@ -223,25 +232,26 @@ function send() {
 	error = true;
   }
 
-  var str = $("#program-tnc").summernote('code');
-  var tnc = str.replace(/^\s+|\s+$|(\r?\n|\r)/g, '');
-
-  if(!str.includes("<p>")){
-    	tnc = '<p>'+tnc+'</p>';
-  }
-
+  console.log("Summernote");
+  console.log($("#list-rule").val());
   if(error){
       alert("Please check your input.");
       return
   }
 
+  var str = $("#list-rule").summernote('code');
+  var tnc = str.replace(/^\s+|\s+$|(\r?\n|\r)/g, '');
+
+  if(!str.includes("<p>")){
+	tnc = '<p>'+tnc+'</p>';
+  }
+
   var formData = new FormData();
   var img = $('#image-url-default').val();
   var redeem = $("#redemption-method").val();
+  var voucherType = "cash";
   if($('#image-url')[0].files[0] != null){
-
      formData.append('image-url', $('#image-url')[0].files[0]);
-
      jQuery.ajax({
          url:'/file/upload',
          type:"POST",
@@ -251,12 +261,12 @@ function send() {
          success: function(data){
            console.log(data.data);
            img = data.data;
-
+	   var voucherType = "cash";
   	   var id = $("#program-id").val();
 	   var program = {
 		 name: $("#program-name").val(),
 		 type: $("#program-type").find(":selected").val(),
-		 voucher_type: $("#voucher-type").find(":selected").val(),
+		 voucher_type: voucherType,
 		 voucher_price: parseInt($("#voucher-price").val()),
 		 max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
 		 max_redeem_voucher: maxRedeem,
@@ -299,7 +309,7 @@ function send() {
 				 data: JSON.stringify(partner),
 				 success: function () {
 					 var id = findGetParameter("id");
-					 window.location = "/program/check?id="+id+"&token="+token;
+					 window.location = "/program/check?id="+id;
 				 }
 			 });
 		 }
@@ -311,7 +321,7 @@ function send() {
 	    var program = {
 		    name: $("#program-name").val(),
 		    type: $("#program-type").find(":selected").val(),
-		    voucher_type: $("#voucher-type").find(":selected").val(),
+		    voucher_type: voucherType,
 		    voucher_price: parseInt($("#voucher-price").val()),
 		    max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
 		    max_redeem_voucher: maxRedeem,
@@ -354,7 +364,7 @@ function send() {
 				    data: JSON.stringify(partner),
 				    success: function () {
 					    var id = findGetParameter("id");
-					    window.location = "/program/check?id="+id+"&token="+token;
+					    window.location = "/program/check?id="+id;
 				    }
 			    });
 		    }

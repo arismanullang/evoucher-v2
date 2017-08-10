@@ -4,7 +4,8 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="description" content="">
+<meta name="description" content="eVoucher by Elys">
+<meta name="keywords" content="app, elys, evoucher, voucher">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>{{ template "title" }}</title>
 
@@ -29,6 +30,7 @@
 <script type="text/javascript" src="/assets/master/components/colors/colors.constant.js"></script>
 <script type="text/javascript" src="/assets/master/components/colors/colors.js"></script>
 {{ template "scripts" }}
+<script type="text/javascript" src="/assets/js/qrcode.min.js"></script>
 <script type="text/javascript" src="/assets/js/onload.js"></script>
 <script type="text/javascript" src="/assets/js/style.js"></script>
 
@@ -50,8 +52,8 @@
                 <li><a id="header-search" href="#" class="ripple"><em class="ion-ios-search-strong"></em></a></li>
                 <li class="dropdown"><a href="#" data-toggle="dropdown" class="dropdown-toggle has-badge ripple"><em class="ion-person"></em></a>
                     <ul class="dropdown-menu dropdown-menu-right md-dropdown-menu">
-                        <li><a href="/user/profile" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;"><em class="ion-ios-person icon-fw"></em>Profile</a></li>
-                        <li><a href="/user/change-password" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;"><em class="ion-ios-locked-outline icon-fw"></em>Change Password</a></li>
+                        <li><a href="/user/profile"><em class="ion-ios-person icon-fw"></em>Profile</a></li>
+                        <li><a href="/user/change-password"><em class="ion-ios-locked-outline icon-fw"></em>Change Password</a></li>
                         <li role="presentation" class="divider"></li>
                         <li><a href="#" onclick="logOut()"><em class="ion-log-out icon-fw"></em>Logout</a></li>
                     </ul>
@@ -67,15 +69,21 @@
         <div class="sidebar-content">
             <nav class="sidebar-nav">
                 <ul id="sidenav">
-                    <li r="X4OhAIJz" style="display:none"><a href="/program/search" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="/assets/img/icons/connection-bars.svg" alt="MenuItem" class="hidden"></span><span>Program</span></a></li>
-                    <li r="X4OhAIJz" style="display:none"><a href="/partner/search" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="/assets/img/icons/aperture.svg" alt="MenuItem" class="hidden"></span><span>Partner</span></a></li>
-                    <li r="X4OhAIJz" style="display:none"><a href="/report/transaction" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Transaction List</span></a></li>
-                    <li r="X4OhAIJzcd _xgeNk_P" style="display:none"><a href="/voucher/cashout" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Cashout</span></a></li>
+                    <li r="X4OhAIJz" style="display:none"><a href="/program/search" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="/assets/img/icons/connection-bars.svg" alt="MenuItem" class="hidden"></span><span>Program</span></a></li>
+                    <li r="X4OhAIJz" style="display:none"><a href="/partner/search" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="/assets/img/icons/aperture.svg" alt="MenuItem" class="hidden"></span><span>Partner</span></a></li>
+                    <li r="X4OhAIJz" style="display:none"><a href="/report/transaction" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Transaction List</span></a></li>
+                    <li r="X4OhAIJzcd _xgeNk_P" style="display:none"><a href="/voucher/cashout" class="ripple"><span class="nav-icon"><img src="" data-svg-replace="img/icons/clipboard.svg" alt="MenuItem" class="hidden"></span><span>Cashout</span></a></li>
                     <li r="X4OhAIJz" style="display:none"><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/planet.svg" alt="MenuItem" class="hidden"></span><span>Setting</span></a>
                         <ul class="sidebar-subnav">
-                          <li><a href="/user/search" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="pull-right nav-label"></span><span>User</span></a></li>
-                          <li><a href="/tag/search" onclick="location.href=this.href+'?token='+localStorage.getItem('token');return false;" class="ripple"><span class="pull-right nav-label"></span><span>Tag</span></a></li>
+                          <li><a href="/user/search" class="ripple"><span class="pull-right nav-label"></span><span>User</span></a></li>
+                          <li><a href="/tag/search" class="ripple"><span class="pull-right nav-label"></span><span>Tag</span></a></li>
                         </ul>
+                    </li>
+                    <li r="Mn78I1wc" style="display:none"><a href="#" class="ripple"><span class="pull-right nav-caret"><em class="ion-ios-arrow-right"></em></span><span class="pull-right nav-label"></span><span class="nav-icon"><img src="" data-svg-replace="img/icons/planet.svg" alt="MenuItem" class="hidden"></span><span>Sa</span></a>
+                      <ul class="sidebar-subnav">
+                        <li><a href="/sa/search" class="ripple"><span class="pull-right nav-label"></span><span>User</span></a></li>
+                        <li><a href="/sa/a-search" class="ripple"><span class="pull-right nav-label"></span><span>Account</span></a></li>
+                      </ul>
                     </li>
                 </ul>
             </nav>

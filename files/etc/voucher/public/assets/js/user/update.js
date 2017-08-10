@@ -129,7 +129,7 @@ function send() {
        data: JSON.stringify(userReq),
        success: function () {
            alert("User Updated.");
-           window.location = "/user/search?token="+token;
+           window.location = "/user/search";
        }
   });
 }

@@ -173,15 +173,40 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 func CheckToken(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
-	token := r.FormValue("token")
+	url := r.FormValue("url")
 	status := http.StatusOK
 
-	Exists := true
-	if !model.IsExistToken(token) {
-		Exists = false
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Check Token")
+
+	valid := false
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
 		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
 	}
 
-	res = NewResponse(Exists)
+	for _, valueRole := range a.User.Role {
+		features := model.UiFeatures[valueRole.Detail]
+		for _, valueFeature := range features {
+			if url == valueFeature {
+				valid = true
+			}
+		}
+	}
+	if !valid {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	res = NewResponse(true)
 	render.JSON(w, res, status)
 }

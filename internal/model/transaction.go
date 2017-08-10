@@ -31,9 +31,9 @@ type (
 	}
 	CashoutVoucher struct {
 		Id           string `db:"id" json:"id"`
-		VoucherCode  string `db:"voucher_code" json"voucher_code"`
-		VoucherState string `db:"state" json"state"`
-		Holder       string `db:"holder" json"holder"`
+		VoucherCode  string `db:"voucher_code" json:"voucher_code"`
+		VoucherState string `db:"state" json:"state"`
+		Holder       string `db:"holder" json:"holder"`
 	}
 	DeleteTransactionRequest struct {
 		Id   string `db:"id"`

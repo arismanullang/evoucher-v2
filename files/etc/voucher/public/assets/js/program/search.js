@@ -97,7 +97,8 @@ function getProgram() {
 			distributionRate = dataVoucher[i]/dataMax[i]*100;
 		}
 	    }
-            dataSet[i] = [
+
+            var tempArray = [
               dataName[i].toUpperCase()
 	      , dataType[i].toUpperCase()
               , dataPrice[i] + " / " + addDecimalPoints(dataValue[i])
@@ -111,6 +112,8 @@ function getProgram() {
               , Math.round(redemptionRate)+"%"
               , button
             ];
+
+	    dataSet.push(tempArray);
           }
           console.log(dataSet);
 
@@ -170,15 +173,15 @@ function getProgram() {
 }
 
 function edit(url){
-  window.location = "/program/update?id="+url+"&token="+token;
+  window.location = "/program/update?id="+url;
 }
 
 function detail(url){
-  window.location = "/program/check?id="+url+"&token="+token;
+  window.location = "/program/check?id="+url;
 }
 
 function addProgram(url){
-  window.location = "/program/create?token="+token;
+  window.location = "/program/create";
 }
 
 function deleteProgram(id) {
