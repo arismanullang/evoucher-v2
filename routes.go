@@ -120,6 +120,7 @@ func setRoutes() http.Handler {
 	//auth
 	r.GetFunc("/v1/token", controller.GetToken)
 	r.GetFunc("/v1/token/check", controller.CheckToken)
+	r.GetFunc("/v1/ui/token/check", controller.UICheckToken)
 
 	//custom
 	r.GetFunc("/view/", viewHandler)
