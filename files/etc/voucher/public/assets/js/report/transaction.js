@@ -79,8 +79,7 @@ function getTransactionByPartner(partnerId) {
 	    }
 	    var tempVoucherLength = arrData[i].voucher.length;
 	    for ( y = 0; y < tempVoucherLength; y++){
-		    dataSet[i] = [
-			    arrData[i].partner_name.toUpperCase()
+		    var tempArray = [arrData[i].partner_name.toUpperCase()
 			    , arrData[i].transaction_code
 			    , arrData[i].program_name.toUpperCase()
 			    , arrData[i].voucher[y].VoucherCode
@@ -91,6 +90,7 @@ function getTransactionByPartner(partnerId) {
 			    , cashoutCashier.toUpperCase()
 			    , status.toUpperCase()
 		    ];
+		    dataSet.push(tempArray);
 	    }
 	    i += tempVoucherLength-1;
           }
