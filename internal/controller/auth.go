@@ -173,6 +173,27 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 func CheckToken(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
+	status := http.StatusOK
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Check Token")
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	res = NewResponse(true)
+	render.JSON(w, res, status)
+}
+
+func UICheckToken(w http.ResponseWriter, r *http.Request) {
+	res := NewResponse(nil)
 	url := r.FormValue("url")
 	status := http.StatusOK
 
