@@ -211,6 +211,9 @@ func UICheckToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if a.User.Role[0].Detail == "admin" {
+		valid = true
+	}
 	for _, valueRole := range a.User.Role {
 		features := model.UiFeatures[valueRole.Detail]
 		for _, valueFeature := range features {

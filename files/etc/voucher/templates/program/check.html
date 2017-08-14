@@ -64,50 +64,44 @@
               </div>
               <div id="voucher" role="tabpanel" aria-labelledby="profile-tab" class="tab-pane fade">
                 <div class="row">
-                  <table class="table table-striped">
-                    <tbody>
-                    <tr>
-                      <td class="col-lg-3"><em class="ion-pricetags icon-fw mr"></em>Limit Voucher</td>
-                      <td id="max-quantity-voucher" class="col-lg-3"></td>
-                      <td class="col-lg-3">Total Money Allocation</td>
-                      <td id="total-money" class="col-lg-3"></td>
-                    </tr>
-                    <tr>
-                      <td class="col-lg-3"><em class="icon-fw mr"></em>Remaining Voucher</td>
-                      <td id="remaining-voucher" class="col-lg-3"></td>
-                      <td class="col-lg-3">Remaining Money</td>
-                      <td id="remaining-money" class="col-lg-3"></td>
-                    </tr>
-                    <tr>
-                      <td class="col-lg-3"><em class="icon-fw mr"></em>Created Voucher</td>
-                      <td id="created-voucher" class="col-lg-3"></td>
-                      <td class="col-lg-3">Paid Payment</td>
-                      <td id="paid-payment" class="col-lg-3"></td>
-                    </tr>
-                    <tr>
-                      <td class="col-lg-3"><em class="icon-fw mr"></em>Used Voucher</td>
-                      <td id="used-voucher" class="col-lg-3"></td>
-                      <td class="col-lg-3">Pending Payment</td>
-                      <td id="pending-payment" class="col-lg-3"></td>
-                    </tr>
-                    <tr>
-                      <td class="col-lg-3"><em class="icon-fw mr"></em>Paid Voucher</td>
-                      <td id="paid-voucher" class="col-lg-3"></td>
-                      <td class="col-lg-3"></td>
-                      <td class="col-lg-3"></td>
-                    </tr>
-                  </table>
-                </div>
-                <div class="row">
-                    <div class="col-lg-3"><em class="icon-fw mr"></em>Cashflow</div>
-                    <div id="money-voucher" class="col-lg-9">
-                      <div class="progress">
-                        <div id="paid-bar" style="" class="progress-bar progress-bar-success" data-toggle="tooltip" data-placement="top" title="" data-original-title=""><span class="sr-only">35% Complete (success)</span></div>
-                        <div id="remaining-bar" style="" class="progress-bar progress-bar-warning progress-bar-striped" data-toggle="tooltip" data-placement="top" title="" data-original-title=""><span class="sr-only">20% Complete (warning)</span></div>
-                        <div id="pending-bar" style="" class="progress-bar progress-bar-danger" data-toggle="tooltip" data-placement="top" title="" data-original-title=""><span class="sr-only">10% Complete (danger)</span></div>
+                  <div class="col-lg-8">
+                    <table class="table table-striped">
+                      <tbody>
+                        <tr>
+                          <td class="col-lg-6"><em class="ion-pricetags icon-fw mr"></em>Limit Voucher</td>
+                          <td id="max-quantity-voucher" class="col-lg-6"></td>
+                          </tr>
+                        <tr>
+                          <td class="col-lg-6"><em class="icon-fw mr"></em>Remaining Voucher</td>
+                          <td id="remaining-voucher" class="col-lg-6"></td>
+                        </tr>
+                        <tr>
+                          <td class="col-lg-6"><em class="icon-fw mr"></em>Created Voucher</td>
+                          <td id="created-voucher" class="col-lg-6"></td>
+                        </tr>
+                        <tr>
+                          <td class="col-lg-6"><em class="icon-fw mr"></em>Used Voucher</td>
+                          <td id="used-voucher" class="col-lg-6"></td>
+                        </tr>
+                        <tr>
+                          <td class="col-lg-6"><em class="icon-fw mr"></em>Paid Voucher</td>
+                          <td id="paid-voucher" class="col-lg-6"></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="col-lg-4">
+                    <div class="row">
+                      <div class="col-lg-6">Budget</div>
+                      <div id="total-money" class="col-lg-6"></div>
+                    </div>
+                    <br/>
+                    <div class="row">
+                      <div id="pie" class="text-center p">
+
                       </div>
                     </div>
-                  </tr>
+                  </div>
                 </div>
               </div>
               <div id="partner" role="tabpanel" aria-labelledby="messages-tab" class="tab-pane fade">
@@ -195,6 +189,11 @@
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.print.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/nouislider/distribute/nouislider.js"></script>
 <script type="text/javascript" src="/assets/vendor/sweetalert/dist/sweetalert-dev.js"></script>
+<script src="/assets/vendor/flot/jquery.flot.js"></script>
+<script src="/assets/vendor/flot/jquery.flot.categories.js"></script>
+<script src="/assets/vendor/flot.tooltip/js/jquery.flot.tooltip.js"></script>
+<script src="/assets/vendor/flot/jquery.flot.resize.js"></script>
+<script src="/assets/vendor/flot/jquery.flot.pie.js"></script>
 <script type="text/javascript" src="/assets/js/program/check.js"></script>
 {{ end }}
 

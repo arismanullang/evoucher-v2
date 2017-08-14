@@ -100,11 +100,11 @@ function getUser() {
 }
 
 function edit(url){
-	window.location = "/sa/update?id="+url+"&token="+token;
+	window.location = "/sa/update?id="+url;
 }
 
 function addUser() {
-	window.location = "/sa/register?token="+token;
+	window.location = "/sa/register";
 }
 
 function resetPassword(id) {

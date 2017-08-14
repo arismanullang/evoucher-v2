@@ -6,6 +6,30 @@ $( document ).ready(function() {
   getPartner(id);
 });
 
+function chart(remaining, pending, paid){
+	var pieData = [{
+		'label': 'Remaining : Rp. '+addDecimalPoints(remaining) + ',00',
+		'color': '#e4eff7',
+		'data': remaining
+	}, {
+		'label': 'Pending : Rp. '+addDecimalPoints(pending) + ',00',
+		'color': '#FFC107',
+		'data': pending
+	}, {
+		'label': 'Paid : Rp. '+addDecimalPoints(paid) + ',00',
+		'color': '#FF7043',
+		'data': paid
+	}];
+	var pieOptions = {
+		series: {
+			pie: {
+				show: true
+			}
+		}
+	};
+	$('#pie').plot(pieData, pieOptions);
+}
+
 function getVoucher(id) {
     console.log("Get Voucher Data");
 
@@ -202,6 +226,8 @@ function getProgram(id, voucher, used, paid) {
 	  paidPercent = paidPay/totalMon*100;
 	  $('#paid-bar').attr('style', 'width:'+paidPercent+'%');
 	  $('#paid-bar').attr('data-original-title', 'Paid : ' + paidPercent+'%');
+
+	  chart( remainingMon, pendingPay, paidPay);
         }
     });
 }

@@ -222,6 +222,15 @@ button.color-red {
   display: block;
 }
 
+#pie{
+  width: 100% !important;
+  height: 200px;
+}
+
+.font-size-12px{
+  font-size: 12px;
+}
+
 [name=list-transaction-code] {
   width: 120px;
 }

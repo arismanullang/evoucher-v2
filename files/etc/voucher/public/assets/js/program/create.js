@@ -150,6 +150,7 @@ function send() {
 
     if(li.length == 0 || parseInt($("#length").val()) < 8){
       error = true;
+      errorMessage = "Valid days. ";
     }
 
     for (i = 0; i < li.length-1; i++) {
@@ -168,6 +169,7 @@ function send() {
 
   if(li.length == 0 || parseInt($("#length").val()) < 8){
     error = true;
+    errorMessage = "Valid partners. ";
   }
 
   for (i = 0; i < li.length; i++) {
@@ -241,6 +243,7 @@ function send() {
       $(this).addClass("error");
       $(this).parent().closest('div').addClass("input-error");
       error = true;
+      errorMessage = "Empty. ";
     }
 
     if(this.getAttribute("id") == "max-quantity-voucher" || this.getAttribute("id") == "max-generate-voucher" || this.getAttribute("id") == "voucher-price" || this.getAttribute("id") == "max-redeem-voucher"){
@@ -248,12 +251,14 @@ function send() {
 		$(this).addClass("error");
 		$(this).parent().closest('div').addClass("input-error");
 		error = true;
+		errorMessage = "0 Value. ";
 	}
     }
 
     if($(this).attr("id") == "length"){
       if(parseInt($(this).val()) < 8){
         error = true;
+        errorMessage = "Id must be 8 digit. ";
       }
     }
   });
@@ -267,7 +272,6 @@ function send() {
   var formData = new FormData();
   var img = "https://storage.googleapis.com/e-voucher/Nd3QxH8El2Zuy12QhXs5Y305vPL4VZJJ.jpg";
   if($('#image-url')[0].files[0] != null){
-
    formData.append('image-url', $('#image-url')[0].files[0]);
 
    jQuery.ajax({
@@ -304,8 +308,6 @@ function send() {
 	       valid_voucher_end: periodEnd,
 	       voucher_lifetime: parseInt(lifetime)
          };
-
-         console.log(program);
 
          $.ajax({
 	       url: '/v1/ui/program/create?token='+token,

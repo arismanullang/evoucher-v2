@@ -45,10 +45,6 @@ type (
 		CreatedBy string  `db:"created_by" json:"created_by"`
 		CreatedAt string  `db:"created_at" json:"created_at"`
 	}
-	Role struct {
-		Id     string `db:"id" json:"id"`
-		Detail string `db:"detail" json:"detail"`
-	}
 
 	UserRes struct {
 		Id       string `db:"id"`
@@ -639,28 +635,6 @@ func ReleaseUser(userId, user string) error {
 		return ErrServerInternal
 	}
 	return nil
-}
-
-// Role -----------------------------------------------------------------------------------------------
-
-func FindAllRole() ([]Role, error) {
-	q := `
-		SELECT id, detail
-		FROM roles
-		WHERE status = ?
-		AND NOT detail = 'suadmin'
-	`
-
-	var resv []Role
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
-		fmt.Println(err)
-		return []Role{}, ErrServerInternal
-	}
-	if len(resv) < 1 {
-		return []Role{}, ErrResourceNotFound
-	}
-
-	return resv, nil
 }
 
 // Broadcast User

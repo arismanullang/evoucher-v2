@@ -46,15 +46,15 @@ function setSideNavBar() {
 
 function getSession() {
     $.ajax({
-      url: '/v1/token/check?token='+token+'&url='+window.location.pathname,
+      url: '/v1/ui/token/check?token='+token+'&url='+window.location.pathname,
       type: 'get',
       success: function (data) {
         if(data.data == false){
-          window.location = "/user/login";
+          logOut();
         }
       },
       error:function (data) {
-        window.location = "/user/login";
+        logOut();
       }
     });
 }
