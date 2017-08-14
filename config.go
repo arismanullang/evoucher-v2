@@ -37,7 +37,7 @@ type Config struct {
 	}
 
 	Gcs struct {
-		bucket    string
+		Bucket    string `yaml:"bucket"`
 		ProjectID string `yaml:"project_id"`
 		PublicURL string `yaml:"public_url"`
 	}
