@@ -24,6 +24,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/report/:page", viewReport)
 	r.GetFunc("/public/:page", viewPublic)
 	r.GetFunc("/sa/:page", viewSuperAdmin)
+	r.GetFunc("/role/:page", viewRole)
 	r.GetFunc("/unauthorize", viewUnauthorize)
 	r.GetFunc("/notfound", viewNotFound)
 	r.GetFunc("/", login)
@@ -90,7 +91,10 @@ func setRoutes() http.Handler {
 	//account
 	r.GetFunc("/v1/ui/account/all", controller.GetAllAccount)
 	r.GetFunc("/v1/ui/account", controller.GetAccountDetailByUser)
+
+	//role
 	r.GetFunc("/v1/ui/role/all", controller.GetAllAccountRoles)
+	r.GetFunc("/v1/ui/feature/all", controller.GetAllFeatures)
 
 	//open API
 	r.GetFunc("/v1/api/get/partner", controller.GetAllPartnersCustomParam)
@@ -268,6 +272,18 @@ func viewTag(w http.ResponseWriter, r *http.Request) {
 
 	if page == "search" {
 		render.FileInLayout(w, "layout.html", "tag/search.html", nil)
+	} else {
+		render.File(w, "notfound.html", nil, 404)
+	}
+}
+
+func viewRole(w http.ResponseWriter, r *http.Request) {
+	page := bone.GetValue(r, "page")
+
+	if page == "search" {
+		render.FileInLayout(w, "layout.html", "role/search.html", nil)
+	} else if page == "create" {
+		render.FileInLayout(w, "layout.html", "role/create.html", nil)
 	} else {
 		render.File(w, "notfound.html", nil, 404)
 	}

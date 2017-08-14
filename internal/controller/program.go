@@ -121,7 +121,7 @@ func ListPrograms(w http.ResponseWriter, r *http.Request) {
 	param["account_id"] = a.User.Account.Id
 	delete(param, "token")
 
-	program, err := model.FindAvailablePrograms()
+	program, err := model.FindAvailablePrograms(a.User.Account.Id)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilProgram, logger.TraceID)

@@ -94,7 +94,7 @@ func main() {
 	//voucher config
 	model.VOUCHER_URL = config.Voucher.Link
 	//GCS
-	model.GCS_BUCKET = config.Gcs.bucket
+	model.GCS_BUCKET = config.Gcs.Bucket
 	model.GCS_PROJECT_ID = config.Gcs.ProjectID
 	model.PUBLIC_URL = config.Gcs.PublicURL
 	//OCRA
