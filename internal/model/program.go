@@ -609,7 +609,7 @@ func FindAllPrograms(accountId string) ([]SearchProgram, error) {
 	return resv, nil
 }
 
-func FindAvailablePrograms() ([]SearchProgram, error) {
+func FindAvailablePrograms(accountId string) ([]SearchProgram, error) {
 	q := `
 		SELECT
 			va.id
@@ -631,10 +631,13 @@ func FindAvailablePrograms() ([]SearchProgram, error) {
 			va.id = vo.program_id
 		WHERE
 			va.status = ?
+			AND va.account_id = ?
 			AND va.end_date > now()
 			AND va.start_date < now()
 		GROUP BY
 			va.id
+		ORDER BY
+			va.created_at DESC
 	`
 
 	var resv []SearchProgram

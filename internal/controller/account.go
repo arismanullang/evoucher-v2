@@ -144,16 +144,6 @@ func GetAccountDetailByUser(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
-func GetAllAccountRoles(w http.ResponseWriter, r *http.Request) {
-	role, err := model.FindAllRole()
-	if err != nil && err != model.ErrResourceNotFound {
-		log.Panic(err)
-	}
-
-	res := NewResponse(role)
-	render.JSON(w, res)
-}
-
 func BlockAccount(w http.ResponseWriter, r *http.Request) {
 	apiName := "sa_a-delete"
 	status := http.StatusCreated

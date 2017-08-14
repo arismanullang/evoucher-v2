@@ -11,7 +11,12 @@ $( window ).ready(function() {
 			type: 'get',
 			success: function (data) {
 				if(data.data == true){
-					window.location = "/program/index?token="+token;
+					var role = data.data.role;
+					if(role[0].id != 'Mn78I1wc'){
+						window.location = "/program/index";
+					} else{
+						window.location = "/sa/search";
+					}
 				}
 			}
 		});
