@@ -49,17 +49,7 @@ func RegisterAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	valid := false
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -167,17 +157,7 @@ func BlockAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	valid := false
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -222,17 +202,7 @@ func ActivateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	valid := false
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized

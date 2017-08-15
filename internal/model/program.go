@@ -641,7 +641,7 @@ func FindAvailablePrograms(accountId string) ([]SearchProgram, error) {
 	`
 
 	var resv []SearchProgram
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId); err != nil {
 		fmt.Println(err.Error())
 		return []SearchProgram{}, err
 	}

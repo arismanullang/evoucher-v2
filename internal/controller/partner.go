@@ -195,7 +195,6 @@ func GetAllPartnersCustomParam(w http.ResponseWriter, r *http.Request) {
 
 func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	apiName := "partner_update"
-	valid := false
 
 	logger := model.NewLog()
 	logger.SetService("API").
@@ -220,16 +219,7 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -272,7 +262,6 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 
 func DeletePartner(w http.ResponseWriter, r *http.Request) {
 	apiName := "partner_delete"
-	valid := false
 
 	id := r.FormValue("id")
 	status := http.StatusOK
@@ -291,16 +280,7 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -329,7 +309,6 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 // dashboard
 func AddPartner(w http.ResponseWriter, r *http.Request) {
 	apiName := "partner_create"
-	valid := false
 
 	logger := model.NewLog()
 	logger.SetService("API").
@@ -353,16 +332,7 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -409,7 +379,6 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 
 func GetPerformancePartner(w http.ResponseWriter, r *http.Request) {
 	apiName := "partner_performance"
-	valid := false
 
 	id := r.FormValue("id")
 
@@ -429,16 +398,7 @@ func GetPerformancePartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -552,7 +512,6 @@ func GetAllTags(w http.ResponseWriter, r *http.Request) {
 
 func AddTag(w http.ResponseWriter, r *http.Request) {
 	apiName := "tag_create"
-	valid := false
 
 	logger := model.NewLog()
 	logger.SetService("API").
@@ -576,16 +535,7 @@ func AddTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -612,7 +562,6 @@ func AddTag(w http.ResponseWriter, r *http.Request) {
 
 func DeleteTag(w http.ResponseWriter, r *http.Request) {
 	apiName := "tag_delete"
-	valid := false
 
 	id := bone.GetValue(r, "id")
 
@@ -632,16 +581,7 @@ func DeleteTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -668,7 +608,6 @@ func DeleteTag(w http.ResponseWriter, r *http.Request) {
 
 func DeleteTagBulk(w http.ResponseWriter, r *http.Request) {
 	apiName := "tag_delete"
-	valid := false
 
 	logger := model.NewLog()
 	logger.SetService("API").
@@ -692,16 +631,7 @@ func DeleteTagBulk(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized

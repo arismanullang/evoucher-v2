@@ -20,16 +20,11 @@ type (
 func GetAllFeatures() ([]Feature, error) {
 	q := `
 		SELECT
-			f.id, f.type, r.detail as role, f.category, f.detail
-		FROM roles AS r
-		JOIN role_features AS rf
-		ON
-			r.id = rf.role_id
-		JOIN features AS f
-		ON
-			f.id = rf.feature_id
+			f.id, f.type, f.category, f.detail
+		FROM 	features AS f
 		WHERE
 			f.status = ?
+			AND NOT f.category = 'sa'
 	`
 
 	var resv []Feature
