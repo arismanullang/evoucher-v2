@@ -1,10 +1,20 @@
 $( document ).ready(function() {
   getFeature();
+
+  $("#all-ui-feature").change(function() {
+	var _this = $(this);
+	_this.closest('.checked-container').find("input[class=feature]").prop('checked',_this.prop('checked'));
+  });
+
+  $("#all-api-feature").change(function() {
+  	var _this = $(this);
+  	_this.closest('.checked-container').find("input[class=feature]").prop('checked',_this.prop('checked'));
+  });
 });
 
 function getFeature() {
     $.ajax({
-      url: '/v1/ui/feature/all',
+      url: '/v1/ui/feature/all?token='+token,
       type: 'get',
       success: function (data) {
         console.log("Render Data");
@@ -19,7 +29,7 @@ function getFeature() {
 		+ "<div class='col-sm-12'>"
 		+ "<div class='checkbox c-checkbox'>"
 		+ "<label class='text-thin font-size-12px'>"
-		+ "<input name='agreements' value='"+arrData[i].id+"' type='checkbox'><span class='ion-checkmark-round'></span>"+arrData[i].category+"-"+arrData[i].detail
+		+ "<input name='agreements' value='"+arrData[i].id+"' type='checkbox' class='feature'><span class='ion-checkmark-round'></span>"+arrData[i].category+"-"+arrData[i].detail
 		+ "</label>"
 		+ "</div>"
 		+ "</div>"
@@ -36,117 +46,37 @@ function getFeature() {
   });
 }
 
-function add(param) {
+function add() {
 
-  var tag = {
-    tag: param
+  var listFeatures = [];
+  var li = $( "input[class=feature]:checked" );
+
+  if(li.length == 0 || parseInt($("#length").val()) < 8){
+	error = true;
+	errorMessage = "Select Feature. ";
+  }
+
+  for (i = 0; i < li.length; i++) {
+	if(li[i].value != "on") {
+		listFeatures[i] = li[i].value;
+	}
+  }
+
+  var role = {
+	detail: $("#role-detail").val(),
+        features: listFeatures
   };
 
+  console.log(role);
+
   $.ajax({
-    url: '/v1/ui/tag/create?token='+token,
+    url: '/v1/ui/role/create?token='+token,
     type: 'post',
     dataType: 'json',
     contentType: "application/json",
-    data: JSON.stringify(tag),
+    data: JSON.stringify(role),
     success: function (data) {
-      $("#tag-value").val("");
-      location.reload();
+      window.location = "/role/search";
     }
   });
 }
-
-function deleteTag(param) {
-  var tag = {
-    tag: param
-  };
-
-  $.ajax({
-    url: '/v1/ui/tag/delete?id='+param+'&token='+token,
-    type: 'get',
-    success: function (data) {
-      location.reload();
-    }
-  });
-}
-
-function deleteTagBulk(param) {
-
-  var tag = {
-    tags: param
-  };
-
-  $.ajax({
-    url: '/v1/ui/tag/delete?token='+token,
-    type: 'post',
-    dataType: 'json',
-    contentType: "application/json",
-    data: JSON.stringify(tag),
-    success: function (data) {
-      location.reload();
-    }
-  });
-}
-
-(function() {
-    'use strict';
-
-    $(runSweetAlert);
-    function runSweetAlert() {
-	$(document).on('click', '.swal-demo4', function(e) {
-            	e.preventDefault();
-            	console.log(e.target.value);
-            	swal({
-                    title: 'Are you sure?',
-                    text: 'Do you want insert a new tag "'+$("#tag-value").val()+'"?',
-                    type: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#DD6B55',
-                    confirmButtonText: 'Insert',
-                    closeOnConfirm: false
-                },
-                function() {
-                    swal('Success!', 'Add success.', add($("#tag-value").val()));
-                });
-	});
-    	$(document).on('click', '.swal-demo2', function(e) {
-                	e.preventDefault();
-                	console.log(e.target.value);
-                	swal({
-                        title: 'Are you sure?',
-                        text: 'Do you want delete tag "'+e.target.value+'"?',
-                        type: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#DD6B55',
-                        confirmButtonText: 'Delete',
-                        closeOnConfirm: false
-                    },
-                    function() {
-                        swal('Success!', 'Delete success.', deleteTag(e.target.value));
-                    });
-    	});
-    	$(document).on('click', '.swal-demo3', function(e) {
-		var checkbox = $("input[type=checkbox]:checked");
-		var data = [];
-
-		for( var i = 0; i < checkbox.length; i++){
-			data[i] = checkbox[i].value;
-		}
-
-        	e.preventDefault();
-        	console.log(data);
-        	swal({
-                title: 'Are you sure?',
-                text: 'Do you want delete all these tags?',
-                type: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#DD6B55',
-                confirmButtonText: 'Delete',
-                closeOnConfirm: false
-            },
-            function() {
-                swal('Success!', 'Delete success.', deleteTagBulk(data));
-            });
-    	});
-    }
-
-})();

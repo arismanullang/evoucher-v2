@@ -288,7 +288,6 @@ func GetUserCustomParam(w http.ResponseWriter, r *http.Request) {
 
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	apiName := "user_create"
-	valid := false
 
 	status := http.StatusCreated
 	res := NewResponse(nil)
@@ -312,16 +311,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -396,7 +386,6 @@ func UpdateUserRoute(w http.ResponseWriter, r *http.Request) {
 
 func UpdateOtherUser(w http.ResponseWriter, r *http.Request, logger *model.LogField, a Auth) {
 	apiName := "user_update"
-	valid := false
 
 	status := http.StatusOK
 	res := NewResponse(nil)
@@ -407,16 +396,7 @@ func UpdateOtherUser(w http.ResponseWriter, r *http.Request, logger *model.LogFi
 		logger.SetStatus(http.StatusInternalServerError).Panic("param :", r.Body, "response :", err.Error())
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -546,7 +526,6 @@ func ResetOtherPassword(w http.ResponseWriter, r *http.Request, logger *model.Lo
 
 func BlockUser(w http.ResponseWriter, r *http.Request) {
 	apiName := "user_block"
-	valid := false
 
 	status := http.StatusOK
 	res := NewResponse(nil)
@@ -570,16 +549,7 @@ func BlockUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -606,7 +576,6 @@ func BlockUser(w http.ResponseWriter, r *http.Request) {
 
 func ActivateUser(w http.ResponseWriter, r *http.Request) {
 	apiName := "user_release"
-	valid := false
 
 	status := http.StatusOK
 	res := NewResponse(nil)
@@ -630,16 +599,7 @@ func ActivateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -691,17 +651,15 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 // superadmin
 
 func SuperadminRegisterUser(w http.ResponseWriter, r *http.Request) {
-	//apiName := "user_create"
-	//valid := false
-	//
+	apiName := "sa_create"
 	status := http.StatusCreated
 	res := NewResponse(nil)
-	//
-	//logger := model.NewLog()
-	//logger.SetService("API").
-	//	SetMethod(r.Method).
-	//	SetTag(apiName)
-	//
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
 	var rd User
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
@@ -709,32 +667,22 @@ func SuperadminRegisterUser(w http.ResponseWriter, r *http.Request) {
 		//logger.SetStatus(http.StatusInternalServerError).Panic("param :", r.Body, "response :", err.Error())
 	}
 
-	//a := AuthTokenWithLogger(w, r, logger)
-	a := AuthToken(w, r)
+	a := AuthTokenWithLogger(w, r, logger)
 	if !a.Valid {
 		res = a.res
 		status = http.StatusUnauthorized
 		render.JSON(w, res, status)
 		return
 	}
-	//
-	//for _, valueRole := range a.User.Role {
-	//	features := model.ApiFeatures[valueRole.Detail]
-	//	for _, valueFeature := range features {
-	//		if apiName == valueFeature {
-	//			valid = true
-	//		}
-	//	}
-	//}
-	//
-	//if !valid {
-	//	logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
-	//
-	//	status = http.StatusUnauthorized
-	//	res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
-	//	render.JSON(w, res, status)
-	//	return
-	//}
+
+	if CheckAPIRole(a, apiName) {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
 
 	param := model.SuperAdminRegisterUser{
 		AccountId: rd.AccountId,

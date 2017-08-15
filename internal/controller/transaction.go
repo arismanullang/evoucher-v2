@@ -453,7 +453,6 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 	apiName := "report_transaction"
-	valid := false
 	partnerId := r.FormValue("partner")
 
 	logger := model.NewLog()
@@ -472,16 +471,7 @@ func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -503,7 +493,6 @@ func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 
 func CashoutTransactionDetails(w http.ResponseWriter, r *http.Request) {
 	apiName := "transaction_get"
-	valid := false
 
 	logger := model.NewLog()
 	logger.SetService("API").
@@ -523,16 +512,7 @@ func CashoutTransactionDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -585,7 +565,6 @@ func PublicCashoutTransactionDetails(w http.ResponseWriter, r *http.Request) {
 
 func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
 	apiName := "transaction_cashout"
-	valid := false
 
 	logger := model.NewLog()
 	logger.SetService("API").
@@ -609,16 +588,7 @@ func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -640,7 +610,6 @@ func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
 
 func PrintCashoutTransaction(w http.ResponseWriter, r *http.Request) {
 	apiName := "transaction_cashout"
-	valid := false
 
 	transactionCode := r.FormValue("transcation_code")
 	transactionCodeArr := strings.Split(transactionCode, ";")
@@ -661,16 +630,7 @@ func PrintCashoutTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
