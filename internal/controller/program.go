@@ -348,7 +348,6 @@ func GetPrograms(w http.ResponseWriter, r *http.Request) {
 
 func CreateProgram(w http.ResponseWriter, r *http.Request) {
 	apiName := "program_create"
-	valid := false
 	logger := model.NewLog()
 	logger.SetService("API").
 		SetMethod(r.Method).
@@ -365,16 +364,7 @@ func CreateProgram(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -455,7 +445,6 @@ func CreateProgram(w http.ResponseWriter, r *http.Request) {
 
 func UpdateProgramRoute(w http.ResponseWriter, r *http.Request) {
 	apiName := "program_update"
-	valid := false
 
 	logger := model.NewLog()
 	logger.SetService("API").
@@ -472,15 +461,7 @@ func UpdateProgramRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -624,7 +605,6 @@ func UpdateProgramTenant(w http.ResponseWriter, r *http.Request, logger *model.L
 
 func DeleteProgram(w http.ResponseWriter, r *http.Request) {
 	apiName := "program_delete"
-	valid := false
 
 	res := NewResponse(nil)
 	id := r.FormValue("id")
@@ -642,16 +622,7 @@ func DeleteProgram(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized
@@ -669,16 +640,15 @@ func DeleteProgram(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(v)
-	//d := &model.DeleteProgramRequest{
-	//	Id:   id,
-	//	User: a.User.ID,
-	//}
-	//if err := d.Delete(); err != nil {
-	//	status = http.StatusInternalServerError
-	//	res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
-	//	logger.SetStatus(status).Log("param :", d, "response :", err.Error())
-	//}
+	d := &model.DeleteProgramRequest{
+		Id:   id,
+		User: a.User.ID,
+	}
+	if err := d.Delete(); err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Log("param :", d, "response :", err.Error())
+	}
 
 	render.JSON(w, res, status)
 }

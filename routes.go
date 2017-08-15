@@ -95,6 +95,9 @@ func setRoutes() http.Handler {
 	//role
 	r.GetFunc("/v1/ui/role/all", controller.GetAllAccountRoles)
 	r.GetFunc("/v1/ui/feature/all", controller.GetAllFeatures)
+	r.GetFunc("/v1/ui/role/detail", controller.GetFeaturesDetail)
+	r.PostFunc("/v1/ui/role/create", controller.AddRole)
+	r.PostFunc("/v1/ui/role/update", controller.UpdateRole)
 
 	//open API
 	r.GetFunc("/v1/api/get/partner", controller.GetAllPartnersCustomParam)
@@ -284,6 +287,8 @@ func viewRole(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "role/search.html", nil)
 	} else if page == "create" {
 		render.FileInLayout(w, "layout.html", "role/create.html", nil)
+	} else if page == "edit" {
+		render.FileInLayout(w, "layout.html", "role/edit.html", nil)
 	} else {
 		render.File(w, "notfound.html", nil, 404)
 	}

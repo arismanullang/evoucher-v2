@@ -686,7 +686,6 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 //GenerateVoucher Generate bulk voucher request
 func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 	apiName := "voucher_generate-bulk"
-	valid := false
 	var gvd GenerateVoucherRequest
 	var status int
 	res := NewResponse(nil)
@@ -705,16 +704,7 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 		SetMethod(r.Method).
 		SetTag("Generate-Voucher-Bulk")
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		render.JSON(w, model.ErrCodeInvalidRole, http.StatusUnauthorized)
 		return
 	}
@@ -785,7 +775,6 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 
 func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 	apiName := "voucher_get-link"
-	valid := false
 
 	status := http.StatusOK
 	res := NewResponse(nil)
@@ -802,16 +791,7 @@ func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 		SetMethod(r.Method).
 		SetTag("Generate-Voucher-Link")
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		render.JSON(w, model.ErrCodeInvalidRole, http.StatusUnauthorized)
 		return
 	}
@@ -1028,7 +1008,6 @@ func voucherCode(vcf model.VoucherCodeFormat, flag int) string {
 
 func SendVoucherBulk(w http.ResponseWriter, r *http.Request) {
 	apiName := "voucher_generate-bulk"
-	valid := false
 	var gvd GenerateVoucherRequest
 	var status int
 	res := NewResponse(nil)
@@ -1045,16 +1024,7 @@ func SendVoucherBulk(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
-		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				valid = true
-			}
-		}
-	}
-
-	if !valid {
+	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
 		status = http.StatusUnauthorized

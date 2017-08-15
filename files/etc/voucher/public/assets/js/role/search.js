@@ -17,12 +17,12 @@ function getRole() {
 		+ "<div class='col-sm-9'>"
 		+ "<div class='checkbox c-checkbox'>"
 		+ "<label>"
-		+ "<input name='agreements' value='"+arrData[i].id+"' type='checkbox'><span class='ion-checkmark-round'></span>"+arrData[i].detail
+		+ arrData[i].detail
 		+ "</label>"
 		+ "</div>"
 		+ "</div>"
       		+ "<div class='col-sm-3'>"
-      		+ "<button type='button' value='"+arrData[i].id+"' class='btn btn-raised btn-danger btn-sm down-5px swal-demo2'><span class='ion-close-round'></span></button>"
+      		+ "<button type='button' onclick='edit(\""+arrData[i].id+"\")' class='btn btn-raised btn-sm btn-info down-5px'><em class='ion-edit'></em></button>"
       		+ "</div>"
 		+ "</div></div></div>";
           var li = $("<div class='col-md-3'></div>").html(html);
@@ -36,21 +36,11 @@ function add(param) {
 	window,location = "/role/create";
 }
 
-function deleteTag(param) {
-  // var tag = {
-  //   tag: param
-  // };
-  //
-  // $.ajax({
-  //   url: '/v1/ui/tag/delete?id='+param+'&token='+token,
-  //   type: 'get',
-  //   success: function (data) {
-  //     location.reload();
-  //   }
-  // });
+function edit(param) {
+	window.location = "/role/edit?id="+param;
 }
 
-function deleteTagBulk(param) {
+function detail(param) {
 
   // var tag = {
   //   tags: param
