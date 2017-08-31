@@ -83,6 +83,15 @@ footer{
   display: none;
 }
 
+.modal-loader{
+  width: 150px;
+  height: 150px;
+}
+
+.m-loader{
+  margin: 15px auto;
+}
+
 .table-datatable{
   font-size: 12px;
 }

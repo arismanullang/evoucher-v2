@@ -6,11 +6,6 @@ $( window ).ready(function() {
 
 });
 
-$('#user-recover').submit(function(e) {
-     e.preventDefault();
-     e.returnValue = false;
-});
-
 function recover(){
   var key = findGetParameter("key");
   if($("#password1").val() != $("#password2").val()){

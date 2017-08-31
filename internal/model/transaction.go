@@ -44,7 +44,7 @@ type (
 		TransactionId   string         `db:"transaction_id" json:"transaction_id"`
 		TransactionCode string         `db:"transaction_code" json:"transaction_code"`
 		ProgramName     string         `db:"program_name" json:"program_name"`
-		Voucher         []Voucher      `db:"-" json:"voucher"`
+		Voucher         []Voucher      `db:"-" json:"vouchers"`
 		VoucherValue    float32        `db:"voucher_value" json:"voucher_value"`
 		Issued          string         `db:"issued" json:"issued"`
 		Redeem          string         `db:"redeemed" json:"redeemed"`

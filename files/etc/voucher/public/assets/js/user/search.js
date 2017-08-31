@@ -1,24 +1,22 @@
-$( document ).ready(function() {
+$(document).ready(function () {
 	getUser();
 });
 
 function getUser() {
 	$.ajax({
-		url: '/v1/ui/user/all?token='+token,
+		url: '/v1/ui/user/all?token=' + token,
 		type: 'get',
 		success: function (data) {
-			console.log("Render Data");
 			var arrData = [];
 			arrData = data.data;
-			console.log(arrData);
 			var i;
 			var dataSet = [];
-			for (i = 0; i < arrData.length; i++){
-				var button = "<button type='button' class='btn btn-flat btn-sm btn-info' onclick='edit(\""+arrData[i].id+"\")'><em class='ion-edit'></em></button>"+
-					"<button value='"+arrData[i].id+"' type='button' class='btn btn-flat btn-sm btn-danger swal-demo-reset'><em class='ion-loop'></em></button>"+
-					"<button value='"+arrData[i].id+"' type='button' status='"+arrData[i].status+"' class='btn btn-flat btn-sm btn-danger swal-demo-delete'><em class='ion-locked'></em></button>";
+			for (i = 0; i < arrData.length; i++) {
+				var button = "<button type='button' class='btn btn-flat btn-sm btn-info' onclick='edit(\"" + arrData[i].id + "\")'><em class='ion-edit'></em></button>" +
+					"<button value='" + arrData[i].id + "' type='button' class='btn btn-flat btn-sm btn-danger swal-demo-reset'><em class='ion-loop'></em></button>" +
+					"<button value='" + arrData[i].id + "' type='button' status='" + arrData[i].status + "' class='btn btn-flat btn-sm btn-danger swal-demo-delete'><em class='ion-locked'></em></button>";
 				var status = "INACTIVE";
-				if(arrData[i].status == "created"){
+				if (arrData[i].status == "created") {
 					status = "ACTIVE";
 				}
 				dataSet[i] = [
@@ -37,13 +35,13 @@ function getUser() {
 			var table = $('#datatable1').dataTable({
 				data: dataSet,
 				dom: 'rtip',
-				"order": [[ 1, "desc" ]],
+				"order": [[1, "desc"]],
 				columns: [
-					{ title: "USERNAME" },
-					{ title: "EMAIL" },
-					{ title: "PHONE" },
-					{ title: "STATUS"},
-					{ title: "ACTION"}
+					{title: "USERNAME"},
+					{title: "EMAIL"},
+					{title: "PHONE"},
+					{title: "STATUS"},
+					{title: "ACTION"}
 				],
 				oLanguage: {
 					sSearch: '<em class="ion-search"></em>',
@@ -62,15 +60,15 @@ function getUser() {
 			var columnInputs = $('thead .' + inputSearchClass);
 
 			columnInputs
-				.keyup(function() {
+				.keyup(function () {
 					table.fnFilter(this.value, columnInputs.index(this));
 				});
 		}
 	});
 }
 
-function edit(url){
-	window.location = "/user/update?id="+url;
+function edit(url) {
+	window.location = "/user/update?id=" + url;
 }
 
 function addUser() {
@@ -83,15 +81,18 @@ function resetPassword(id) {
 		id: id
 	};
 	$.ajax({
-		url: '/v1/ui/user/update?type=reset&token='+token,
+		url: '/v1/ui/user/update?type=reset&token=' + token,
 		type: 'POST',
 		dataType: 'json',
 		contentType: "application/json",
 		data: JSON.stringify(user),
 		success: function (data) {
 			newPass = data.data;
-			console.log('Reset : '+newPass);
-			swal('Success!', "Reset success. \n New Password : "+newPass, getUser());
+			swal('Success!', "Reset success. \n New Password : " + newPass, getUser());
+		},
+		error: function (data) {
+			var a = JSON.parse(data.responseText);
+			swal("Error", a.errors.detail);
 		}
 	});
 }
@@ -102,13 +103,17 @@ function deleteUser(id) {
 		id: id
 	};
 	$.ajax({
-		url: '/v1/ui/user/block?token='+token,
+		url: '/v1/ui/user/block?token=' + token,
 		type: 'POST',
 		dataType: 'json',
 		contentType: "application/json",
 		data: JSON.stringify(user),
 		success: function (data) {
 			getUser();
+		},
+		error: function (data) {
+			var a = JSON.parse(data.responseText);
+			swal("Error", a.errors.detail);
 		}
 	});
 }
@@ -118,57 +123,62 @@ function activateUser(id) {
 		id: id
 	};
 	$.ajax({
-		url: '/v1/ui/user/activate?token='+token,
+		url: '/v1/ui/user/activate?token=' + token,
 		type: 'POST',
 		dataType: 'json',
 		contentType: "application/json",
 		data: JSON.stringify(user),
 		success: function (data) {
 			getUser();
+		},
+		error: function (data) {
+			var a = JSON.parse(data.responseText);
+			swal("Error", a.errors.detail);
 		}
 	});
 }
 
-(function() {
+(function () {
 	'use strict';
 
 	$(runSweetAlert);
+
 	function runSweetAlert() {
-		$(document).on('click', '.swal-demo-delete', function(e) {
+		$(document).on('click', '.swal-demo-delete', function (e) {
 			e.preventDefault();
 			swal({
-				title: 'Are you sure?',
-				text: 'Do you want change user\'s status?',
-				type: 'warning',
-				showCancelButton: true,
-				confirmButtonColor: '#DD6B55',
-				confirmButtonText: 'Change!',
-				closeOnConfirm: false
-			},
-			function() {
-				if(e.target.getAttribute("status") == "created"){
-					swal('Blocked!', 'Blocked success.', deleteUser(e.target.value));
-				}else {
-					swal('Activated!', 'Activated success.', activateUser(e.target.value));
-				}
+					title: 'Are you sure?',
+					text: 'Do you want change user\'s status?',
+					type: 'warning',
+					showCancelButton: true,
+					confirmButtonColor: '#DD6B55',
+					confirmButtonText: 'Change!',
+					closeOnConfirm: false
+				},
+				function () {
+					if (e.target.getAttribute("status") == "created") {
+						swal('Blocked!', 'Blocked success.', deleteUser(e.target.value));
+					} else {
+						swal('Activated!', 'Activated success.', activateUser(e.target.value));
+					}
 
-			});
+				});
 
 		});
-		$(document).on('click', '.swal-demo-reset', function(e) {
+		$(document).on('click', '.swal-demo-reset', function (e) {
 			e.preventDefault();
 			swal({
-				title: 'Are you sure?',
-				text: 'Do you want reset user\'s password?',
-				type: 'warning',
-				showCancelButton: true,
-				confirmButtonColor: '#DD6B55',
-				confirmButtonText: 'Reset!',
-				closeOnConfirm: false
-			},
-			function() {
-				resetPassword(e.target.value);
-			});
+					title: 'Are you sure?',
+					text: 'Do you want reset user\'s password?',
+					type: 'warning',
+					showCancelButton: true,
+					confirmButtonColor: '#DD6B55',
+					confirmButtonText: 'Reset!',
+					closeOnConfirm: false
+				},
+				function () {
+					resetPassword(e.target.value);
+				});
 
 		});
 	}

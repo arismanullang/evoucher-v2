@@ -5,12 +5,10 @@
 
 {{ define "content" }}
 <section>
-<div class="container-overlap bg-blue-grey-100 m0">
-</div>
-<div class="container container-md">
+<div class="container container-fluid">
   <div class="card">
     <div class="card-heading bg-amber-500">
-        <div class="card-title text-center">Voucher</div>
+        <div class="card-title text-center">Voucher</span></div>
     </div>
     <div class="card-body">
       <table id="datatable1" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
@@ -18,13 +16,19 @@
           <tr>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_voucher_code" placeholder="Voucher Code" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_holder" placeholder="Holder" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_holder_name" placeholder="Holder Name" class="form-control input-sm datatable_input_col_search">
+                <input type="text" name="filter_program" placeholder="Program" class="form-control input-sm datatable_input_col_search">
+                <div class="mda-form-control-line"></div>
+              </div>
+            </th>
+            <th>
+              <div class="mda-form-control pt0">
+                <input type="text" name="filter_voucher_code" placeholder="Voucher Code" class="form-control input-sm datatable_input_col_search">
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
@@ -36,22 +40,20 @@
             </th>
             <th>
               <div class="mda-form-control pt0">
-                <input type="text" name="filter_program" placeholder="Program Name" class="form-control input-sm datatable_input_col_search">
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <input type="text" name="filter_status" placeholder="Status" class="form-control input-sm datatable_input_col_search">
+                <select name="filter_status" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
+                  <option value="ISSUED">ISSUED</option>
+                  <option value="REDEEM">REDEEM</option>
+                  <option value="PAID">PAID</option>
+                </select>
                 <div class="mda-form-control-line"></div>
               </div>
             </th>
           </tr>
           <tr role="row">
-            <th>Voucher Code</th>
-            <th>Holder Name</th>
-            <th>Reference Code</th>
+            <th>Holder</th>
             <th>Program</th>
+            <th>Voucher Code</th>
+            <th>Reference Code</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
@@ -64,7 +66,6 @@
 {{ end }}
 
 {{ define "scripts" }}
-<script type="text/javascript" src="/assets/vendor/sweetalert/dist/sweetalert-dev.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/jquery.dataTables.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.flash.min.js"></script>
@@ -79,7 +80,6 @@
 
 
 {{ define "stylesheets" }}
-<link rel="stylesheet" href="/assets/vendor/sweetalert/dist/sweetalert.css">
 <link rel="stylesheet" href="/assets/vendor/datatables/media/css/jquery.dataTables.css">
 <link rel="stylesheet" href="/assets/vendor/datatables/media/css/buttons.dataTables.min.css">
 {{ end }}
