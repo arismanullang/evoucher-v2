@@ -3,16 +3,13 @@ $( document ).ready(function() {
 });
 
 function getPartner() {
-    console.log("Get Partner Data");
-
     $.ajax({
       url: '/v1/ui/partner/all?token='+token,
       type: 'get',
       success: function (data) {
-        console.log("Render Data");
         var arrData = [];
         arrData = data.data;
-        console.log(arrData);
+
         var i;
         var dataSet = [];
         for (i = 0; i < arrData.length; i++){
@@ -82,10 +79,18 @@ function addPartner() {
 
 function deletePartner(id) {
 	$.ajax({
-		url: '/v1/ui/partner/delete?id='+id,
+		url: '/v1/ui/partner/delete?id='+id+'&token='+token,
 		type: 'get',
 		success: function (data) {
-			getPartner();
+			swal('Deleted!', 'Delete success.');
+
+			setTimeout(function () {
+				getPartner();
+			}, 1000);
+		},
+		error: function (data) {
+			var a = JSON.parse(data.responseText);
+			swal("Error", a.errors.detail);
 		}
 	});
 }
@@ -98,7 +103,6 @@ function deletePartner(id) {
     function runSweetAlert() {
         $(document).on('click', '.swal-demo4', function(e) {
             e.preventDefault();
-            console.log(e.target.value);
             swal({
                     title: 'Are you sure?',
                     text: 'Do you want delete partner?',
@@ -109,7 +113,7 @@ function deletePartner(id) {
                     closeOnConfirm: false
                 },
                 function() {
-                    swal('Deleted!', 'Delete success.', deletePartner(e.target.value));
+					deletePartner(e.target.value);
                 });
 
         });

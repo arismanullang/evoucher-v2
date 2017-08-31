@@ -211,6 +211,9 @@ func UICheckToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if url == "/" {
+		valid = true
+	}
 	for _, valueRole := range a.User.Role {
 		features := model.UiFeatures[valueRole.Detail]
 		for _, valueFeature := range features {
@@ -228,7 +231,7 @@ func UICheckToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res = NewResponse(true)
+	res = NewResponse(a)
 	render.JSON(w, res, status)
 }
 

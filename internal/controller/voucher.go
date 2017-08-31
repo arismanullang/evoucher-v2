@@ -101,9 +101,9 @@ type (
 		State     string `json:"state,omitempty"`
 	}
 	// DetailListResponseData represent list of voucher data
-	DetailListResponseData []RespomseData
+	DetailListResponseData []ResponseData
 	// DetailResponseData represent list of voucher data
-	RespomseData struct {
+	ResponseData struct {
 		ID                string    `json:"id"`
 		VoucherCode       string    `json:"voucher_code"`
 		ReferenceNo       string    `json:"reference_no"`
@@ -112,6 +112,7 @@ type (
 		HolderEmail       string    `json:"holder_email"`
 		HolderDescription string    `json:"holder_description"`
 		ProgramID         string    `json:"program_id"`
+		ProgramName       string    `json:"program_name"`
 		ValidAt           time.Time `json:"valid_at"`
 		ExpiredAt         time.Time `json:"expired_at"`
 		VoucherValue      float64   `json:"voucher_value"`
@@ -183,7 +184,7 @@ func GetVoucherOfProgram(w http.ResponseWriter, r *http.Request) {
 	delete(param, "token")
 
 	if len(param) > 0 {
-		voucher, err = model.FindAvailableVoucher(param)
+		voucher, err = model.FindAvailableVoucher(a.User.Account.Id, param)
 	} else {
 		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, logger.TraceID)
@@ -449,6 +450,7 @@ func GetVoucherList(w http.ResponseWriter, r *http.Request) {
 			dvr[i].HolderEmail = v.HolderEmail.String
 			dvr[i].HolderDescription = v.HolderDescription.String
 			dvr[i].ProgramID = v.ProgramID
+			dvr[i].ProgramName = v.ProgramName
 			dvr[i].ValidAt = v.ValidAt
 			dvr[i].ExpiredAt = v.ExpiredAt
 			dvr[i].VoucherValue = v.VoucherValue

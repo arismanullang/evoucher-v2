@@ -1,44 +1,44 @@
-$( window ).ready(function() {
-	$('#user-recover').submit(function(e) {
-		e.preventDefault();
-		e.returnValue = false;
+$(window).ready(function () {
+	$("#username").keydown(function(e) {
+		if ( e.which == 13 ) e.preventDefault();
 	});
-
 	getAccount();
 });
 
-function recover(){
+function recover() {
 
-  var user = $("#username").val();
-  var accountId = $("#account-id").val();
-  if( user == null ){
-        alert("Username cant be empty.");
-  }
+	var user = $("#username").val();
+	var accountId = $("#account-id").val();
+	if (user == null) {
+		alert("Username cant be empty.");
+	}
 
-  $.ajax({
-      url: '/v1/ui/user/forgot/mail?username='+user+'&accountId='+accountId,
-      type: 'get',
-      dataType: 'json',
-      success: function (data){
-        window.location = "/user/mail-send";
-      }
-  });
+	$.ajax({
+		url: '/v1/ui/user/forgot/mail?username=' + user + '&accountId=' + accountId,
+		type: 'get',
+		dataType: 'json',
+		success: function (data) {
+			swal("Sending Email");
+			window.location = "/user/mail-send";
+		},
+		error: function (data) {
+			var a = JSON.parse(data.responseText);
+			swal("Error " + a.errors.detail);
+		}
+	});
 }
 
 function getAccount() {
-	console.log("Get Account");
-
 	$.ajax({
 		url: '/v1/ui/account/all',
 		type: 'get',
 		success: function (data) {
 			var arrData = [];
 			arrData = data.data;
-			console.log(data.data);
 			var i;
-			for (i = 0; i < arrData.length; i++){
+			for (i = 0; i < arrData.length; i++) {
 				// <option value="bulk">Email Blast</option>
-				var li = $("<option value='"+arrData[i].id+"'></option>");
+				var li = $("<option value='" + arrData[i].id + "'></option>");
 				li.html(arrData[i].name);
 				li.appendTo('#account-id');
 			}
@@ -48,7 +48,7 @@ function getAccount() {
 	});
 }
 
-(function() {
+(function () {
 	'use strict';
 
 	$(formAdvanced);
@@ -59,7 +59,7 @@ function getAccount() {
 
 })();
 
-(function() {
+(function () {
 	'use strict';
 
 	$(userLogin);
@@ -75,10 +75,10 @@ function getAccount() {
 	// Necessary to place dyncamic error messages
 	// without breaking the expected markup for custom input
 	function errorPlacementInput(error, element) {
-		if( element.parent().is('.mda-form-control') ) {
+		if (element.parent().is('.mda-form-control')) {
 			error.insertAfter(element.parent()); // insert after .mda-form-control
 		}
-		else if ( element.is(':radio') || element.is(':checkbox')) {
+		else if (element.is(':radio') || element.is(':checkbox')) {
 			error.insertAfter(element.parent());
 		}
 		else {

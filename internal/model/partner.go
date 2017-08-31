@@ -96,7 +96,6 @@ func checkPartner(name, accountId string) (string, error) {
 }
 
 func FindPartners(param map[string]string) ([]Partner, error) {
-	fmt.Println("Select partner")
 	q := `
 		SELECT
 			id
@@ -129,7 +128,6 @@ func FindPartners(param map[string]string) ([]Partner, error) {
 }
 
 func FindAllPartners(accountId string) ([]Partner, error) {
-	fmt.Println("Select partner")
 	q := `
 		SELECT
 			id
@@ -285,7 +283,6 @@ func FindProgramPartners(programId string) ([]Partner, error) {
 // Tag
 
 func FindAllTags() ([]string, error) {
-	fmt.Println("Select partner")
 	q := `
 		SELECT
 			value
