@@ -152,7 +152,7 @@ func FindVoucher(param map[string]string) (VoucherResponse, error) {
 		}
 	}
 	q += ` ORDER BY state DESC`
-	fmt.Println(q)
+
 	var resd []Voucher
 	if err := db.Select(&resd, db.Rebind(q), StatusCreated); err != nil {
 		return VoucherResponse{Status: ResponseStateNok, Message: err.Error(), VoucherData: resd}, err
