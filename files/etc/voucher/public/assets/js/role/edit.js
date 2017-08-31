@@ -21,7 +21,6 @@ function getFeature() {
 		success: function (data) {
 			var arrData = [];
 			arrData = data.data;
-			console.log(arrData);
 			var i;
 			var uiFeature = [];
 			var apiFeature = [];
@@ -58,6 +57,10 @@ function getFeatureDetail(id) {
 			for (i = 0; i < arrData.features.length; i++){
 				$("#features").find("input[id="+arrData.features[i]+"]").prop('checked', true);
 			}
+		},
+		error: function (data) {
+			var a = JSON.parse(data.responseText);
+			swal("Error", a.errors.detail);
 		}
 	});
 }
@@ -83,8 +86,6 @@ function update() {
 		features: listFeatures
 	};
 
-	console.log(role);
-
 	$.ajax({
 		url: '/v1/ui/role/update?token='+token,
 		type: 'post',
@@ -93,8 +94,10 @@ function update() {
 		data: JSON.stringify(role),
 		success: function (data) {
 			window.location = "/role/search";
-		}, error: function (){
-			alert("Update Failed.");
+		},
+		error: function (data) {
+			var a = JSON.parse(data.responseText);
+			swal("Error", a.errors.detail);
 		}
 	});
 }

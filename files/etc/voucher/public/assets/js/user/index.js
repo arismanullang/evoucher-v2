@@ -1,20 +1,16 @@
-$( window ).ready(function() {
-	$('#user-login').submit(function(e) {
-		e.preventDefault();
-		e.returnValue = false;
-	});
-
+$(window).ready(function () {
 	var token = localStorage.getItem("token");
-	if(token != null){
+	if (token != null) {
 		$.ajax({
-			url: '/v1/token/check?token='+token+'&url='+window.location.pathname,
+			url: '/v1/ui/token/check?token=' + token + '&url=' + window.location.pathname,
 			type: 'get',
 			success: function (data) {
-				if(data.data == true){
-					var role = data.data.role;
-					if(role[0].id != 'Mn78I1wc'){
+				if (data.data.Valid == true) {
+					console.log("a");
+					var role = data.data.User.role;
+					if (role[0].id != 'Mn78I1wc') {
 						window.location = "/program/index";
-					} else{
+					} else {
 						window.location = "/sa/search";
 					}
 				}
@@ -23,77 +19,76 @@ $( window ).ready(function() {
 	}
 });
 
-function login(){
-  $.ajax({
-      url: '/v1/ui/user/login',
-      type: 'get',
-      dataType: 'json',
-      contentType: "application/json",
-      beforeSend: function (xhr) {
-          xhr.setRequestHeader ("Authorization", "Basic " + btoa($("#username").val() + ":" + $("#password").val()));
-      },
-      success: function (data){
+function login() {
+	$.ajax({
+		url: '/v1/ui/user/login',
+		type: 'get',
+		dataType: 'json',
+		contentType: "application/json",
+		beforeSend: function (xhr) {
+			xhr.setRequestHeader("Authorization", "Basic " + btoa($("#username").val() + ":" + $("#password").val()));
+		},
+		success: function (data) {
 
-        var token = data.data.token.token;
-        var role = data.data.role;
-        console.log(token);
-        if (typeof(Storage) !== "undefined") {
-          localStorage.setItem("token", token);
-          tempRole = "";
-          for(var i = 0; i < role.length; i++){
-          	tempRole += role[i].id+",";
-	  }
-          localStorage.setItem("r", tempRole);
-        }
+			var token = data.data.token.token;
+			var role = data.data.role;
+			if (typeof(Storage) !== "undefined") {
+				localStorage.setItem("token", token);
+				tempRole = "";
+				for (var i = 0; i < role.length; i++) {
+					tempRole += role[i].id + ",";
+				}
+				localStorage.setItem("r", tempRole);
+			}
 
-        if(role[0].id != 'Mn78I1wc'){
-		window.location = "/program/index";
-	} else{
-        	window.location = "/sa/search";
-	}
-      },
-      error: function (data){
-        alert("Invalid Username or Password");
-      }
-  });
+			if (role[0].id != 'Mn78I1wc') {
+				window.location = "/program/index";
+			} else {
+				window.location = "/sa/search";
+			}
+		},
+		error: function (data) {
+			alert("Invalid Username or Password");
+		}
+	});
 }
 
-(function() {
-    'use strict';
+(function () {
+	'use strict';
 
-    $(formAdvanced);
+	$(formAdvanced);
 
-    function formAdvanced() {
-        $('.select2').select2();
-    }
+	function formAdvanced() {
+		$('.select2').select2();
+	}
 
 })();
 
-(function() {
-    'use strict';
+(function () {
+	'use strict';
 
-    $(userLogin);
+	$(userLogin);
 
-    function userLogin() {
+	function userLogin() {
 
-        var $form = $('#user-login');
-        $form.validate({
-            errorPlacement: errorPlacementInput
-        });
-    }
+		var $form = $('#user-login');
+		$form.validate({
+			errorPlacement: errorPlacementInput
+		});
+	}
 
-    // Necessary to place dyncamic error messages
-    // without breaking the expected markup for custom input
-    function errorPlacementInput(error, element) {
-        if( element.parent().is('.mda-form-control') ) {
-            error.insertAfter(element.parent()); // insert after .mda-form-control
-        }
-        else if ( element.is(':radio') || element.is(':checkbox')) {
-            error.insertAfter(element.parent());
-        }
-        else {
-            error.insertAfter(element);
-        }
-    }
+	// Necessary to place dyncamic error messages
+	// without breaking the expected markup for custom input
+	function errorPlacementInput(error, element) {
+		if (element.parent().is('.mda-form-control')) {
+			error.insertAfter(element.parent()); // insert after .mda-form-control
+		}
+		else if (element.is(':radio') || element.is(':checkbox')) {
+			error.insertAfter(element.parent());
+		}
+		else {
+			error.insertAfter(element);
+		}
+	}
 
 })();

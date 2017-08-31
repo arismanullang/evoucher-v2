@@ -5,30 +5,32 @@ import (
 	"log"
 	"time"
 
+	"fmt"
 	"github.com/lib/pq"
 )
 
 type (
 	Voucher struct {
-		ID                string         `db:"id"`
-		VoucherCode       string         `db:"voucher_code"`
-		ReferenceNo       string         `db:"reference_no"`
-		Holder            sql.NullString `db:"holder"`
-		HolderPhone       sql.NullString `db:"holder_phone"`
-		HolderEmail       sql.NullString `db:"holder_email"`
-		HolderDescription sql.NullString `db:"holder_description"`
-		ProgramID         string         `db:"program_id"`
-		ValidAt           time.Time      `db:"valid_at"`
-		ExpiredAt         time.Time      `db:"expired_at"`
-		VoucherValue      float64        `db:"voucher_value"`
-		State             string         `db:"state"`
-		CreatedBy         string         `db:"created_by"`
-		CreatedAt         time.Time      `db:"created_at"`
-		UpdatedBy         sql.NullString `db:"updated_by"`
-		UpdatedAt         pq.NullTime    `db:"updated_at"`
-		DeletedBy         sql.NullString `db:"deleted_by"`
-		DeletedAt         pq.NullTime    `db:"deleted_at"`
-		Status            string         `db:"status"`
+		ID                string         `db:"id" json:"id"`
+		VoucherCode       string         `db:"voucher_code" json:"voucher_code"`
+		ReferenceNo       string         `db:"reference_no" json:"reference_no"`
+		Holder            sql.NullString `db:"holder" json:"holder"`
+		HolderPhone       sql.NullString `db:"holder_phone" json:"holder_phone"`
+		HolderEmail       sql.NullString `db:"holder_email" json:"holder_email"`
+		HolderDescription sql.NullString `db:"holder_description" json:"holder_description"`
+		ProgramID         string         `db:"program_id" json:"program_id"`
+		ProgramName       string         `db:"program_name" json:"program_name"`
+		ValidAt           time.Time      `db:"valid_at" json:"valid_at"`
+		ExpiredAt         time.Time      `db:"expired_at" json:"expired_at"`
+		VoucherValue      float64        `db:"voucher_value" json:"voucher_value"`
+		State             string         `db:"state" json:"state"`
+		CreatedBy         string         `db:"created_by" json:"created_by"`
+		CreatedAt         time.Time      `db:"created_at" json:"created_at"`
+		UpdatedBy         sql.NullString `db:"updated_by" json:"updated_by"`
+		UpdatedAt         pq.NullTime    `db:"updated_at" json:"updated_at"`
+		DeletedBy         sql.NullString `db:"deleted_by" json:"deleted_by"`
+		DeletedAt         pq.NullTime    `db:"deleted_at" json:"deleted_at"`
+		Status            string         `db:"status" json:"status"`
 	}
 
 	VoucherResponse struct {
@@ -51,43 +53,48 @@ type (
 	}
 )
 
-func FindAvailableVoucher(param map[string]string) (VoucherResponse, error) {
+func FindAvailableVoucher(accountId string, param map[string]string) (VoucherResponse, error) {
 	q := `
 		SELECT
-			id
-			, voucher_code
-			, reference_no
-			, holder
-			, holder_phone
-			, holder_email
-			, holder_description
-			, program_id
-			, valid_at
-			, expired_at
-			, voucher_value
-			, state
-			, created_by
-			, created_at
-			, updated_by
-			, updated_at
-			, deleted_by
-			, deleted_at
-			, status
+			v.id
+			, v.voucher_code
+			, v.reference_no
+			, v.holder
+			, v.holder_phone
+			, v.holder_email
+			, v.holder_description
+			, v.program_id
+			, v.valid_at
+			, v.expired_at
+			, v.voucher_value
+			, v.state
+			, v.created_by
+			, v.created_at
+			, v.updated_by
+			, v.updated_at
+			, v.deleted_by
+			, v.deleted_at
+			, v.status
 		FROM
-			vouchers
+			vouchers as v
+		JOIN
+			programs as p
+		ON
+			v.program_id = p.id
 		WHERE
-			status = ?
-			AND expired_at > now()
-			AND valid_at < now()
-			AND state = 'created'
+			v.status = ?
+			AND p.account_id = ?
+			AND v.expired_at > now()
+			AND v.valid_at < now()
+			AND v.state = 'created'
 	`
 	for key, value := range param {
-		q += ` AND ` + key + ` = '` + value + `'`
+		q += ` AND v.` + key + ` = '` + value + `'`
 	}
-	q += ` ORDER BY state DESC`
+	q += ` ORDER BY v.state DESC`
 
 	var resd []Voucher
-	if err := db.Select(&resd, db.Rebind(q), StatusCreated); err != nil {
+	if err := db.Select(&resd, db.Rebind(q), StatusCreated, accountId); err != nil {
 		return VoucherResponse{Status: ResponseStateNok, Message: err.Error(), VoucherData: resd}, err
 	}
 	if len(resd) < 1 {
@@ -107,32 +114,43 @@ func FindAvailableVoucher(param map[string]string) (VoucherResponse, error) {
 func FindVoucher(param map[string]string) (VoucherResponse, error) {
 	q := `
 		SELECT
-			id
-			, voucher_code
-			, reference_no
-			, holder
-			, holder_phone
-			, holder_email
-			, holder_description
-			, program_id
-			, valid_at
-			, expired_at
-			, voucher_value
-			, state
-			, created_by
-			, created_at
-			, updated_by
-			, updated_at
-			, deleted_by
-			, deleted_at
-			, status
+			v.id
+			, v.voucher_code
+			, v.reference_no
+			, v.holder
+			, v.holder_phone
+			, v.holder_email
+			, v.holder_description
+			, v.program_id
+			, p.name as program_name
+			, v.valid_at
+			, v.expired_at
+			, v.voucher_value
+			, v.state
+			, v.created_by
+			, v.created_at
+			, v.updated_by
+			, v.updated_at
+			, v.deleted_by
+			, v.deleted_at
+			, v.status
 		FROM
-			vouchers
+			vouchers as v
+		JOIN
+			programs as p
+		ON
+			v.program_id = p.id
 		WHERE
-			status = ?
+			v.status = ?
 	`
 	for key, value := range param {
-		q += ` AND ` + key + ` = '` + value + `'`
+		fmt.Println(key)
+		if key == "holder" {
+			q += ` AND v.holder LIKE '%` + value + `%'`
+			q += ` AND v.holder_description LIKE '%` + value + `%'`
+		} else {
+			q += ` AND v.` + key + ` = '` + value + `'`
+		}
 	}
 	q += ` ORDER BY state DESC`
 

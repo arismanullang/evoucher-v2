@@ -25,8 +25,6 @@ function cashout(){
 	var textArea = document.createElement('textarea');
 	textArea.innerHTML = decoded.innerHTML;
 
-	console.log(textArea.value);
-	console.log(transaction);
 	$.ajax({
 		url: '/v1/ui/transaction/cashout/update?token='+token,
 		type: 'post',
@@ -39,8 +37,9 @@ function cashout(){
 			$("#success-page").attr("style","display:block");
 			$("#transaction").attr("style","display:none");
 		},
-		error: function () {
-			alert("Error");
+		error: function (data) {
+			var a = JSON.parse(data.responseText);
+			swal("Error", a.errors.detail);
 		}
 	});
 }
@@ -51,7 +50,6 @@ function addElem(){
 		url: '/v1/ui/transaction?id='+id+'&token='+token,
 		type: 'get',
 		success: function (data) {
-			console.log("Render Data");
 			var result = data.data;
 			$('#transaction-code').val('');
 			var elem = $("*[name='list-transaction-code']");
@@ -90,7 +88,6 @@ function addElem(){
 }
 
 function removeElem(elem){
-	console.log("remove");
 	$(elem).parent().closest('tr').remove();
 }
 

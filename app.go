@@ -128,8 +128,8 @@ func getUiRole() map[string][]string {
 		}
 
 	}
-	fmt.Print("Role ui : ")
-	fmt.Println(m)
+	//fmt.Print("Role ui : ")
+	//fmt.Println(m)
 	return m
 }
 
@@ -140,11 +140,10 @@ func getApiRole() map[string][]string {
 	if err == nil {
 		for _, value := range roles {
 			m[value.Role] = append(m[value.Role], value.Category+"_"+value.Detail)
-
 		}
 
 	}
-	fmt.Print("Role api : ")
-	fmt.Println(m)
+	//fmt.Print("Role api : ")
+	//fmt.Println(m)
 	return m
 }

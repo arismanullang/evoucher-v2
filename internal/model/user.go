@@ -328,8 +328,6 @@ func FindUserDetail(userId string) (User, error) {
 }
 
 func Login(username, password string) (string, error) {
-	fmt.Println("Login")
-
 	q := `
 		SELECT
 			id

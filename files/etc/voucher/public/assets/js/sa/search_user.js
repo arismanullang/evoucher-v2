@@ -7,10 +7,8 @@ function getUser() {
 		url: '/v1/ui/sa/all?token='+token,
 		type: 'get',
 		success: function (data) {
-			console.log("Render Data");
 			var arrData = [];
 			arrData = data.data;
-			console.log(arrData);
 			var i;
 			var dataSet = [];
 			var accountList = [];
@@ -120,8 +118,11 @@ function resetPassword(id) {
 		data: JSON.stringify(user),
 		success: function (data) {
 			newPass = data.data;
-			console.log('Reset : '+newPass);
 			swal('Success!', "Reset success. \n New Password : "+newPass, getUser());
+		},
+		error: function (data) {
+			var a = JSON.parse(data.responseText);
+			swal("Error", a.errors.detail);
 		}
 	});
 }
@@ -139,6 +140,10 @@ function deleteUser(id) {
 		data: JSON.stringify(user),
 		success: function (data) {
 			getUser();
+		},
+		error: function (data) {
+			var a = JSON.parse(data.responseText);
+			swal("Error", a.errors.detail);
 		}
 	});
 }
@@ -155,6 +160,10 @@ function activateUser(id) {
 		data: JSON.stringify(user),
 		success: function (data) {
 			getUser();
+		},
+		error: function (data) {
+			var a = JSON.parse(data.responseText);
+			swal("Error", a.errors.detail);
 		}
 	});
 }

@@ -14,6 +14,23 @@
         <div class="pv"><a href="#voucher">Voucher</a></div>
         <div class="pv"><a href="#distribution">Rule Distribution</a></div>
         <div class="pv"><a href="#using">Rule Using</a></div>
+
+        <div id="modal-loader" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" class="modal fade">
+          <div class="modal-dialog modal-loader">
+            <div class="modal-content">
+              <div class="modal-body">
+                <div class="row">
+                  <label>Uploading Image</label>
+                </div>
+                <div class="row loader-primary">
+                  <div class="loader-demo text-center">
+                    <div class="loader-inner line-scale m-loader"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -47,25 +64,20 @@
               </div>
             </div>
           </div>
-          <div class="row">
-            <div class="col-sm-12">
-              <label>Distribution Period</label>
-            </div>
-          </div>
           <div class="row ">
             <div class="col-sm-6">
               <div class="mda-form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
-                <div id="example-datepicker-container-4" class="mda-form-control">
-                  <input id="program-valid-from" name="start-date" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepicker4">
+                <div id="datepicker-program-from" class="mda-form-control">
+                  <input id="program-valid-from" name="start-date" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepicker-program-from">
                   <div class="mda-form-control-line"></div>
-                  <label>From</label>
+                  <label>Distribution Period : From</label>
                 </div>
               </div>
             </div>
             <div class="col-sm-6">
-              <div class="mda-form-group">
-                <div class="mda-form-control">
-                  <input id="program-valid-to" name="end-date" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepicker4">
+              <div class="mda-form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
+                <div id="datepicker-program-to" class="mda-form-control">
+                  <input id="program-valid-to" name="end-date" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepicker-program-to">
                   <div class="mda-form-control-line"></div>
                   <label>To</label>
                 </div>
@@ -142,7 +154,7 @@
             <div class="col-sm-5">
               <div class="form-group">
                 <div class="input-group">
-                  <input id="voucher-price" class="form-control" type="text" check="true" placeholder="0"><span class="input-group-addon">Points</span>
+                  <input id="voucher-price" class="form-control" type="text" placeholder="0"><span class="input-group-addon">Points</span>
                 </div>
               </div>
             </div>
@@ -239,17 +251,17 @@
             <div id="validity-date" class="col-sm-8">
               <div class="col-sm-6">
                 <div class="mda-form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
-                  <div id="example-datepicker-container-3" class="mda-form-control">
-                    <input id="voucher-valid-from" name="voucher-valid-from" tabindex="0" aria-invalid="false" class="form-control datepicker3">
+                  <div id="datepicker-voucher-from" class="mda-form-control">
+                    <input id="voucher-valid-from" name="voucher-valid-from" tabindex="0" aria-invalid="false" class="form-control datepicker-voucher-from">
                     <div class="mda-form-control-line"></div>
                     <label>From</label>
                   </div>
                 </div>
               </div>
               <div class="col-sm-6">
-                <div class="mda-form-group">
-                  <div class="mda-form-control">
-                    <input id="voucher-valid-to" name="voucher-valid-to" tabindex="0" aria-invalid="false" class="form-control datepicker3">
+                <div class="mda-form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
+                  <div id="datepicker-voucher-to" class="mda-form-control">
+                    <input id="voucher-valid-to" name="voucher-valid-to" tabindex="0" aria-invalid="false" class="form-control datepicker-voucher-to">
                     <div class="mda-form-control-line"></div>
                     <label>To</label>
                   </div>
@@ -257,7 +269,6 @@
               </div>
             </div>
           </div>
-
 
           <div class="row form-horizontal">
             <div class="col-sm-2">
@@ -296,7 +307,7 @@
             </div>
 
           </div>
-          <div class="row ">
+          <div class="row">
             <div class="col-sm-6">
               <div class="mda-form-group clockpicker" data-autoclose="true">
                 <div class="mda-form-control">
@@ -368,7 +379,7 @@
           <div class="row">
             <div class=" pull-right p">
               <span id="error-message" class="text-danger"></span>
-              <button type="button" onclick="send()" class="btn btn-raised btn-primary ripple">Create</button>
+              <button type="button" data-toggle="modal" onclick="send()" class="btn btn-raised btn-primary ripple">Create</button>
             </div>
           </div>
         </div>
@@ -384,12 +395,14 @@
 <script type="text/javascript" src="/assets/vendor/clockpicker/dist/bootstrap-clockpicker.js"></script>
 <script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
 <script type="text/javascript" src="/assets/vendor/summernote/dist/summernote.js"></script>
+<script type="text/javascript" src="/assets/vendor/loaders.css/loaders.css.js"></script>
 <script type="text/javascript" src="/assets/js/program/create.js"></script>
 
 {{ end }}
 
 {{ define "stylesheets" }}
 <link rel="stylesheet" href="/assets/vendor/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css">
+<link rel="stylesheet" href="/assets/vendor/loaders.css/loaders.css">
 <link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
 <link rel="stylesheet" href="/assets/vendor/summernote/dist/summernote.css">
 <link rel="stylesheet" href="/assets/vendor/clockpicker/dist/bootstrap-clockpicker.css">
