@@ -18,8 +18,8 @@ mailgun:
 
 logger:
   path: "/var/log/"
-#  path: "/home/richard/work/src/github.com/gilkor/evoucher/"
-  filename: "logger-evoucher"
+#  path: "/home/richard/Documents/evoucher/"
+  filen ame: "logger-evoucher"
 
 gcs:
   bucket: "e-voucher"
