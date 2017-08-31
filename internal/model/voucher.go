@@ -144,16 +144,15 @@ func FindVoucher(param map[string]string) (VoucherResponse, error) {
 			v.status = ?
 	`
 	for key, value := range param {
-		fmt.Println(key)
 		if key == "holder" {
-			q += ` AND v.holder LIKE '%` + value + `%'`
-			q += ` AND v.holder_description LIKE '%` + value + `%'`
+			q += ` AND (LOWER(v.holder) LIKE '%` + value + `%'`
+			q += ` OR LOWER(v.holder_description) LIKE '%` + value + `%')`
 		} else {
 			q += ` AND v.` + key + ` = '` + value + `'`
 		}
 	}
 	q += ` ORDER BY state DESC`
-
+	fmt.Println(q)
 	var resd []Voucher
 	if err := db.Select(&resd, db.Rebind(q), StatusCreated); err != nil {
 		return VoucherResponse{Status: ResponseStateNok, Message: err.Error(), VoucherData: resd}, err
