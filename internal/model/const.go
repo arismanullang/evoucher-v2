@@ -113,6 +113,7 @@ const (
 
 	ProgramTypeBulk     string = "bulk"
 	ProgramTypeOnDemand string = "on-demand"
+	ProgramTypeGift     string = "gift"
 
 	ALPHABET     = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 	NUMERALS     = "1234567890"

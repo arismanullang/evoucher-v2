@@ -49,8 +49,17 @@ function send() {
 		contentType: "application/json",
 		data: JSON.stringify(userReq),
 		success: function () {
-			swal("User Created.");
-			window.location = "/user/search?token=" + token;
+			swal({
+					title: 'Success',
+					text: 'User Created',
+					type: 'success',
+					showCancelButton: false,
+					confirmButtonText: 'Ok',
+					closeOnConfirm: false
+				},
+				function() {
+					window.location = "/user/search";
+				});
 		},
 		error: function (data) {
 			var a = JSON.parse(data.responseText);

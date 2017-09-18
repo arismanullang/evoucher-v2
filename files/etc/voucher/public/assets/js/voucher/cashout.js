@@ -96,5 +96,16 @@ function print(){
 }
 
 function next(){
-	window.location.reload();
+	swal({
+			title: 'Are you already print the invoice?',
+			text: 'You will not be able to recover the last details',
+			type: 'warning',
+			showCancelButton: false,
+			confirmButtonColor: '#4CAF50',
+			confirmButtonText: 'Yes',
+			closeOnConfirm: false
+		},
+		function() {
+			window.location.reload();
+		});
 }

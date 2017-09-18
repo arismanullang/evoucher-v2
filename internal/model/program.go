@@ -609,12 +609,13 @@ func FindAllPrograms(accountId string) ([]SearchProgram, error) {
 	return resv, nil
 }
 
-func FindAvailablePrograms(accountId string) ([]SearchProgram, error) {
+func FindAvailablePrograms(param map[string]string) ([]SearchProgram, error) {
 	q := `
 		SELECT
 			va.id
 			, va.account_id
 			, va.name
+			, va.type
 			, va.voucher_type
 			, va.voucher_price
 			, va.voucher_value
@@ -631,9 +632,16 @@ func FindAvailablePrograms(accountId string) ([]SearchProgram, error) {
 			va.id = vo.program_id
 		WHERE
 			va.status = ?
-			AND va.account_id = ?
-			AND va.end_date > now()
-			AND va.start_date < now()
+	`
+	for key, value := range param {
+		if strings.Contains(key, "date") {
+			q += ` AND va.` + key + ` ` + value
+		} else {
+			q += ` AND va.` + key + ` = '` + value + `'`
+		}
+	}
+
+	q += `
 		GROUP BY
 			va.id
 		ORDER BY
@@ -641,7 +649,7 @@ func FindAvailablePrograms(accountId string) ([]SearchProgram, error) {
 	`
 
 	var resv []SearchProgram
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
 		fmt.Println(err.Error())
 		return []SearchProgram{}, err
 	}

@@ -18,8 +18,17 @@ function recover() {
 		type: 'get',
 		dataType: 'json',
 		success: function (data) {
-			swal("Sending Email");
-			window.location = "/user/mail-send";
+			swal({
+					title: 'Success',
+					text: 'Email Sent',
+					type: 'success',
+					showCancelButton: false,
+					confirmButtonText: 'Ok',
+					closeOnConfirm: false
+				},
+				function() {
+					window.location = "/user/mail-send";
+				});
 		},
 		error: function (data) {
 			var a = JSON.parse(data.responseText);
