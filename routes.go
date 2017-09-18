@@ -43,6 +43,9 @@ func setRoutes() http.Handler {
 	r.PostFunc("/v1/ui/program/update", controller.UpdateProgramRoute)
 	r.GetFunc("/v1/ui/program/delete", controller.DeleteProgram)
 
+	//campaign
+	r.PostFunc("/v1/ui/campaign/create", controller.CreateEmailCampaign)
+
 	//transaction
 	r.GetFunc("/v1/ui/transaction/partner", controller.GetAllTransactionsByPartner)
 	r.GetFunc("/v1/ui/transaction", controller.CashoutTransactionDetails)
@@ -107,11 +110,12 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/ui/voucher/:id", controller.GetVoucherDetails)
 	r.PostFunc("/v1/ui/voucher/generate/bulk", controller.GenerateVoucherBulk)
 	r.PostFunc("/v1/ui/voucher/link", controller.GetVoucherlink)
-	r.PostFunc("/v1/ui/voucher/send-voucher", controller.SendVoucherBulk)
+	r.PostFunc("/v1/ui/voucher/send-voucher", controller.SendSedayuOneEmail)
 	r.GetFunc("/v1/ui/sample/link", controller.GetCsvSample)
 
 	//mobile API
 	r.GetFunc("/v1/program", controller.ListPrograms)
+	r.GetFunc("/v1/mall-program", controller.ListMallPrograms)
 	r.GetFunc("/v1/program/:id", controller.ListProgramsDetails)
 	r.GetFunc("/v1/voucher", controller.GetVoucherOfProgram)
 	r.GetFunc("/v1/voucher/:id", controller.GetVoucherOfProgramDetails)
@@ -181,6 +185,8 @@ func viewProgram(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "program/check.html", nil)
 	} else if page == "update" {
 		render.FileInLayout(w, "layout.html", "program/update.html", nil)
+	} else if page == "campaign" {
+		render.FileInLayout(w, "layout.html", "program/campaign.html", nil)
 	} else if page == "" || page == "index" {
 		render.FileInLayout(w, "layout.html", "program/index.html", nil)
 	} else {

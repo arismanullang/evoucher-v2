@@ -51,7 +51,17 @@ function send() {
 		contentType: "application/json",
 		data: JSON.stringify(partner),
 		success: function () {
-			window.location = "/partner/search";
+			swal({
+					title: 'Success',
+					text: 'Partner Created',
+					type: 'success',
+					showCancelButton: false,
+					confirmButtonText: 'Ok',
+					closeOnConfirm: false
+				},
+				function() {
+					window.location = "/partner/search";
+				});
 		},
 		error: function (data) {
 			var a = JSON.parse(data.responseText);

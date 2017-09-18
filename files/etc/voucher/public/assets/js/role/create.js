@@ -80,7 +80,17 @@ function add() {
 		contentType: "application/json",
 		data: JSON.stringify(role),
 		success: function (data) {
-			window.location = "/role/search";
+			swal({
+					title: 'Success',
+					text: 'Role Created',
+					type: 'success',
+					showCancelButton: false,
+					confirmButtonText: 'Ok',
+					closeOnConfirm: false
+				},
+				function() {
+					window.location = "/role/search";
+				});
 		},
 		error: function (data) {
 			var a = JSON.parse(data.responseText);

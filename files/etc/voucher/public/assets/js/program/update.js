@@ -311,8 +311,18 @@ function send() {
 							contentType: "application/json",
 							data: JSON.stringify(partner),
 							success: function () {
-								var id = findGetParameter("id");
-								window.location = "/program/check?id=" + id;
+								swal({
+										title: 'Success',
+										text: 'Program Updated',
+										type: 'success',
+										showCancelButton: false,
+										confirmButtonText: 'Ok',
+										closeOnConfirm: false
+									},
+									function() {
+										var id = findGetParameter("id");
+										window.location = "/program/check?id=" + id;
+									});
 							}
 						});
 					},
@@ -374,8 +384,18 @@ function send() {
 					contentType: "application/json",
 					data: JSON.stringify(partner),
 					success: function () {
-						var id = findGetParameter("id");
-						window.location = "/program/check?id=" + id;
+						swal({
+								title: 'Success',
+								text: 'Program Updated',
+								type: 'success',
+								showCancelButton: false,
+								confirmButtonText: 'Ok',
+								closeOnConfirm: false
+							},
+							function() {
+								var id = findGetParameter("id");
+								window.location = "/program/check?id=" + id;
+							});
 					}
 				});
 			},

@@ -46,6 +46,10 @@ a{
   color: #3f3f3f;
 }
 
+.footer-font-color{
+  color: #43C0C2;
+}
+
 .qrcode > img{
   display: inline !important;
 }
@@ -56,6 +60,28 @@ footer{
 
 .center-text{
   text-align: center;
+}
+
+.dropzone .dz-message{
+  margin: 0;
+}
+
+.dropzone {
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 3px;
+  padding: 8px !important;
+}
+
+.dropzone .dz-preview.dz-image-preview{
+  display: none;
+}
+
+.dropzone.dz-started .dz-message{
+  display: block;
+}
+
+.input-dropzone{
+  height:43px;
 }
 
 .progress{

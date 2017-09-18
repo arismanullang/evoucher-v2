@@ -50,11 +50,18 @@ function update() {
 		contentType: "application/json",
 		data: JSON.stringify(partner),
 		success: function () {
-			swal("Partner Updated.");
-
-			setTimeout(function () {
-				window.location = "/partner/search";
-			}, 1000);
+			swal({
+					title: 'Success',
+					text: 'Partner Updated',
+					type: 'success',
+					showCancelButton: false,
+					confirmButtonText: 'Ok',
+					closeOnConfirm: false
+				},
+				function() {
+					var id = findGetParameter("id");
+					window.location = "/partner/search";
+				});
 		},
 		error: function (data) {
 			var a = JSON.parse(data.responseText);

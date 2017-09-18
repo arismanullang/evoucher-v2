@@ -45,18 +45,20 @@ function setSideNavBar() {
 }
 
 function getSession() {
-    $.ajax({
-      url: '/v1/ui/token/check?token='+token+'&url='+window.location.pathname,
-      type: 'get',
-      success: function (data) {
-        if(data.data == false){
-          logOut();
-        }
-      },
-      error:function (data) {
-        logOut();
-      }
-    });
+	if(window.location.pathname == "program/campaign"){
+		$.ajax({
+			url: '/v1/ui/token/check?token='+token+'&url='+window.location.pathname,
+			type: 'get',
+			success: function (data) {
+				if(data.data == false){
+					logOut();
+				}
+			},
+			error:function (data) {
+				logOut();
+			}
+		});
+	}
 }
 
 function logOut() {

@@ -55,6 +55,7 @@ type (
 		ProgramID    string  `json:"program_id"`
 		AccountId    string  `json:"account_id"`
 		ProgramName  string  `json:"program_name"`
+		ProgramType  string  `json:"program_type"`
 		VoucherType  string  `json:"voucher_type"`
 		VoucherPrice float64 `json:"voucher_price"`
 		VoucherValue float64 `json:"voucher_value"`
@@ -168,17 +169,17 @@ func GetVoucherOfProgram(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	var status int
 
-	//Token Authentocation
-	a := AuthToken(w, r)
-	if !a.Valid {
-		render.JSON(w, a.res, http.StatusUnauthorized)
-		return
-	}
-
 	logger := model.NewLog()
 	logger.SetService("API").
 		SetMethod(r.Method).
 		SetTag("My Voucher")
+
+	//Token Authentocation
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
 
 	param := getUrlParam(r.URL.String())
 	delete(param, "token")
@@ -278,17 +279,17 @@ func GetVoucherOfProgramDetails(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	var status int
 
-	//Token Authentocation
-	a := AuthToken(w, r)
-	if !a.Valid {
-		render.JSON(w, a.res, http.StatusUnauthorized)
-		return
-	}
-
 	logger := model.NewLog()
 	logger.SetService("API").
 		SetMethod(r.Method).
 		SetTag("My-Voucher-Details")
+
+	//Token Authentocation
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
 
 	param := getUrlParam(r.URL.String())
 	param["state"] = model.VoucherStateCreated
@@ -401,17 +402,17 @@ func GetVoucherList(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	var status int
 
-	//Token Authentocation
-	a := AuthToken(w, r)
-	if !a.Valid {
-		render.JSON(w, a.res, http.StatusUnauthorized)
-		return
-	}
-
 	logger := model.NewLog()
 	logger.SetService("API").
 		SetMethod(r.Method).
 		SetTag("Voucher-List")
+
+	//Token Authentocation
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
 
 	param := getUrlParam(r.URL.String())
 	delete(param, "token")
@@ -476,16 +477,16 @@ func GetVoucherDetails(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	var status int
 
-	a := AuthToken(w, r)
-	if !a.Valid {
-		render.JSON(w, a.res, http.StatusUnauthorized)
-		return
-	}
-
 	logger := model.NewLog()
 	logger.SetService("API").
 		SetMethod(r.Method).
 		SetTag("Voucher-Details")
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
 
 	d, err := model.FindVoucher(map[string]string{"id": vc})
 
@@ -585,17 +586,17 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Token Authentocation
-	a := AuthToken(w, r)
-	if !a.Valid {
-		render.JSON(w, a.res, http.StatusUnauthorized)
-		return
-	}
-
 	logger := model.NewLog()
 	logger.SetService("API").
 		SetMethod(r.Method).
 		SetTag("Generate-Voucher-Single")
+
+	//Token Authentocation
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
 
 	_, err = govalidator.ValidateStruct(gvd)
 	if err != nil {
@@ -694,17 +695,17 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 	vrID := r.FormValue("program")
 	fmt.Println("program id = ", vrID)
 
-	//Token Authentocation
-	a := AuthToken(w, r)
-	if !a.Valid {
-		render.JSON(w, a.res, http.StatusUnauthorized)
-		return
-	}
-
 	logger := model.NewLog()
 	logger.SetService("API").
 		SetMethod(r.Method).
 		SetTag("Generate-Voucher-Bulk")
+
+	//Token Authentocation
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
 
 	if CheckAPIRole(a, apiName) {
 		render.JSON(w, model.ErrCodeInvalidRole, http.StatusUnauthorized)
@@ -782,16 +783,16 @@ func GetVoucherlink(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	varID := r.FormValue("program")
 
-	a := AuthToken(w, r)
-	if !a.Valid {
-		render.JSON(w, a.res, http.StatusUnauthorized)
-		return
-	}
-
 	logger := model.NewLog()
 	logger.SetService("API").
 		SetMethod(r.Method).
 		SetTag("Generate-Voucher-Link")
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
 
 	if CheckAPIRole(a, apiName) {
 		render.JSON(w, model.ErrCodeInvalidRole, http.StatusUnauthorized)
@@ -1006,128 +1007,4 @@ func voucherCode(vcf model.VoucherCodeFormat, flag int) string {
 	}
 
 	return code
-}
-
-func SendVoucherBulk(w http.ResponseWriter, r *http.Request) {
-	apiName := "voucher_generate-bulk"
-	var gvd GenerateVoucherRequest
-	var status int
-	res := NewResponse(nil)
-	vrID := r.FormValue("program")
-
-	logger := model.NewLog()
-	logger.SetService("API").
-		SetMethod(r.Method).
-		SetTag(apiName)
-
-	a := AuthTokenWithLogger(w, r, logger)
-	if !a.Valid {
-		render.JSON(w, a.res, http.StatusUnauthorized)
-		return
-	}
-
-	if CheckAPIRole(a, apiName) {
-		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
-
-		status = http.StatusUnauthorized
-		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
-		render.JSON(w, res, status)
-		return
-	}
-
-	if getCountVoucher(vrID) > 0 {
-		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeInvalidProgram, model.ErrMessageProgramHasBeenUsed, logger.TraceID)
-		logger.SetStatus(status).Log("param :", vrID, "response :", res.Errors)
-		render.JSON(w, res, status)
-		return
-	}
-
-	program, err := model.FindProgramDetailsById(vrID)
-	if err == model.ErrResourceNotFound {
-		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, logger.TraceID)
-		logger.SetStatus(status).Log("param :", vrID, "response :", res.Errors)
-		render.JSON(w, res, status)
-		return
-	} else if err != nil {
-		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
-		logger.SetStatus(status).Log("param :", vrID, "response :", res.Errors)
-		render.JSON(w, res, status)
-		return
-	}
-
-	var listBroadcast []model.BroadcastUser
-	listBroadcast, err = model.FindBroadcastUser(map[string]string{"program_id": vrID})
-	if err != nil {
-		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
-		logger.SetStatus(status).Log("param :", vrID, "response :", res.Errors)
-		render.JSON(w, res, status)
-		return
-	}
-
-	gvd.AccountID = a.User.Account.Id
-	gvd.ProgramID = vrID
-	gvd.Quantity = 1
-	gvd.CreatedBy = a.User.ID
-
-	totalVoucher := []model.Voucher{}
-	tempListVoucher := []model.Voucher{}
-
-	for _, v := range listBroadcast {
-		gvd.ReferenceNo = its(v.ID)
-		gvd.Holder.Key = v.Target
-		gvd.Holder.Description = v.Description
-
-		tempListVoucher, err = gvd.generateVoucher(&program)
-		if err != nil {
-			fmt.Println(err)
-			rollback(vrID)
-
-			status = http.StatusInternalServerError
-			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
-			logger.SetStatus(status).Log("param :", vrID, "response :", err.Error())
-			render.JSON(w, res, status)
-			return
-		}
-
-		for _, vv := range tempListVoucher {
-			totalVoucher = append(totalVoucher, vv)
-		}
-	}
-
-	listEmail := []string{}
-	listParam := []model.SedayuOneEmail{}
-
-	for _, v := range totalVoucher {
-		listEmail = append(listEmail, v.Holder.String)
-		listParam = append(listParam, model.SedayuOneEmail{Name: v.HolderDescription.String, VoucherUrl: generateLink(v.ID)})
-	}
-
-	fmt.Println(listEmail)
-	fmt.Println(listParam)
-
-	if err := model.SendMailSedayuOne(model.Domain, model.ApiKey, model.PublicApiKey, "Sedayu One Voucher Test", listEmail, listParam); err != nil {
-		res := NewResponse(nil)
-		status := http.StatusInternalServerError
-		errTitle := model.ErrCodeInternalError
-		if err == model.ErrResourceNotFound {
-			status = http.StatusNotFound
-			errTitle = model.ErrCodeResourceNotFound
-		}
-
-		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-		logger.SetStatus(status).Info("param :", listParam, "response :", err.Error())
-		render.JSON(w, res, status)
-		return
-	}
-
-	status = http.StatusCreated
-	res = NewResponse("success")
-	logger.SetStatus(status).Log("param :", vrID, "response :", res.Data)
-	render.JSON(w, res, status)
-	return
-
 }

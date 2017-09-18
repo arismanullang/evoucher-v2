@@ -13,6 +13,8 @@ import (
 	"github.com/ruizu/render"
 
 	"github.com/gilkor/evoucher/internal/model"
+	"io"
+	"os"
 )
 
 type (
@@ -117,11 +119,13 @@ func ListPrograms(w http.ResponseWriter, r *http.Request) {
 
 	param := getUrlParam(r.URL.String())
 
+	param["end_date"] = " > now()"
+	param["start_date"] = " < now()"
 	param["type"] = model.ProgramTypeOnDemand
 	param["account_id"] = a.User.Account.Id
 	delete(param, "token")
 
-	program, err := model.FindAvailablePrograms(a.User.Account.Id)
+	program, err := model.FindAvailablePrograms(param)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilProgram, logger.TraceID)
@@ -142,6 +146,69 @@ func ListPrograms(w http.ResponseWriter, r *http.Request) {
 			tempVoucher.ProgramID = dt.Id
 			tempVoucher.AccountId = dt.AccountId
 			tempVoucher.ProgramName = dt.Name
+			tempVoucher.VoucherType = dt.VoucherType
+			tempVoucher.VoucherPrice = dt.VoucherPrice
+			tempVoucher.VoucherValue = dt.VoucherValue
+			tempVoucher.StartDate = dt.StartDate
+			tempVoucher.EndDate = dt.EndDate
+			tempVoucher.ImgUrl = dt.ImgUrl
+			tempVoucher.MaxQty = dt.MaxVoucher
+			tempVoucher.Used = sti(dt.Voucher)
+
+			d = append(d, tempVoucher)
+		}
+	}
+
+	status = http.StatusOK
+	res = NewResponse(d)
+	logger.SetStatus(status).Log("param :", param, "response :", d)
+	render.JSON(w, res, status)
+}
+
+func ListMallPrograms(w http.ResponseWriter, r *http.Request) {
+	res := NewResponse(nil)
+	var status int
+
+	a := AuthToken(w, r)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("program_list")
+
+	param := getUrlParam(r.URL.String())
+
+	param["end_date"] = " > now()"
+	param["start_date"] = " < now()"
+	param["account_id"] = a.User.Account.Id
+	delete(param, "token")
+
+	program, err := model.FindAvailablePrograms(param)
+	if err == model.ErrResourceNotFound {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilProgram, logger.TraceID)
+		logger.SetStatus(status).Log("param :", param, "response :", res.Errors)
+		render.JSON(w, res, status)
+		return
+	} else if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", param, "response :", res.Errors)
+		render.JSON(w, res, status)
+		return
+	}
+	d := []GetVoucherOfVariatdata{}
+	for _, dt := range program {
+		if (int(dt.MaxVoucher) - sti(dt.Voucher)) > 0 {
+			tempVoucher := GetVoucherOfVariatdata{}
+			tempVoucher.ProgramID = dt.Id
+			tempVoucher.AccountId = dt.AccountId
+			tempVoucher.ProgramName = dt.Name
+			tempVoucher.ProgramType = dt.Type
 			tempVoucher.VoucherType = dt.VoucherType
 			tempVoucher.VoucherPrice = dt.VoucherPrice
 			tempVoucher.VoucherValue = dt.VoucherValue
@@ -377,7 +444,7 @@ func CreateProgram(w http.ResponseWriter, r *http.Request) {
 	var rd Program
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
-		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
+		logger.SetStatus(http.StatusBadRequest).Panic("param :", rd, "response :", err.Error())
 	}
 
 	ts, err := time.Parse("01/02/2006", rd.StartDate)
@@ -690,6 +757,61 @@ func CheckProgram(rm, id string, qty int) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func CreateTemplateCampaign(w http.ResponseWriter, r *http.Request) {
+	var listTarget []string
+	var listDescription []string
+	programId := r.FormValue("program-id")
+	apiName := "broadcast_create"
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
+	r.ParseMultipartForm(32 << 20)
+	f, handler, err := r.FormFile("template")
+	if err == http.ErrMissingFile {
+		err = model.ErrResourceNotFound
+	}
+	if err != nil {
+		err = model.ErrServerInternal
+	}
+
+	defer f.Close()
+	file, err := os.OpenFile("./test/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+	io.Copy(file, f)
+
+	res := NewResponse(nil)
+	status := http.StatusCreated
+
+	a := AuthToken(w, r)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	if err := model.InsertBroadcastUser(programId, a.User.ID, listTarget, listDescription); err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", programId+" || "+strings.Join(listTarget, ";"), "response :", err.Error())
+	}
+
+	if err := model.UpdateBulkProgram(programId, len(listTarget)); err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", programId+" || "+its(len(listTarget)), "response :", err.Error())
+	}
+
+	render.JSON(w, res, status)
 }
 
 func validdays(s string) bool {
