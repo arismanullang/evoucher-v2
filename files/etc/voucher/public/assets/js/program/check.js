@@ -170,9 +170,15 @@ function getProgram(id, voucher, used, paid) {
 				remainingVoucher = result.max_quantity_voucher - voucher;
 			}
 
-			if (result.type != 'bulk') {
-				programType = "Mobile App"
-				$("#button-voucher").attr("style", "display:none");
+			switch(result.type){
+				case 'on-demand':
+					programType = "Mobile App"
+					$("#button-voucher").attr("style", "display:none");
+					break;
+				case 'gift':
+					programType = "Gift Voucher"
+					$("#button-voucher").attr("style", "display:none");
+					break;
 			}
 
 			// Program
@@ -226,20 +232,9 @@ function getProgram(id, voucher, used, paid) {
 	});
 }
 
-function generateVoucher() {
-	var id = $('#program-id').val();
-	swal("Sending Voucher");
-	$.ajax({
-		url: '/v1/ui/voucher/send-voucher?program=' + id + '&token=' + token,
-		type: 'post',
-		success: function (data) {
-			location.reload();
-		},
-		error: function (data) {
-			var a = JSON.parse(data.responseText);
-			swal("Error", a.errors.detail);
-		}
-	});
+function programCampaign(){
+	var id = findGetParameter("id");
+	window.location = "/program/campaign?id=" + id;
 }
 
 function editProgram() {

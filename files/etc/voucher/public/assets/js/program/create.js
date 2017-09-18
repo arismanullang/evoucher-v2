@@ -51,7 +51,7 @@ $(document).ready(function () {
 		if (this.value == "bulk") {
 			$("#target").attr("style", "display:block");
 			$("#conversion-row").attr("style", "display:none");
-			$("#voucher-price").val(1);
+			$("#voucher-price").val(0);
 			$("#voucher-price").attr("disabled", true);
 		} else {
 			$("#target").attr("style", "display:none");
@@ -99,6 +99,7 @@ $(document).ready(function () {
 	if ($("#program-type").val() == "bulk") {
 		$("#target").attr("style", "display:block");
 		$("#conversion-row").attr("style", "display:none");
+		$("#voucher-price").val(0);
 		$("#voucher-price").attr("disabled", true);
 	} else {
 		$("#target").attr("style", "display:none");
@@ -314,7 +315,18 @@ function send() {
 								contentType: false,
 								data: targets,
 								success: function (data) {
-									window.location = "/program/search";
+									$('#modal-loader').modal('hide');
+									swal({
+											title: 'Success',
+											text: 'Program Created',
+											type: 'success',
+											showCancelButton: false,
+											confirmButtonText: 'Ok',
+											closeOnConfirm: false
+										},
+										function() {
+											window.location = "/program/search";
+										});
 								},
 								error: function (data) {
 									var a = JSON.parse(data.responseText);
@@ -323,7 +335,18 @@ function send() {
 							});
 
 						} else {
-							window.location = "/program/search";
+							$('#modal-loader').modal('hide');
+							swal({
+									title: 'Success',
+									text: 'Program Created',
+									type: 'success',
+									showCancelButton: false,
+									confirmButtonText: 'Ok',
+									closeOnConfirm: false
+								},
+								function() {
+									window.location = "/program/search";
+								});
 						}
 					},
 					error: function (data) {
@@ -383,7 +406,18 @@ function send() {
 						contentType: false,
 						data: targets,
 						success: function (data) {
-							window.location = "/program/search";
+							$('#modal-loader').modal('hide');
+							swal({
+									title: 'Success',
+									text: 'Program Created',
+									type: 'success',
+									showCancelButton: false,
+									confirmButtonText: 'Ok',
+									closeOnConfirm: false
+								},
+								function() {
+									window.location = "/program/search";
+								});
 						},
 						error: function (data) {
 							var a = JSON.parse(data.responseText);
@@ -391,7 +425,18 @@ function send() {
 						}
 					});
 				} else {
-					window.location = "/program/search";
+					$('#modal-loader').modal('hide');
+					swal({
+							title: 'Success',
+							text: 'Program Created',
+							type: 'success',
+							showCancelButton: false,
+							confirmButtonText: 'Ok',
+							closeOnConfirm: false
+						},
+						function() {
+							window.location = "/program/search";
+						});
 				}
 			},
 			error: function (data) {

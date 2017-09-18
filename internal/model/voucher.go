@@ -5,7 +5,6 @@ import (
 	"log"
 	"time"
 
-	"fmt"
 	"github.com/lib/pq"
 )
 
@@ -145,8 +144,8 @@ func FindVoucher(param map[string]string) (VoucherResponse, error) {
 	`
 	for key, value := range param {
 		if key == "holder" {
-			q += ` AND (LOWER(v.holder) LIKE '%` + value + `%'`
-			q += ` OR LOWER(v.holder_description) LIKE '%` + value + `%')`
+			q += ` AND (LOWER(v.holder) LIKE LOWER('%` + value + `%')`
+			q += ` OR LOWER(v.holder_description) LIKE LOWER('%` + value + `%'))`
 		} else {
 			q += ` AND v.` + key + ` = '` + value + `'`
 		}
