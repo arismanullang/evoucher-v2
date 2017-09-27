@@ -13,33 +13,18 @@ function getPartner(id) {
 		type: 'get',
 		success: function (data) {
 			var arrData = data.data[0];
-			$("#partner-name").html(arrData.name);
-			$("#serial-number").val(arrData.serial_number.String);
+			$("#partnerName").html(arrData.name);
+			$("#serialNumber").val(arrData.serial_number.String);
 			$("#description").val(arrData.description.String);
 		}
 	});
 }
 
 function update() {
-	var i;
-
 	var id = findGetParameter("id");
-	var error = false;
-	$('input[check="true"]').each(function () {
-		if ($(this).val() == "") {
-			$(this).addClass("error");
-			$(this).parent().closest('div').addClass("input-error");
-			error = true;
-		}
-	});
-
-	if (error) {
-		swal("Please check your input.");
-		return
-	}
 
 	var partner = {
-		serial_number: $("#serial-number").val(),
+		serial_number: $("#serialNumber").val(),
 		description: $("#description").val()
 	};
 
