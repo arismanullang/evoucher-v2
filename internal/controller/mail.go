@@ -211,7 +211,7 @@ func SendSedayuOneEmail(w http.ResponseWriter, r *http.Request) {
 		listEmail = append(listEmail, model.TargetEmail{HolderName: v.HolderDescription.String, VoucherUrl: generateLink(v.ID), HolderEmail: v.Holder.String})
 	}
 
-	if err := model.SendMailSedayuOneTest(model.Domain, model.ApiKey, model.PublicApiKey, "Sedayu One Voucher", listEmail, campaign); err != nil {
+	if err := model.SendMailSedayuOne(model.Domain, model.ApiKey, model.PublicApiKey, "Sedayu One Voucher", listEmail, campaign); err != nil {
 		res := NewResponse(nil)
 		status := http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError

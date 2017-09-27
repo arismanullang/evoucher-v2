@@ -3,35 +3,21 @@ $(window).ready(function () {
 		if ( e.which == 13 ) e.preventDefault();
 	});
 
-	getRole()
+	getRole();
 });
 
 function send() {
+	if(!$("#createUser").valid()){
+		return;
+	}
+
 	var i;
 
 	var listRole = [];
 	var li = $("input[type=checkbox]:checked");
 
-	if (li.length == 0 || parseInt($("#length").val()) < 8) {
-		error = true;
-	}
-
 	for (i = 0; i < li.length; i++) {
 		listRole[i] = li[i].value;
-	}
-
-	var error = false;
-	$('input[check="true"]').each(function () {
-		if ($(this).val() == "") {
-			$(this).addClass("error");
-			$(this).parent().closest('div').addClass("input-error");
-			error = true;
-		}
-	});
-
-	if (error) {
-		swal("Please check your input.");
-		return
 	}
 
 	var userReq = {
@@ -85,7 +71,7 @@ function getRole() {
 			for (i = 0; i < arrData.length; i++) {
 				var li = $("<div class='col-sm-4'></div>");
 				var html = "<label class='checkbox-inline c-checkbox'>"
-					+ "<input type='checkbox' value='" + arrData[i].id + "' text='" + arrData[i].detail + "'>"
+					+ "<input type='checkbox' name='role[]' value='" + arrData[i].id + "' text='" + arrData[i].detail + "'>"
 					+ "<span class='ion-checkmark-round'></span>" + arrData[i].detail
 					+ "</label>";
 				li.html(html);
@@ -107,5 +93,28 @@ function getRole() {
 	function formAdvanced() {
 		$('.select2').select2();
 	}
+
+	$('#createUser').validate({
+		errorPlacement: errorPlacementInput,
+		// Form rules
+		rules: {
+			username: {
+				required: true
+			},
+			password: {
+				required: true
+			},
+			email: {
+				required: true,
+				email: true
+			},
+			phone: {
+				required: true
+			},
+			'role[]': {
+				required: true
+			}
+		}
+	});
 
 })();

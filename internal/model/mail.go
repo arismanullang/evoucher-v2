@@ -87,46 +87,7 @@ func makeMessageForgotPassword(id string) string {
 	return result
 }
 
-func SendMailSedayuOne(domain, apiKey, publicApiKey, subject string, emailTarget []string, param []SedayuOneEmail) error {
-	mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
-
-	for i, v := range emailTarget {
-		message := mailgun.NewMessage(
-			Email,
-			subject,
-			subject,
-			v)
-		message.SetHtml(makeMessageEmailSedayuOne(param[i]))
-		resp, id, err := mg.Send(message)
-		if err != nil {
-			return err
-		}
-		fmt.Printf("ID: %s Resp: %s\n", id, resp)
-	}
-
-	return nil
-}
-
-func makeMessageEmailSedayuOne(param SedayuOneEmail) string {
-	// %%full-name%%
-	// %%link-voucher%%
-	str, err := ioutil.ReadFile(RootTemplate + "sedayu_one_campaign")
-	if err != nil {
-		fmt.Println(err.Error())
-		return ""
-	}
-
-	result := string(str)
-	result = strings.Replace(result, "%%full-name%%", param.HolderName, 1)
-	result = strings.Replace(result, "%%link-voucher%%", param.VoucherUrl, 1)
-	result = strings.Replace(result, "%%program-name%%", param.ProgamName, 1)
-	result = strings.Replace(result, "%%image-header%%", "http://mailer.gilkor.com/admin/temp/newsletters/33/header_apr_fix.jpg", 1)
-	result = strings.Replace(result, "%%image-voucher%%", "http://mailer.gilkor.com/admin/temp/newsletters/116/pik_marvelous_prizes.jpg", 1)
-	//result = strings.Replace(result, "%%image-voucher%%", "http://mailer.gilkor.com/admin/temp/newsletters/116/pik_marvelous_prizes.jpg", 1)
-	return result
-}
-
-func SendMailSedayuOneTest(domain, apiKey, publicApiKey, subject string, target []TargetEmail, program ProgramCampaign) error {
+func SendMailSedayuOne(domain, apiKey, publicApiKey, subject string, target []TargetEmail, program ProgramCampaign) error {
 	mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
 
 	for _, v := range target {
@@ -135,7 +96,7 @@ func SendMailSedayuOneTest(domain, apiKey, publicApiKey, subject string, target 
 			subject,
 			subject,
 			v.HolderEmail)
-		message.SetHtml(makeMessageEmailSedayuOneTest(program, v))
+		message.SetHtml(makeMessageEmailSedayuOne(program, v))
 		resp, id, err := mg.Send(message)
 		if err != nil {
 			return err
@@ -145,7 +106,7 @@ func SendMailSedayuOneTest(domain, apiKey, publicApiKey, subject string, target 
 
 	return nil
 }
-func makeMessageEmailSedayuOneTest(program ProgramCampaign, target TargetEmail) string {
+func makeMessageEmailSedayuOne(program ProgramCampaign, target TargetEmail) string {
 	// %%full-name%%
 	// %%link-voucher%%
 	str, err := ioutil.ReadFile(RootTemplate + "sedayu_one_campaign")

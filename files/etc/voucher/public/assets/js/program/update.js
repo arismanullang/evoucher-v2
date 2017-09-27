@@ -6,21 +6,21 @@ $(window).ready(function () {
 	var id = findGetParameter("id");
 	searchById(id);
 	getPartner(id);
-	$("#image-url").change(function () {
+	$("#imageUrl").change(function () {
 		readURL(this);
 	});
 
-	$("#all-tenant").change(function () {
-		console.log("a");
-		var lis = $("input[class=partner]");
-		if ($("#all-tenant").is(':checked')) {
-			for (var i = 0; i < lis.length; i++) {
-				lis[i].checked = true;
-			}
+	$("#allTenant").change(function () {
+		var _this = $(this);
+		_this.closest('#partnerList').find("input[class=partner]").prop('checked', _this.prop('checked'));
+	});
+
+
+	$("#allowAccumulative").change(function () {
+		if (this.checked == true) {
+			$("#divMaxRedeemVoucher").attr("style", "display:block");
 		} else {
-			for (var i = 0; i < lis.length; i++) {
-				lis[i].checked = false;
-			}
+			$("#divMaxRedeemVoucher").attr("style", "display:none");
 		}
 	});
 });
@@ -29,8 +29,8 @@ function readURL(input) {
 	if (input.files && input.files[0]) {
 		var reader = new FileReader();
 		reader.onload = function (e) {
-			$('#image-preview').attr('src', e.target.result);
-		}
+			$('#imagePreview').attr('src', e.target.result);
+		};
 
 		reader.readAsDataURL(input.files[0]);
 	}
@@ -46,100 +46,107 @@ function searchById(id) {
 		success: function (data) {
 			console.log(data);
 			var program = data.data[0];
-			$("#program-id").val(id);
-			$("#program-name").val(program.name);
-			$("#program-type").val(program.type);
-			$("#voucher-price").val(program.voucher_price);
-			$("#max-quantity-voucher").val(program.max_quantity_voucher);
-			$("#max-generate-voucher").val(program.max_generate_voucher);
-			$("#max-redeem-voucher").val(program.max_redeem_voucher);
-			$("#redemption-method").val(program.redeem_method);
-			$("#program-valid-from").val(convertToDate(program.start_date));
-			$("#program-valid-to").val(convertToDate(program.end_date));
-			$("#voucher-value").val(program.voucher_value);
-			$("#list-rule").html(program.tnc);
-			$("#program-description").val(program.description);
-			$("#start-hour").val(program.start_hour);
-			$("#end-hour").val(program.end_hour);
-			$("#image-url-default").val(program.image_url);
-			$("#voucher-valid-from").val(program.valid_voucher_start);
-			$("#voucher-valid-to").val(program.valid_voucher_end);
-			$("#all-tenant").prop("checked", false);
+			$("#programId").val(id);
+			$("#programName").val(program.name);
+			$("#programType").val(program.type);
+			$("#voucherPrice").val(program.voucher_price);
+			$("#maxQuantityVoucher").val(program.max_quantity_voucher);
+			$("#maxGenerateVoucher").val(program.max_generate_voucher);
+			$("#maxRedeemVoucher").val(program.max_redeem_voucher);
+			$("#redemptionMethod").val(program.redeem_method);
+			$("#programValidFrom").val(convertToDate(program.start_date));
+			$("#programValidTo").val(convertToDate(program.end_date));
+			$("#voucherValue").val(program.voucher_value);
+			$("#listRule").html(program.tnc);
+			$("#programDescription").val(program.description);
+			$("#startHour").val(program.start_hour);
+			$("#endHour").val(program.end_hour);
+			$("#imageUrlDefault").val(program.image_url);
+			$("#voucherValidFrom").val(program.valid_voucher_start);
+			$("#voucherValidTo").val(program.valid_voucher_end);
+			$("#allTenant").prop("checked", false);
+			$("#imagePreview").attr("src", program.image_url);
 
-			$("#program-type").attr("disabled", "");
-			$("#voucher-price").attr("disabled", "");
-			$("#max-quantity-voucher").attr("disabled", "");
-			$("#voucher-value").attr("disabled", "");
-			$("#start-hour").attr("disabled", "");
-			$("#end-hour").attr("disabled", "");
-			$("#program-valid-from").attr("disabled", "");
-			$("#program-valid-to").attr("disabled", "");
-			$("#voucher-validity-type").attr("disabled", "");
-			$("#voucher-valid-from").attr("disabled", "");
-			$("#voucher-valid-to").attr("disabled", "");
+			$("#programType").attr("disabled", "");
+			$("#voucherPrice").attr("disabled", "");
+			$("#maxQuantityVoucher").attr("disabled", "");
+			$("#voucherValue").attr("disabled", "");
+			$("#startHour").attr("disabled", "");
+			$("#endHour").attr("disabled", "");
+			$("#programValidFrom").attr("disabled", "");
+			$("#programValidTo").attr("disabled", "");
+			$("#voucherValidityType").attr("disabled", "");
+			$("#voucherValidFrom").attr("disabled", "");
+			$("#voucherValidTo").attr("disabled", "");
 
 			if (program.voucher_lifetime != 0) {
-				$("#voucher-lifetime").attr("disabled", "");
-				$("#voucher-lifetime").val(program.voucher_lifetime);
-				$("#validity-lifetime").attr("style", "display:block");
-				$("#validity-date").attr("style", "display:none");
-				$("#voucher-valid-from").val("");
-				$("#voucher-valid-to").val("");
-				$("#voucher-validity-type").selectedIndex = 1;
-				$("#voucher-validity-type").val("lifetime");
+				$("#voucherLifetime").attr("disabled", "");
+				$("#voucherLifetime").val(program.voucher_lifetime);
+				$("#validityLifetime").attr("style", "display:block");
+				$("#validityDate").attr("style", "display:none");
+				$("#voucherValidTrom").val("");
+				$("#voucherValidTo").val("");
+				$("#voucherValidityType").selectedIndex = 1;
+				$("#voucherValidityType").val("lifetime");
 			}
-			if ($("#voucher-validity-type").val() == "lifetime") {
-				$("#validity-lifetime").attr("style", "display:block");
-				$("#validity-date").attr("style", "display:none");
-				$("#voucher-valid-from").val("");
-				$("#voucher-valid-to").val("");
-			} else if ($("#voucher-validity-type").val() == "period") {
-				$("#validity-lifetime").attr("style", "display:none");
-				$("#validity-date").attr("style", "display:block");
-				$("#voucher-lifetime").val("");
+			if ($("#voucherValidityType").val() == "lifetime") {
+				$("#validityLifetime").attr("style", "display:block");
+				$("#validityDate").attr("style", "display:none");
+				$("#voucherValidFrom").val("");
+				$("#voucherValidTo").val("");
+			} else if ($("#voucherValidityType").val() == "period") {
+				$("#validityLifetime").attr("style", "display:none");
+				$("#validityDate").attr("style", "display:block");
+				$("#voucherLifetime").val("");
 			} else {
-				$("#validity-lifetime").attr("style", "display:none");
-				$("#validity-date").attr("style", "display:none");
-				$("#voucher-valid-from").val("");
-				$("#voucher-valid-to").val("");
-				$("#voucher-lifetime").val("");
+				$("#validityLifetime").attr("style", "display:none");
+				$("#validityDate").attr("style", "display:none");
+				$("#voucherValidFrom").val("");
+				$("#voucherValidTo").val("");
+				$("#voucherLifetime").val("");
 			}
 
-			$("#redeem-validity-type").attr("disabled", "");
-			if ($("#redeem-validity-type").val() == "all") {
-				$("#validity-day").attr("style", "display:none");
-			} else if ($("#redeem-validity-type").value == "selected") {
-				$("#validity-day").attr("style", "display:block");
+			$("#redeemValidityType").attr("disabled", "");
+			if (program.validity_days == "all") {
+				$("#validityDay").attr("style", "display:none");
 			} else {
-				$("#validity-day").attr("style", "display:none");
+				$("#redeemValidityType").val("selected");
+				$("#validityDay").attr("style", "display:block");var i;
+
+				var y;
+				var li = $("input[class=days]");
+				var arrData = program.validity_days.split(";");
+
+				for (i = 0; i < li.length; i++) {
+					var tempElem = li[i];
+					var limit = arrData.length;
+					for (y = 0; y < limit; y++) {
+						if (tempElem.getAttribute("value") == arrData[y]) {
+							console.log(tempElem.getAttribute("value") + " " + arrData[y]);
+							console.log(tempElem);
+
+							tempElem.checked = true;
+						}
+					}
+				}
 			}
 
-			$("#program-type").attr("disabled", "");
-			if ($("#program-type").val() == "bulk") {
+			$("#programType").attr("disabled", "");
+			if ($("#programType").val() == "bulk") {
 				$("#target").attr("style", "display:block");
-				$("#conversion-row").attr("style", "display:none");
-				$("#generate-row").attr("style", "display:none");
-				$("#max-quantity-voucher").attr("disabled", "");
-				$("#voucher-price").attr("disabled", "");
+				$("#conversionRow").attr("style", "display:none");
+				$("#generateRow").attr("style", "display:none");
+				$("#maxQuantityVoucher").attr("disabled", "");
+				$("#voucherPrice").attr("disabled", "");
 			} else {
 				$("#target").attr("style", "display:none");
-				$("#conversion-row").attr("style", "display:block");
-				$("#generate-row").attr("style", "display:block");
-				$("#max_quantity_voucher").removeAttr("disabled", "");
-				$("#voucher_price").removeAttr("disabled", "");
+				$("#conversionRow").attr("style", "display:block");
+				$("#generateRow").attr("style", "display:block");
 			}
 			if (program.allow_accumulative) {
-				$("#allow-accumulative").attr("checked", true);
-				$("#use-voucher").attr("style", "display:block");
+				$("#allowAccumulative").attr("checked", true);
+				$("#useVoucher").attr("style", "display:block");
 			}
-
-			$("#allow-accumulative").change(function () {
-				if (this.checked == true) {
-					$("#use-voucher").attr("style", "display:block");
-				} else {
-					$("#use-voucher").attr("style", "display:none");
-				}
-			});
 
 			$(".select2").select2();
 			$('.summernote').each(function () {
@@ -165,33 +172,44 @@ function searchById(id) {
 }
 
 function send() {
-	error = false;
+	var programName = $("#programName").val();
+	var programType = $("#programType").find(":selected").val();
+	var voucherPrice = parseInt($("#voucherPrice").val());
+	var maxQuantityVoucher = parseInt($("#maxQuantityVoucher").val());
+	var redemptionMethod = $("#redemptionMethod").find(":selected").val();
+	var programValidFrom = $("#programValidFrom").val();
+	var programValidTo = $("#programValidTo").val();
+	var startHour = $("#startHour").val();
+	var endHour = $("#endHour").val();
+	var voucherValue = parseInt($("#voucherValue").val());
+	var programDescription = $("#programDescription").val();
+
 	var listDay = "";
-	if ($("#redeem-validity-type").val() == "all") {
+	if ($("#redeemValidityType").val() == "all") {
 		listDay = "all";
-	} else if ($("#redeem-validity-type").val() == "selected") {
-		var li = $("ul.select2-selection__rendered").find("li");
+	} else if ($("#redeemValidityType").val() == "weekend") {
+		listDay = "sunday;saturday";
+	} else if ($("#redeemValidityType").val() == "weekday") {
+		listDay = "monday;tuesday;wednesday;thursday;friday";
+	} else if ($("#redeemValidityType").val() == "selected") {
+		var li = $("input[class=days]:checked");
 
-		if (li.length == 0 || parseInt($("#length").val()) < 8) {
-			error = true;
-		}
+		$( ".days" ).rules( "add", {
+			required: true
+		});
 
-		for (i = 0; i < li.length - 1; i++) {
-			var text = li[i].getAttribute("title");
-			var value = $("option").filter(function () {
-				return $(this).text() === text;
-			}).first().attr("value");
 
-			listDay = listDay + value + ";";
+		if (li.length > 0) {
+			for (i = 0; i < li.length; i++) {
+				if (li[i].value != "on") {
+					listDay = listDay + li[i].value + ";";
+				}
+			}
 		}
 	}
 
 	var listPartner = [];
 	var li = $("input[class=partner]:checked");
-
-	if (li.length == 0 || parseInt($("#length").val()) < 8) {
-		error = true;
-	}
 
 	for (i = 0; i < li.length; i++) {
 		listPartner[i] = li[i].value;
@@ -201,60 +219,52 @@ function send() {
 	var periodStart = "";
 	var periodEnd = "";
 
-	if ($("#voucher-validity-type").val() == "period") {
+	if ($("#voucherValidityType").val() == "period") {
 		lifetime = 0;
-		periodStart = $("#voucher-valid-from").val();
-		periodEnd = $("#voucher-valid-to").val();
-	} else if ($("#voucher-validity-type").val() == "lifetime") {
-		lifetime = $("#voucher-lifetime").val();
+		periodStart = $("#voucherValidFrom").val();
+		periodEnd = $("#voucherValidTo").val();
+	} else if ($("#voucherValidityType").val() == "lifetime") {
+		lifetime = parseInt($("#voucherLifetime").val());
 		periodStart = "1001-01-01T00:00:00Z";
 		periodEnd = "1001-01-01T00:00:00Z";
 	}
 
-	var maxRedeem = parseInt($("#max-redeem-voucher").val());
-	var maxGenerate = parseInt($("#max-generate-voucher").val());
+	var maxRedeem = parseInt($("#maxRedeemVoucher").val());
+	var maxGenerate = parseInt($("#maxGenerateVoucher").val());
 
-	$('input[check="true"]').each(function () {
-		if ($("#program-type").val() == "bulk") {
-			if (this.getAttribute("id") == "max-quantity-voucher" || this.getAttribute("id") == "max-generate-voucher" || this.getAttribute("id") == "voucher-price" || this.getAttribute("id") == "max-redeem-voucher") {
-				maxGenerate = 1;
-				maxRedeem = 1;
-				return true;
-			}
-		}
-
-		if ($(this).val() == "") {
-			$(this).addClass("error");
-			$(this).parent().closest('div').addClass("input-error");
-			error = true;
-		}
-	});
-
-
-	if (maxRedeem < 1 || maxGenerate < 1) {
-		error = true;
+	if ($("#programType").val() == "bulk") {
+		maxGenerate = 1;
+		maxRedeem = 1;
 	}
 
-	if (error) {
-		swal("Please check your input.");
-		return
-	}
-
-	var str = $("#list-rule").summernote('code');
+	var str = $("#listRule").summernote('code');
 	var tnc = str.replace(/^\s+|\s+$|(\r?\n|\r)/g, '');
 
 	if (!str.includes("<p>")) {
 		tnc = '<p>' + tnc + '</p>';
 	}
 
+	//allow accumulative
+	var allowAccumulative = $("#allowAccumulative").is(":checked");
+	if (allowAccumulative) {
+		maxRedeem = parseInt($("#maxRedeemVoucher").val());
+
+		$( "#voucherLifetime" ).rules( "add", {
+			required: true,
+			digits: true,
+			min: 1
+		});
+	}
+
 	var formData = new FormData();
-	var img = $('#image-url-default').val();
-	var redeem = $("#redemption-method").val();
+	var img = $('#imageUrlDefault').val();
+	var redeem = $("#redemptionMethod").val();
 	var voucherType = "cash";
-	if ($('#image-url')[0].files[0] != null) {
+	var id = $("#programId").val();
+	if ($('#imageUrl')[0].files[0] != null) {
 		$('#modal-loader').modal({backdrop: 'static', keyboard: false}, 'show');
 
-		formData.append('image-url', $('#image-url')[0].files[0]);
+		formData.append('image-url', $('#imageUrl')[0].files[0]);
 		jQuery.ajax({
 			url: '/file/upload',
 			type: "POST",
@@ -265,29 +275,28 @@ function send() {
 				console.log(data.data);
 				img = data.data;
 				var voucherType = "cash";
-				var id = $("#program-id").val();
 				var program = {
-					name: $("#program-name").val(),
-					type: $("#program-type").find(":selected").val(),
+					name: programName,
+					type: programType,
 					voucher_type: voucherType,
-					voucher_price: parseInt($("#voucher-price").val()),
-					max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
+					voucher_price: voucherType,
+					max_quantity_voucher: maxQuantityVoucher,
 					max_redeem_voucher: maxRedeem,
 					max_generate_voucher: maxGenerate,
-					allow_accumulative: $("#allow-accumulative").is(":checked"),
+					allow_accumulative: allowAccumulative,
 					redemption_method: redeem,
-					start_date: $("#program-valid-from").val(),
-					end_date: $("#program-valid-to").val(),
-					start_hour: $("#start-hour").val(),
-					end_hour: $("#end-hour").val(),
-					voucher_value: parseInt($("#voucher-value").val()),
+					start_date: programValidFrom,
+					end_date: programValidTo,
+					start_hour: startHour,
+					end_hour: endHour,
+					voucher_value: voucherValue,
 					image_url: img,
 					tnc: tnc,
-					description: $("#program-description").val(),
+					description: programDescription,
 					validity_days: listDay,
 					valid_voucher_start: periodStart,
 					valid_voucher_end: periodEnd,
-					voucher_lifetime: parseInt(lifetime)
+					voucher_lifetime: lifetime
 				};
 
 				console.log(program);
@@ -338,32 +347,29 @@ function send() {
 			}
 		});
 	} else {
-		var id = $("#program-id").val();
 		var program = {
-			name: $("#program-name").val(),
-			type: $("#program-type").find(":selected").val(),
+			name: programName,
+			type: programType,
 			voucher_type: voucherType,
-			voucher_price: parseInt($("#voucher-price").val()),
-			max_quantity_voucher: parseInt($("#max-quantity-voucher").val()),
+			voucher_price: voucherPrice,
+			max_quantity_voucher: maxQuantityVoucher,
 			max_redeem_voucher: maxRedeem,
 			max_generate_voucher: maxGenerate,
-			allow_accumulative: $("#allow-accumulative").is(":checked"),
+			allow_accumulative: allowAccumulative,
 			redemption_method: redeem,
-			start_date: $("#program-valid-from").val(),
-			end_date: $("#program-valid-to").val(),
-			start_hour: $("#start-hour").val(),
-			end_hour: $("#end-hour").val(),
-			voucher_value: parseInt($("#voucher-value").val()),
+			start_date: programValidFrom,
+			end_date: programValidTo,
+			start_hour: startHour,
+			end_hour: endHour,
+			voucher_value: voucherValue,
 			image_url: img,
 			tnc: tnc,
-			description: $("#program-description").val(),
+			description: programDescription,
 			validity_days: listDay,
 			valid_voucher_start: periodStart,
 			valid_voucher_end: periodEnd,
-			voucher_lifetime: parseInt(lifetime)
+			voucher_lifetime: lifetime
 		};
-
-		console.log(program);
 
 		$.ajax({
 			url: '/v1/ui/program/update?id=' + id + '&type=detail&token=' + token,
@@ -426,7 +432,7 @@ function getPartner(id) {
 					+ "<span class='ion-checkmark-round'></span>" + arrData[i].name
 					+ "</label>";
 				li.html(html);
-				li.appendTo('#partner-list');
+				li.appendTo('#partnerList');
 			}
 
 			$.ajax({
@@ -438,7 +444,6 @@ function getPartner(id) {
 					var li = $("input[type=checkbox]");
 
 					for (i = 0; i < li.length; i++) {
-
 						var tempElem = li[i];
 						var arrData = data.data;
 						var limit = arrData.length;
@@ -482,7 +487,6 @@ function convertToUpperCase(upperCase) {
 
 	function formAdvanced() {
 		$('.select2').select2();
-		$("#validity-day").attr("style", "display:none");
 		$("#collapseThree").removeClass("in");
 		$("#collapseTwo").removeClass("in");
 		$("#collapseFour").removeClass("in");
@@ -508,7 +512,44 @@ function convertToUpperCase(upperCase) {
 			cpInput.clockpicker('hide');
 		});
 
-
+		$('#updateProgram').validate({
+			errorPlacement: errorPlacementInput,
+			// Form rules
+			rules: {
+				programName: {
+					required: true
+				},
+				maxGenerateVoucher: {
+					required: true,
+					digits: true,
+					min: 1
+				},
+				'partner[]': {
+					required: true
+				}
+			}
+		});
 	}
 
 })();
+
+// Necessary to place dyncamic error messages
+// without breaking the expected markup for custom input
+function errorPlacementInput(error, element) {
+	if( element.parent().parent().is('.mda-input-group') ) {
+		error.insertAfter(element.parent().parent()); // insert at the end of group
+	}
+	else if( element.parent().is('.mda-form-control') ) {
+		error.insertAfter(element.parent()); // insert after .mda-form-control
+	}
+	else if( element.parent().is('.input-group') ) {
+		error.insertAfter(element.parent()); // insert after .mda-form-control
+	}
+	else if ( element.is(':radio') || element.is(':checkbox')) {
+		error.insertAfter(element.parent().parent().parent().parent().parent().find(".control-label"));
+	}
+	else {
+		error.insertAfter(element);
+	}
+}
+

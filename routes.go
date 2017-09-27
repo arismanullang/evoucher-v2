@@ -12,6 +12,7 @@ import (
 func setRoutes() http.Handler {
 	r := bone.New()
 	// http.ListenAndServe(":8888", nil)
+	r.NotFoundFunc(errorHandler)
 	r.GetFunc("/ping", ping)
 
 	//ui
@@ -51,6 +52,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/ui/transaction", controller.CashoutTransactionDetails)
 	r.PostFunc("/v1/ui/transaction/cashout/update", controller.CashoutTransactions)
 	r.GetFunc("/v1/ui/transaction/cashout/print", controller.PrintCashoutTransaction)
+	r.GetFunc("/v1/ui/transaction/cashout/partner", controller.GetPartnerCashoutActivity)
 
 	//user
 	r.GetFunc("/v1/ui/user/login", controller.Login)
@@ -360,6 +362,6 @@ func login(w http.ResponseWriter, r *http.Request) {
 	render.FileInLayout(w, "layout.html", "user/login.html", nil)
 }
 
-func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
+func errorHandler(w http.ResponseWriter, r *http.Request) {
 	render.File(w, "notfound.html", nil, 404)
 }
