@@ -24,24 +24,27 @@ function getTag() {
 }
 
 function send() {
+	$("#createPartner").validate();
+	if(!$("#createPartner").valid()){
+		$(".error").focus();
+		return;
+	}
 
 	var listTag = "";
 	var li = $("ul.select2-selection__rendered").find("li");
-	if (li.length == 0 || parseInt($("#length").val()) < 8) {
-		error = true;
-	}
+	if (li.length > 0) {
+		for (i = 0; i < li.length - 1; i++) {
+			var text = li[i].getAttribute("title");
 
-	for (i = 0; i < li.length - 1; i++) {
-		var text = li[i].getAttribute("title");
-
-		listTag = listTag + "#" + text;
+			listTag = listTag + "#" + text;
+		}
 	}
 
 	var partner = {
-		name: $("#partner-name").val(),
-		serial_number: $("#serial-number").val(),
+		name: $("#partnerName").val(),
+		serial_number: $("#serialNumber").val(),
 		tag: listTag,
-		description: $("#description").val(),
+		description: $("#description").val()
 	};
 
 	$.ajax({
@@ -82,11 +85,11 @@ function send() {
 		$(document).on('click', '.swal-demo4', function (e) {
 			e.preventDefault();
 			var html;
-			if ($("#serial-number").val() == null) {
-				html = 'Do you want create partner ' + $("#partner-name").val() + ' with no serial number?';
+			if ($("#serialNumber").val() == null) {
+				html = 'Do you want create partner ' + $("#partnerName").val() + ' with no serial number?';
 			}
 			else {
-				html = 'Do you want create partner ' + $("#partner-name").val() + ' with serial number ' + $("#serial-number").val() + '?';
+				html = 'Do you want create partner ' + $("#partnerName").val() + ' with serial number ' + $("#serialNumber").val() + '?';
 			}
 
 			swal({
@@ -99,24 +102,52 @@ function send() {
 					closeOnConfirm: false
 				},
 				function () {
-					error = false;
-					$('input[check="true"]').each(function () {
-						if ($(this).val() == "") {
-							$(this).addClass("error");
-							$(this).parent().closest('div').addClass("input-error");
-							error = true;
-						}
-					});
-
-					if (error) {
-						swal("Please check your input.");
-						return
-					}
-
-					swal('Success', 'Partner ' + $("#partner-name").val() + ' created.', send());
+					send();
 				});
 
+		});
+
+		jQuery.validator.addMethod("greaterThan",
+			function(value, element, params) {
+
+				if (!/Invalid|NaN/.test(new Date(value))) {
+					return new Date(value) > new Date($(params).val());
+				}
+
+				return isNaN(value) && isNaN($(params).val())
+					|| (Number(value) > Number($(params).val()));
+			},'Must be greater than {0}.');
+
+		$('#createPartner').validate({
+			errorPlacement: errorPlacementInput,
+			// Form rules
+			rules: {
+				partnerName: {
+					required: true
+				},
+				serialNumber:{
+					digits: true
+				}
+			}
 		});
 	}
 
 })();
+
+function errorPlacementInput(error, element) {
+	if (element.parent().parent().is('.mda-input-group')) {
+		error.insertAfter(element.parent().parent()); // insert at the end of group
+	}
+	else if (element.parent().is('.mda-form-control')) {
+		error.insertAfter(element.parent()); // insert after .mda-form-control
+	}
+	else if (element.parent().is('.input-group')) {
+		error.insertAfter(element.parent()); // insert after .mda-form-control
+	}
+	else if (element.is(':radio') || element.is(':checkbox')) {
+		error.insertAfter(element.parent().parent().parent().parent().parent().find(".control-label"));
+	}
+	else {
+		error.insertAfter(element);
+	}
+}
