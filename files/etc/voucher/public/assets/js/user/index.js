@@ -17,6 +17,12 @@ $(window).ready(function () {
 			}
 		});
 	}
+
+	$("#password").on('keyup', function (e) {
+		if (e.keyCode == 13) {
+			login();
+		}
+	});
 });
 
 function login() {
@@ -70,8 +76,7 @@ function login() {
 	$(userLogin);
 
 	function userLogin() {
-
-		var $form = $('#user-login');
+		var $form = $('#userLogin');
 		$form.validate({
 			errorPlacement: errorPlacementInput
 		});

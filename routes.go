@@ -162,23 +162,6 @@ func viewNoLayoutHandler(w http.ResponseWriter, r *http.Request) {
 func viewProgram(w http.ResponseWriter, r *http.Request) {
 	page := bone.GetValue(r, "page")
 
-	//valid := false
-	//a := controller.AuthToken(w, r)
-	//if a.Valid {
-	//	for _, valueRole := range a.User.Role {
-	//		features := model.UiFeatures[valueRole.Detail]
-	//		for _, valueFeature := range features {
-	//			if r.URL.Path == valueFeature {
-	//				valid = true
-	//			}
-	//		}
-	//	}
-	//} else {
-	//	render.FileInLayout(w, "layout.html", "user/login.html", nil)
-	//	return
-	//}
-	//
-	//if valid {
 	if page == "create" {
 		render.FileInLayout(w, "layout.html", "program/create.html", nil)
 	} else if page == "search" {
@@ -194,9 +177,7 @@ func viewProgram(w http.ResponseWriter, r *http.Request) {
 	} else {
 		render.File(w, "notfound.html", nil, 404)
 	}
-	//} else {
-	//	render.FileInLayout(w, "layout.html", "user/unauthorize.html", nil, 401)
-	//}
+
 }
 
 func viewUser(w http.ResponseWriter, r *http.Request) {

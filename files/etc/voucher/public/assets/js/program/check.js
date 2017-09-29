@@ -6,11 +6,15 @@ $(document).ready(function () {
 	getPartner(id);
 });
 
-function chart(remaining, pending, paid) {
+function chart(remaining, outstanding, pending, paid) {
 	var pieData = [{
-		'label': 'Remaining : Rp. ' + addDecimalPoints(remaining) + ',00',
+		'label': 'Stock : Rp. ' + addDecimalPoints(remaining) + ',00',
 		'color': '#e4eff7',
 		'data': remaining
+	}, {
+		'label': 'Outstanding : Rp. ' + addDecimalPoints(outstanding) + ',00',
+		'color': '#f4eff7',
+		'data': outstanding
 	}, {
 		'label': 'Pending : Rp. ' + addDecimalPoints(pending) + ',00',
 		'color': '#FFC107',
@@ -202,7 +206,10 @@ function getProgram(id, voucher, used, paid) {
 			totalMon = parseInt(result.voucher_value) * parseInt(result.max_quantity_voucher);
 			$('#total-money').html('Rp. ' + addDecimalPoints(totalMon) + ',00');
 
-			remainingMon = (parseInt(result.max_quantity_voucher) - parseInt(used) - parseInt(paid)) * parseInt(result.voucher_value);
+			remainingMon = (parseInt(result.max_quantity_voucher) - parseInt(voucher)) * parseInt(result.voucher_value);
+			$('#remaining-money').html('Rp. ' + addDecimalPoints(remainingMon) + ',00');
+
+			outstandingMon = (parseInt(voucher) - parseInt(used)) * parseInt(result.voucher_value);
 			$('#remaining-money').html('Rp. ' + addDecimalPoints(remainingMon) + ',00');
 
 			pendingPay = parseInt(result.voucher_value) * parseInt(used);
@@ -223,7 +230,7 @@ function getProgram(id, voucher, used, paid) {
 			$('#paid-bar').attr('style', 'width:' + paidPercent + '%');
 			$('#paid-bar').attr('data-original-title', 'Paid : ' + paidPercent + '%');
 
-			chart(remainingMon, pendingPay, paidPay);
+			chart(remainingMon, outstandingMon, pendingPay, paidPay);
 		},
 		error: function (data) {
 			var a = JSON.parse(data.responseText);

@@ -22,6 +22,7 @@ $( window ).ready(function() {
 
   getSession();
   setSideNavBar();
+  setValidationMessage();
 
   $('[data-toggle="tooltip"]').tooltip();
 });
@@ -104,6 +105,46 @@ function findGetParameter(parameterName) {
         if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
     });
     return result;
+}
+
+function setValidationMessage() {
+	var validatorRequired = "Please fill this field.";
+	var validatorRemote= "Please fix this field.";
+	var validatorEmail= "Please enter a valid email address.";
+	var validatorUrl= "Please enter a valid URL.";
+	var validatorDate= "Please enter a valid date.";
+	var validatorDateISO= "Please enter a valid date (ISO).";
+	var validatorNumber= "Please enter a valid number.";
+	var validatorDigits= "Please enter only digits.";
+	var validatorCreditcard= "Please enter a valid credit card number.";
+	var validatorEqualTo= "Please enter the same value again.";
+	var validatorAccept= "Please enter a value with a valid extension.";
+	var validatorMaxlength= "Please enter no more than {0} characters.";
+	var validatorMinlength= "Please enter at least {0} characters.";
+	var validatorRangelength= "Please enter a value between {0} and {1} characters long.";
+	var validatorRange= "Please enter a value between {0} and {1}.";
+	var validatorMax= "Please enter a value less than or equal to {0}.";
+	var validatorMin= "Please enter a value greater than or equal to {0}.";
+
+	jQuery.extend(jQuery.validator.messages, {
+		required: validatorRequired,
+		remote: validatorRemote,
+		email: validatorEmail,
+		url: validatorUrl,
+		date: validatorDate,
+		dateISO: validatorDateISO,
+		number: validatorNumber,
+		digits: validatorDigits,
+		creditcard: validatorCreditcard,
+		equalTo: validatorEqualTo,
+		accept: validatorAccept,
+		maxlength: jQuery.validator.format(validatorMaxlength),
+		minlength: jQuery.validator.format(validatorMinlength),
+		rangelength: jQuery.validator.format(validatorRangelength),
+		range: jQuery.validator.format(validatorRange),
+		max: jQuery.validator.format(validatorMax),
+		min: jQuery.validator.format(validatorMin)
+	});
 }
 
 (function() {
