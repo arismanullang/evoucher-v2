@@ -33,6 +33,10 @@ body {
   font-weight: 500;
 }
 
+.legendLabel{
+  text-align: left;
+}
+
 .overflow-container{
   overflow: scroll;
   height: calc(100vh - 125px);

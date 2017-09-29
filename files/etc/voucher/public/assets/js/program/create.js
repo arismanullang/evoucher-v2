@@ -58,7 +58,7 @@ function initForm(){
 function onChangeElem(){
 	$("#allTenant").change(function () {
 		var _this = $(this);
-		_this.closest('#partnerList').find("input[class=partner]").prop('checked', _this.prop('checked'));
+		_this.closest('#partnerList').find("input.partner").prop('checked', _this.prop('checked'));
 	});
 	$("#voucherValidityType").change(function () {
 		if (this.value == "lifetime") {
@@ -133,7 +133,7 @@ function send() {
 	var programName = $("#programName").val();
 	var programType = $("#programType").find(":selected").val();
 	var voucherPrice = parseInt($("#voucherPrice").val());
-	var maxQuantityVoucher = parseInt($("#maxQuantityVoucher").val());
+	var maxQuantityVoucher = parseInt($("#voucherQuantity").val());
 	var redemptionMethod = $("#redemptionMethod").find(":selected").val();
 	var programValidFrom = $("#programValidFrom").val();
 	var programValidTo = $("#programValidTo").val();
@@ -217,7 +217,7 @@ function send() {
 	tnc = '<p>' + tnc + '</p>';
 
 	// max generate and redeem
-	var maxGenerate = parseInt($("#maxGenerateVoucher").val());
+	var maxGenerate = parseInt($("#generateVoucher").val());
 	var maxRedeem = 1;
 
 	// voucher type
@@ -443,7 +443,7 @@ function getPartner() {
 			for (i = 0; i < arrData.length; i++) {
 				var li = $("<div class='col-sm-4'></div>");
 				var html = "<label class='checkbox-inline c-checkbox'>"
-					+ "<input type='checkbox' name='partner[]' class='partner' value='" + arrData[i].id + "'>"
+					+ "<input type='checkbox' name='partner' class='partner' value='" + arrData[i].id + "'>"
 					+ "<span class='ion-checkmark-round'></span>" + arrData[i].name
 					+ "</label>";
 				li.html(html);
@@ -552,6 +552,23 @@ function getPartner() {
 					|| (Number(value) > Number($(params).val()));
 			},'Must be greater than {0}.');
 
+		jQuery.validator.addMethod("lowerThan",
+			function(value, element, params) {
+
+				if (!/Invalid|NaN/.test(new Date(value))) {
+					return new Date(value) < new Date($(params).val());
+				}
+
+				var ele = "#"+params;
+				if(params.includes(" ")){
+					var tempEle = params.split(" ");
+					ele = "#"+tempEle[0].toLowerCase()+tempEle[1];
+				}
+
+				return isNaN(value) && isNaN($(ele).val())
+					|| (Number(value) <= Number($(ele).val()));
+			}, 'Must be lower than {0}.');
+
 		$('#createProgram').validate({
 			errorPlacement: errorPlacementInput,
 			// Form rules
@@ -575,15 +592,16 @@ function getPartner() {
 					digits: true,
 					min: 5000
 				},
-				maxQuantityVoucher: {
+				voucherQuantity: {
 					required: true,
 					digits: true,
 					min: 1
 				},
-				maxGenerateVoucher: {
+				generateVoucher: {
 					required: true,
 					digits: true,
-					min: 1
+					min: 1,
+					lowerThan: "Voucher Quantity"
 				},
 				startHour: {
 					required: true
@@ -591,7 +609,7 @@ function getPartner() {
 				endHour: {
 					required: true
 				},
-				'partner[]': {
+				partner: {
 					required: true
 				}
 			}
@@ -605,17 +623,23 @@ function getPartner() {
 function errorPlacementInput(error, element) {
 	if( element.parent().parent().is('.mda-input-group') ) {
 		error.insertAfter(element.parent().parent()); // insert at the end of group
+		element.focus();
 	}
 	else if( element.parent().is('.mda-form-control') ) {
 		error.insertAfter(element.parent()); // insert after .mda-form-control
+		element.focus();
 	}
 	else if( element.parent().is('.input-group') ) {
 		error.insertAfter(element.parent()); // insert after .mda-form-control
+		element.focus();
 	}
 	else if ( element.is(':radio') || element.is(':checkbox')) {
 		error.insertAfter(element.parent().parent().parent().parent().parent().find(".control-label"));
+		$("input[name=partner]").removeClass('error');
+		element.focus();
 	}
 	else {
 		error.insertAfter(element);
+		element.focus();
 	}
 }
