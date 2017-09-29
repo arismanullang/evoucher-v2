@@ -1,0 +1,359 @@
+<html>
+<head>
+<title>QRCODE</title>
+
+<style type="text/css">
+</style>
+
+
+<script type="text/javascript" src="grid.js"></script>
+<script type="text/javascript" src="version.js"></script>
+<script type="text/javascript" src="detector.js"></script>
+<script type="text/javascript" src="formatinf.js"></script>
+<script type="text/javascript" src="errorlevel.js"></script>
+<script type="text/javascript" src="bitmat.js"></script>
+<script type="text/javascript" src="datablock.js"></script>
+<script type="text/javascript" src="bmparser.js"></script>
+<script type="text/javascript" src="datamask.js"></script>
+<script type="text/javascript" src="rsdecoder.js"></script>
+<script type="text/javascript" src="gf256poly.js"></script>
+<script type="text/javascript" src="gf256.js"></script>
+<script type="text/javascript" src="decoder.js"></script>
+<script type="text/javascript" src="qrcode.js"></script>
+<script type="text/javascript" src="findpat.js"></script>
+<script type="text/javascript" src="alignpat.js"></script>
+<script type="text/javascript" src="databr.js"></script>
+
+
+<style type="text/css">
+body{
+    width:100%;
+    text-align:center;
+}
+img{
+    border:0;
+}
+#main{
+    margin: 15px auto;
+    background:white;
+    overflow: auto;
+	width: 100%;
+}
+#header{
+    background:white;
+    margin-bottom:15px;
+}
+#mainbody{
+    background: white;
+    width:100%;
+	display:none;
+}
+#footer{
+    background:white;
+}
+#v{
+    width:320px;
+    height:240px;
+}
+#qr-canvas{
+    display:none;
+}
+#qrfile{
+    width:320px;
+    height:240px;
+}
+#mp1{
+    text-align:center;
+    font-size:35px;
+}
+#imghelp{
+    position:relative;
+    left:0px;
+    top:-160px;
+    z-index:100;
+    font:18px arial,sans-serif;
+    background:#f0f0f0;
+	margin-left:35px;
+	margin-right:35px;
+	padding-top:10px;
+	padding-bottom:10px;
+	border-radius:20px;
+}
+.selector{
+    margin:0;
+    padding:0;
+    cursor:pointer;
+    margin-bottom:-5px;
+}
+#outdiv
+{
+    width:320px;
+    height:240px;
+	border: solid;
+	border-width: 3px 3px 3px 3px;
+}
+#result{
+    border: solid;
+	border-width: 1px 1px 1px 1px;
+	padding:20px;
+	width:70%;
+}
+
+ul{
+    margin-bottom:0;
+    margin-right:40px;
+}
+li{
+    display:inline;
+    padding-right: 0.5em;
+    padding-left: 0.5em;
+    font-weight: bold;
+    border-right: 1px solid #333333;
+}
+li a{
+    text-decoration: none;
+    color: black;
+}
+
+#footer a{
+	color: black;
+}
+.tsel{
+    padding:0;
+}
+
+</style>
+
+<script type="text/javascript">
+	var gCtx = null;
+	var gCanvas = null;
+
+	var imageData = null;
+	var ii=0;
+	var jj=0;
+	var c=0;
+	var stype=0;
+	var gUM=false;
+	var webkit=false;
+	
+	var vidhtml = '<video id="v" autoplay></video>';	
+	var v = null;
+		
+	function success(stream) {
+		if(webkit)
+			v.src = window.URL.createObjectURL(stream);
+		else
+		if(moz)
+		{
+			v.mozSrcObject = stream;
+			v.play();
+		}
+		else
+			v.src = stream;
+		gUM=true;
+		setTimeout(captureToCanvas, 500);
+	}
+			
+	function error(error) {
+		gUM=false;
+		return;
+	}
+	
+	function dragenter(e) {
+	  e.stopPropagation();
+	  e.preventDefault();
+	}
+
+	function dragover(e) {
+	  e.stopPropagation();
+	  e.preventDefault();
+	}
+	function drop(e) {
+	  e.stopPropagation();
+	  e.preventDefault();
+
+	  var dt = e.dataTransfer;
+	  var files = dt.files;
+
+	  handleFiles(files);
+	}
+
+	function handleFiles(f){
+		var o=[];
+		for(var i =0;i<f.length;i++)
+		{
+		  var reader = new FileReader();
+
+		  reader.onload = (function(theFile) {
+			return function(e) {
+			  qrcode.decode(e.target.result);
+			};
+		  })(f[i]);
+
+		  // Read in the image file as a data URL.
+		  reader.readAsDataURL(f[i]);	}
+	}
+		
+	function read(a){
+		alert(a);
+	}	
+		
+	function load(){
+		console.log("Load");
+		initCanvas(640,480);
+		qrcode.callback = read;
+		setwebcam();
+		//qrcode.decode("meqrthumb.png");
+	}
+
+	function initCanvas(ww,hh){
+		gCanvas = document.getElementById("qr-canvas");
+		gCanvas.addEventListener("dragenter", dragenter, false);  
+		gCanvas.addEventListener("dragover", dragover, false);  
+		gCanvas.addEventListener("drop", drop, false);
+		var w = ww;
+		var h = hh;
+		gCanvas.style.width = w + "px";
+		gCanvas.style.height = h + "px";
+		gCanvas.width = w;
+		gCanvas.height = h;
+		gCtx = gCanvas.getContext("2d");
+		gCtx.clearRect(0, 0, w, h);
+		imageData = gCtx.getImageData( 0,0,320,240);
+		
+	}
+	
+	function setwebcam()
+	{
+		console.log("Set webcam");
+		var options = true;
+		if(navigator.mediaDevices && navigator.mediaDevices.enumerateDevices)
+		{
+			try{
+				navigator.mediaDevices.enumerateDevices()
+				.then(function(devices) {
+				  devices.forEach(function(device) {
+					if (device.kind === 'videoinput') {
+					  if(device.label.toLowerCase().search("back") >-1)
+						options={'deviceId': {'exact':device.deviceId}, 'facingMode':'environment'} ;
+					}
+					console.log(device.kind + ": " + device.label +" id = " + device.deviceId);
+				  });
+				  setwebcam2(options);
+				});
+			}
+			catch(e)
+			{
+				console.log(e);
+			}
+		}
+		else{
+			console.log("no navigator.mediaDevices.enumerateDevices" );
+			setwebcam2(options);
+		}
+		
+	}
+
+	function setwebcam2(options)
+	{
+	
+		console.log("Set webcam");
+		console.log(options);
+		document.getElementById("result").innerHTML="- scanning -";
+		if(stype==1)
+		{
+			setTimeout(captureToCanvas, 500);    
+			return;
+		}
+		var n=navigator;
+		document.getElementById("outdiv").innerHTML = vidhtml;
+		v=document.getElementById("v");
+
+
+		if(n.getUserMedia)
+		{
+			webkit=true;
+			n.getUserMedia({video: options, audio: false}, success, error);
+		}
+		else
+		if(n.webkitGetUserMedia)
+		{
+			webkit=true;
+			n.webkitGetUserMedia({video:options, audio: false}, success, error);
+		}
+		else
+		if(n.mozGetUserMedia)
+		{
+			moz=true;
+			n.mozGetUserMedia({video: options, audio: false}, success, error);
+		}
+
+		stype=1;
+		setTimeout(captureToCanvas, 500);
+	}
+
+	function passLine(stringPixels) { 
+		//a = (intVal >> 24) & 0xff;
+
+		var coll = stringPixels.split("-");
+
+		for(var i=0;i<320;i++) { 
+			var intVal = parseInt(coll[i]);
+			r = (intVal >> 16) & 0xff;
+			g = (intVal >> 8) & 0xff;
+			b = (intVal ) & 0xff;
+			imageData.data[c+0]=r;
+			imageData.data[c+1]=g;
+			imageData.data[c+2]=b;
+			imageData.data[c+3]=255;
+			c+=4;
+		} 
+
+		if(c>=320*240*4) { 
+			c=0;
+				gCtx.putImageData(imageData, 0,0);
+		} 
+	} 
+
+	function captureToCanvas() {
+		if(stype!=1)
+			return;
+		if(gUM)
+		{
+			try{
+				gCtx.drawImage(v,0,0);
+				try{
+					qrcode.decode();
+				}
+				catch(e){       
+					console.log(e);
+					setTimeout(captureToCanvas, 500);
+				};
+			}
+			catch(e){       
+					console.log(e);
+					setTimeout(captureToCanvas, 500);
+			};
+		}
+	}
+</script>
+
+</head>
+
+<body onload="load()">
+    <div class="container">
+	
+  	<object  id="iembedflash" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,0,0" width="320" height="240">
+  		<param name="movie" value="camcanvas.swf" />
+  		<param name="quality" value="high" />
+		<param name="allowScriptAccess" value="always" />
+  		<embed  allowScriptAccess="always"  id="embedflash" src="camcanvas.swf" quality="high" width="320" height="240" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" mayscript="true"  />
+    </object>
+	
+    </div>
+	<canvas id="qr-canvas" width="640" height="480" style="border: 1px solid black"></canvas>
+	<div id="outdiv"></div>
+	<div id="result"></div>
+</body>
+
+</html>

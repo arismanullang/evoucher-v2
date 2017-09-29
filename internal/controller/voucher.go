@@ -705,7 +705,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	ed, err := time.Parse(time.RFC3339Nano, dt.EndDate)
 	if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInvalidProgram+"("+err.Error()+")", logger.TraceID)
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageParsingError, logger.TraceID)
 		logger.SetStatus(status).Log("param :", gvd, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
@@ -717,9 +717,9 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		logger.SetStatus(status).Log("param :", gvd, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
-	} else if dt.Type != model.ProgramTypeOnDemand {
+	} else if !(dt.Type == model.ProgramTypeOnDemand || dt.Type == model.ProgramTypeGift) {
 		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeVoucherRulesViolated, model.ErrMessageVoucherRulesViolated, logger.TraceID)
+		res.AddError(its(status), model.ErrCodeInvalidProgramType, model.ErrMessageInvalidProgramType, logger.TraceID)
 		logger.SetStatus(status).Log("param :", gvd, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
@@ -1069,17 +1069,17 @@ func voucherCode(vcf model.VoucherCodeFormat, flag int) string {
 		return randStr(model.DEFAULT_SEED_LENGTH, model.DEFAULT_SEED_CODE)
 	}
 
-	if vcf.Prefix.Valid {
+	if vcf.Prefix.Valid && vcf.Prefix.String != "" {
 		code += vcf.Prefix.String + "-"
 	}
 
 	switch {
 	case flag == 0:
-		code += seedCode() + "-" + randStr(model.DEFAULT_LENGTH, model.DEFAULT_CODE)
+		code += seedCode() + randStr(model.DEFAULT_LENGTH, model.DEFAULT_CODE)
 	case vcf.Body.Valid == true && vcf.Body.String != "":
-		code += seedCode() + "-" + vcf.Body.String
+		code += seedCode() + vcf.Body.String
 	default:
-		code += seedCode() + "-" + randStr(vcf.Length, vcf.FormatType)
+		code += seedCode() + randStr(vcf.Length, vcf.FormatType)
 	}
 
 	if vcf.Postfix.Valid {
