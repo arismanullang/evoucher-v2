@@ -555,11 +555,8 @@ function getPartner() {
 		jQuery.validator.addMethod("lowerThan",
 			function(value, element, params) {
 
-				if (!/Invalid|NaN/.test(new Date(value))) {
-					return new Date(value) < new Date($(params).val());
-				}
-
 				var ele = "#"+params;
+
 				if(params.includes(" ")){
 					var tempEle = params.split(" ");
 					ele = "#"+tempEle[0].toLowerCase()+tempEle[1];

@@ -178,11 +178,11 @@ function uploadTest() {
 		switch (n){
 			case "header":
 				console.log(headerImage);
+				$('#modal-loader').modal('hide');
 				if (headerImage != null) {
 					var formData = new FormData();
 					formData.append('image-url', headerImage);
 
-					$('#modal-loader').modal('hide');
 					$('#image-header-modal').modal({backdrop: 'static',keyboard: false}, 'show');
 
 					jQuery.ajax({
@@ -200,11 +200,11 @@ function uploadTest() {
 				break;
 			case "voucher":
 				console.log(voucherImage);
+
+				$('#image-header-modal').modal('hide');
 				if (voucherImage != null) {
 					var formData = new FormData();
 					formData.append('image-url', voucherImage);
-
-					$('#image-header-modal').modal('hide');
 					$('#image-voucher-modal').modal({backdrop: 'static',keyboard: false}, 'show');
 
 					jQuery.ajax({
@@ -222,10 +222,10 @@ function uploadTest() {
 				break;
 			case "footer":
 				console.log(footerImage);
+
+				$('#image-voucher-modal').modal('hide');
 				if (footerImage != null) {
 					var formData = new FormData();
-
-					$('#image-voucher-modal').modal('hide');
 					$('#image-footer-modal').modal({backdrop: 'static',keyboard: false}, 'show');
 
 					formData.append('image-url', footerImage);
@@ -285,7 +285,7 @@ function generateVoucher() {
 		url: '/v1/ui/voucher/send-voucher?program=' + id + '&token=' + token,
 		type: 'post',
 		success: function (data) {
-			location.reload();
+			window.location = "/program/search";
 		},
 		error: function (data) {
 			var a = JSON.parse(data.responseText);

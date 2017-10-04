@@ -1,52 +1,152 @@
 <!DOCTYPE html>
 <html>
+<title>eVoucher</title>
 <head>
-  <style type="text/css">
-    body, html {font-family:sans-serif; background-color:#000000;}
-    div {width:80%; margin:auto; background-color:#ffffff; padding:5%; border:2px solid #990066; text-align:center; border-radius:10px;}
-    canvas {padding:5%; border:2px solid #330000; background-color:#660000; border-radius:10px;}
-  </style>
-  <script type="text/javascript">
-    function picChange(evt){
-      //bring selected photo in
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE-edge">
+  <meta name="description" content="eVoucher bu Elys">
+  <meta name="keywords" content="app, elys, evoucher, voucher">
+  <meta name="viewport" content="width=device-width. initial-scale=1, maximum-scale=1">
+  <meta>
 
+  <link rel="stylesheet" href="/assets/vendor/animate.css/animate.css">
+  <link rel="stylesheet" href="/assets/vendor/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/assets/vendor/ionicons/css/ionicons.css">
+  <link rel="stylesheet" href="/assets/vendor/material-colors/dist/colors.css">
+  <link rel="stylesheet" href="/assets/vendor/sweetalert/dist/sweetalert.css">
 
-      //get canvas
-      var photoCanvas = document.getElementById("capturedPhoto");
-      var ctx = photoCanvas.getContext("2d");
+  <link rel="stylesheet" href="/assets/css/app.css">
+  <link rel="stylesheet" href="/assets/css/style.css">
 
-      //window url
-      var windowURL = window.URL || window.webkitURL;
-
-      //get files captured through input
-      var fileInput = evt.target.files;
-      if(fileInput.length>0){
-        //get the file
-
-        //picture url
-        var picURL = windowURL.createObjectURL(fileInput[0]);
-        //create image
-        var photo = new Image();
-        photo.onload = function(){
-          //draw photo into canvas when ready
-          ctx.drawImage(photo, 0, 0, 500, 400);
-        };
-        //load photo into canvas
-        photo.src = picURL;
-
-        //release object url
-        windowURL.revokeObjectURL(picURL);
-      }
-    }
-  </script>
 </head>
-<body>
-<div>
-  <p>Choose a picture from your device or capture one with your camera now:</p>
-  <input type="file" accept="image/*" onchange="picChange(event)"/>
-  <p>Photo:</p>
-  <canvas id="capturedPhoto" width="500" height="400">
-  </canvas>
-</div>
+<body background="/assets/img/bg.jpg">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="caption text-center">
+        <h1>
+          SEDAYUONE E-VOUCHER
+        </h1>
+  	  </div>
+      <div class="col-lg-12 center-block">
+        <center>
+          <div class="item active center-block">
+            <img src="/assets/img/v4voucher.jpg" alt="" class="img-responsive radius5 bs2">
+            <div class="carousel-caption">
+              <h3>Hi <span id="holdername"></span></h3>
+            </div>
+          </div>
+        </center>
+      </div>
+		  <br>
+		  <div class="col-md-12">
+			  <div class="panel-group" id="accordion">
+				  <div class="panel panel-default">
+					  <div class="panel-heading">
+						  <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">REDEEM VOUCHER</a>
+						  </h4>
+					  </div>
+					  <div id="collapseOne" class="panel-collapse collapse in">
+						  <div class="panel-body">
+							  <div class="row">
+								  <form id="formsubmit" class="form-input-voucher" method="post" action="#">
+									  <div class="col-lg-3">
+										  <div class="form-row">
+                        <p>Choose the picture with your camera:</p>
+                      </div>
+									  </div>
+									  <div class="col-lg-3">
+										  <div class="form-row">
+                        <input type="file" accept="image/*" capture="camera" onchange="picChange(event)"/>
+                        <input type="hidden" id="programId"/>
+                        <input type="hidden" id="discountValue"/>
+                        <input type="hidden" id="voucher"/>
+                      </div>
+									  </div>
+                    <div class="col-lg-3">
+                      <div class="form-row">
+                        <p id="message"></p>
+                      </div>
+                    </div>
+ 									  <div class="col-lg-3">
+                      <button class="blue" onclick="send()" type="submit">Redeem</button>
+  								  </div>
+	  						  </form>
+		  				  </div>
+			  		  </div>
+				    </div>
+			    </div>
+			    <div class="panel panel-default">
+					  <div class="panel-heading">
+						  <h4 class="panel-title">
+							  <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">SYARAT DAN KETENTUAN</a>
+						  </h4>
+					  </div>
+					  <div id="collapseTwo" class="panel-collapse collapse">
+						  <div class="panel-body">
+							  <div class="row">
+								  <div class="col-md-12">
+									  <div id="tnc" class="padding10">
+									  </div>
+								  </div>
+							  </div>
+						  </div>
+					  </div>
+				  </div>
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">CARA PENGGUNAAN</a>
+              </h4>
+            </div>
+            <div id="collapseThree" class="panel-collapse collapse">
+              <div class="panel-body">
+                <div class="col-md-12" id="cr">
+                  <ol class="padding10">
+                    <p>
+                    1. Pilih tenant dimana voucher anda akan digunakan<br>
+                    2. Setelah memilih tenant akan muncul kode voucher. tunjukan kode tersebut kepada kasir tenan tersebut<br>
+                    3. Tekan tombol redeem<br>
+                    4. Tunjukan kode transaksi kepada kasir
+                    </p>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+			  </div>
+		  </div>
+	  </div>
+  </div>
+  <footer class="footer">
+    <div class="container">
+      <div class="text-center">
+        <p class="text-muted">Powered by <a href="https://www.gilkor.com">GILKOR 2017</a></p>
+      </div>
+    </div>
+  </footer>
 </body>
+
+<script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+<script type="text/javascript" src="/assets/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/grid.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/version.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/detector.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/formatinf.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/errorlevel.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/bitmat.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/datablock.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/bmparser.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/datamask.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/rsdecoder.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/gf256poly.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/gf256.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/decoder.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/qrcode.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/findpat.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/alignpat.js"></script>
+<script type="text/javascript" src="/assets/js/webqr/databr.js"></script>
+<script type="text/javascript" src="/assets/js/public-script.js"></script>
+
 </html>
