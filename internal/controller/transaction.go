@@ -20,7 +20,7 @@ type (
 		Partner       string   `json:"partner" valid:"required"`
 		Challenge     string   `json:"challenge" valid:"numeric,optional"`
 		Response      string   `json:"response" valid:"numeric,optional"`
-		DiscountValue string   `json:"discount_value" valid:"float,required"`
+		DiscountValue string   `json:"discount_value" valid:"required"`
 		Vouchers      []string `json:"vouchers" valid:"required"`
 		CreatedBy     string   `json:"created_by" valid:"optional"`
 	}
@@ -447,7 +447,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res = NewResponse(TransactionResponse{TransactionCode: txCode})
-	logger.SetStatus(status).Log("param :", rd, "response :", TransactionResponse{TransactionCode: txCode})
+	logger.SetStatus(status).Log("param :", rd, "response :", TransactionResponse{TransactionCode: txCode, Vouchers: rd.Vouchers})
 	render.JSON(w, res, status)
 }
 
