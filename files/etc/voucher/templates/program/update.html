@@ -16,6 +16,23 @@
           <div class="pv"><a href="#using">Rule Using</a></div>
         </div>
       </div>
+
+      <div id="modalLoader" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" class="modal fade">
+        <div class="modal-dialog modal-loader">
+          <div class="modal-content">
+            <div class="modal-body">
+              <div class="row">
+                <label>Uploading Image</label>
+              </div>
+              <div class="row loader-primary">
+                <div class="loader-demo text-center">
+                  <div class="loader-inner line-scale m-loader"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="col-lg-10 p0 overflow-container">
       <form id="updateProgram" name="updateProgram" novalidate="" class="card b0 form-validate redeem-rules-form" action="/v1/ui/sample/link" method="get">
@@ -360,7 +377,7 @@
             <div class="row">
               <div class=" pull-right p">
                 <span id="error-message" class="text-danger"></span>
-                <button type="button" onclick="send()" class="btn btn-raised btn-primary ripple">Update</button>
+                <button type="button" data-toggle="modal" onclick="send()" class="btn btn-raised btn-primary ripple">Update</button>
               </div>
             </div>
           </div>
@@ -376,6 +393,7 @@
 <script type="text/javascript" src="/assets/vendor/clockpicker/dist/bootstrap-clockpicker.js"></script>
 <script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
 <script type="text/javascript" src="/assets/vendor/summernote/dist/summernote.js"></script>
+<script type="text/javascript" src="/assets/vendor/loaders.css/loaders.css.js"></script>
 <script type="text/javascript" src="/assets/js/program/update.js"></script>
 {{ end }}
 
