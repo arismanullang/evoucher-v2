@@ -176,7 +176,6 @@ function send() {
 	var programType = $("#programType").find(":selected").val();
 	var voucherPrice = parseInt($("#voucherPrice").val());
 	var maxQuantityVoucher = parseInt($("#maxQuantityVoucher").val());
-	var redemptionMethod = $("#redemptionMethod").find(":selected").val();
 	var programValidFrom = $("#programValidFrom").val();
 	var programValidTo = $("#programValidTo").val();
 	var startHour = $("#startHour").val();
@@ -279,7 +278,7 @@ function send() {
 					name: programName,
 					type: programType,
 					voucher_type: voucherType,
-					voucher_price: voucherType,
+					voucher_price: voucherPrice,
 					max_quantity_voucher: maxQuantityVoucher,
 					max_redeem_voucher: maxRedeem,
 					max_generate_voucher: maxGenerate,
