@@ -32,6 +32,8 @@ function getProgram() {
 				dataId.push(arrData[i].id);
 				if (arrData[i].type == "on-demand") {
 					dataType.push("Mobile App");
+				} else if (arrData[i].type == "gift") {
+					dataType.push("Gift Voucher");
 				} else {
 					dataType.push("Email Blast");
 				}
