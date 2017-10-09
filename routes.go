@@ -7,6 +7,7 @@ import (
 	"github.com/ruizu/render"
 
 	"github.com/gilkor/evoucher/internal/controller"
+	"fmt"
 )
 
 func setRoutes() http.Handler {
@@ -148,6 +149,7 @@ func setRoutes() http.Handler {
 }
 
 func ping(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("ping")
 	w.Write([]byte("ping"))
 }
 
