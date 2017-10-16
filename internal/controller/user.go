@@ -385,7 +385,7 @@ func UpdateUserRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateOtherUser(w http.ResponseWriter, r *http.Request, logger *model.LogField, a Auth) {
-	apiName := "sa_update"
+	apiName := "user_update"
 
 	status := http.StatusOK
 	res := NewResponse(nil)
