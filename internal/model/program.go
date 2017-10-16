@@ -537,8 +537,8 @@ func (d *DeleteProgramRequest) Delete() error {
 	}
 
 	ctx := context.Background()
-	if resv[0].Img_url != "https://storage.googleapis.com/e-voucher/Nd3QxH8El2Zuy12QhXs5Y305vPL4VZJJ.jpg" {
-		o := StorageBucket.Object(strings.Split(d.Img_url, "/")[4])
+	if resv[0].Img_url != "https://storage.googleapis.com/e-voucher/L1LXN5bpMphnvG6Ce8eUbBSYDW5G3MaH.jpg" {
+		o := StorageBucket.Object(strings.Split(resv[0].Img_url, "/")[4])
 		if err := o.Delete(ctx); err != nil {
 			return ErrServerInternal
 		}
