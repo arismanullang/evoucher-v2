@@ -16,19 +16,21 @@ import (
 	"github.com/urfave/negroni"
 	//"gopkg.in/redis.v5"
 
+	"github.com/gilkor/evoucher/internal/controller"
 	"github.com/gilkor/evoucher/internal/model"
 )
 
 //var Session *redis.Client
 
 var (
-	name    = "voucher"
-	version = "unversioned"
-	token   = name + "/" + version
+	name        = "voucher"
+	version     = "unversioned"
+	token       = name + "/" + version
+	path_config = os.Getenv("EVOUCHER_CONFIG")
 
 	fversion = flag.Bool("version", false, "print the version.")
+	fconfig  = flag.String("config", path_config, "set the config file path.")
 	//fconfig  = flag.String("config", "files/etc/voucher/config.yml", "set the config file path.")
-	fconfig  = flag.String("config", "/etc/evoucher/config.yml", "set the config file path.")
 	fprofile = flag.String("profile", "", "enable profiler, value either one of [cpu, mem, block].")
 
 	configDir = ""
@@ -101,9 +103,11 @@ func main() {
 	model.OCRA_EVOUCHER_APPS_KEY = config.Ocra.AppsKey
 	model.OCRA_URL = config.Ocra.Endpoint
 
+	negroni.NewLogger()
 	r := setRoutes()
 	m := negroni.New()
 	m.Use(negroni.NewRecovery())
+	m.Use(controller.LoggerMiddleware())
 	m.Use(negroni.NewStatic(http.Dir(config.Server.PublicDirectory)))
 	m.UseHandler(r)
 

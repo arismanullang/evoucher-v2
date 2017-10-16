@@ -245,6 +245,30 @@ function setValidationMessage() {
 
 })();
 
+function errorPlacementInput(error, element) {
+	if( element.parent().parent().is('.mda-input-group') ) {
+		error.insertAfter(element.parent().parent()); // insert at the end of group
+		element.focus();
+	}
+	else if( element.parent().is('.mda-form-control') ) {
+		error.insertAfter(element.parent()); // insert after .mda-form-control
+		element.focus();
+	}
+	else if( element.parent().is('.input-group') ) {
+		error.insertAfter(element.parent()); // insert after .mda-form-control
+		element.focus();
+	}
+	else if ( element.is(':radio') || element.is(':checkbox')) {
+		error.insertAfter(element.parent().parent().parent().parent().parent().find(".control-label"));
+		$("input[name=partner]").removeClass('error');
+		element.focus();
+	}
+	else {
+		error.insertAfter(element);
+		element.focus();
+	}
+}
+
 (function() {
     'use strict';
 

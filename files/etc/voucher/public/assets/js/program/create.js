@@ -7,7 +7,76 @@ $(document).ready(function () {
 	initForm();
 	onChangeElem();
 
+	jQuery.validator.addMethod("greaterThan",
+		function(value, element, params) {
 
+			if (!/Invalid|NaN/.test(new Date(value))) {
+				return new Date(value) > new Date($(params).val());
+			}
+
+			return isNaN(value) && isNaN($(params).val())
+				|| (Number(value) > Number($(params).val()));
+		},'Must be greater than {0}.');
+
+	jQuery.validator.addMethod("lowerThan",
+		function(value, element, params) {
+
+			var ele = "#"+params;
+
+			if(params.includes(" ")){
+				var tempEle = params.split(" ");
+				ele = "#"+tempEle[0].toLowerCase()+tempEle[1];
+			}
+
+			return isNaN(value) && isNaN($(ele).val())
+				|| (Number(value) <= Number($(ele).val()));
+		}, 'Must be lower than {0}.');
+
+	$('#createProgram').validate({
+		errorPlacement: errorPlacementInput,
+		// Form rules
+		rules: {
+			programName: {
+				required: true
+			},
+			programValidFrom: {
+				required: true
+			},
+			programValidTo: {
+				required: true,
+				greaterThan: "#programValidFrom"
+			},
+			voucherPrice: {
+				required: true,
+				digits: true
+			},
+			voucherValue: {
+				required: true,
+				digits: true,
+				min: 5000
+			},
+			voucherQuantity: {
+				required: true,
+				digits: true,
+				min: 1
+			},
+			generateVoucher: {
+				required: true,
+				digits: true,
+				min: 1,
+				lowerThan: "Voucher Quantity"
+			},
+			startHour: {
+				required: true
+			},
+			endHour: {
+				required: true
+			},
+			partner: {
+				required: true
+			}
+		}
+	});
 });
 
 function initForm(){
@@ -540,103 +609,32 @@ function getPartner() {
 		// 		}
 		// 	}
 		// });
-
-		jQuery.validator.addMethod("greaterThan",
-			function(value, element, params) {
-
-				if (!/Invalid|NaN/.test(new Date(value))) {
-					return new Date(value) > new Date($(params).val());
-				}
-
-				return isNaN(value) && isNaN($(params).val())
-					|| (Number(value) > Number($(params).val()));
-			},'Must be greater than {0}.');
-
-		jQuery.validator.addMethod("lowerThan",
-			function(value, element, params) {
-
-				var ele = "#"+params;
-
-				if(params.includes(" ")){
-					var tempEle = params.split(" ");
-					ele = "#"+tempEle[0].toLowerCase()+tempEle[1];
-				}
-
-				return isNaN(value) && isNaN($(ele).val())
-					|| (Number(value) <= Number($(ele).val()));
-			}, 'Must be lower than {0}.');
-
-		$('#createProgram').validate({
-			errorPlacement: errorPlacementInput,
-			// Form rules
-			rules: {
-				programName: {
-					required: true
-				},
-				programValidFrom: {
-					required: true
-				},
-				programValidTo: {
-					required: true,
-					greaterThan: "#programValidFrom"
-				},
-				voucherPrice: {
-					required: true,
-					digits: true
-				},
-				voucherValue: {
-					required: true,
-					digits: true,
-					min: 5000
-				},
-				voucherQuantity: {
-					required: true,
-					digits: true,
-					min: 1
-				},
-				generateVoucher: {
-					required: true,
-					digits: true,
-					min: 1,
-					lowerThan: "Voucher Quantity"
-				},
-				startHour: {
-					required: true
-				},
-				endHour: {
-					required: true
-				},
-				partner: {
-					required: true
-				}
-			}
-		});
 	}
 
 })();
 
 // Necessary to place dyncamic error messages
 // without breaking the expected markup for custom input
-function errorPlacementInput(error, element) {
-	if( element.parent().parent().is('.mda-input-group') ) {
-		error.insertAfter(element.parent().parent()); // insert at the end of group
-		element.focus();
-	}
-	else if( element.parent().is('.mda-form-control') ) {
-		error.insertAfter(element.parent()); // insert after .mda-form-control
-		element.focus();
-	}
-	else if( element.parent().is('.input-group') ) {
-		error.insertAfter(element.parent()); // insert after .mda-form-control
-		element.focus();
-	}
-	else if ( element.is(':radio') || element.is(':checkbox')) {
-		error.insertAfter(element.parent().parent().parent().parent().parent().find(".control-label"));
-		$("input[name=partner]").removeClass('error');
-		element.focus();
-	}
-	else {
-		error.insertAfter(element);
-		element.focus();
-	}
-}
+// function errorPlacementInput(error, element) {
+// 	if( element.parent().parent().is('.mda-input-group') ) {
+// 		error.insertAfter(element.parent().parent()); // insert at the end of group
+// 		element.focus();
+// 	}
+// 	else if( element.parent().is('.mda-form-control') ) {
+// 		error.insertAfter(element.parent()); // insert after .mda-form-control
+// 		element.focus();
+// 	}
+// 	else if( element.parent().is('.input-group') ) {
+// 		error.insertAfter(element.parent()); // insert after .mda-form-control
+// 		element.focus();
+// 	}
+// 	else if ( element.is(':radio') || element.is(':checkbox')) {
+// 		error.insertAfter(element.parent().parent().parent().parent().parent().find(".control-label"));
+// 		$("input[name=partner]").removeClass('error');
+// 		element.focus();
+// 	}
+// 	else {
+// 		error.insertAfter(element);
+// 		element.focus();
+// 	}
+// }

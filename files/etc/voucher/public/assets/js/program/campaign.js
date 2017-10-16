@@ -149,6 +149,7 @@ function getProgram(id) {
 }
 
 function uploadTest() {
+	$('.sendButton').attr("disabled","disabled");
 	id = findGetParameter("id");
 	var headerImage = null;
 	var voucherImage = null;
@@ -159,7 +160,6 @@ function uploadTest() {
 	var footerImageUrl = "";
 
 	files.forEach(function (file) {
-		console.log(file.key);
 		switch(file.key){
 			case "dropzone-header":
 				headerImage = file.value;
@@ -244,7 +244,10 @@ function uploadTest() {
 				n = "lalala";
 				break;
 			default:
-				if( headerImage == null && voucherImage == null && footerImage == null ){
+				console.log(headerImageUrl);
+				console.log(voucherImageUrl);
+				console.log(footerImageUrl);
+				if( (headerImage == null && headerImageUrl == "") || (voucherImage != null && voucherImageUrl == "") || (footerImage != null && footerImageUrl == "") ){
 					break;
 				}
 
@@ -265,6 +268,7 @@ function uploadTest() {
 						$('#image-footer-modal').modal('hide');
 						swal("Upload Success");
 						clearInterval(interval);
+						$('.sendButton').removeAttr("disabled");
 					},
 					error: function (data) {
 						var a = JSON.parse(data.responseText);

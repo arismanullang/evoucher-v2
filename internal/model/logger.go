@@ -10,13 +10,16 @@ import (
 
 type (
 	LogField struct {
-		TraceID string
-		Time    time.Time
-		Delta   float64
-		Service string
-		Method  string
-		Tag     string
-		Status  int
+		TraceID   string
+		StartTime time.Time
+		EndTime   time.Time
+		Delta     float64
+		Host      string
+		Path      string
+		Method    string
+		Status    int
+		Tag       string
+		Service   string
 	}
 )
 
@@ -27,22 +30,18 @@ var (
 )
 
 func NewLog() *LogField {
-	d := LogField{}
-	d.TraceID = getTraceID()
-	d.Time = time.Now()
-
+	d := new(LogField)
 	return startNewLog(d)
 }
 
-func startNewLog(f LogField) *LogField {
+func startNewLog(f *LogField) *LogField {
 	return &LogField{
-		TraceID: f.TraceID,
-		Time:    f.Time,
+		TraceID: GetTraceID(),
 	}
 }
 
 func initialFile(ext string) *os.File {
-	f, err := os.OpenFile(getFileName(ext), os.O_CREATE|os.O_WRONLY, 0666)
+	f, err := os.OpenFile(getFileName(ext), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 	if err == nil {
 		l.Out = f
 	} else {
@@ -57,10 +56,12 @@ func (d *LogField) Debug(m ...interface{}) {
 	f := initialFile("log")
 	l.WithFields(logrus.Fields{
 		"trace-ID": d.TraceID,
-		"time":     d.Time,
-		"delta":    d.getDeltaTime(),
+		"Start":    d.StartTime,
+		"End":      d.EndTime,
+		"delta":    d.Delta,
+		"host":     d.Host,
+		"path":     d.Path,
 		"service":  d.Service,
-		"tag":      d.Tag,
 		"method":   d.Method,
 		"result":   d.Status,
 	}).Debug(m)
@@ -71,10 +72,12 @@ func (d *LogField) Info(m ...interface{}) {
 	f := initialFile("log")
 	l.WithFields(logrus.Fields{
 		"trace-ID": d.TraceID,
-		"time":     d.Time,
-		"delta":    d.getDeltaTime(),
+		"Start":    d.StartTime,
+		"End":      d.EndTime,
+		"delta":    d.Delta,
+		"host":     d.Host,
+		"path":     d.Path,
 		"service":  d.Service,
-		"tag":      d.Tag,
 		"method":   d.Method,
 		"result":   d.Status,
 	}).Info(m)
@@ -85,10 +88,12 @@ func (d *LogField) Panic(m ...interface{}) {
 	f := initialFile("log")
 	l.WithFields(logrus.Fields{
 		"trace-ID": d.TraceID,
-		"time":     d.Time,
-		"delta":    d.getDeltaTime(),
+		"Start":    d.StartTime,
+		"End":      d.EndTime,
+		"delta":    d.Delta,
+		"host":     d.Host,
+		"path":     d.Path,
 		"service":  d.Service,
-		"tag":      d.Tag,
 		"method":   d.Method,
 		"result":   d.Status,
 	}).Panic(m)
@@ -99,10 +104,12 @@ func (d *LogField) Warn(m ...interface{}) {
 	f := initialFile("log")
 	l.WithFields(logrus.Fields{
 		"trace-ID": d.TraceID,
-		"time":     d.Time,
-		"delta":    d.getDeltaTime(),
+		"Start":    d.StartTime,
+		"End":      d.EndTime,
+		"delta":    d.Delta,
+		"host":     d.Host,
+		"path":     d.Path,
 		"service":  d.Service,
-		"tag":      d.Tag,
 		"method":   d.Method,
 		"result":   d.Status,
 	}).Warn(m)
@@ -113,17 +120,19 @@ func (d *LogField) Log(m ...interface{}) {
 	f := initialFile("log")
 	l.WithFields(logrus.Fields{
 		"trace-ID": d.TraceID,
-		"time":     d.Time,
-		"delta":    d.getDeltaTime(),
+		"Start":    d.StartTime,
+		"End":      d.EndTime,
+		"delta":    d.Delta,
+		"host":     d.Host,
+		"path":     d.Path,
 		"service":  d.Service,
-		"tag":      d.Tag,
 		"method":   d.Method,
 		"result":   d.Status,
 	}).Info(m)
 	f.Close()
 }
 
-func getTraceID() string {
+func GetTraceID() string {
 	rand.Seed(time.Now().UTC().UnixNano())
 	chars := NUMERALS
 	result := make([]byte, LN_TRACE_ID)
@@ -140,14 +149,15 @@ func getFileName(ext string) string {
 	return Path + filename
 }
 
-func (d *LogField) getDeltaTime() float64 {
-	return time.Since(d.Time).Seconds()
-}
-
 func (d *LogField) SetService(service string) *LogField {
 	d.Service = service
 	return d
 }
+func (d *LogField) SetTag(t string) *LogField {
+	d.Tag = t
+	return d
+}
+
 func (d *LogField) SetStatus(code int) *LogField {
 	d.Status = code
 	return d
@@ -157,8 +167,26 @@ func (d *LogField) SetMethod(method string) *LogField {
 	d.Method = method
 	return d
 }
+func (d *LogField) SetHost(s string) *LogField {
+	d.Host = s
+	return d
+}
 
-func (d *LogField) SetTag(tag string) *LogField {
-	d.Tag = tag
+func (d *LogField) SetPath(s string) *LogField {
+	d.Path = s
+	return d
+}
+
+func (d *LogField) SetStart(t time.Time) *LogField {
+	d.StartTime = t
+	return d
+}
+
+func (d *LogField) SetEnd(t time.Time) *LogField {
+	d.EndTime = t
+	return d
+}
+func (d *LogField) SetDelta(f float64) *LogField {
+	d.Delta = f
 	return d
 }

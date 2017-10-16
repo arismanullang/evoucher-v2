@@ -4,10 +4,35 @@ $(window).ready(function () {
 	});
 
 	getRole();
+
+	$('#createUser').validate({
+		errorPlacement: errorPlacementInput,
+		// Form rules
+		rules: {
+			username: {
+				required: true
+			},
+			password: {
+				required: true
+			},
+			email: {
+				required: true,
+				email: true
+			},
+			phone: {
+				required: true,
+				digits: true
+			},
+			'role[]': {
+				required: true
+			}
+		}
+	});
 });
 
 function send() {
-	if(!$("#createUser").valid()){
+	if(!$('#createUser').valid()){
+		$(".error").focus();
 		return;
 	}
 
@@ -57,13 +82,10 @@ function send() {
 }
 
 function getRole() {
-	console.log("Get Role");
-
 	$.ajax({
 		url: '/v1/ui/role/all',
 		type: 'get',
 		success: function (data) {
-			console.log("Render Data");
 			var arrData = [];
 			arrData = data.data;
 
@@ -93,28 +115,4 @@ function getRole() {
 	function formAdvanced() {
 		$('.select2').select2();
 	}
-
-	$('#createUser').validate({
-		errorPlacement: errorPlacementInput,
-		// Form rules
-		rules: {
-			username: {
-				required: true
-			},
-			password: {
-				required: true
-			},
-			email: {
-				required: true,
-				email: true
-			},
-			phone: {
-				required: true
-			},
-			'role[]': {
-				required: true
-			}
-		}
-	});
-
 })();

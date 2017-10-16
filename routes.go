@@ -7,6 +7,7 @@ import (
 	"github.com/ruizu/render"
 
 	"github.com/gilkor/evoucher/internal/controller"
+	"fmt"
 )
 
 func setRoutes() http.Handler {
@@ -49,6 +50,7 @@ func setRoutes() http.Handler {
 
 	//transaction
 	r.GetFunc("/v1/ui/transaction/partner", controller.GetAllTransactionsByPartner)
+	r.GetFunc("/v1/ui/transaction/voucher", controller.GetVoucherTransactionDetails)
 	r.GetFunc("/v1/ui/transaction", controller.CashoutTransactionDetails)
 	r.PostFunc("/v1/ui/transaction/cashout/update", controller.CashoutTransactions)
 	r.GetFunc("/v1/ui/transaction/cashout/print", controller.PrintCashoutTransaction)
@@ -148,6 +150,7 @@ func setRoutes() http.Handler {
 }
 
 func ping(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("ping")
 	w.Write([]byte("ping"))
 }
 

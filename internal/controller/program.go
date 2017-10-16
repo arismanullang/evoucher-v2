@@ -326,7 +326,7 @@ func GetAllPrograms(w http.ResponseWriter, r *http.Request) {
 
 	program, err := model.FindAllPrograms(a.User.Account.Id)
 	res = NewResponse(program)
-	logger.SetStatus(status).Log("param account ID from token :", a.User.Account.Id, "response :", program)
+	//logger.SetStatus(status).Log("param account ID from token :", a.User.Account.Id, "response :", program)
 	if err != nil {
 		status = http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError
@@ -336,7 +336,7 @@ func GetAllPrograms(w http.ResponseWriter, r *http.Request) {
 		}
 
 		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-		logger.SetStatus(status).Log("param account ID from token :", a.User.Account.Id, "response :", res.Errors)
+		//logger.SetStatus(status).Log("param account ID from token :", a.User.Account.Id, "response :", res.Errors)
 	}
 	render.JSON(w, res, status)
 }

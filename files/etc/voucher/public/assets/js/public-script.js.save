@@ -2,6 +2,7 @@ var qr = "";
 
 $( document ).ready(function() {
 	var x = findGetParameter('x')+"=";
+	alert(x);
 	if(x != 'null='){
 		getProfile(x);
 	}
@@ -14,6 +15,11 @@ $( document ).ready(function() {
 
 	var error = localStorage.getItem('public_error_message');
 	$('#error').html(error);
+
+//	var x = findGetParameter('x')+"=";//
+	if(x != 'null='){
+		getProfile(x);
+	}
 
 	$('#formsubmit').submit(function(e) {
 		e.preventDefault();
