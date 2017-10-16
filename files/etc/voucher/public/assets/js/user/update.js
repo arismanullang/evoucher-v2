@@ -140,7 +140,11 @@ function send() {
 					closeOnConfirm: false
 				},
 				function() {
-					window.location = "/user/search";
+					if(type == "other"){
+						window.location = "/sa/search";
+					} else{
+						window.location = "/user/search";
+					}
 				});
 		},
 		error: function (data) {

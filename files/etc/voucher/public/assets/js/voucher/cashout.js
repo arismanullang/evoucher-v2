@@ -100,10 +100,10 @@ function next(){
 			title: 'Are you already print the invoice?',
 			text: 'You will not be able to recover the last details',
 			type: 'warning',
-			showCancelButton: false,
+			showCancelButton: true,
 			confirmButtonColor: '#4CAF50',
 			confirmButtonText: 'Yes',
-			closeOnConfirm: false
+			closeOnConfirm: true
 		},
 		function() {
 			window.location.reload();

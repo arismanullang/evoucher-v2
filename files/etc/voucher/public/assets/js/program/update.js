@@ -15,12 +15,29 @@ $(window).ready(function () {
 		_this.closest('#partnerList').find("input[class=partner]").prop('checked', _this.prop('checked'));
 	});
 
-
 	$("#allowAccumulative").change(function () {
 		if (this.checked == true) {
 			$("#divMaxRedeemVoucher").attr("style", "display:block");
 		} else {
 			$("#divMaxRedeemVoucher").attr("style", "display:none");
+		}
+	});
+
+	$('#updateProgram').validate({
+		errorPlacement: errorPlacementInput,
+		// Form rules
+		rules: {
+			programName: {
+				required: true
+			},
+			maxGenerateVoucher: {
+				required: true,
+				digits: true,
+				min: 1
+			},
+			'partner[]': {
+				required: true
+			}
 		}
 	});
 });
@@ -510,45 +527,6 @@ function convertToUpperCase(upperCase) {
 		$('main').scroll(function () {
 			cpInput.clockpicker('hide');
 		});
-
-		$('#updateProgram').validate({
-			errorPlacement: errorPlacementInput,
-			// Form rules
-			rules: {
-				programName: {
-					required: true
-				},
-				maxGenerateVoucher: {
-					required: true,
-					digits: true,
-					min: 1
-				},
-				'partner[]': {
-					required: true
-				}
-			}
-		});
 	}
 
 })();
-
-// Necessary to place dyncamic error messages
-// without breaking the expected markup for custom input
-function errorPlacementInput(error, element) {
-	if( element.parent().parent().is('.mda-input-group') ) {
-		error.insertAfter(element.parent().parent()); // insert at the end of group
-	}
-	else if( element.parent().is('.mda-form-control') ) {
-		error.insertAfter(element.parent()); // insert after .mda-form-control
-	}
-	else if( element.parent().is('.input-group') ) {
-		error.insertAfter(element.parent()); // insert after .mda-form-control
-	}
-	else if ( element.is(':radio') || element.is(':checkbox')) {
-		error.insertAfter(element.parent().parent().parent().parent().parent().find(".control-label"));
-	}
-	else {
-		error.insertAfter(element);
-	}
-}
-

@@ -207,6 +207,10 @@ func FindVouchers(param map[string]string) (VoucherResponse, error) {
 			partners as pa
 		ON
 			pp.partner_id = pa.id
+		JOIN
+			transactions as t
+		ON
+			t.partner_id = pa.id
 		WHERE
 			v.status = ?
 	`

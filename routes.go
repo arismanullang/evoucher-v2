@@ -49,6 +49,7 @@ func setRoutes() http.Handler {
 
 	//transaction
 	r.GetFunc("/v1/ui/transaction/partner", controller.GetAllTransactionsByPartner)
+	r.GetFunc("/v1/ui/transaction/voucher", controller.GetVoucherTransactionDetails)
 	r.GetFunc("/v1/ui/transaction", controller.CashoutTransactionDetails)
 	r.PostFunc("/v1/ui/transaction/cashout/update", controller.CashoutTransactions)
 	r.GetFunc("/v1/ui/transaction/cashout/print", controller.PrintCashoutTransaction)

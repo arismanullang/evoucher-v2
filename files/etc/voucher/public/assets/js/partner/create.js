@@ -4,6 +4,30 @@ $(document).ready(function () {
 	});
 
 	getTag();
+
+	jQuery.validator.addMethod("greaterThan",
+		function(value, element, params) {
+
+			if (!/Invalid|NaN/.test(new Date(value))) {
+				return new Date(value) > new Date($(params).val());
+			}
+
+			return isNaN(value) && isNaN($(params).val())
+				|| (Number(value) > Number($(params).val()));
+		},'Must be greater than {0}.');
+
+	$('#createPartner').validate({
+		errorPlacement: errorPlacementInput,
+		// Form rules
+		rules: {
+			partnerName: {
+				required: true
+			},
+			serialNumber:{
+				digits: true
+			}
+		}
+	});
 });
 
 function getTag() {
@@ -24,7 +48,6 @@ function getTag() {
 }
 
 function send() {
-	$("#createPartner").validate();
 	if(!$("#createPartner").valid()){
 		$(".error").focus();
 		return;
@@ -54,17 +77,20 @@ function send() {
 		contentType: "application/json",
 		data: JSON.stringify(partner),
 		success: function () {
+			console.log("a");
 			swal({
-					title: 'Success',
-					text: 'Partner Created',
-					type: 'success',
-					showCancelButton: false,
-					confirmButtonText: 'Ok',
-					closeOnConfirm: false
-				},
-				function() {
-					window.location = "/partner/search";
-				});
+				title: 'Success',
+				text: 'Partner Created',
+				type: 'success',
+				showCancelButton: false,
+				confirmButtonText: 'Ok',
+				closeOnConfirm: false
+			},
+			function() {
+				console.log("c");
+				window.location = "/partner/search";
+			});
+			console.log("b");
 		},
 		error: function (data) {
 			var a = JSON.parse(data.responseText);
@@ -93,61 +119,17 @@ function send() {
 			}
 
 			swal({
-					title: 'Are you sure?',
-					text: html,
-					type: 'warning',
-					showCancelButton: true,
-					confirmButtonColor: '#DD6B55',
-					confirmButtonText: 'Yes',
-					closeOnConfirm: false
-				},
-				function () {
-					send();
-				});
-
-		});
-
-		jQuery.validator.addMethod("greaterThan",
-			function(value, element, params) {
-
-				if (!/Invalid|NaN/.test(new Date(value))) {
-					return new Date(value) > new Date($(params).val());
-				}
-
-				return isNaN(value) && isNaN($(params).val())
-					|| (Number(value) > Number($(params).val()));
-			},'Must be greater than {0}.');
-
-		$('#createPartner').validate({
-			errorPlacement: errorPlacementInput,
-			// Form rules
-			rules: {
-				partnerName: {
-					required: true
-				},
-				serialNumber:{
-					digits: true
-				}
-			}
+				title: 'Are you sure?',
+				text: html,
+				type: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#DD6B55',
+				confirmButtonText: 'Yes',
+				closeOnConfirm: false
+			},
+			function () {
+				send();
+			});
 		});
 	}
-
 })();
-
-function errorPlacementInput(error, element) {
-	if (element.parent().parent().is('.mda-input-group')) {
-		error.insertAfter(element.parent().parent()); // insert at the end of group
-	}
-	else if (element.parent().is('.mda-form-control')) {
-		error.insertAfter(element.parent()); // insert after .mda-form-control
-	}
-	else if (element.parent().is('.input-group')) {
-		error.insertAfter(element.parent()); // insert after .mda-form-control
-	}
-	else if (element.is(':radio') || element.is(':checkbox')) {
-		error.insertAfter(element.parent().parent().parent().parent().parent().find(".control-label"));
-	}
-	else {
-		error.insertAfter(element);
-	}
-}

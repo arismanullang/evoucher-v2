@@ -6,6 +6,7 @@ import (
 
 	"gopkg.in/mailgun/mailgun-go.v1"
 	"strings"
+	"time"
 )
 
 var (
@@ -149,27 +150,51 @@ func InsertCampaign(request ProgramCampaign, user string) (string, error) {
 	}
 	defer tx.Rollback()
 
-	q := `
-		INSERT INTO program_campaigns(
-			program_id
-			, header_image
-			, voucher_image
-			, footer_image
-			, created_by
-			, status
-		)
-		VALUES (?, ?, ?, ?, ?, ?)
-		RETURNING
-			id
-
-	`
-
 	var res []string
-	err = tx.Select(&res, tx.Rebind(q), request.ProgramId, request.ImageHeader, request.ImageVoucher, request.ImageFooter, user, StatusCreated)
-	if err != nil {
-		fmt.Println(err.Error())
-		fmt.Println(q)
-		return "", ErrServerInternal
+
+	campaign, err := GetCampaign(request.ProgramId)
+	if campaign.ProgramId == "" {
+		q := `
+			INSERT INTO program_campaigns(
+				program_id
+				, header_image
+				, voucher_image
+				, footer_image
+				, created_by
+				, status
+			)
+			VALUES (?, ?, ?, ?, ?, ?)
+			RETURNING
+				id
+		`
+
+		err = tx.Select(&res, tx.Rebind(q), request.ProgramId, request.ImageHeader, request.ImageVoucher, request.ImageFooter, user, StatusCreated)
+		if err != nil {
+			fmt.Println(err.Error())
+			fmt.Println(q)
+			return "", ErrServerInternal
+		}
+	} else {
+		q := `
+			UPDATE program_campaigns
+			SET
+				header_image = ?
+				, voucher_image = ?
+				, footer_image = ?
+				, updated_by = ?
+				, updated_at = ?
+			WHERE
+				program_id = ?
+				AND status = ?
+		`
+
+		_, err = tx.Exec(tx.Rebind(q), request.ImageHeader, request.ImageVoucher, request.ImageFooter, user, time.Now(), request.ProgramId, StatusCreated)
+		if err != nil {
+			fmt.Println(err.Error())
+			fmt.Println(q)
+			return "", ErrServerInternal
+		}
+		res = append(res, request.ProgramId)
 	}
 
 	if err := tx.Commit(); err != nil {
