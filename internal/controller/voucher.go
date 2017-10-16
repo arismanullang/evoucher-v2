@@ -934,7 +934,7 @@ func GetCsvSample(w http.ResponseWriter, r *http.Request) {
 
 	vl := [][]string{}
 	for i := 0; i < 3; i++ {
-		tempArray := []string{"index", "Name", "Email"}
+		tempArray := []string{"index", "Email", "Name"}
 		vl = append(vl, tempArray)
 	}
 

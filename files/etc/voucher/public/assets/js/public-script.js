@@ -1,6 +1,11 @@
 var qr = "";
 
 $( document ).ready(function() {
+	var x = findGetParameter('x')+"=";
+	if(x != 'null='){
+		getProfile(x);
+	}
+
 	var transactioncode = localStorage.getItem('public_transaction_code');
 	$('#transactioncode').html(transactioncode);
 	if(transactioncode != null){
@@ -9,11 +14,6 @@ $( document ).ready(function() {
 
 	var error = localStorage.getItem('public_error_message');
 	$('#error').html(error);
-
-	var x = findGetParameter('x')+"=";
-	if(x != 'null='){
-		getProfile(x);
-	}
 
 	$('#formsubmit').submit(function(e) {
 		e.preventDefault();

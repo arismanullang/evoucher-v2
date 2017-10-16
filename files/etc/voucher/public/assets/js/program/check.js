@@ -59,12 +59,14 @@ function getVoucher(id) {
 
 				var dateValid = new Date(arrData[i].valid_at);
 				var dateExpired = new Date(arrData[i].expired_at);
+				var button = "<button type='button' onclick='detail(\"" + arrData[i].id + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"
 				dataSet[i] = [
 					arrData[i].voucher_code
 					, arrData[i].holder_description.toUpperCase()
 					, dateValid.toDateString().toUpperCase()
 					, dateExpired.toDateString().toUpperCase()
 					, arrData[i].state.toUpperCase()
+					, button
 				];
 			}
 
@@ -84,7 +86,8 @@ function getVoucher(id) {
 					{title: "HOLDER"},
 					{title: "VALID"},
 					{title: "EXPIRED"},
-					{title: "STATUS"}
+					{title: "STATUS"},
+					{title: "ACTION"}
 				],
 				oLanguage: {
 					sSearch: '<em class="ion-search"></em>',
@@ -117,6 +120,7 @@ function getVoucher(id) {
 		},
 		error: function (data) {
 			getProgram(id, 0, 0, 0);
+			$('#table-voucher').attr('style', 'display:none');
 		}
 	});
 }
@@ -189,7 +193,6 @@ function getProgram(id, voucher, used, paid) {
 			$('#program-name').html(result.name);
 			$('#program-description').html(result.description);
 			$('#program-type').html(programType);
-			$('#voucher-type').html(result.voucher_type);
 			$('#conversion-rate').html(result.voucher_price);
 			$('#voucher-value').html('Rp. ' + addDecimalPoints(result.voucher_value) + ',00');
 			$('#period').html(period);
@@ -247,4 +250,8 @@ function programCampaign(){
 function editProgram() {
 	var id = findGetParameter("id");
 	window.location = "/program/update?id=" + id;
+}
+
+function detail(id) {
+	window.location = "/voucher/check?id=" + id;
 }

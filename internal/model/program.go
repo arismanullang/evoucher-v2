@@ -753,7 +753,7 @@ func FindProgramDetailsById(id string) (Program, error) {
 		fmt.Println(err.Error())
 		return Program{}, ErrServerInternal
 	}
-	fmt.Println("program data :", id, StatusCreated, resv)
+	//fmt.Println("program data :", id, StatusCreated, resv)
 	if len(resv) < 1 {
 		return Program{}, ErrResourceNotFound
 	}

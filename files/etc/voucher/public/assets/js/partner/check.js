@@ -19,12 +19,14 @@ function getVoucher(id) {
 			var dataSet = [];
 			for (i = 0; i < limit; i++) {
 				var dateValid = new Date(arrData[i].updated_at);
+				var button = "<button type='button' onclick='detail(\"" + arrData[i].id + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"
 				dataSet[i] = [
 					arrData[i].program_name.toUpperCase()
 					, arrData[i].voucher_code
 					, arrData[i].holder_description.toUpperCase()
 					, dateValid.toDateString().toUpperCase()
 					, arrData[i].state.toUpperCase()
+					, button
 				];
 			}
 
@@ -44,7 +46,8 @@ function getVoucher(id) {
 					{title: "VOUCHER"},
 					{title: "HOLDER"},
 					{title: "LAST UPDATE"},
-					{title: "STATUS"}
+					{title: "STATUS"},
+					{title: "ACTION"}
 				],
 				oLanguage: {
 					sSearch: '<em class="ion-search"></em>',
@@ -73,6 +76,9 @@ function getVoucher(id) {
 				}
 			}
 
+		},
+		error: function(data){
+			$('#table-voucher').attr("style", "display:none");
 		}
 	});
 }
@@ -121,6 +127,10 @@ function getPerformance(id) {
 			$("#total-customer").html(arrData.customer);
 		}
 	});
+}
+
+function detail(id) {
+	window.location = "/voucher/check?id=" + id;
 }
 
 function edit() {

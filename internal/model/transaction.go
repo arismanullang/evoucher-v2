@@ -52,6 +52,19 @@ type (
 		Username        sql.NullString `db:"username" json:"username"`
 		State           string         `db:"state" json:"state"`
 	}
+	VoucherTransaction struct {
+		PartnerName     string         `db:"partner_name" json:"partner_name"`
+		TransactionId   string         `db:"transaction_id" json:"transaction_id"`
+		TransactionCode string         `db:"transaction_code" json:"transaction_code"`
+		ProgramName     string         `db:"program_name" json:"program_name"`
+		Voucher         Voucher        `db:"-" json:"voucher"`
+		VoucherValue    float32        `db:"voucher_value" json:"voucher_value"`
+		Issued          string         `db:"issued" json:"issued"`
+		Redeem          string         `db:"redeemed" json:"redeemed"`
+		CashOut         sql.NullString `db:"cashout" json:"cashout"`
+		Username        sql.NullString `db:"username" json:"username"`
+		State           string         `db:"state" json:"state"`
+	}
 )
 
 func InsertTransaction(d Transaction) error {
@@ -212,52 +225,6 @@ func (d *DeleteTransactionRequest) Delete() error {
 	return nil
 }
 
-func FindTransactionDetailsById(id string) ([]Transaction, error) {
-	q := `
-		SELECT
-			id
-			, account_id
-			, partner_id
-			, transaction_code
-			, discount_value
-			, created_by
-			, created_at
-		FROM
-			transactions
-		WHERE
-			id = ?
-			AND status = ?
-	`
-
-	var resv []Transaction
-	if err := db.Select(&resv, db.Rebind(q), id, StatusCreated); err != nil {
-		return []Transaction{}, err
-	}
-	if len(resv) < 1 {
-		return []Transaction{}, ErrResourceNotFound
-	}
-
-	q = `
-		SELECT
-			voucher_id
-		FROM
-			transaction_details
-		WHERE
-			transaction_id = ?
-			AND status = ?
-	`
-	var resd []string
-	if err := db.Select(&resd, db.Rebind(q), id, StatusCreated); err != nil {
-		return []Transaction{}, err
-	}
-	if len(resd) < 1 {
-		return []Transaction{}, ErrResourceNotFound
-	}
-	resv[0].Vouchers = resd
-
-	return resv, nil
-}
-
 func FindCashoutTransactionDetails(transactionCode string) (Cashout, error) {
 	q := `
 		SELECT
@@ -307,6 +274,81 @@ func FindCashoutTransactionDetails(transactionCode string) (Cashout, error) {
 	resv[0].State = resd[0].VoucherState
 
 	return resv[0], nil
+}
+
+func FindVoucherCycle(accountId, voucherId string) (VoucherTransaction, error) {
+	q := `
+		SELECT
+			 t.id as transaction_id, p.name as partner_name, va.name as program_name, t.transaction_code, vo.voucher_value, va.created_at as issued, t.created_at as redeemed, vo.updated_at as cashout, u.username, vo.state
+		FROM transactions as t
+		JOIN transaction_details as dt
+		ON
+			t.id = dt.transaction_id
+		JOIN vouchers as vo
+		ON
+			dt.voucher_id = vo.id
+		JOIN users as u
+		ON
+			vo.updated_by = u.id
+		JOIN programs as va
+		ON
+			va.id = vo.program_id
+		JOIN partners as p
+		ON
+			p.id = t.partner_id
+		WHERE
+			t.status = ?
+			AND t.account_id = ?
+			AND vo.id = ?
+		ORDER BY t.created_at DESC`
+
+	var resv []VoucherTransaction
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId, voucherId); err != nil {
+		fmt.Println(err.Error())
+		return VoucherTransaction{}, err
+	}
+	if len(resv) < 1 {
+		return VoucherTransaction{}, ErrResourceNotFound
+	}
+
+	q1 := `
+	SELECT
+		v.id
+		, v.voucher_code
+		, v.reference_no
+		, v.holder
+		, v.holder_phone
+		, v.holder_email
+		, v.holder_description
+		, v.program_id
+		, v.valid_at
+		, v.expired_at
+		, v.voucher_value
+		, v.state
+		, v.created_by
+		, v.created_at
+		, v.updated_by
+		, v.updated_at
+		, v.deleted_by
+		, v.deleted_at
+		, v.status
+	FROM vouchers as v
+	WHERE
+		v.status = ?
+		AND v.id = ?
+`
+	//fmt.Println(q)
+	var resv1 []Voucher
+	if err := db.Select(&resv1, db.Rebind(q1), StatusCreated, voucherId); err != nil {
+		return VoucherTransaction{}, err
+	}
+	if len(resv) < 1 {
+		return VoucherTransaction{}, ErrResourceNotFound
+	}
+	resv[0].Voucher = resv1[0]
+
+	return resv[0], nil
+
 }
 
 func FindAllTransactionByPartner(accountId, partnerId string) ([]TransactionList, error) {

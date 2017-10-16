@@ -62,7 +62,7 @@
                                 <!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --> <!-- Top news item table --></tbody>
                                 <tbody>
                                 <tr>
-                                  <td height="15px"><img id="image-footer" title="Sedayu One" alt="Sedayu One" src="http://mailer.gilkor.com/admin/temp/newsletters/116/bannerlogo_footer.jpg" width="560" /></td>
+                                  <td height="15px"><img id="image-footer" title="Sedayu One" alt="Sedayu One" src="%%image-footer%%" width="560" /></td>
                                 </tr>
                                 </tbody>
                               </table>
