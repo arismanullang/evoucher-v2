@@ -10,16 +10,16 @@ import (
 
 type (
 	LogField struct {
-		TraceID 	string
-		StartTime    	time.Time
-		EndTime    	time.Time
-		Delta   	float64
-		Host		string
-		Path		string
-		Method  	string
-		Status  	int
-		Tag		string
-		Service 	string
+		TraceID   string
+		StartTime time.Time
+		EndTime   time.Time
+		Delta     float64
+		Host      string
+		Path      string
+		Method    string
+		Status    int
+		Tag       string
+		Service   string
 	}
 )
 
@@ -41,7 +41,7 @@ func startNewLog(f *LogField) *LogField {
 }
 
 func initialFile(ext string) *os.File {
-	f, err := os.OpenFile(getFileName(ext), os.O_RDWR|os.O_CREATE|os.O_WRONLY, 0666)
+	f, err := os.OpenFile(getFileName(ext), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 	if err == nil {
 		l.Out = f
 	} else {
@@ -59,8 +59,8 @@ func (d *LogField) Debug(m ...interface{}) {
 		"Start":    d.StartTime,
 		"End":      d.EndTime,
 		"delta":    d.Delta,
-		"host":	    d.Host,
-		"path":	    d.Path,
+		"host":     d.Host,
+		"path":     d.Path,
 		"service":  d.Service,
 		"method":   d.Method,
 		"result":   d.Status,
@@ -75,8 +75,8 @@ func (d *LogField) Info(m ...interface{}) {
 		"Start":    d.StartTime,
 		"End":      d.EndTime,
 		"delta":    d.Delta,
-		"host":	    d.Host,
-		"path":	    d.Path,
+		"host":     d.Host,
+		"path":     d.Path,
 		"service":  d.Service,
 		"method":   d.Method,
 		"result":   d.Status,
@@ -91,8 +91,8 @@ func (d *LogField) Panic(m ...interface{}) {
 		"Start":    d.StartTime,
 		"End":      d.EndTime,
 		"delta":    d.Delta,
-		"host":	    d.Host,
-		"path":	    d.Path,
+		"host":     d.Host,
+		"path":     d.Path,
 		"service":  d.Service,
 		"method":   d.Method,
 		"result":   d.Status,
@@ -107,8 +107,8 @@ func (d *LogField) Warn(m ...interface{}) {
 		"Start":    d.StartTime,
 		"End":      d.EndTime,
 		"delta":    d.Delta,
-		"host":	    d.Host,
-		"path":	    d.Path,
+		"host":     d.Host,
+		"path":     d.Path,
 		"service":  d.Service,
 		"method":   d.Method,
 		"result":   d.Status,
@@ -123,8 +123,8 @@ func (d *LogField) Log(m ...interface{}) {
 		"Start":    d.StartTime,
 		"End":      d.EndTime,
 		"delta":    d.Delta,
-		"host":	    d.Host,
-		"path":	    d.Path,
+		"host":     d.Host,
+		"path":     d.Path,
 		"service":  d.Service,
 		"method":   d.Method,
 		"result":   d.Status,
@@ -187,6 +187,6 @@ func (d *LogField) SetEnd(t time.Time) *LogField {
 	return d
 }
 func (d *LogField) SetDelta(f float64) *LogField {
-	d.Delta= f
+	d.Delta = f
 	return d
 }
