@@ -24,8 +24,9 @@ _cgo_defun.c
 _cgo_gotypes.go
 _cgo_export.*
 
+*.swp
 _testmain.go
-
+*.log
 *.exe
 *.test
 *.prof
@@ -80,8 +81,10 @@ $RECYCLE.BIN/
 *.lnk
 
 #binary file
-files/etc/voucher/config.yml
 evoucher*
+
+#config file
+files/etc/voucher/config.yml
 
 #IDE config
 .idea/*
