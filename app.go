@@ -8,13 +8,10 @@ import (
 	"os"
 
 	"google.golang.org/appengine"
-	//"time"
-	//"path/filepath"
 
 	"github.com/pkg/profile"
 	"github.com/ruizu/render"
 	"github.com/urfave/negroni"
-	//"gopkg.in/redis.v5"
 
 	"github.com/gilkor/evoucher/internal/controller"
 	"github.com/gilkor/evoucher/internal/model"

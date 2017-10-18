@@ -45,7 +45,7 @@ func initialFile(ext string) *os.File {
 	if err == nil {
 		l.Out = f
 	} else {
-		log.Panic("Failed to log to file, using default stderr")
+		log.Panic("Failed to log to file, using default stderr (",err,")")
 	}
 	l.Formatter = new(logrus.JSONFormatter)
 
