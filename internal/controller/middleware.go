@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"io/ioutil"
 )
 
 func LoggerMiddleware() negroni.Handler {
@@ -24,8 +25,18 @@ func LoggerMiddleware() negroni.Handler {
 				SetDelta(time.Since(logger.StartTime).Seconds()).
 				SetStatus(res.Status())
 
+			var reqData string
+
+			if r.Method == "GET" {
+				reqData = r.URL.RawQuery
+			}else {
+				 body, _ := ioutil.ReadAll(r.Body)
+				 reqData = string(body)
+			}
+
+
 			if !strings.Contains(r.URL.Path, "assets") {
-				logger.Info("API-Log")
+				logger.Info("request: ",reqData )
 			}
 		})
 }
