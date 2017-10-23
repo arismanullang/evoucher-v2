@@ -487,3 +487,34 @@ func HardDelete(program string) error {
 	}
 	return nil
 }
+
+func RollbackVoucher(vcid string) error {
+	vc, err := db.Beginx()
+	if err != nil {
+		return err
+	}
+	defer vc.Rollback()
+
+	q := `
+		DELETE
+			vouchers
+		WHERE
+			id = ?
+		AND
+			status = ?
+		RETURNING id
+      `
+	var result []string
+	if err := vc.Select(&result, vc.Rebind(q), vcid, StatusCreated); err != nil {
+		return err
+	}
+
+	if len(result) < 1 {
+		return ErrNotModified
+	}
+
+	if err := vc.Commit(); err != nil {
+		return err
+	}
+	return nil
+}

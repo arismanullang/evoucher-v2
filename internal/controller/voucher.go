@@ -644,6 +644,23 @@ func GetVoucherDetails(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func RollbackVoucher(w http.ResponseWriter , r *http.Request){
+	res := NewResponse(nil)
+	vc := bone.GetValue(r, "id")
+	status := http.StatusOK
+
+	err :=  model.RollbackVoucher(vc)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")","")
+		render.JSON(w, res, status)
+		return
+	}
+
+	render.JSON(w, res, status)
+	return
+}
+
 //GenerateVoucherOnDemand Generate singgle voucher request
 func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	var gvd GenerateVoucherRequest

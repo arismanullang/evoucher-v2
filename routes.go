@@ -123,6 +123,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/program/:id", controller.ListProgramsDetails)
 	r.GetFunc("/v1/voucher", controller.GetVoucherOfProgram)
 	r.GetFunc("/v1/voucher/:id", controller.GetVoucherOfProgramDetails)
+	r.GetFunc("/v1/voucher/generate/single/:id/rollback", controller.RollbackVoucher)
 	r.PostFunc("/v1/voucher/generate/single", controller.GenerateVoucherOnDemand)
 	r.PostFunc("/v1/transaction/redeem", controller.MobileCreateTransaction)
 
