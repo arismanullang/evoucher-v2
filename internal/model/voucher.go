@@ -466,7 +466,8 @@ func HardDelete(program string) error {
 	defer vc.Rollback()
 
 	q := `
-		DELETE 	vouchers
+		DELETE 	FROM
+			vouchers
 		WHERE
 			program_id = ?
 		AND
@@ -496,7 +497,7 @@ func RollbackVoucher(vcid string) error {
 	defer vc.Rollback()
 
 	q := `
-		DELETE
+		DELETE FROM
 			vouchers
 		WHERE
 			id = ?

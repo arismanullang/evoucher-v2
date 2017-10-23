@@ -649,6 +649,14 @@ func RollbackVoucher(w http.ResponseWriter , r *http.Request){
 	vc := bone.GetValue(r, "id")
 	status := http.StatusOK
 
+	logger := model.NewLog()
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
+
 	err :=  model.RollbackVoucher(vc)
 	if err != nil {
 		status = http.StatusInternalServerError
