@@ -59,6 +59,7 @@ type (
 		VoucherType  string  `json:"voucher_type"`
 		VoucherPrice float64 `json:"voucher_price"`
 		VoucherValue float64 `json:"voucher_value"`
+		AllowAccumulative bool `json:"allow_accumulative"`
 		MaxQty       float64 `json:"max_quantity_voucher"`
 		ImgUrl       string  `json:"image_url"`
 		StartDate    string  `json:"start_date"`
