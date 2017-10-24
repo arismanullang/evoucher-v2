@@ -139,7 +139,7 @@ func ListPrograms(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
-	d := []GetVoucherOfVariatdata{}
+	d := GetVoucherOfVariatList{}
 	for _, dt := range program {
 		if (int(dt.MaxVoucher) - sti(dt.Voucher)) > 0 {
 			tempVoucher := GetVoucherOfVariatdata{}
@@ -149,6 +149,7 @@ func ListPrograms(w http.ResponseWriter, r *http.Request) {
 			tempVoucher.VoucherType = dt.VoucherType
 			tempVoucher.VoucherPrice = dt.VoucherPrice
 			tempVoucher.VoucherValue = dt.VoucherValue
+			tempVoucher.AllowAccumulative = dt.AllowAccumulative
 			tempVoucher.StartDate = dt.StartDate
 			tempVoucher.EndDate = dt.EndDate
 			tempVoucher.ImgUrl = dt.ImgUrl
