@@ -659,7 +659,12 @@ func RollbackVoucher(w http.ResponseWriter , r *http.Request){
 	}
 
 	err :=  model.RollbackVoucher(vc)
-	if err != nil {
+	if err == model.ErrNotModified {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeInvalidVoucher, model.ErrMessageInvalidVoucher+"("+err.Error()+")","")
+		render.JSON(w, res, status)
+		return
+	}else if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")","")
 		render.JSON(w, res, status)
