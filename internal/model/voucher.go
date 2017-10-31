@@ -497,8 +497,12 @@ func RollbackVoucher(vcid string) error {
 	defer vc.Rollback()
 
 	q := `
-		DELETE FROM
+		UPDATE
 			vouchers
+		SET
+			state = ?
+			status = ?
+
 		WHERE
 			id = ?
 		AND
@@ -506,7 +510,7 @@ func RollbackVoucher(vcid string) error {
 		RETURNING id
       `
 	var result []string
-	if err := vc.Select(&result, vc.Rebind(q), vcid, StatusCreated); err != nil {
+	if err := vc.Select(&result, vc.Rebind(q),VoucherStateRollback , StatusDeleted , vcid, StatusCreated); err != nil {
 		return err
 	}
 
