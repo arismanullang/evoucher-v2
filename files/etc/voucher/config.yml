@@ -6,7 +6,10 @@ server:
 database:
     endpoint: "postgres://evoucher:IuA0Ayj8F0p6Iuwg@35.185.131.77:5432/evoucher?sslmode=disable"
 #    endpoint: "postgres://evoucher:IuA0Ayj8F0p6Iuwg@127.0.0.1:5432/evoucher?sslmode=disable"
-    redis: "127.0.0.1:6379"
+    redis:
+      endpoint: "127.0.0.1:6379"
+      token_lifetime: 1800 #in minutes (30 hours)
+#      token_lifetime: 2 #test
 
 mailgun:
   domain: "sedayuone.com"
@@ -17,8 +20,8 @@ mailgun:
   email: "evoucher@gilkor.com"
 
 logger:
-  path: "/var/log/"
-#  path: "./log/" #local
+#  path: "/var/log/"
+  path: "/Users/malfanmh/Documents/" #local
   filename: "logger-evoucher"
 
 gcs:
@@ -32,3 +35,4 @@ ocra:
 
 voucher:
   link: "voucher.elys.id/public/redeem"
+
