@@ -36,6 +36,9 @@ var (
 
 	//Logger config
 	LN_TRACE_ID int = 16
+
+	//Token lifetime
+	TOKENLIFE int
 )
 
 const (
@@ -135,7 +138,7 @@ const (
 	DEFAULT_TXLENGTH int    = 6
 
 	// Redis token life time
-	TOKENLIFE int = 1440
+
 
 	//Challenge code config
 	CHALLENGE_FORMAT string = "Numerals"
