@@ -72,7 +72,7 @@ func main() {
 	if err := model.ConnectDB(config.Database.Endpoint); err != nil {
 		log.Fatal(err)
 	}
-	if err := model.OpenRedisPool(config.Database.Redis); err != nil {
+	if err := model.OpenRedisPool(config.Database.Redis.Endpoint); err != nil {
 		log.Fatal(err)
 	}
 
@@ -99,6 +99,8 @@ func main() {
 	//OCRA
 	model.OCRA_EVOUCHER_APPS_KEY = config.Ocra.AppsKey
 	model.OCRA_URL = config.Ocra.Endpoint
+
+	model.TOKENLIFE = config.Database.Redis.TokenLifetime
 
 	negroni.NewLogger()
 	r := setRoutes()

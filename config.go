@@ -19,7 +19,10 @@ type Config struct {
 
 	Database struct {
 		Endpoint string
-		Redis    string
+		Redis struct{
+			Endpoint 	string
+			TokenLifetime 	int 	`yaml:"token_lifetime"`
+		}
 	}
 
 	Mailgun struct {
