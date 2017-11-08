@@ -67,10 +67,10 @@ type (
 	}
 )
 
-func InsertTransaction(d Transaction) error {
+func InsertTransaction(d Transaction) (string, error) {
 	tx, err := db.Beginx()
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer tx.Rollback()
 
@@ -90,7 +90,7 @@ func InsertTransaction(d Transaction) error {
 	`
 	var res []string //[]Transaction
 	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.PartnerId, d.TransactionCode, d.DiscountValue, d.Token, d.User, StatusCreated); err != nil {
-		return err
+		return "", err
 	}
 	d.Id = res[0]
 
@@ -107,14 +107,14 @@ func InsertTransaction(d Transaction) error {
 
 		_, err := tx.Exec(tx.Rebind(q), d.Id, v, d.User, StatusCreated)
 		if err != nil {
-			return err
+			return "", err
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return d.Id, nil
 }
 
 func (d *Transaction) Update() error {
@@ -354,7 +354,16 @@ func FindVoucherCycle(accountId, voucherId string) (VoucherTransaction, error) {
 func FindAllTransactionByPartner(accountId, partnerId string) ([]TransactionList, error) {
 	q := `
 		SELECT
-			 t.id as transaction_id, p.name as partner_name, va.name as program_name, t.transaction_code, vo.voucher_value, va.created_at as issued, t.created_at as redeemed, vo.updated_at as cashout, u.username, vo.state
+			 t.id as transaction_id
+			 , p.name as partner_name
+			 , va.name as program_name
+			 , t.transaction_code
+			 , vo.voucher_value
+			 , va.created_at as issued
+			 , t.created_at as redeemed
+			 , vo.updated_at as cashout
+			 , u.username
+			 , vo.state
 		FROM transactions as t
 		JOIN transaction_details as dt
 		ON
@@ -380,6 +389,96 @@ func FindAllTransactionByPartner(accountId, partnerId string) ([]TransactionList
 	//fmt.Println(q)
 	var resv []TransactionList
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId); err != nil {
+		fmt.Println(err.Error())
+		return resv, err
+	}
+	if len(resv) < 1 {
+		return resv, ErrResourceNotFound
+	}
+
+	for i, v := range resv {
+		q := `
+		SELECT
+			v.id
+			, v.voucher_code
+			, v.reference_no
+			, v.holder
+			, v.holder_phone
+			, v.holder_email
+			, v.holder_description
+			, v.program_id
+			, v.valid_at
+			, v.expired_at
+			, v.voucher_value
+			, v.state
+			, v.created_by
+			, v.created_at
+			, v.updated_by
+			, v.updated_at
+			, v.deleted_by
+			, v.deleted_at
+			, v.status
+		FROM vouchers as v
+		JOIN transaction_details as dt
+		ON
+			v.id = dt.voucher_id
+		WHERE
+			v.status = ?
+			AND dt.transaction_id = ?
+	`
+		//fmt.Println(q)
+		var resv1 []Voucher
+		if err := db.Select(&resv1, db.Rebind(q), StatusCreated, v.TransactionId); err != nil {
+			return resv, err
+		}
+		if len(resv) < 1 {
+			return resv, ErrResourceNotFound
+		}
+		resv[i].Voucher = resv1
+	}
+
+	return resv, nil
+}
+
+func FindTodayTransactionByPartner(accountId, partnerId string) ([]TransactionList, error) {
+	q := `
+		SELECT
+			 t.id as transaction_id
+			 , p.name as partner_name
+			 , va.name as program_name
+			 , t.transaction_code
+			 , vo.voucher_value
+			 , va.created_at as issued
+			 , t.created_at as redeemed
+			 , vo.updated_at as cashout
+			 , u.username
+			 , vo.state
+		FROM transactions as t
+		JOIN transaction_details as dt
+		ON
+			t.id = dt.transaction_id
+		JOIN vouchers as vo
+		ON
+			dt.voucher_id = vo.id
+		JOIN users as u
+		ON
+			vo.updated_by = u.id
+		JOIN programs as va
+		ON
+			va.id = vo.program_id
+		JOIN partners as p
+		ON
+			p.id = t.partner_id
+		WHERE
+			t.status = ?
+			AND t.account_id = ?
+	`
+	q += `AND p.id LIKE '%` + partnerId + `%'`
+	q += `AND t.created_at = ?
+		ORDER BY t.created_at DESC;`
+	//fmt.Println(q)
+	var resv []TransactionList
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId, time.Now()); err != nil {
 		fmt.Println(err.Error())
 		return resv, err
 	}

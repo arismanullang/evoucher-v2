@@ -21,7 +21,8 @@ mailgun:
 
 logger:
 #  path: "/var/log/"
-  path: "/Users/malfanmh/Documents/" #local
+#  path: "/Users/malfanmh/Documents/" #local
+  path: "/home/richard/Documents/evoucher/" #local
   filename: "logger-evoucher"
 
 gcs:

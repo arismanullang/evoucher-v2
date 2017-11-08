@@ -1,5 +1,6 @@
 $(document).ready(function () {
 	getProgram();
+	chart(10,10,10,10);
 });
 
 function getProgram() {
@@ -56,10 +57,10 @@ function getProgram() {
 
 			}
 
-			$("#total-program").html(result.length);
-			$("#total-voucher").html(totalVoucher);
-			$("#total-generated").html(totalGeneratedVoucher);
-			$("#total-used").html(totalUsedVoucher);
+			$("#totalProgram").html(result.length);
+			$("#totalVoucher").html(totalVoucher);
+			$("#totalGenerated").html(totalGeneratedVoucher);
+			$("#totalUsed").html(totalUsedVoucher);
 		},
 		error: function (data) {
 			swal("Error", "Program Not Found.");
@@ -69,4 +70,46 @@ function getProgram() {
 
 function addProgram() {
 	window.location = "/program/create";
+}
+
+function chart(remaining, outstanding, pending, paid) {
+	var pieData = [{
+		'label': "Stock",
+		'color': '#e4eff7',
+		'data': remaining
+	}, {
+		'label': "Outstanding",
+		'color': '#f4eff7',
+		'data': outstanding
+	}, {
+		'label': "Pending",
+		'color': '#AFEFEF',
+		'data': pending
+	}, {
+		'label': "Paid",
+		'color': '#69CDCD',
+		'data': paid
+	}];
+	var pieOptions = {
+		series: {
+			pie: {
+				show: true,
+				label: {
+					show: true,
+					radius: 1,
+					formatter: function(label, series) {
+						return '<div class="flot-pie-label" style="color:black">' +
+							Math.round(series.percent) +
+							'%</br>' +
+							'<small>'+label+'</small>'+
+							'</div>';
+					}
+				}
+			}
+		},
+		legend: {
+			show: false
+		}
+	};
+	$('#pie').plot(pieData, pieOptions);
 }

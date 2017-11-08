@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type (
 	BroadcastUser struct {
@@ -37,4 +40,34 @@ func FindBroadcastUser(param map[string]string) ([]BroadcastUser, error) {
 		return []BroadcastUser{}, ErrResourceNotFound
 	}
 	return resd, nil
+}
+func UpdateBroadcastUserState(programId, email string) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE broadcast_users
+		SET
+			state = ?
+		WHERE
+			program_id = ?
+			AND target = ?
+			AND status = ?
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), EmailSend, programId, email, StatusCreated)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
 }

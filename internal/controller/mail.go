@@ -204,7 +204,7 @@ func SendSedayuOneEmail(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
-
+	campaign.AccountId = a.User.Account.Id
 	listEmail := []model.TargetEmail{}
 
 	for _, v := range totalVoucher {

@@ -6,8 +6,8 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
 
-	"github.com/gilkor/evoucher/internal/controller"
 	"fmt"
+	"github.com/gilkor/evoucher/internal/controller"
 )
 
 func setRoutes() http.Handler {
@@ -55,6 +55,7 @@ func setRoutes() http.Handler {
 	r.PostFunc("/v1/ui/transaction/cashout/update", controller.CashoutTransactions)
 	r.GetFunc("/v1/ui/transaction/cashout/print", controller.PrintCashoutTransaction)
 	r.GetFunc("/v1/ui/transaction/cashout/partner", controller.GetPartnerCashoutActivity)
+	r.GetFunc("/v1/ui/transaction/cashout/daily_partner", controller.GetTodayPartnerCashoutActivity)
 
 	//user
 	r.GetFunc("/v1/ui/user/login", controller.Login)
@@ -85,7 +86,9 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/ui/partner/all", controller.GetAllPartners)
 	r.GetFunc("/v1/ui/partner/program", controller.GetProgramPartners)
 	r.GetFunc("/v1/ui/partner", controller.GetPartners)
+	r.GetFunc("/v1/ui/partner/programs", controller.GetProgramsPartner)
 	r.GetFunc("/v1/ui/partner/performance", controller.GetPerformancePartner)
+	r.GetFunc("/v1/ui/partner/daily_performance", controller.GetDailyPerformancePartner)
 	r.PostFunc("/v1/ui/partner/update", controller.UpdatePartner)
 	r.GetFunc("/v1/ui/partner/delete", controller.DeletePartner)
 

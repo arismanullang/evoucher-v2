@@ -10,6 +10,7 @@ import (
 )
 
 var (
+	Config       map[string]map[string]string
 	Domain       string
 	ApiKey       string
 	PublicApiKey string
@@ -19,12 +20,6 @@ var (
 )
 
 type (
-	SedayuOneEmail struct {
-		ProgamName string
-		VoucherImg string
-		HolderName string
-		VoucherUrl string
-	}
 	TargetEmail struct {
 		HolderEmail string
 		HolderName  string
@@ -35,11 +30,28 @@ type (
 		Id           string `db:"id"`
 		ProgramId    string `db:"program_id"`
 		ProgramName  string `db:"program_name"`
+		AccountId    string `db:"account_id"`
 		ImageHeader  string `db:"header_image"`
 		ImageVoucher string `db:"voucher_image"`
 		ImageFooter  string `db:"footer_image"`
 		CreatedBy    string `db:"created_by"`
 		CreatedAt    string `db:"created_at"`
+	}
+
+	ConfirmationEmail struct {
+		EmailAccount string `db:"account"`
+		EmailPartner string `db:"partner"`
+		EmailMember  string `db:"member"`
+	}
+
+	ConfirmationEmailRequest struct {
+		Holder          string
+		ProgramName     string
+		TransactionCode string
+		TransactionDate string
+		PartnerName     string
+		ListEmail       []string
+		ListVoucher     []string
 	}
 )
 
@@ -102,6 +114,7 @@ func SendMailSedayuOne(domain, apiKey, publicApiKey, subject string, target []Ta
 		if err != nil {
 			return err
 		}
+		UpdateBroadcastUserState(v.HolderEmail, program.ProgramId)
 		fmt.Printf("ID: %s Resp: %s\n", id, resp)
 	}
 
@@ -110,7 +123,9 @@ func SendMailSedayuOne(domain, apiKey, publicApiKey, subject string, target []Ta
 func makeMessageEmailSedayuOne(program ProgramCampaign, target TargetEmail) string {
 	// %%full-name%%
 	// %%link-voucher%%
-	str, err := ioutil.ReadFile(RootTemplate + "sedayu_one_campaign")
+	fmt.Println(program.AccountId)
+	templateCampaign := Config[program.AccountId]["email_campaign"]
+	str, err := ioutil.ReadFile(RootTemplate + templateCampaign)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ""
@@ -137,6 +152,54 @@ func makeMessageEmailSedayuOne(program ProgramCampaign, target TargetEmail) stri
 	result = strings.Replace(result, "%%image-header%%", imageHeader, 1)
 	result = strings.Replace(result, "%%image-voucher%%", imageVoucher, 1)
 	result = strings.Replace(result, "%%image-footer%%", imageFooter, 1)
+	return result
+}
+
+func SendConfirmationEmail(domain, apiKey, publicApiKey, subject string, target ConfirmationEmailRequest, accountId string) error {
+	mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
+
+	for _, v := range target.ListEmail {
+		message := mailgun.NewMessage(
+			Email,
+			subject,
+			subject,
+			v)
+		message.SetHtml(makeMessageConfirmationEmail(accountId, target))
+		resp, id, err := mg.Send(message)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("ID: %s Resp: %s\n", id, resp)
+	}
+
+	return nil
+}
+func makeMessageConfirmationEmail(accountId string, target ConfirmationEmailRequest) string {
+	// %%full-name%%
+	// %%link-voucher%%
+	fmt.Println(Config[accountId]["email_transaction_confirmation"])
+	templateCampaign := Config[accountId]["email_transaction_confirmation"]
+	str, err := ioutil.ReadFile(RootTemplate + templateCampaign)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ""
+	}
+
+	voucher := ""
+	for _, v := range target.ListVoucher {
+		voucher += "<tr><td style='color:#ffffff; padding:10px 0px; background-color: #69cdcd;'>"
+		voucher += v
+		voucher += "</td><td style='color:#ffffff; padding:10px 0px; background-color: #69cdcd;'>"
+		voucher += target.PartnerName
+		voucher += "</td></tr>"
+	}
+
+	result := string(str)
+	result = strings.Replace(result, "%%full-name%%", target.Holder, 1)
+	result = strings.Replace(result, "%%transaction-code%%", target.TransactionCode, 1)
+	result = strings.Replace(result, "%%transaction-date%%", target.TransactionDate, 1)
+	result = strings.Replace(result, "%%program-name%%", target.ProgramName, 1)
+	result = strings.Replace(result, "%%voucher-code%%", voucher, 1)
 	return result
 }
 
@@ -227,6 +290,46 @@ func GetCampaign(programId string) (ProgramCampaign, error) {
 	}
 	if len(resv) < 1 {
 		return ProgramCampaign{}, nil
+	}
+
+	return resv[0], nil
+}
+
+func GetEmail(transaction string) (ConfirmationEmail, error) {
+	q := `
+		SELECT DISTINCT
+			v.holder_email AS member, a.email AS account, p.email AS partner
+		FROM
+			vouchers AS v
+		JOIN
+			transaction_details AS td
+		ON
+			td.voucher_id = v.id
+		JOIN
+			transactions AS t
+		ON
+			t.id = td.transaction_id
+		JOIN
+			partners as p
+		ON
+			p.id = t.partner_id
+		JOIN
+			accounts AS a
+		ON
+			a.id = t.account_id
+		WHERE
+			( t.id = ?
+			OR t.transaction_code = ? )
+			AND t.status = ?
+	`
+
+	var resv []ConfirmationEmail
+	if err := db.Select(&resv, db.Rebind(q), transaction, transaction, StatusCreated); err != nil {
+		fmt.Println(err.Error())
+		return ConfirmationEmail{}, ErrServerInternal
+	}
+	if len(resv) < 1 {
+		return ConfirmationEmail{}, nil
 	}
 
 	return resv[0], nil

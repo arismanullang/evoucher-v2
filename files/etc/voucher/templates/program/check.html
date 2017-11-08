@@ -1,7 +1,7 @@
 {{ template "layout" . }}
 
 {{ define "title" }}Program Details{{ end }}
-{{ define "header-title" }}Program Details{{ end }}
+{{ define "header-title" }}<span id="programName"></span>{{ end }}
 
 {{ define "content" }}
 <!-- Page content-->
@@ -13,9 +13,8 @@
         <form editable-form="" id="profileForm" method="post" action="/v1/ui/voucher/link" name="user.profileForm" class="card">
           <h5 class="card-heading">
             <ul id="myTabs" role="tablist" class="nav nav-tabs nav-justified">
-              <li role="presentation" class="active"><a id="program-tab" href="#program" role="tab" data-toggle="tab" aria-controls="home" aria-expanded="true">Program</a></li>
-              <li role="presentation"><a id="voucher-tab" href="#voucher" role="tab" data-toggle="tab" aria-controls="profile">Voucher</a></li>
-              <li role="presentation"><a id="partner-tab" href="#partner" role="tab" data-toggle="tab" aria-controls="messages">Partner</a></li>
+              <li role="presentation" class="active"><a id="program-tab" href="#program" role="tab" data-toggle="tab" aria-controls="home" aria-expanded="true">Detail</a></li>
+              <li role="presentation"><a id="voucher-tab" href="#voucher" role="tab" data-toggle="tab" aria-controls="profile">Status</a></li>
               <li role="presentation">
                 <div class="pull-right">
                   <button type="button" onclick="editProgram()" class="btn btn-default btn-flat btn-flat-icon" data-toggle="tooltip" data-placement="top" title="Edit"><em class="ion-edit"></em ></button>
@@ -23,74 +22,83 @@
                 </div>
               </li>
             </ul>
-            <input type="hidden" name="program" id="program-id">
+            <input type="hidden" name="program" id="programId">
             <input type="hidden" name="token" id="token">
           </h5>
           <div class="card-body">
             <div id="myTabContent" class="tab-content">
               <div id="program" role="tabpanel" aria-labelledby="home-tab" class="tab-pane fade in active">
-                <table id="dvData" class="table table-striped">
-                  <tbody>
-                  <tr>
-                    <td class="col-lg-4"><em class="ion-document-text icon-fw mr"></em>Program Name</td>
-                    <td id="program-name" class="col-lg-8"></td>
-                  </tr>
-                  <tr>
-                    <td class="col-lg-4"><em class="icon-fw mr"></em>Program Type</td>
-                    <td id="program-type" class="col-lg-8"></td>
-                  </tr>
-                  <tr>
-                    <td class="col-lg-4"><em class="ion-calculator icon-fw mr"></em>Voucher Price
-                    </td>
-                    <td id="conversion-rate" class="col-lg-8"></td>
-                  </tr>
-                  <tr>
-                    <td class="col-lg-4"><em class="ion-cash icon-fw mr"></em>Voucher Value</td>
-                    <td id="voucher-value" class="col-lg-8"></td>
-                  </tr>
-                  <tr>
-                    <td class="col-lg-4"><em class="ion-ios-calendar icon-fw mr"></em>Period</td>
-                    <td id="period" class="col-lg-8"></td>
-                  </tr>
-                  <tr>
-                    <td class="col-lg-4"><em class="ion-asterisk icon-fw mr"></em>Term and Condition</td>
-                    <td id="program-tnc" class="col-lg-8"></td>
-                  </tr>
-                  </tbody>
-                </table>
+                <div class="row">
+                  <table id="dvData" class="table table-striped">
+                    <tbody>
+                    <tr>
+                      <td class="col-lg-2"><em class="ion-document-text icon-fw mr"></em>Program Name</td>
+                      <td id="programNames" class="text-muted"></td>
+                      <td class="col-lg-2">Program Type</td>
+                      <td id="programType" class="text-muted"></td>
+                    </tr>
+                    <tr>
+                      <td class="col-lg-2"><em class="ion-calculator icon-fw mr"></em>Voucher Price</td>
+                      <td id="conversionRate" class="text-muted"></td>
+                      <td class="col-lg-2">Voucher Value</td>
+                      <td id="voucherValue" class="text-muted"></td>
+                    </tr>
+                    <tr>
+                      <td class="col-lg-2"><em class="ion-ios-calendar icon-fw mr"></em>Period</td>
+                      <td colspan="3" id="period" class="text-muted"></td>
+                    </tr>
+                    <tr>
+                      <td class="col-lg-2"><em class="ion-asterisk icon-fw mr"></em>Terms and Conditions</td>
+                      <td colspan="3" id="programTnc" class="text-muted"></td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="row">
+                  <div class="card">
+                    <div class="card-heading text-center">
+                      <div class="card-title text-center">Partner</div>
+                    </div>
+                    <div class="card-body">
+                      <div id="listPartner" class="row">
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div id="voucher" role="tabpanel" aria-labelledby="profile-tab" class="tab-pane fade">
                 <div class="row">
-                  <div class="col-lg-8">
+                  <div class="col-lg-7">
                     <table class="table table-striped">
                       <tbody>
                         <tr>
-                          <td class="col-lg-6"><em class="ion-pricetags icon-fw mr"></em>Limit Voucher</td>
-                          <td id="max-quantity-voucher" class="col-lg-6"></td>
+                          <td class="col-lg-6"><em class="ion-pricetags icon-fw mr"></em>Quota Vouchers</td>
+                          <td id="maxQuantityVoucher" class="col-lg-6"></td>
                           </tr>
                         <tr>
-                          <td class="col-lg-6"><em class="icon-fw mr"></em>Stock Voucher</td>
-                          <td id="remaining-voucher" class="col-lg-6"></td>
+                          <td class="col-lg-6"><em class="icon-fw mr"></em>Stock Vouchers</td>
+                          <td id="remainingVoucher" class="col-lg-6"></td>
                         </tr>
                         <tr>
-                          <td class="col-lg-6"><em class="icon-fw mr"></em>Generated Voucher</td>
-                          <td id="created-voucher" class="col-lg-6"></td>
+                          <td class="col-lg-6"><em class="icon-fw mr"></em>Issued Vouchers</td>
+                          <td id="createdVoucher" class="col-lg-6"></td>
                         </tr>
                         <tr>
-                          <td class="col-lg-6"><em class="icon-fw mr"></em>Used Voucher</td>
-                          <td id="used-voucher" class="col-lg-6"></td>
+                          <td class="col-lg-6"><em class="icon-fw mr"></em>Redeemed Vouchers</td>
+                          <td id="usedVoucher" class="col-lg-6"></td>
                         </tr>
                         <tr>
-                          <td class="col-lg-6"><em class="icon-fw mr"></em>Paid Voucher</td>
-                          <td id="paid-voucher" class="col-lg-6"></td>
+                          <td class="col-lg-6"><em class="icon-fw mr"></em>Paid Vouchers</td>
+                          <td id="paidVoucher" class="col-lg-6"></td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
-                  <div class="col-lg-4">
+                  <div class="col-lg-5">
                     <div class="row">
                       <div class="col-lg-6">Budget</div>
-                      <div id="total-money" class="col-lg-6"></div>
+                      <div id="totalMoney" class="col-lg-6"></div>
                     </div>
                     <br/>
                     <div class="row">
@@ -100,10 +108,65 @@
                     </div>
                   </div>
                 </div>
-              </div>
-              <div id="partner" role="tabpanel" aria-labelledby="messages-tab" class="tab-pane fade">
-                <div id="list-partner" class="row">
-
+                <div id="table-voucher" class="row">
+                  <div class="col-lg-12">
+                    <div class="card">
+                      <div class="card-heading bg-amber-500">
+                        <div class="card-title text-center">Voucher</div>
+                      </div>
+                      <div class="card-body">
+                        <table id="datatable1" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
+                          <thead>
+                          <tr>
+                            <th>
+                              <div class="mda-form-control pt0">
+                                <input type="text" name="filter_voucher_code" placeholder="Voucher" class="form-control input-sm datatable_input_col_search">
+                                <div class="mda-form-control-line"></div>
+                              </div>
+                            </th>
+                            <th>
+                              <div class="mda-form-control pt0">
+                                <input type="text" name="filter_holder_name" placeholder="Holder" class="form-control input-sm datatable_input_col_search">
+                                <div class="mda-form-control-line"></div>
+                              </div>
+                            </th>
+                            <th>
+                              <div class="mda-form-control pt0">
+                                <input type="text" name="filter_valid_from" placeholder="Date" class="form-control input-sm datatable_input_col_search">
+                                <div class="mda-form-control-line"></div>
+                              </div>
+                            </th>
+                            <th>
+                              <div class="mda-form-control pt0">
+                                <input type="text" name="filter_expired" placeholder="Date" class="form-control input-sm datatable_input_col_search">
+                                <div class="mda-form-control-line"></div>
+                              </div>
+                            </th>
+                            <th>
+                              <div class="mda-form-control pt0">
+                                <select name="filter_status" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
+                                  <option value="">ALL</option>
+                                  <option value="ISSUED">ISSUED</option>
+                                  <option value="REDEEMED">REDEEMED</option>
+                                  <option value="PAID">PAID</option>
+                                </select>
+                                <div class="mda-form-control-line"></div>
+                              </div>
+                            </th>
+                          </tr>
+                          <tr role="row">
+                            <th>Voucher</th>
+                            <th>Holder</th>
+                            <th>Issued</th>
+                            <th>Expired</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                          </tr>
+                          </thead>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -111,66 +174,7 @@
         </form>
       </div>
     </div>
-    <div id="table-voucher" class="row">
-      <div class="col-lg-12">
-        <div class="card">
-          <div class="card-heading bg-amber-500">
-            <div class="card-title text-center">Voucher</div>
-          </div>
-          <div class="card-body">
-            <table id="datatable1" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
-              <thead>
-              <tr>
-                <th>
-                  <div class="mda-form-control pt0">
-                    <input type="text" name="filter_voucher_code" placeholder="Voucher" class="form-control input-sm datatable_input_col_search">
-                    <div class="mda-form-control-line"></div>
-                  </div>
-                </th>
-                <th>
-                  <div class="mda-form-control pt0">
-                    <input type="text" name="filter_holder_name" placeholder="Holder" class="form-control input-sm datatable_input_col_search">
-                    <div class="mda-form-control-line"></div>
-                  </div>
-                </th>
-                <th>
-                  <div class="mda-form-control pt0">
-                    <input type="text" name="filter_valid_from" placeholder="Valid" class="form-control input-sm datatable_input_col_search">
-                    <div class="mda-form-control-line"></div>
-                  </div>
-                </th>
-                <th>
-                  <div class="mda-form-control pt0">
-                    <input type="text" name="filter_expired" placeholder="Expired" class="form-control input-sm datatable_input_col_search">
-                    <div class="mda-form-control-line"></div>
-                  </div>
-                </th>
-                <th>
-                  <div class="mda-form-control pt0">
-                    <select name="filter_status" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
-                      <option value="">ALL</option>
-                      <option value="CREATED">CREATED</option>
-                      <option value="USED">USED</option>
-                      <option value="PAID">PAID</option>
-                    </select>
-                    <div class="mda-form-control-line"></div>
-                  </div>
-                </th>
-              </tr>
-              <tr role="row">
-                <th>Voucher</th>
-                <th>Holder</th>
-                <th>Valid</th>
-                <th>Expired</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-              </thead>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
+
   </div>
 </section>
 {{ end }}

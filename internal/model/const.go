@@ -105,6 +105,10 @@ const (
 	ErrMessageValidationError     string = "Validation error."
 	ErrMessageParsingError        string = "Parsing error."
 
+	EmailCreated string = "created"
+	EmailSend    string = "broadcast"
+	EmailVoid    string = "void"
+
 	StatusCreated string = "created"
 	StatusDeleted string = "deleted"
 
@@ -128,14 +132,16 @@ const (
 	ALPHANUMERIC = ALPHABET + NUMERALS
 
 	// defaut config Voucher format
-	DEFAULT_CODE        string = "Numerals"
-	DEFAULT_LENGTH      int    = 8
-	DEFAULT_SEED_CODE   string = "Numerals"
-	DEFAULT_SEED_LENGTH int    = 4
+	DEFAULT_CODE               string = "Numerals"
+	DEFAULT_LENGTH             int    = 8
+	DEFAULT_SEED_CODE          string = "Numerals"
+	DEFAULT_SEED_LENGTH        int    = 4
+	DEFAULT_TRANSACTION_SEED   string = "Numerals"
+	DEFAULT_TRANSACTION_LENGTH int    = 3
 
 	//default config tx code
 	DEFAULT_TXCODE   string = "Numerals"
-	DEFAULT_TXLENGTH int    = 6
+	DEFAULT_TXLENGTH int    = 5
 
 	// Redis token life time
 
