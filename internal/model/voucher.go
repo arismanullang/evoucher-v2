@@ -170,6 +170,65 @@ func FindVoucher(param map[string]string) (VoucherResponse, error) {
 	return res, nil
 }
 
+func FindVouchersById(param []string) (VoucherResponse, error) {
+	q := `
+		SELECT
+			v.id
+			, v.voucher_code
+			, v.reference_no
+			, v.holder
+			, v.holder_phone
+			, v.holder_email
+			, v.holder_description
+			, v.program_id
+			, p.name as program_name
+			, v.valid_at
+			, v.expired_at
+			, v.voucher_value
+			, v.state
+			, v.created_by
+			, v.created_at
+			, v.updated_by
+			, v.updated_at
+			, v.deleted_by
+			, v.deleted_at
+			, v.status
+		FROM
+			vouchers as v
+		JOIN
+			programs as p
+		ON
+			v.program_id = p.id
+		WHERE
+			v.status = ?
+			AND (
+	`
+	for key, value := range param {
+		if key != 0 {
+			q += `OR `
+		}
+		q += `v.id ='` + value + `'`
+	}
+	q += `) ORDER BY state DESC`
+
+	var resd []Voucher
+	if err := db.Select(&resd, db.Rebind(q), StatusCreated); err != nil {
+		return VoucherResponse{Status: ResponseStateNok, Message: err.Error(), VoucherData: resd}, err
+	}
+	if len(resd) < 1 {
+		return VoucherResponse{Status: ResponseStateNok, Message: ErrResourceNotFound.Error(), VoucherData: resd}, ErrResourceNotFound
+	} else if resd[0].State != VoucherStateActived && resd[0].State != VoucherStateCreated {
+		return VoucherResponse{Status: ErrCodeVoucherDisabled, Message: ErrMessageVoucherDisabled, VoucherData: resd}, nil
+	} else if resd[0].ValidAt.After(time.Now()) {
+		return VoucherResponse{Status: ErrCodeVoucherNotActive, Message: ErrMessageVoucherNotActive, VoucherData: resd}, nil
+	} else if resd[0].ExpiredAt.Before(time.Now()) {
+		return VoucherResponse{Status: ErrCodeVoucherExpired, Message: ErrMessageVoucherExpired, VoucherData: resd}, nil
+	}
+
+	res := VoucherResponse{Status: ResponseStateOk, Message: "success", VoucherData: resd}
+	return res, nil
+}
+
 func FindVouchers(param map[string]string) (VoucherResponse, error) {
 	q := `
 		SELECT DISTINCT
@@ -226,6 +285,79 @@ func FindVouchers(param map[string]string) (VoucherResponse, error) {
 
 	var resd []Voucher
 	if err := db.Select(&resd, db.Rebind(q), StatusCreated); err != nil {
+		return VoucherResponse{Status: ResponseStateNok, Message: err.Error(), VoucherData: resd}, err
+	}
+	if len(resd) < 1 {
+		return VoucherResponse{Status: ResponseStateNok, Message: ErrResourceNotFound.Error(), VoucherData: resd}, ErrResourceNotFound
+	} else if resd[0].State != VoucherStateActived && resd[0].State != VoucherStateCreated {
+		return VoucherResponse{Status: ErrCodeVoucherDisabled, Message: ErrMessageVoucherDisabled, VoucherData: resd}, nil
+	} else if resd[0].ValidAt.After(time.Now()) {
+		return VoucherResponse{Status: ErrCodeVoucherNotActive, Message: ErrMessageVoucherNotActive, VoucherData: resd}, nil
+	} else if resd[0].ExpiredAt.Before(time.Now()) {
+		return VoucherResponse{Status: ErrCodeVoucherExpired, Message: ErrMessageVoucherExpired, VoucherData: resd}, nil
+	}
+
+	res := VoucherResponse{Status: ResponseStateOk, Message: "success", VoucherData: resd}
+	return res, nil
+}
+
+func FindTodayVouchers(param map[string]string) (VoucherResponse, error) {
+	q := `
+		SELECT DISTINCT
+			v.id
+			, v.voucher_code
+			, v.reference_no
+			, v.holder
+			, v.holder_phone
+			, v.holder_email
+			, v.holder_description
+			, v.program_id
+			, pr.name as program_name
+			, v.valid_at
+			, v.expired_at
+			, v.voucher_value
+			, v.state
+			, v.created_by
+			, v.created_at
+			, v.updated_by
+			, v.updated_at
+			, v.deleted_by
+			, v.deleted_at
+			, v.status
+		FROM
+			vouchers as v
+		JOIN
+			programs as pr
+		ON
+			v.program_id = pr.id
+		JOIN
+			program_partners as pp
+		ON
+			pp.program_id = pr.id
+		JOIN
+			partners as pa
+		ON
+			pp.partner_id = pa.id
+		JOIN
+			transactions as t
+		ON
+			t.partner_id = pa.id
+		WHERE
+			v.status = ?
+			AND t.created_at = ?
+	`
+	for key, value := range param {
+		if key == "holder" {
+			q += ` AND (LOWER(v.holder) LIKE LOWER('%` + value + `%')`
+			q += ` OR LOWER(v.holder_description) LIKE LOWER('%` + value + `%'))`
+		} else {
+			q += ` AND ` + key + ` = '` + value + `'`
+		}
+	}
+	q += ` ORDER BY state DESC`
+
+	var resd []Voucher
+	if err := db.Select(&resd, db.Rebind(q), StatusCreated, time.Now()); err != nil {
 		return VoucherResponse{Status: ResponseStateNok, Message: err.Error(), VoucherData: resd}, err
 	}
 	if len(resd) < 1 {

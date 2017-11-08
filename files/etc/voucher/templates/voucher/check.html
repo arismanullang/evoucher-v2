@@ -6,24 +6,12 @@
 {{ define "content" }}
 <!-- Page content-->
 <section>
-  <div class="content-heading bg-white">
-    <div class="row">
-      <div class="media m0 pv">
-        <div class="media-left"></div>
-        <div class="media-body media-middle">
-          <h4 id="voucher-code" class="media-heading"></h4>
-        </div>
-      </div>
-    </div>
-  </div>
   <div class="container-fluid">
     <div class="row">
       <!-- Left column-->
       <div class="col-md-7 col-lg-8">
         <form editable-form="" id="profileForm" name="user.profileForm" class="card">
-          <h5 class="card-heading">
-            Voucher Details
-          </h5>
+          <h5 id="voucher-code" class="card-heading"></h5>
           <div class="card-body">
             <table class="table table-striped">
               <tbody>
@@ -58,7 +46,7 @@
             <table class="table">
               <tbody>
                 <tr>
-                  <td><em class="ion-briefcase icon-fw mr"></em>Holder Name</td>
+                  <td><em class="ion-briefcase icon-fw mr"></em>Name</td>
                   <td id="holder-name"></td>
                 </tr>
                 <tr>

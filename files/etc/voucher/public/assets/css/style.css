@@ -5,6 +5,38 @@
   color: white !important;
 }
 
+.bg-danger {
+  background-color: #F44336 !important;
+}
+
+.icon-dashboard-sm{
+  width: 40px;
+  height: 40px;
+}
+
+.icon-dashboard-lg{
+  width: 100px;
+  height: 100px;
+}
+
+footer, header, .card-heading{
+  background-color: #369694 !important;
+  color: white !important;
+}
+
+.sidebar-header, .sidebar-container{
+  background-color: #42b2aa !important;
+  color: white !important;
+}
+
+.active a {
+  color: white !important;
+}
+
+.dt-buttons span{
+  color: black;
+}
+
 .thumb {
   height: 64px !important;
   width: auto;
@@ -35,6 +67,7 @@ body {
 
 .legendLabel{
   text-align: left;
+  width: 300px;
 }
 
 .overflow-container{
@@ -50,16 +83,8 @@ a{
   color: #3f3f3f;
 }
 
-.footer-font-color{
-  color: #43C0C2;
-}
-
 .qrcode > img{
   display: inline !important;
-}
-
-footer{
-  background: #3F3F3F;
 }
 
 .center-text{
@@ -264,6 +289,10 @@ button.color-red {
 #pie{
   width: 100% !important;
   height: 200px;
+}
+
+.height-215{
+  height: 215px !important;
 }
 
 .font-size-12px{

@@ -12,8 +12,8 @@
       <div class="card-body text-center overflow-side-container">
         <div class="pv"><a href="#program">Program</a></div>
         <div class="pv"><a href="#voucher">Voucher</a></div>
-        <div class="pv distribution"><a href="#distribution">Rule Distribution</a></div>
-        <div class="pv"><a href="#using">Rule Using</a></div>
+        <div class="pv distribution"><a href="#distribution">Distribution Rules</a></div>
+        <div class="pv"><a href="#using">Redeem Rules</a></div>
 
         <div id="modalLoader" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" class="modal fade">
           <div class="modal-dialog modal-loader">
@@ -55,7 +55,7 @@
               <div class="mda-form-group">
                 <div class="mda-form-control">
                   <select id="programType" name="programType" class="form-control select2" tabindex="0">
-                    <option value="on-demand">Mobile App</option>
+                    <option value="on-demand">Mobile Application</option>
                     <option value="bulk">Email Blast</option>
                     <option value="gift">Gift Voucher</option>
                   </select>
@@ -125,7 +125,7 @@
           </div>
           <div class="row">
             <div class="col-sm-12">
-              <label>Term And Condition</label>
+              <label>Terms And Conditions</label>
             </div>
           </div>
           <div class="row">
@@ -195,7 +195,7 @@
         </div>
 
         <div class="card-heading text-center distribution" id="distribution">
-          <div class="card-title">Rule Distribution</div>
+          <div class="card-title">Distribution Rules</div>
         </div>
         <div class="card-body distribution">
           <div class="row">
@@ -213,7 +213,7 @@
                 <div class="mda-form-control">
                   <input id="generateVoucher" name="generateVoucher" placeholder="Min 1" tabindex="0" aria-invalid="false" class="form-control">
                   <div class="mda-form-control-line"></div>
-                  <label>The Number User Allowed to Redeem</label>
+                  <label>Maximum Number of Redeemed Vouchers</label>
                 </div>
               </div>
             </div>
@@ -221,19 +221,19 @@
         </div>
 
         <div class="card-heading text-center" id="using">
-          <div class="card-title">Rule Using</div>
+          <div class="card-title">Redeem Rules</div>
         </div>
         <div class="card-body">
           <div class="row form-horizontal">
             <div class="col-sm-2">
-              <label class="control-label">Expired</label>
+              <label class="control-label">Expiration</label>
             </div>
             <div class="col-sm-2">
               <div class="form-group">
                 <div class="form-control no-border">
                   <select id="voucherValidityType" name="voucherValidityType" class="form-control select2" tabindex="0">
-                    <option value="lifetime">Lifetime</option>
-                    <option value="period">Period</option>
+                    <option value="lifetime">Days</option>
+                    <option value="period">Date Range</option>
                   </select>
                 </div>
               </div>
@@ -290,7 +290,7 @@
                 <label class='checkbox-inline c-checkbox'>
                   <input type='checkbox' id="allowAccumulative">
                   <span class='ion-checkmark-round'></span>
-                  <label class='checkbox-label'>Multiple Voucher</label>
+                  <label class='checkbox-label'>Allow Multiple Vouchers</label>
                 </label>
               </div>
 
@@ -396,17 +396,31 @@
             <div class="col-sm-2">
               <label class="control-label">Partner</label>
             </div>
-            <div name="" class="col-sm-10 border">
-              <div id="partnerList" class="mda-form-group checkbox-add-padding">
-                <div class='col-sm-12'>
-                  <label class='checkbox-inline c-checkbox'>
-                    <input type='checkbox' name="partner" id="allTenant">
-                    <span class='ion-checkmark-round'></span>All Tenant
-                  </label>
+            <div name="" class="col-sm-2">
+              <div class="form-group">
+                <div class="form-control no-border">
+                  <select id="tag" name="tag" class="form-control select2" tabindex="0">
+                    <option>All</option>
+                  </select>
                 </div>
               </div>
             </div>
           </div>
+          <div class="row form-horizontal">
+            <div name="" class="col-sm-10 col-sm-offset-2 border">
+              <div class="row">
+                <div id="partnerList" class="mda-form-group checkbox-add-padding">
+                  <div class='col-sm-12'>
+                    <label class='checkbox-inline c-checkbox'>
+                      <input type='checkbox' name="partner" id="allTenant">
+                      <span class='ion-checkmark-round'></span>All Partners
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="row">
             <div class=" pull-right p">
               <button type="button" id="sendButton" data-toggle="modal" onclick="send()" class="btn btn-raised btn-primary ripple">Create</button>

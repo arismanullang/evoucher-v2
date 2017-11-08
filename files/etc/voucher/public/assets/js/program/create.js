@@ -4,6 +4,7 @@ $(document).ready(function () {
 	});
 
 	getPartner();
+	getTag();
 	initForm();
 	onChangeElem();
 
@@ -129,6 +130,21 @@ function onChangeElem(){
 		var _this = $(this);
 		_this.closest('#partnerList').find("input.partner").prop('checked', _this.prop('checked'));
 	});
+	$("#tag").change(function () {
+		var li = $("input[class=partner]:not(:checked)");
+
+		$.each( li, function (i, val) {
+			$(val).parent().closest('.col-sm-4').remove();
+		});
+		getPartnerByTag($(this).val());
+	});
+
+
+// function removeElem(elem){
+//   console.log("remove");
+//   $(elem).parent().closest('tr').remove();
+// }
+
 	$("#voucherValidityType").change(function () {
 		if (this.value == "lifetime") {
 			$("#validityLifetime").attr("style", "display:block");
@@ -522,10 +538,44 @@ function getPartner() {
 	});
 }
 
-// function removeElem(elem){
-//   console.log("remove");
-//   $(elem).parent().closest('tr').remove();
-// }
+function getPartnerByTag(param) {
+	$.ajax({
+		url: '/v1/ui/partner?tag='+param+'&token=' + token,
+		type: 'get',
+		success: function (data) {
+			var arrData = [];
+			arrData = data.data;
+
+			var i;
+			for (i = 0; i < arrData.length; i++) {
+				var li = $("<div class='col-sm-4'></div>");
+				var html = "<label class='checkbox-inline c-checkbox'>"
+					+ "<input type='checkbox' name='partner' class='partner' value='" + arrData[i].id + "'>"
+					+ "<span class='ion-checkmark-round'></span>" + arrData[i].name
+					+ "</label>";
+				li.html(html);
+				li.appendTo('#partnerList');
+			}
+		}
+	});
+}
+
+function getTag() {
+	$.ajax({
+		url: '/v1/ui/tag/all',
+		type: 'get',
+		success: function (data) {
+			var arrData = [];
+			arrData = data.data;
+
+			var i;
+			for (i = 0; i < arrData.length; i++) {
+				var li = $("<option value='"+arrData[i]+"'></option>").html(arrData[i]);
+				li.appendTo('#tag');
+			}
+		}
+	});
+}
 
 (function () {
 	'use strict';

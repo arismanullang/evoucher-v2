@@ -4,7 +4,57 @@ $( document ).ready(function() {
 		addElem();
 		return false;
 	});
+	$('.select2').select2();
+	getPartner();
+	$('#partnerList').change(function () {
+		getTransactionByPartner(this.value);
+	});
 });
+
+function getPartner() {
+	$.ajax({
+		url: '/v1/ui/partner/all?token='+token,
+		type: 'get',
+		success: function (data) {
+			var result = data.data;
+			for(var i = 0; i < result.length; i++){
+				var li = $("<option value='"+result[i].id+"'>"+result[i].name+"</td>");
+				li.appendTo('#partnerList');
+			}
+		},
+		error: function (data) {
+		}
+	});
+}
+
+function getTransactionByPartner(partnerId) {
+	var arrData = [];
+	$.ajax({
+		url: '/v1/ui/transaction/partner?token=' + token + '&partner=' + partnerId,
+		type: 'get',
+		success: function (data) {
+			var result = data.data;
+			for(var i = 0; i < result.length; i++){
+				if(result[i].state == 'used')
+					arrData[i] = result[i];
+			}
+
+			for(var i = 0; i < result.length; i++){
+				var date = new Date(result[i].issued);
+				var body = "<td class='col-lg-1 checkbox c-checkbox'><label>"
+					+ "<input type='checkbox' name='transaction-code' value='"+result[i].transaction_code+"'><span class='ion-checkmark-round'></span>"
+					+ "</label></td>"
+					+ "<td class='text-ellipsis'>"+result[i].transaction_code+"</td>"
+					+ "<td class='text-ellipsis'>"+result[i].voucher_value+"</td>"
+					+ "<td class='text-ellipsis'>"+date.toDateString() + ", " + date.getHours() + ":" + date.getMinutes()+"</td>"
+				var li = $("<tr></tr>");
+				li.html(body);
+				li.appendTo('#listTransaction');
+
+			}
+		}
+	});
+}
 
 function cashout(){
 	var transactionCode = [];

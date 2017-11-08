@@ -1,65 +1,202 @@
 {{ template "layout" . }}
 
-{{ define "title" }}E-Voucher{{ end }}
-{{ define "header-title" }}E-Voucher{{ end }}
+{{ define "title" }}Digital Voucher{{ end }}
+{{ define "header-title" }}Digital Voucher{{ end }}
 
 {{ define "content" }}
 <section>
-  <div class="content-heading bg-white">
-    <div class="row">
-      <div class="col-sm-9">
-        <h4 class="m0">Welcome to our dashboard</h4>
-      </div>
-      <div class="col-sm-3 text-right hidden-xs">
-        <button type="button" onclick="addProgram()" class="btn btn-labeled btn-default ripple">Program<span class="btn-label btn-label-right"><i class="ion-plus-round"></i></span></button>
-      </div>
-    </div>
-  </div>
   <div class="container-fluid">
-    <div class="col-lg-9 col-md-12">
-      <div class="card">
-        <h5 class="card-heading">Upcoming Program</h5>
-        <div class="card-body">
-          <ul id="upcomming-program" class="list-group">
+    <div class="row">
+      <div class="col-lg-4 col-xs-12">
+        <!-- Activity feed-->
+        <div class="card">
+          <div class="card-body pv">
+            <div class="clearfix">
+              <div class="col-lg-2">
+                <img src="/assets/img/icons/ongoing_program.png" class="icon-dashboard-sm">
+              </div>
+              <div class="col-lg-7">
+                <small>TODAY</br>ONGOING PROGRAM</small>
+              </div>
+              <div class="col-lg-3">
+                <h4 id="totalProgram" class="m0">-</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-xs-12">
+        <div class="card">
+          <div class="card-body pv">
+            <div class="clearfix">
+              <div class="col-lg-2">
+                <img src="/assets/img/icons/cash_out.png" class="icon-dashboard-sm">
+              </div>
+              <div class="col-lg-7">
+                <small>TODAY</br>ISSUED VOUCHER</small>
+              </div>
+              <div class="col-lg-3">
+                <h4 id="totalGenerated" class="m0">-</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-xs-12">
+        <div class="card">
+          <div class="card-body pv">
+            <div class="clearfix">
+              <div class="col-lg-2">
+                <img src="/assets/img/icons/unpaid.png" class="icon-dashboard-sm">
+              </div>
+              <div class="col-lg-7">
+                <small>TODAY</br>UNPAID VOUCHER</small>
+              </div>
+              <div class="col-lg-3">
+                <h4 id="totalUsed" class="m0">-</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 col-xs-12">
+        <div class="card height-215">
+          <div class="card-body pv">
+            <div class="clearfix">
+              <div class="row">
+                <div class="col-lg-12">
+                  <small>VOUCHER PAYABLE</small>
+                </div>
+              </div>
+              <div class="row">
+                <div class="text-center">
+                  <img src="/assets/img/icons/loan.png" class="icon-dashboard-lg">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-4 col-lg-offset-4">
+                  <h5 class="text-center">IDR 100.000.000</h5>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 col-xs-12">
+        <div class="card height-215">
+          <div class="card-body pv">
+            <div class="clearfix">
+              <div class="row">
+                <div class="col-lg-12">
+                  <small>VOUCHER DISTRIBUTION</small>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-12">
+                  <div id="pie" class="text-center p">
 
-          </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="col-lg-3 col-xs-12">
-      <!-- Activity feed-->
-      <div class="card">
-        <div class="card-body pv">
-          <div class="clearfix">
-            <div class="pull-left">
-              <h4 id="total-program" class="m0">-</h4><small class="m0 text-muted"><em class="mr-sm ion-arrow-up-b"></em>Program</small>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-body pv">
-          <div class="clearfix">
-            <div class="pull-left">
-              <h4 id="total-voucher" class="m0">-</h4><small class="m0 text-muted"><em class="mr-sm ion-arrow-up-b"></em>Total Voucher</small>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-body pv">
-          <div class="clearfix">
-            <div class="pull-left">
-              <h4 id="total-generated" class="m0">-</h4><small class="m0 text-muted"><em class="mr-sm ion-arrow-up-b"></em>Created Voucher</small>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-body pv">
-          <div class="clearfix">
-            <div class="pull-left">
-              <h4 id="total-used" class="m0">-</h4><small class="m0 text-muted"><em class="mr-sm ion-arrow-up-b"></em>Used Voucher</small>
+    <div class="row">
+      <div class="col-lg-12 col-md-12">
+        <div class="card">
+          <h5 class="card-heading">Ongoing Programs</h5>
+          <div class="card-body">
+            <div id="ongoingProgram" class="panel-group" role="tablist" area-multiselectable="true">
+              <div id="accordion" role="tablist" aria-multiselectable="true" class="panel-group">
+                <div class="panel panel-default">
+                  <div id="headingOne" role="tab" class="panel-heading">
+                    <h4 class="panel-title">
+                      <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="false" aria-controls="collapseOne" class="collapsed">
+                        Program A -- Issued : <span>10</span>, Redeemed : <span>8</span>, Paid : <span>5</span>
+                      </a>
+                      <span class="bg-danger badge">!</span>
+                    </h4>
+                  </div>
+                  <div id="collapseOne" role="tabpanel" aria-labelledby="headingOne" class="panel-collapse collapse" aria-expanded="false" style="height: 0px;">
+                    <div class="panel-body">
+                      <div class="row">
+                        <div class="col-md-3">Partner : Outlet 1</div>
+                        <div class="col-md-3">Redeemed : 8 / Rp. 800.000,00 </div>
+                        <div class="col-md-3">Unpaid : 3 / Rp. 300.000,00 </div>
+                        <div class="col-md-3">Due Date : 20 Oct 2017<span class="bg-danger badge pull-right">!</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="panel panel-default">
+                  <div id="headingTwo" role="tab" class="panel-heading">
+                    <h4 class="panel-title">
+                      <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo" class="collapsed">
+                        Program B -- Issued : <span>20</span>, Redeemed : <span>16</span>, Paid : <span>10</span>
+                      </a>
+                    </h4>
+                  </div>
+                  <div id="collapseTwo" role="tabpanel" aria-labelledby="headingTwo" class="panel-collapse collapse" aria-expanded="false" style="height: 0px;">
+                    <div class="panel-body">
+                      <div class="row">
+                        <div class="col-md-3">Partner : Outlet 1</div>
+                        <div class="col-md-3">Redeemed : 8 / Rp. 800.000,00 </div>
+                        <div class="col-md-3">Unpaid : 3 / Rp. 300.000,00 </div>
+                        <div class="col-md-3">Due Date : 20 Oct 2017 </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-3">Partner : Outlet 2</div>
+                        <div class="col-md-3">Redeemed : 8 / Rp. 800.000,00 </div>
+                        <div class="col-md-3">Unpaid : 3 / Rp. 300.000,00 </div>
+                        <div class="col-md-3">Due Date : 20 Oct 2017 </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-1 col-sm-offset-11"><i><a class="text-gray">View all</a></i></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="panel panel-default">
+                  <div id="headingThree" role="tab" class="panel-heading">
+                    <h4 class="panel-title">
+                      <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree" class="collapsed">
+                        Program C -- Issued : <span>40</span>, Redeemed : <span>36</span>, Paid : <span>16</span>
+                      </a>
+                      <span class="bg-danger badge">!</span>
+                    </h4>
+                  </div>
+                  <div id="collapseThree" role="tabpanel" aria-labelledby="headingThree" class="panel-collapse collapse" aria-expanded="false" style="height: 0px;">
+                    <div class="panel-body">
+                      <div class="row pb-sm">
+                        <div class="col-md-3">Partner : Outlet 1</div>
+                        <div class="col-md-3">Redeemed : 8 / Rp. 800.000,00 </div>
+                        <div class="col-md-3">Unpaid : 3 / Rp. 300.000,00 </div>
+                        <div class="col-md-3">Due Date : 20 Oct 2017 <span class="bg-danger badge pull-right">!</span></div>
+                      </div>
+                      <div class="row pb-sm">
+                        <div class="col-md-3">Partner : Outlet 2</div>
+                        <div class="col-md-3">Redeemed : 10 / Rp. 1.000.000,00 </div>
+                        <div class="col-md-3">Unpaid : 5 / Rp. 500.000,00 </div>
+                        <div class="col-md-3">Due Date : 25 Oct 2017</div>
+                      </div>
+                      <div class="row pb-sm">
+                        <div class="col-md-3">Partner : Outlet 3</div>
+                        <div class="col-md-3">Redeemed : 8 / Rp. 800.000,00 </div>
+                        <div class="col-md-3">Unpaid : 3 / Rp. 300.000,00 </div>
+                        <div class="col-md-3">Due Date : 21 Oct 2017 <span class="bg-danger badge pull-right">!</span></div>
+                      </div>
+                      <div class="row pb-sm">
+                        <div class="col-md-3">Partner : Outlet 4</div>
+                        <div class="col-md-3">Redeemed : 10 / Rp. 1.000.000,00 </div>
+                        <div class="col-md-3">Unpaid : 5 / Rp. 500.000,00 </div>
+                        <div class="col-md-3">Due Date : 23 Oct 2017</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -79,6 +216,11 @@
 <script src="/assets/vendor/flot/jquery.flot.pie.js"></script>
 <script src="/assets/vendor/flot/jquery.flot.time.js"></script>
 <script src="/assets/vendor/sidebysideimproved/jquery.flot.orderBars.js"></script>
+<script src="/assets/vendor/flot/jquery.flot.js"></script>
+<script src="/assets/vendor/flot/jquery.flot.categories.js"></script>
+<script src="/assets/vendor/flot.tooltip/js/jquery.flot.tooltip.js"></script>
+<script src="/assets/vendor/flot/jquery.flot.resize.js"></script>
+<script src="/assets/vendor/flot/jquery.flot.pie.js"></script>
 <script type="text/javascript" src="/assets/js/program/index.js"></script>
 {{ end }}
 

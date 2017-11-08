@@ -552,6 +552,85 @@ func GetPartnerCashoutActivity(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetTodayPartnerCashoutActivity(w http.ResponseWriter, r *http.Request) {
+	id := r.FormValue("id")
+	var voucher model.VoucherResponse
+	var err error
+	res := NewResponse(nil)
+	var status int
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Voucher-List")
+
+	//Token Authentocation
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
+
+	param := getUrlParam(r.URL.String())
+	param["pa.id"] = id
+	delete(param, "token")
+	delete(param, "id")
+
+	if len(param) > 0 {
+		voucher, err = model.FindTodayVouchers(param)
+	} else {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, logger.TraceID)
+		logger.SetStatus(status).Log("param :", param, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+	// fmt.Println(voucher, err)
+	if err == model.ErrResourceNotFound {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, logger.TraceID)
+		logger.SetStatus(status).Log("param :", param, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	} else if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", param, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	} else if voucher.Message != "" {
+
+		dvr := make(DetailListResponseData, len(voucher.VoucherData))
+		for i, v := range voucher.VoucherData {
+			dvr[i].ID = v.ID
+			dvr[i].VoucherCode = v.VoucherCode
+			dvr[i].ReferenceNo = v.ReferenceNo
+			dvr[i].Holder = v.Holder.String
+			dvr[i].HolderPhone = v.HolderPhone.String
+			dvr[i].HolderEmail = v.HolderEmail.String
+			dvr[i].HolderDescription = v.HolderDescription.String
+			dvr[i].ProgramID = v.ProgramID
+			dvr[i].ProgramName = v.ProgramName
+			dvr[i].ValidAt = v.ValidAt
+			dvr[i].ExpiredAt = v.ExpiredAt
+			dvr[i].VoucherValue = v.VoucherValue
+			dvr[i].State = v.State
+			dvr[i].CreatedBy = v.CreatedBy
+			dvr[i].CreatedAt = v.CreatedAt
+			dvr[i].UpdatedBy = v.UpdatedBy.String
+			dvr[i].UpdatedAt = v.UpdatedAt.Time
+			dvr[i].DeletedBy = v.DeletedBy.String
+			dvr[i].DeletedAt = v.DeletedAt.Time
+			dvr[i].Status = v.Status
+		}
+		status = http.StatusOK
+		res = NewResponse(dvr)
+		logger.SetStatus(status).Log("param :", param, "response :", dvr)
+		render.JSON(w, res, status)
+		return
+	}
+}
+
 func GetVoucherDetails(w http.ResponseWriter, r *http.Request) {
 	vc := bone.GetValue(r, "id")
 	res := NewResponse(nil)
@@ -832,7 +911,7 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 
 	for _, v := range listBroadcast {
 		gvd.ReferenceNo = its(v.ID)
-		gvd.Holder.Key = v.Description
+		gvd.Holder.Email = v.Description
 		gvd.Holder.Description = v.Target
 
 		_, err = gvd.generateVoucher(&program)
@@ -1070,7 +1149,11 @@ func voucherCode(vcf model.VoucherCodeFormat, flag int) string {
 	}
 
 	if vcf.Prefix.Valid && vcf.Prefix.String != "" {
-		code += vcf.Prefix.String + "-"
+		code += vcf.Prefix.String
+	}
+
+	if vcf.Postfix.Valid {
+		code += vcf.Postfix.String + "-"
 	}
 
 	switch {
@@ -1080,10 +1163,6 @@ func voucherCode(vcf model.VoucherCodeFormat, flag int) string {
 		code += seedCode() + vcf.Body.String
 	default:
 		code += seedCode() + randStr(vcf.Length, vcf.FormatType)
-	}
-
-	if vcf.Postfix.Valid {
-		code += "-" + vcf.Postfix.String
 	}
 
 	return code

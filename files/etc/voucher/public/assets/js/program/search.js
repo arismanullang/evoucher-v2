@@ -88,12 +88,12 @@ function getProgram() {
 
 				var avail = 0;
 				var redemptionRate = 0;
-				var distributionRate = 0;
+				//var distributionRate = 0;
 				if (dataMax[i] != 0) {
 					avail = dataMax[i] - dataVoucher[i];
 					if (dataVoucher[i] != 0) {
 						redemptionRate = dataRedeem[i] / dataVoucher[i] * 100;
-						distributionRate = dataVoucher[i] / dataMax[i] * 100;
+						//distributionRate = dataVoucher[i] / dataMax[i] * 100;
 					}
 				}
 
@@ -107,7 +107,7 @@ function getProgram() {
 					, dataModified[i].toUpperCase()
 					, dataMax[i]
 					, avail
-					, Math.round(distributionRate) + "%"
+					//, Math.round(distributionRate) + "%"
 					, Math.round(redemptionRate) + "%"
 					, button
 				];
@@ -129,14 +129,14 @@ function getProgram() {
 				columns: [
 					{title: "PROGRAM"},
 					{title: "TYPE"},
-					{title: "CONVERSION </br> (POINT / CURRENCY)"},
+					{title: "CONVERSION (POINT / CURRENCY)"},
 					{title: "STATUS"},
 					{title: "START"},
 					{title: "END"},
 					{title: "LAST MODIFIED"},
-					{title: "TOTAL </br> VOUCHER"},
-					{title: "AVAILABLE </br> VOUCHER"},
-					{title: "DISTRIBUTION"},
+					{title: "QUOTA VOUCHERS"},
+					{title: "CURRENT AVAILABLE VOUCHERS"},
+					//{title: "DISTRIBUTION"},
 					{title: "REDEMPTION"},
 					{title: "ACTION"}
 				],

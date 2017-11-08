@@ -22,6 +22,11 @@ type (
 		UpdatedBy sql.NullString `db:"updated_by" json:"updated_by"`
 		Status    string         `db:"status" json:"status"`
 	}
+	AccountConfig struct {
+		AccountId    string `db:"account_id"`
+		ConfigDetail string `db:"config_detail"`
+		ConfigValue  string `db:"config_value"`
+	}
 )
 
 func AddAccount(a Account, user string) error {
@@ -275,4 +280,38 @@ func ActivateAccount(accountId, userId string) error {
 		return ErrServerInternal
 	}
 	return nil
+}
+
+func GetAccountConfig() ([]AccountConfig, error) {
+	vc, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err)
+		return []AccountConfig{}, ErrServerInternal
+	}
+	defer vc.Rollback()
+
+	q := `
+		SELECT
+
+			ac.account_id, c.value as config_detail, ac.value as config_value
+		FROM
+			account_configs as ac
+		JOIN
+			configs as c
+		ON
+			c.id = ac.config_id
+		WHERE
+			ac.status = ?
+		ORDER BY
+			ac.account_id
+	`
+	var resd []AccountConfig
+	if err := db.Select(&resd, db.Rebind(q), StatusCreated); err != nil {
+		fmt.Println(err)
+		return []AccountConfig{}, ErrServerInternal
+	}
+	if len(resd) == 0 {
+		return []AccountConfig{}, ErrResourceNotFound
+	}
+	return resd, nil
 }
