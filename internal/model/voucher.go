@@ -598,7 +598,8 @@ func HardDelete(program string) error {
 	defer vc.Rollback()
 
 	q := `
-		DELETE 	vouchers
+		DELETE 	FROM
+			vouchers
 		WHERE
 			program_id = ?
 		AND
@@ -607,6 +608,41 @@ func HardDelete(program string) error {
       `
 	var result []string
 	if err := vc.Select(&result, vc.Rebind(q), program, StatusCreated); err != nil {
+		return err
+	}
+
+	if len(result) < 1 {
+		return ErrNotModified
+	}
+
+	if err := vc.Commit(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func RollbackVoucher(vcid string) error {
+	vc, err := db.Beginx()
+	if err != nil {
+		return err
+	}
+	defer vc.Rollback()
+
+	q := `
+		UPDATE
+			vouchers
+		SET
+			state = ?
+			status = ?
+
+		WHERE
+			id = ?
+		AND
+			status = ?
+		RETURNING id
+      `
+	var result []string
+	if err := vc.Select(&result, vc.Rebind(q),VoucherStateRollback , StatusDeleted , vcid, StatusCreated); err != nil {
 		return err
 	}
 

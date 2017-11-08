@@ -36,6 +36,9 @@ var (
 
 	//Logger config
 	LN_TRACE_ID int = 16
+
+	//Token lifetime
+	TOKENLIFE int
 )
 
 const (
@@ -79,7 +82,7 @@ const (
 	ErrMessageVoucherExpired           string = "Voucher has already expired (after expiration date)"
 	ErrMessageVoucherAlreadyUsed       string = "Voucher has already used "
 	ErrMessageVoucherAlreadyPaid       string = "Voucher has already paid"
-	ErrMessageInvalidVoucher           string = "Invalid voucher, program id not found"
+	ErrMessageInvalidVoucher           string = "Invalid voucher, voucher id not found"
 	ErrMessageVoucherQtyExceeded       string = "Voucher's quantities limit has been exceeded"
 	ErrMessageVoucherRulesViolated     string = "Order did not match validation rules"
 	ErrMessageInvalidProgramType       string = "Invalid program type"
@@ -113,11 +116,12 @@ const (
 	VoucherTypediscount string = "discount"
 	VoucherTypePromo    string = "promo"
 
-	VoucherStateCreated string = "created"
-	VoucherStateActived string = "actived"
-	VoucherStateUsed    string = "used"
-	VoucherStatePaid    string = "paid"
-	VoucherStateDeleted string = "deleted"
+	VoucherStateCreated 	string = "created"
+	VoucherStateActived 	string = "actived"
+	VoucherStateUsed    	string = "used"
+	VoucherStatePaid     	string = "paid"
+	VoucherStateDeleted  	string = "deleted"
+	VoucherStateRollback	string = "rollback"
 
 	ProgramTypeBulk     string = "bulk"
 	ProgramTypeOnDemand string = "on-demand"
@@ -140,7 +144,7 @@ const (
 	DEFAULT_TXLENGTH int    = 5
 
 	// Redis token life time
-	TOKENLIFE int = 1440
+
 
 	//Challenge code config
 	CHALLENGE_FORMAT string = "Numerals"

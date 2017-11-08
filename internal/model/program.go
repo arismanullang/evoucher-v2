@@ -84,6 +84,7 @@ type (
 		VoucherType  string                 `db:"voucher_type" json:"voucher_type"`
 		VoucherPrice float64                `db:"voucher_price" json:"voucher_price"`
 		VoucherValue float64                `db:"voucher_value" json:"voucher_value"`
+		AllowAccumulative bool		    `db:"allow_accumulative" json:"allow_accumulative"`
 		MaxVoucher   float64                `db:"max_quantity_voucher" json:"max_quantity_voucher"`
 		ImgUrl       string                 `db:"img_url" json:"image_url"`
 		StartDate    string                 `db:"start_date" json:"start_date"`
@@ -619,6 +620,7 @@ func FindAvailablePrograms(param map[string]string) ([]SearchProgram, error) {
 			, va.voucher_type
 			, va.voucher_price
 			, va.voucher_value
+			, va.allow_accumulative
 			, va.max_quantity_voucher
 			, va.img_url
 			, va.start_date

@@ -39,6 +39,6 @@ go build -o /usr/local/bin/evoucher
 ----
 ### api documentation
 
-* postman (coming soon)
-* [swagger](swagger.io) (coming soon)
+* postman for[mobile api](https://www.getpostman.com/collections/35cdeee592bb620a6db9)
+* [swagger](https://swaggerhub.com/apis/malfanmh/e-voucher/v1)
 

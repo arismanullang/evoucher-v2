@@ -8,13 +8,10 @@ import (
 	"os"
 
 	"google.golang.org/appengine"
-	//"time"
-	//"path/filepath"
 
 	"github.com/pkg/profile"
 	"github.com/ruizu/render"
 	"github.com/urfave/negroni"
-	//"gopkg.in/redis.v5"
 
 	"github.com/gilkor/evoucher/internal/controller"
 	"github.com/gilkor/evoucher/internal/model"
@@ -75,7 +72,7 @@ func main() {
 	if err := model.ConnectDB(config.Database.Endpoint); err != nil {
 		log.Fatal(err)
 	}
-	if err := model.OpenRedisPool(config.Database.Redis); err != nil {
+	if err := model.OpenRedisPool(config.Database.Redis.Endpoint); err != nil {
 		log.Fatal(err)
 	}
 
@@ -103,6 +100,8 @@ func main() {
 	//OCRA
 	model.OCRA_EVOUCHER_APPS_KEY = config.Ocra.AppsKey
 	model.OCRA_URL = config.Ocra.Endpoint
+
+	model.TOKENLIFE = config.Database.Redis.TokenLifetime
 
 	negroni.NewLogger()
 	r := setRoutes()

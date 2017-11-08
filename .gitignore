@@ -80,11 +80,15 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+dump.rdb
+
 #binary file
 evoucher*
+generate
 
 #config file
 files/etc/voucher/config.yml
 
 #IDE config
 .idea/*
+vendor/vendor.json

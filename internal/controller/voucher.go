@@ -59,6 +59,7 @@ type (
 		VoucherType  string  `json:"voucher_type"`
 		VoucherPrice float64 `json:"voucher_price"`
 		VoucherValue float64 `json:"voucher_value"`
+		AllowAccumulative bool `json:"allow_accumulative"`
 		MaxQty       float64 `json:"max_quantity_voucher"`
 		ImgUrl       string  `json:"image_url"`
 		StartDate    string  `json:"start_date"`
@@ -719,6 +720,36 @@ func GetVoucherDetails(w http.ResponseWriter, r *http.Request) {
 	status = http.StatusOK
 	res = NewResponse(dvr)
 	logger.SetStatus(status).Log("param :", vc, "response :", dvr)
+	render.JSON(w, res, status)
+	return
+}
+
+func RollbackVoucher(w http.ResponseWriter , r *http.Request){
+	res := NewResponse(nil)
+	vc := bone.GetValue(r, "id")
+	status := http.StatusOK
+
+	logger := model.NewLog()
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
+
+	err :=  model.RollbackVoucher(vc)
+	if err == model.ErrNotModified {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeInvalidVoucher, model.ErrMessageInvalidVoucher+"("+err.Error()+")","")
+		render.JSON(w, res, status)
+		return
+	}else if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")","")
+		render.JSON(w, res, status)
+		return
+	}
+
 	render.JSON(w, res, status)
 	return
 }
