@@ -26,8 +26,8 @@ var (
 	path_config = os.Getenv("EVOUCHER_CONFIG")
 
 	fversion = flag.Bool("version", false, "print the version.")
-	fconfig  = flag.String("config", path_config, "set the config file path.")
-	//fconfig  = flag.String("config", "files/etc/voucher/config.yml", "set the config file path.")
+	//fconfig  = flag.String("config", path_config, "set the config file path.")
+	fconfig  = flag.String("config", "files/etc/voucher/config.yml", "set the config file path.")
 	fprofile = flag.String("profile", "", "enable profiler, value either one of [cpu, mem, block].")
 
 	configDir = ""
@@ -80,6 +80,7 @@ func main() {
 
 	model.UiFeatures = getUiRole()
 	model.ApiFeatures = getApiRole()
+	model.Config = getConfig()
 	model.Domain = config.Mailgun.Domain
 	model.ApiKey = config.Mailgun.MailgunKey
 	model.PublicApiKey = config.Mailgun.MailgunPublicKey
@@ -148,5 +149,30 @@ func getApiRole() map[string][]string {
 	}
 	//fmt.Print("Role api : ")
 	//fmt.Println(m)
+	return m
+}
+
+func getConfig() map[string]map[string]string {
+	m := make(map[string]map[string]string)
+	configs, err := model.GetAccountConfig()
+	lastId := configs[0].AccountId
+	mTemp := make(map[string]string)
+	if err == nil {
+		for i, value := range configs {
+			if i != 0 && i+1 != len(configs) {
+				lastId = configs[i+1].AccountId
+				if value.AccountId != lastId {
+					m[value.AccountId] = mTemp
+					mTemp = make(map[string]string)
+				}
+			}
+			mTemp[value.ConfigDetail] = value.ConfigValue
+		}
+
+	}
+	m[lastId] = mTemp
+
+	fmt.Print("Config : ")
+	fmt.Println(m["WU6ieOt_"])
 	return m
 }

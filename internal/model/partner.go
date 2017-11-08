@@ -111,7 +111,7 @@ func FindPartners(param map[string]string) ([]Partner, error) {
 		if key == "q" {
 			q += `AND (id ILIKE '%` + value + `%' OR name ILIKE '%` + value + `%' OR serial_number ILIKE '%` + value + `%')`
 		} else {
-			q += ` AND ` + key + ` = '` + value + `'`
+			q += ` AND ` + key + ` ILIKE '%` + value + `%'`
 		}
 	}
 
@@ -125,6 +125,32 @@ func FindPartners(param map[string]string) ([]Partner, error) {
 	}
 
 	return resv, nil
+}
+
+func FindPartnerById(param string) (Partner, error) {
+	q := `
+		SELECT
+			id
+			, account_id
+			, name
+			, serial_number
+			, tag
+			, description
+		FROM partners
+		WHERE status = ?
+		AND id = ?
+	`
+
+	var resv []Partner
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, param); err != nil {
+		fmt.Println(err.Error())
+		return Partner{}, ErrServerInternal
+	}
+	if len(resv) < 1 {
+		return Partner{}, ErrResourceNotFound
+	}
+
+	return resv[0], nil
 }
 
 func FindAllPartners(accountId string) ([]Partner, error) {

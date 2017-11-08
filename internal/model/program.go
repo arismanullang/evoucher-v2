@@ -827,6 +827,7 @@ func FindProgramsPartner(parterId, accountId string) ([]SearchProgram, error) {
 			va.id
 			, va.account_id
 			, va.name
+			, va.type
 			, va.voucher_type
 			, va.voucher_price
 			, va.voucher_value
@@ -834,7 +835,7 @@ func FindProgramsPartner(parterId, accountId string) ([]SearchProgram, error) {
 			, va.img_url
 			, va.start_date
 			, va.end_date
-			, count (vo.id) as voucher
+			, count (DISTINCT vo.id) as voucher
 		FROM
 			programs as va
 		LEFT JOIN
@@ -857,6 +858,53 @@ func FindProgramsPartner(parterId, accountId string) ([]SearchProgram, error) {
 
 	var resv []SearchProgram
 	if err := db.Select(&resv, db.Rebind(q), parterId, accountId, StatusCreated); err != nil {
+		return []SearchProgram{}, err
+	}
+	if len(resv) < 1 {
+		return []SearchProgram{}, ErrResourceNotFound
+	}
+
+	return resv, nil
+}
+
+func FindTodayProgramsPartner(parterId, accountId string) ([]SearchProgram, error) {
+	q := `
+		SELECT
+			va.id
+			, va.account_id
+			, va.name
+			, va.voucher_type
+			, va.voucher_price
+			, va.voucher_value
+			, va.max_quantity_voucher
+			, va.img_url
+			, va.start_date
+			, va.end_date
+			, count (vo.id) as voucher
+		FROM
+			programs as va
+		LEFT JOIN
+			vouchers as vo
+		ON
+			va.id = vo.program_id
+		JOIN
+			program_partners as vp
+		ON
+			va.id = vp.program_id
+		WHERE
+			vp.partner_id = ?
+			AND va.account_id = ?
+			AND va.status = ?
+			AND va.start_date <= ?
+			AND va.end_date >= ?
+		GROUP BY
+			va.id
+		ORDER BY
+			va.start_date DESC
+	`
+
+	var resv []SearchProgram
+	if err := db.Select(&resv, db.Rebind(q), parterId, accountId, StatusCreated, time.Now(), time.Now()); err != nil {
 		return []SearchProgram{}, err
 	}
 	if len(resv) < 1 {

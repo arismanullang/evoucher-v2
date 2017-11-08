@@ -1,6 +1,6 @@
 $(document).ready(function () {
 	var id = findGetParameter('id');
-	$("#program-id").val(id);
+	$("#programId").val(id);
 	$("#token").val(token);
 	getVoucher(id);
 	getPartner(id);
@@ -8,20 +8,20 @@ $(document).ready(function () {
 
 function chart(remaining, outstanding, pending, paid) {
 	var pieData = [{
-		'label': 'Stock : Rp. ' + addDecimalPoints(remaining) + ',00',
+		'label': "<div class='col-md-6'>Stock : </div><div class='col-md-6'>Rp. " + addDecimalPoints(remaining) + ",00</div>",
 		'color': '#e4eff7',
 		'data': remaining
 	}, {
-		'label': 'Outstanding : Rp. ' + addDecimalPoints(outstanding) + ',00',
+		'label': "<div class='col-md-6'>Outstanding : </div><div class='col-md-6'>Rp. " + addDecimalPoints(outstanding) + ',00</div>',
 		'color': '#f4eff7',
 		'data': outstanding
 	}, {
-		'label': 'Pending : Rp. ' + addDecimalPoints(pending) + ',00',
-		'color': '#FFC107',
+		'label': "<div class='col-md-6'>Pending : </div><div class='col-md-6'>Rp. " + addDecimalPoints(pending) + ',00</div>',
+		'color': '#AFEFEF',
 		'data': pending
 	}, {
-		'label': 'Paid : Rp. ' + addDecimalPoints(paid) + ',00',
-		'color': '#FF7043',
+		'label': "<div class='col-md-6'>Paid : </div><div class='col-md-6'>Rp. " + addDecimalPoints(paid) + ',00</div>',
+		'color': '#69CDCD',
 		'data': paid
 	}];
 	var pieOptions = {
@@ -48,24 +48,28 @@ function getVoucher(id) {
 
 			var dataSet = [];
 			for (i = 0; i < limit; i++) {
+				var voucherState = "issued";
 				if (arrData[i].state == "used") {
 					used++;
+					voucherState = "redeemed";
 				}
 
 				if (arrData[i].state == "paid") {
 					used++;
 					paid++;
+					voucherState = "paid";
 				}
 
 				var dateValid = new Date(arrData[i].valid_at);
 				var dateExpired = new Date(arrData[i].expired_at);
+
 				var button = "<button type='button' onclick='detail(\"" + arrData[i].id + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"
 				dataSet[i] = [
 					arrData[i].voucher_code
 					, arrData[i].holder_description.toUpperCase()
 					, dateValid.toDateString().toUpperCase()
 					, dateExpired.toDateString().toUpperCase()
-					, arrData[i].state.toUpperCase()
+					, voucherState.toUpperCase()
 					, button
 				];
 			}
@@ -84,7 +88,7 @@ function getVoucher(id) {
 				columns: [
 					{title: "VOUCHER"},
 					{title: "HOLDER"},
-					{title: "VALID"},
+					{title: "ISSUED"},
 					{title: "EXPIRED"},
 					{title: "STATUS"},
 					{title: "ACTION"}
@@ -135,7 +139,7 @@ function getPartner(id) {
 			var arrData = data.data;
 			var limit = arrData.length;
 
-			for (i = 0; i < limit; i++) {
+			for (i = 0; i < 10; i++) {
 				var sn = arrData[i].serial_number.String;
 				if (sn == "") {
 					sn = "-";
@@ -148,11 +152,15 @@ function getPartner(id) {
 					+ "<div class='text-muted text-ellipsis'>Serial Number : " + sn + "</div>"
 					+ "</div></div>";
 				var li = $("<div class='mda-list col-lg-6'></div>").html(html);
-				li.appendTo('#list-partner');
+				li.appendTo('#listPartner');
 			}
+
+			var html = "<span  class='pull-right'>Show more</span>";
+			var li = $("<div class='mda-list col-lg-12'></div>").html(html);
+			li.appendTo('#listPartner');
 		},
 		error: function (data) {
-			$("<div class='card-body text-center'>No Partner Found</div>").appendTo('#card-partner');
+			$("<div class='card-body text-center'>No Partner Found</div>").appendTo('#cardPartner');
 		}
 	});
 }
@@ -190,48 +198,43 @@ function getProgram(id, voucher, used, paid) {
 			}
 
 			// Program
-			$('#program-name').html(result.name);
-			$('#program-description').html(result.description);
-			$('#program-type').html(programType);
-			$('#conversion-rate').html(result.voucher_price);
-			$('#voucher-value').html('Rp. ' + addDecimalPoints(result.voucher_value) + ',00');
+			$('#programName').html(result.name);
+			$('#programNames').html(result.name);
+			$('#programDescription').html(result.description);
+			$('#programType').html(programType);
+			$('#conversionRate').html(result.voucher_price + ' Point');
+			$('#voucherValue').html('Rp. ' + addDecimalPoints(result.voucher_value) + ',00');
 			$('#period').html(period);
-			$('#program-tnc').html(result.tnc);
+			$('#programTnc').html(result.tnc);
 
 			// Voucher
-			$('#max-quantity-voucher').html(result.max_quantity_voucher);
-			$('#remaining-voucher').html(remainingVoucher);
-			$('#created-voucher').html(voucher);
-			$('#used-voucher').html(used);
-			$('#paid-voucher').html(paid);
+			$('#maxQuantityVoucher').html(result.max_quantity_voucher);
+			$('#remainingVoucher').html(remainingVoucher);
+			$('#createdVoucher').html(voucher);
+			$('#usedVoucher').html(used);
+			$('#paidVoucher').html(paid);
 
 			// Cashflow
 			totalMon = parseInt(result.voucher_value) * parseInt(result.max_quantity_voucher);
-			$('#total-money').html('Rp. ' + addDecimalPoints(totalMon) + ',00');
+			$('#totalMoney').html('Rp. ' + addDecimalPoints(totalMon) + ',00');
 
 			remainingMon = (parseInt(result.max_quantity_voucher) - parseInt(voucher)) * parseInt(result.voucher_value);
-			$('#remaining-money').html('Rp. ' + addDecimalPoints(remainingMon) + ',00');
+			$('#remainingMoney').html('Rp. ' + addDecimalPoints(remainingMon) + ',00');
 
 			outstandingMon = (parseInt(voucher) - parseInt(used)) * parseInt(result.voucher_value);
-			$('#remaining-money').html('Rp. ' + addDecimalPoints(remainingMon) + ',00');
+			$('#remainingMoney').html('Rp. ' + addDecimalPoints(remainingMon) + ',00');
 
-			pendingPay = parseInt(result.voucher_value) * parseInt(used);
-			$('#pending-payment').html('Rp. ' + addDecimalPoints(pendingPay) + ',00');
+			pendingPay = parseInt(result.voucher_value) * (parseInt(used)-parseInt(paid));
+			$('#pendingPayment').html('Rp. ' + addDecimalPoints(pendingPay) + ',00');
 
 			paidPay = parseInt(result.voucher_value) * parseInt(paid);
-			$('#paid-payment').html('Rp. ' + addDecimalPoints(paidPay) + ',00');
+			$('#paidPayment').html('Rp. ' + addDecimalPoints(paidPay) + ',00');
 
 			remainingPercent = remainingMon / totalMon * 100;
-			$('#remaining-bar').attr('style', 'width:' + remainingPercent + '%');
-			$('#remaining-bar').attr('data-original-title', 'Remaining : ' + remainingPercent + '%');
 
 			pendingPercent = pendingPay / totalMon * 100;
-			$('#pending-bar').attr('style', 'width:' + pendingPercent + '%');
-			$('#pending-bar').attr('data-original-title', 'Pending : ' + pendingPercent + '%');
 
 			paidPercent = paidPay / totalMon * 100;
-			$('#paid-bar').attr('style', 'width:' + paidPercent + '%');
-			$('#paid-bar').attr('data-original-title', 'Paid : ' + paidPercent + '%');
 
 			chart(remainingMon, outstandingMon, pendingPay, paidPay);
 		},

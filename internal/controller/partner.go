@@ -377,6 +377,54 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
+func GetProgramsPartner(w http.ResponseWriter, r *http.Request) {
+	apiName := "partner_performance"
+
+	id := r.FormValue("id")
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
+	status := http.StatusOK
+	res := NewResponse(nil)
+
+	a := AuthToken(w, r)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	if CheckAPIRole(a, apiName) {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	programs, err := model.FindProgramsPartner(id, a.User.Account.Id)
+	if err != nil {
+		if err != model.ErrResourceNotFound {
+			status = http.StatusInternalServerError
+			errorTitle := model.ErrCodeInternalError
+
+			res.AddError(its(status), errorTitle, err.Error(), logger.TraceID)
+			logger.SetStatus(status).Info("param :", id+" || "+a.User.Account.Id, "response :", err.Error())
+			render.JSON(w, res, status)
+			return
+		}
+
+	}
+
+	res = NewResponse(programs)
+	render.JSON(w, res, status)
+}
+
 func GetPerformancePartner(w http.ResponseWriter, r *http.Request) {
 	apiName := "partner_performance"
 
@@ -458,6 +506,111 @@ func GetPerformancePartner(w http.ResponseWriter, r *http.Request) {
 			errorTitle := model.ErrCodeInternalError
 
 			res.AddError(its(status), errorTitle, err.Error(), logger.TraceID)
+			logger.SetStatus(status).Info("param :", id+" || "+a.User.Account.Id, "response :", err.Error())
+			render.JSON(w, res, status)
+			return
+		}
+
+		result.Program = 0
+		result.VoucherGenerated = 0
+		result.VoucherUsed = 0
+	} else {
+		result.Program = len(programs)
+
+		var tVoucher int
+		for _, v := range programs {
+			tempVoucher, _ := strconv.Atoi(v.Voucher)
+			tVoucher += tempVoucher
+		}
+		result.VoucherGenerated = tVoucher
+		result.VoucherUsed = len(transactions)
+	}
+
+	res = NewResponse(result)
+	render.JSON(w, res, status)
+}
+
+func GetDailyPerformancePartner(w http.ResponseWriter, r *http.Request) {
+	apiName := "partner_performance"
+
+	id := r.FormValue("id")
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
+	status := http.StatusOK
+	res := NewResponse(nil)
+
+	a := AuthToken(w, r)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	if CheckAPIRole(a, apiName) {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	var result PartnerPerformance
+
+	transactions, err := model.FindTodayTransactionByPartner(a.User.Account.Id, id)
+	if err != nil {
+		if err != model.ErrResourceNotFound {
+			status = http.StatusInternalServerError
+			errorTitle := model.ErrCodeInternalError
+
+			res.AddError(its(status), errorTitle, "Find transaction | "+err.Error(), logger.TraceID)
+			logger.SetStatus(status).Info("param :", id+" || "+a.User.Account.Id, "response :", err.Error())
+			render.JSON(w, res, status)
+			return
+		}
+
+		result.TransactionCode = 0
+		result.TransactionValue = 0
+		result.Customer = 0
+	} else {
+		result.TransactionCode = len(transactions)
+
+		var trValue float32
+		for _, v := range transactions {
+			trValue += v.VoucherValue
+		}
+		result.TransactionValue = trValue
+
+		var nameList []string
+		for _, v := range transactions {
+			for _, vv := range v.Voucher {
+				exist := false
+				for _, name := range nameList {
+					if vv.HolderDescription.String == name {
+						exist = true
+					}
+				}
+
+				if !exist {
+					nameList = append(nameList, vv.HolderDescription.String)
+				}
+			}
+		}
+		result.Customer = len(nameList)
+	}
+
+	programs, err := model.FindTodayProgramsPartner(id, a.User.Account.Id)
+	if err != nil {
+		if err != model.ErrResourceNotFound {
+			status = http.StatusInternalServerError
+			errorTitle := model.ErrCodeInternalError
+
+			res.AddError(its(status), errorTitle, "Find program | "+err.Error(), logger.TraceID)
 			logger.SetStatus(status).Info("param :", id+" || "+a.User.Account.Id, "response :", err.Error())
 			render.JSON(w, res, status)
 			return
