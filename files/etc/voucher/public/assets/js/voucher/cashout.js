@@ -9,6 +9,18 @@ $( document ).ready(function() {
 	$('#partnerList').change(function () {
 		getTransactionByPartner(this.value);
 	});
+
+	$('#transaction').validate({
+		errorPlacement: errorPlacementInput,
+		// Form rules
+		rules: {
+			bankAccount: {
+				required: true,
+				minlength: 16,
+				maxlength: 16
+			}
+		}
+	});
 });
 
 function getPartner() {
@@ -35,56 +47,73 @@ function getTransactionByPartner(partnerId) {
 		success: function (data) {
 			var result = data.data;
 			for(var i = 0; i < result.length; i++){
-				if(result[i].state == 'used')
-					arrData[i] = result[i];
+				if(result[i].vouchers[0].state == 'used')
+					arrData.push(result[i]);
 			}
 
-			for(var i = 0; i < result.length; i++){
-				var date = new Date(result[i].issued);
-				var body = "<td class='col-lg-1 checkbox c-checkbox'><label>"
-					+ "<input type='checkbox' name='transaction-code' value='"+result[i].transaction_code+"'><span class='ion-checkmark-round'></span>"
-					+ "</label></td>"
-					+ "<td class='text-ellipsis'>"+result[i].transaction_code+"</td>"
-					+ "<td class='text-ellipsis'>"+result[i].voucher_value+"</td>"
-					+ "<td class='text-ellipsis'>"+date.toDateString() + ", " + date.getHours() + ":" + date.getMinutes()+"</td>"
-				var li = $("<tr></tr>");
-				li.html(body);
-				li.appendTo('#listTransaction');
-
+			for(var i = 0; i < arrData.length; i++){
+				var date = new Date(arrData[i].issued);
+				for(var j = 0; j < arrData[i].vouchers.length; j++){
+					var body = "<td class='col-lg-1 checkbox c-checkbox'><label>"
+						+ "<input type='checkbox' name='transaction' class='transaction' value='"+arrData[i].transaction_id+";"+arrData[i].voucher_value+"'><span class='ion-checkmark-round'></span>"
+						+ "</label></td>"
+						+ "<td class='text-ellipsis'>"+arrData[i].transaction_code+"</td>"
+						+ "<td class='text-ellipsis'>"+arrData[i].vouchers[j].voucher_code+"</td>"
+						+ "<td class='text-ellipsis'> Rp. "+addDecimalPoints(arrData[i].voucher_value)+",00</td>"
+						+ "<td class='text-ellipsis'>"+date.toDateString() + ", " + date.getHours() + ":" + date.getMinutes()+"</td>"
+					var li = $("<tr></tr>");
+					li.html(body);
+					li.appendTo('#listTransaction');
+				}
 			}
 		}
 	});
 }
 
 function cashout(){
-	var transactionCode = [];
-	var transactions = "";
-	var elem = $("*[name='list-transaction-code']");
-	var i = 0;
-	for ( i = 0; i < elem.length; i++){
-		transactionCode[i] = elem[i].innerHTML;
-		transactions += elem[i].innerHTML + ';';
+
+	if(!$("#transaction").valid()) {
+		return
+	}
+
+	var listVoucher = [];
+	var listTransaction = [];
+	var li = $("input[class=transaction]:checked");
+	var total = 0;
+
+	for (i = 0; i < li.length; i++) {
+		console.log(li[i].value);
+		if (li[i].value != "on") {
+			var tempValue = li[i].value.split(";");
+
+			listTransaction[i] = tempValue[0];
+			listVoucher[i] = tempValue[1];
+		}
+	}
+
+	for (i = 0; i < listVoucher.length; i++) {
+		total += parseInt(listVoucher[i]);
 	}
 
 	var transaction = {
-		transaction_code: transactionCode
+		partner_id : $("#partnerList").find(":selected").val(),
+		bank_account : $("#bankAccount").val(),
+		total_cashout : total,
+		payment_method : "transfer",
+		transactions : listTransaction
 	};
 
-	var decoded = $("*[name='list-transaction-partner']")[0];
-
-	var textArea = document.createElement('textarea');
-	textArea.innerHTML = decoded.innerHTML;
-
+	console.log(transaction);
 	$.ajax({
-		url: '/v1/ui/transaction/cashout/update?token='+token,
+		url: '/v1/ui/cashout?token='+token,
 		type: 'post',
 		dataType: 'json',
 		contentType: "application/json",
 		data: JSON.stringify(transaction),
-		success: function () {
-			localStorage.setItem("transaction_cashout", "");
-			localStorage.setItem("transaction_cashout", transactions);
+		success: function (data) {
+			console.log(data);
 			$("#success-page").attr("style","display:block");
+			$("#cashoutId").val(data.data);
 			$("#transaction").attr("style","display:none");
 		},
 		error: function (data) {
@@ -94,55 +123,8 @@ function cashout(){
 	});
 }
 
-function addElem(){
-	var id = $('#transaction-code').val();
-	$.ajax({
-		url: '/v1/ui/transaction?id='+id+'&token='+token,
-		type: 'get',
-		success: function (data) {
-			var result = data.data;
-			$('#transaction-code').val('');
-			var elem = $("*[name='list-transaction-code']");
-			var i = 0;
-			for ( i = 0; i < elem.length; i++){
-				if(id == elem[i].innerHTML){
-					$("#error").html('Voucher Already Added');
-					return
-				}
-			}
-
-			if(result.state == "paid"){
-				$("#error").html('Voucher Already Used');
-			}else{
-				var date = new Date(result.created_at);
-				for(var i = 0; i < result.vouchers.length; i++){
-					var body = "<td name='list-transaction-partner' class='text-ellipsis'>"+result.partner_name+"</td>"
-						+ "<td name='list-transaction-code' class='text-ellipsis'>"+result.transaction_code+"</td>"
-						+ "<td name='list-voucher-code' class='text-ellipsis'>"+result.vouchers[i].voucher_code+"</td>"
-						+ "<td name='list-transaction-value' class='text-ellipsis'>"+result.discount_value+"</td>"
-						+ "<td name='list-transaction-date' class='text-ellipsis'>"+date.toDateString() + ", " + date.getHours() + ":" + date.getMinutes()+"</td>"
-						+ "<td name='list-transaction-action'><button type='button' onclick='removeElem(this)' class='btn btn-flat btn-sm btn-info pull-right'><em class='ion-close-circled'></em></button></td>";
-					var li = $("<tr class='msg-display clickable'></tr>");
-					li.html(body);
-					li.appendTo('#list-transaction');
-				}
-				$("#error").html('');
-
-			}
-		},
-		error: function (data) {
-			$('#transaction-code').val('');
-			$("#error").html(data.responseJSON.errors.title);
-		}
-	});
-}
-
-function removeElem(elem){
-	$(elem).parent().closest('tr').remove();
-}
-
 function print(){
-	window.location = "/voucher/print";
+	window.location = "/voucher/print?id="+$("#cashoutId").val();
 }
 
 function next(){

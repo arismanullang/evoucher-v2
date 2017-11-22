@@ -19,7 +19,7 @@ function getVoucher(id, type) {
 	var arrData = [];
 	if(type == 'all'){
 		$.ajax({
-			url: '/v1/ui/transaction/cashout/partner?id=' + id + '&token=' + token,
+			url: '/v1/ui/voucher/partner?id=' + id + '&token=' + token,
 			type: 'get',
 			success: function (data) {
 				var i;
@@ -29,15 +29,19 @@ function getVoucher(id, type) {
 				var dataSet = [];
 				for (i = 0; i < limit; i++) {
 					var dateValid = new Date(arrData[i].updated_at);
-					var voucherState = 'issued';
+					var voucherState = '';
 					if(arrData[i].state == 'used'){
-						voucherState = 'redeemed'
+						voucherState = 'redeemed';
+					}else if(arrData[i].state == 'created'){
+						voucherState = 'issued';
+					}else{
+						voucherState = 'paid';
 					}
 					var button = "<button type='button' onclick='detail(\"" + arrData[i].id + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"
 					dataSet[i] = [
 						arrData[i].program_name.toUpperCase()
 						, arrData[i].voucher_code
-						, arrData[i].holder_description.toUpperCase()
+						, arrData[i].holder_description.String.toUpperCase()
 						, dateValid.toDateString().toUpperCase()
 						, voucherState.toUpperCase()
 						, button
@@ -52,7 +56,7 @@ function getVoucher(id, type) {
 		});
 	} else if(type == 'today') {
 		$.ajax({
-			url: '/v1/ui/transaction/cashout/daily_partner?id=' + id + '&token=' + token,
+			url: '/v1/ui/voucher/daily/partner?id=' + id + '&token=' + token,
 			type: 'get',
 			success: function (data) {
 				var i;
@@ -166,12 +170,12 @@ function getPerformance(id, type) {
 		});
 	} else if(type == 'today'){
 		$.ajax({
-			url: '/v1/ui/partner/daily_performance?id=' + id + '&token=' + token,
+			url: '/v1/ui/partner/daily/performance?id=' + id + '&token=' + token,
 			type: 'get',
 			success: function (data) {
 				var i;
 				var arrData = data.data;
-				$("#totalProgram").html(arrData.program);
+				// $("#totalProgram").html(arrData.program);
 				$("#totalTransaction").html(arrData.transaction_code);
 				$("#totalVoucherValue").html("Rp. " + addDecimalPoints(arrData.transaction_value) + ",00");
 				$("#totalValidVoucher").html(arrData.voucher_generated);

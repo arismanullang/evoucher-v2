@@ -52,19 +52,19 @@ type (
 
 	GetVoucherOfVariatList []GetVoucherOfVariatdata
 	GetVoucherOfVariatdata struct {
-		ProgramID    string  `json:"program_id"`
-		AccountId    string  `json:"account_id"`
-		ProgramName  string  `json:"program_name"`
-		ProgramType  string  `json:"program_type"`
-		VoucherType  string  `json:"voucher_type"`
-		VoucherPrice float64 `json:"voucher_price"`
-		VoucherValue float64 `json:"voucher_value"`
-		AllowAccumulative bool `json:"allow_accumulative"`
-		MaxQty       float64 `json:"max_quantity_voucher"`
-		ImgUrl       string  `json:"image_url"`
-		StartDate    string  `json:"start_date"`
-		EndDate      string  `json:"end_date"`
-		Used         int     `json:"used"`
+		ProgramID         string  `json:"program_id"`
+		AccountId         string  `json:"account_id"`
+		ProgramName       string  `json:"program_name"`
+		ProgramType       string  `json:"program_type"`
+		VoucherType       string  `json:"voucher_type"`
+		VoucherPrice      float64 `json:"voucher_price"`
+		VoucherValue      float64 `json:"voucher_value"`
+		AllowAccumulative bool    `json:"allow_accumulative"`
+		MaxQty            float64 `json:"max_quantity_voucher"`
+		ImgUrl            string  `json:"image_url"`
+		StartDate         string  `json:"start_date"`
+		EndDate           string  `json:"end_date"`
+		Used              int     `json:"used"`
 	}
 
 	GetVoucherOfVariatListDetails struct {
@@ -98,9 +98,10 @@ type (
 
 	// VoucerResponse represent list of voucher data
 	VoucerResponse struct {
-		VoucherID string `json:"voucher_id"`
-		VoucherNo string `json:"voucher_code"`
-		State     string `json:"state,omitempty"`
+		VoucherID string    `json:"voucher_id"`
+		VoucherNo string    `json:"voucher_code"`
+		ExpiredAt time.Time `json:"expired_at"`
+		State     string    `json:"state,omitempty"`
 	}
 	// DetailListResponseData represent list of voucher data
 	DetailListResponseData []ResponseData
@@ -245,6 +246,7 @@ func GetVoucherOfProgram(w http.ResponseWriter, r *http.Request) {
 				tempVoucher := VoucerResponse{
 					VoucherID: vv.ID,
 					VoucherNo: vv.VoucherCode,
+					ExpiredAt: vv.ExpiredAt,
 					State:     vv.State,
 				}
 				tempVoucherResponse = append(tempVoucherResponse, tempVoucher)
@@ -474,9 +476,9 @@ func GetVoucherList(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetVoucherDetail get Voucher detail from DB
-func GetPartnerCashoutActivity(w http.ResponseWriter, r *http.Request) {
+func GetVouchersByPartner(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")
-	var voucher model.VoucherResponse
+	var voucher []model.Voucher
 	var err error
 	res := NewResponse(nil)
 	var status int
@@ -499,7 +501,7 @@ func GetPartnerCashoutActivity(w http.ResponseWriter, r *http.Request) {
 	delete(param, "id")
 
 	if len(param) > 0 {
-		voucher, err = model.FindVouchers(param)
+		voucher, err = model.FindsVouchers(param)
 	} else {
 		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, logger.TraceID)
@@ -520,42 +522,17 @@ func GetPartnerCashoutActivity(w http.ResponseWriter, r *http.Request) {
 		logger.SetStatus(status).Log("param :", param, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
-	} else if voucher.Message != "" {
-
-		dvr := make(DetailListResponseData, len(voucher.VoucherData))
-		for i, v := range voucher.VoucherData {
-			dvr[i].ID = v.ID
-			dvr[i].VoucherCode = v.VoucherCode
-			dvr[i].ReferenceNo = v.ReferenceNo
-			dvr[i].Holder = v.Holder.String
-			dvr[i].HolderPhone = v.HolderPhone.String
-			dvr[i].HolderEmail = v.HolderEmail.String
-			dvr[i].HolderDescription = v.HolderDescription.String
-			dvr[i].ProgramID = v.ProgramID
-			dvr[i].ProgramName = v.ProgramName
-			dvr[i].ValidAt = v.ValidAt
-			dvr[i].ExpiredAt = v.ExpiredAt
-			dvr[i].VoucherValue = v.VoucherValue
-			dvr[i].State = v.State
-			dvr[i].CreatedBy = v.CreatedBy
-			dvr[i].CreatedAt = v.CreatedAt
-			dvr[i].UpdatedBy = v.UpdatedBy.String
-			dvr[i].UpdatedAt = v.UpdatedAt.Time
-			dvr[i].DeletedBy = v.DeletedBy.String
-			dvr[i].DeletedAt = v.DeletedAt.Time
-			dvr[i].Status = v.Status
-		}
-		status = http.StatusOK
-		res = NewResponse(dvr)
-		logger.SetStatus(status).Log("param :", param, "response :", dvr)
-		render.JSON(w, res, status)
-		return
 	}
+
+	status = http.StatusOK
+	res = NewResponse(voucher)
+	logger.SetStatus(status).Log("param :", param, "response :", voucher)
+	render.JSON(w, res, status)
 }
 
-func GetTodayPartnerCashoutActivity(w http.ResponseWriter, r *http.Request) {
+func GetTodayVouchersByPartner(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")
-	var voucher model.VoucherResponse
+	var voucher []model.Voucher
 	var err error
 	res := NewResponse(nil)
 	var status int
@@ -599,37 +576,14 @@ func GetTodayPartnerCashoutActivity(w http.ResponseWriter, r *http.Request) {
 		logger.SetStatus(status).Log("param :", param, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
-	} else if voucher.Message != "" {
-
-		dvr := make(DetailListResponseData, len(voucher.VoucherData))
-		for i, v := range voucher.VoucherData {
-			dvr[i].ID = v.ID
-			dvr[i].VoucherCode = v.VoucherCode
-			dvr[i].ReferenceNo = v.ReferenceNo
-			dvr[i].Holder = v.Holder.String
-			dvr[i].HolderPhone = v.HolderPhone.String
-			dvr[i].HolderEmail = v.HolderEmail.String
-			dvr[i].HolderDescription = v.HolderDescription.String
-			dvr[i].ProgramID = v.ProgramID
-			dvr[i].ProgramName = v.ProgramName
-			dvr[i].ValidAt = v.ValidAt
-			dvr[i].ExpiredAt = v.ExpiredAt
-			dvr[i].VoucherValue = v.VoucherValue
-			dvr[i].State = v.State
-			dvr[i].CreatedBy = v.CreatedBy
-			dvr[i].CreatedAt = v.CreatedAt
-			dvr[i].UpdatedBy = v.UpdatedBy.String
-			dvr[i].UpdatedAt = v.UpdatedAt.Time
-			dvr[i].DeletedBy = v.DeletedBy.String
-			dvr[i].DeletedAt = v.DeletedAt.Time
-			dvr[i].Status = v.Status
-		}
-		status = http.StatusOK
-		res = NewResponse(dvr)
-		logger.SetStatus(status).Log("param :", param, "response :", dvr)
-		render.JSON(w, res, status)
-		return
 	}
+
+	status = http.StatusOK
+	res = NewResponse(voucher)
+	logger.SetStatus(status).Log("param :", param, "response :", voucher)
+	render.JSON(w, res, status)
+	return
+
 }
 
 func GetVoucherDetails(w http.ResponseWriter, r *http.Request) {
@@ -724,7 +678,7 @@ func GetVoucherDetails(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func RollbackVoucher(w http.ResponseWriter , r *http.Request){
+func RollbackVoucher(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	vc := bone.GetValue(r, "id")
 	status := http.StatusOK
@@ -737,15 +691,15 @@ func RollbackVoucher(w http.ResponseWriter , r *http.Request){
 		return
 	}
 
-	err :=  model.RollbackVoucher(vc)
+	err := model.RollbackVoucher(vc)
 	if err == model.ErrNotModified {
 		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeInvalidVoucher, model.ErrMessageInvalidVoucher+"("+err.Error()+")","")
+		res.AddError(its(status), model.ErrCodeInvalidVoucher, model.ErrMessageInvalidVoucher+"("+err.Error()+")", "")
 		render.JSON(w, res, status)
 		return
-	}else if err != nil {
+	} else if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")","")
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "")
 		render.JSON(w, res, status)
 		return
 	}
@@ -1116,18 +1070,20 @@ func (vr *GenerateVoucherRequest) generateVoucher(v *model.Program) ([]model.Vou
 		return ret, err
 	}
 	if v.VoucherLifetime > 0 {
+		end := time.Now().AddDate(0, 0, v.VoucherLifetime)
 		tsd = time.Now()
-		ted = time.Now().AddDate(0, 0, v.VoucherLifetime)
+		ted = time.Date(end.Year(), end.Month(), end.Day(), 23, 59, 59, 0, time.Local)
 	} else {
 		tsd, err = time.Parse(time.RFC3339Nano, v.ValidVoucherStart)
 		if err != nil {
 			log.Panic(err)
 		}
 
-		ted, err = time.Parse(time.RFC3339Nano, v.ValidVoucherEnd)
+		end, err := time.Parse(time.RFC3339Nano, v.ValidVoucherEnd)
 		if err != nil {
 			log.Panic(err)
 		}
+		ted = time.Date(end.Year(), end.Month(), end.Day(), 23, 59, 59, 0, time.Local)
 	}
 
 	for i := 0; i <= vr.Quantity-1; i++ {

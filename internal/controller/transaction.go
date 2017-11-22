@@ -213,7 +213,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		DiscountValue:   stf(rd.DiscountValue) * float64(len(rd.Vouchers)),
 		Token:           rd.Response,
 		User:            a.User.ID,
-		Vouchers:        rd.Vouchers,
+		VoucherIds:      rd.Vouchers,
 	}
 	//fmt.Println(d)
 	tId, err := model.InsertTransaction(d)
@@ -498,7 +498,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		DiscountValue:   stf(rd.DiscountValue),
 		Token:           rd.Response,
 		User:            rd.CreatedBy,
-		Vouchers:        rd.Vouchers,
+		VoucherIds:      rd.Vouchers,
 	}
 	fmt.Println(d)
 	if _, err := model.InsertTransaction(d); err != nil {
@@ -536,7 +536,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
-func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
+func GetTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 	apiName := "report_transaction"
 	partnerId := r.FormValue("partner")
 
@@ -565,7 +565,7 @@ func GetAllTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	transaction, err := model.FindAllTransactionByPartner(a.User.Account.Id, partnerId)
+	transaction, err := model.FindTransactionsByPartner(a.User.Account.Id, partnerId)
 	res = NewResponse(transaction)
 	if err != nil {
 		status = http.StatusInternalServerError
@@ -683,96 +683,6 @@ func PublicCashoutTransactionDetails(w http.ResponseWriter, r *http.Request) {
 		}
 
 		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-	}
-
-	render.JSON(w, res, status)
-}
-
-func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
-	apiName := "transaction_cashout"
-
-	logger := model.NewLog()
-	logger.SetService("API").
-		SetMethod(r.Method).
-		SetTag(apiName)
-
-	var rd TransactionCodeBulk
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&rd); err != nil {
-		logger.SetStatus(http.StatusInternalServerError).Panic("param :", r.Body, "response :", err.Error())
-	}
-
-	res := NewResponse(nil)
-	status := http.StatusOK
-
-	a := AuthTokenWithLogger(w, r, logger)
-	if !a.Valid {
-		res = a.res
-		status = http.StatusUnauthorized
-		render.JSON(w, res, status)
-		return
-	}
-
-	if CheckAPIRole(a, apiName) {
-		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
-
-		status = http.StatusUnauthorized
-		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
-		render.JSON(w, res, status)
-		return
-	}
-
-	if err := model.UpdateCashoutTransactions(rd.TransactionCode, a.User.ID); err != nil {
-		status = http.StatusInternalServerError
-		errTitle := model.ErrCodeInternalError
-		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-
-		logger.SetStatus(status).Info("param :", a.User.ID+" || "+strings.Join(rd.TransactionCode, ";"), "response :", res.Errors)
-	}
-
-	render.JSON(w, res, status)
-}
-
-func PrintCashoutTransaction(w http.ResponseWriter, r *http.Request) {
-	apiName := "transaction_cashout"
-
-	transactionCode := r.FormValue("transcation_code")
-	transactionCodeArr := strings.Split(transactionCode, ";")
-
-	logger := model.NewLog()
-	logger.SetService("API").
-		SetMethod(r.Method).
-		SetTag(apiName)
-
-	status := http.StatusOK
-	res := NewResponse(nil)
-
-	a := AuthTokenWithLogger(w, r, logger)
-	if !a.Valid {
-		res = a.res
-		status = http.StatusUnauthorized
-		render.JSON(w, res, status)
-		return
-	}
-
-	if CheckAPIRole(a, apiName) {
-		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
-
-		status = http.StatusUnauthorized
-		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
-		render.JSON(w, res, status)
-		return
-	}
-
-	status = http.StatusOK
-	transaction, err := model.PrintCashout(a.User.Account.Id, transactionCodeArr)
-	res = NewResponse(transaction)
-	if err != nil {
-		status = http.StatusInternalServerError
-		errTitle := model.ErrCodeInternalError
-		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-
-		logger.SetStatus(status).Info("param :", a.User.Account.Id+" || "+transactionCode, "response :", res.Errors)
 	}
 
 	render.JSON(w, res, status)

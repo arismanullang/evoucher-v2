@@ -18,6 +18,19 @@ type (
 		Tag          sql.NullString `db:"tag" json:"tag"`
 		Description  sql.NullString `db:"description" json:"description"`
 	}
+	PartnerProgramSummary struct {
+		Id                string         `db:"id" json:"id"`
+		AccountId         string         `db:"account_id" json:"acccount_id"`
+		Name              string         `db:"name" json:"name"`
+		SerialNumber      sql.NullString `db:"serial_number" json:"serial_number"`
+		CreatedBy         sql.NullString `db:"created_by" json:"created_by"`
+		ProgramID         string         `db:"program_id" json:"program_id"`
+		Tag               sql.NullString `db:"tag" json:"tag"`
+		Description       sql.NullString `db:"description" json:"description"`
+		Transactions      int            `db:"-" json:"transactions"`
+		Vouchers          int            `db:"-" json:"vouchers"`
+		TransactionValues float32        `db:"-" json:"transaction_values"`
+	}
 
 	Tag struct {
 		Value string `db:"value" json:"value"`
@@ -301,6 +314,59 @@ func FindProgramPartners(programId string) ([]Partner, error) {
 	}
 	if len(resv) < 1 {
 		return []Partner{}, ErrResourceNotFound
+	}
+	return resv, nil
+}
+
+func FindProgramPartnerSummary(accountId, programId string) ([]PartnerProgramSummary, error) {
+	q := `
+		SELECT 	b.id
+			, b.account_id
+			, b.name
+			, b.serial_number
+			, b.created_by
+			, a.program_id
+	 	FROM
+			program_partners a
+		JOIN
+		 	partners b
+		ON
+			a.partner_id = b.id
+ 		WHERE
+			a.status = ?
+			AND a.program_id = ?
+		`
+	var resv []PartnerProgramSummary
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, programId); err != nil {
+		return []PartnerProgramSummary{}, err
+	}
+	if len(resv) < 1 {
+		return []PartnerProgramSummary{}, ErrResourceNotFound
+	}
+
+	for i, v := range resv {
+		param := make(map[string]string)
+		param["t.account_id"] = accountId
+		param["va.id"] = programId
+		param["p.id"] = v.Id
+		transactions, err := FindTransactions(param)
+		if err != nil {
+			if err != ErrResourceNotFound {
+				return []PartnerProgramSummary{}, err
+			}
+		}
+
+		resv[i].Transactions = len(transactions)
+
+		vouchers := 0
+		var voucherValues float32
+		for _, vv := range transactions {
+			vouchers += len(vv.Voucher)
+			voucherValues += vv.VoucherValue
+		}
+
+		resv[i].Vouchers = vouchers
+		resv[i].TransactionValues = voucherValues
 	}
 	return resv, nil
 }
