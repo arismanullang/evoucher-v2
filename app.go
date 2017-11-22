@@ -172,7 +172,7 @@ func getConfig() map[string]map[string]string {
 	}
 	m[lastId] = mTemp
 
-	fmt.Print("Config : ")
-	fmt.Println(m["WU6ieOt_"])
+	//fmt.Print("Config : ")
+	//fmt.Println(m["WU6ieOt_"])
 	return m
 }

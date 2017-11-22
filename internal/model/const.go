@@ -73,6 +73,7 @@ const (
 	ErrCodeRedeemNotValidDay        string = "voucher_cannot_be_used_today"
 	ErrCodeRedeemNotValidHour       string = "voucher_cannot_be_used_at_current_time"
 	ErrCodeValidationError          string = "validation_Error"
+	ErrCodeJsonError                string = "json_error"
 
 	ErrMessageAllowAccumulativeDisable string = "Accumulation is not allowed"
 	ErrMessageResourceNotFound         string = "Resource not found"
@@ -116,12 +117,12 @@ const (
 	VoucherTypediscount string = "discount"
 	VoucherTypePromo    string = "promo"
 
-	VoucherStateCreated 	string = "created"
-	VoucherStateActived 	string = "actived"
-	VoucherStateUsed    	string = "used"
-	VoucherStatePaid     	string = "paid"
-	VoucherStateDeleted  	string = "deleted"
-	VoucherStateRollback	string = "rollback"
+	VoucherStateCreated  string = "created"
+	VoucherStateActived  string = "actived"
+	VoucherStateUsed     string = "used"
+	VoucherStatePaid     string = "paid"
+	VoucherStateDeleted  string = "deleted"
+	VoucherStateRollback string = "rollback"
 
 	ProgramTypeBulk     string = "bulk"
 	ProgramTypeOnDemand string = "on-demand"
@@ -144,7 +145,6 @@ const (
 	DEFAULT_TXLENGTH int    = 5
 
 	// Redis token life time
-
 
 	//Challenge code config
 	CHALLENGE_FORMAT string = "Numerals"

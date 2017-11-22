@@ -54,14 +54,49 @@
                     </tbody>
                   </table>
                 </div>
-                <div class="row">
-                  <div class="card">
-                    <div class="card-heading text-center">
-                      <div class="card-title text-center">Partner</div>
-                    </div>
-                    <div class="card-body">
-                      <div id="listPartner" class="row">
-
+                <div id="tablePartner" class="row">
+                  <div class="col-lg-12">
+                    <div class="card">
+                      <div class="card-heading bg-amber-500">
+                        <div class="card-title text-center">Partner</div>
+                      </div>
+                      <div class="card-body">
+                        <table id="datatablePartner" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
+                          <thead>
+                          <tr>
+                            <th>
+                              <div class="mda-form-control pt0">
+                                <input type="text" name="filter_voucher_code" placeholder="Name" class="form-control input-sm datatable_input_col_search">
+                                <div class="mda-form-control-line"></div>
+                              </div>
+                            </th>
+                            <th>
+                              <div class="mda-form-control pt0">
+                                <input type="text" name="filter_holder_name" placeholder="Transaction" class="form-control input-sm datatable_input_col_search">
+                                <div class="mda-form-control-line"></div>
+                              </div>
+                            </th>
+                            <th>
+                              <div class="mda-form-control pt0">
+                                <input type="text" name="filter_valid_from" placeholder="Voucher" class="form-control input-sm datatable_input_col_search">
+                                <div class="mda-form-control-line"></div>
+                              </div>
+                            </th>
+                            <th>
+                              <div class="mda-form-control pt0">
+                                <input type="text" name="filter_expired" placeholder="Value" class="form-control input-sm datatable_input_col_search">
+                                <div class="mda-form-control-line"></div>
+                              </div>
+                            </th>
+                          </tr>
+                          <tr role="row">
+                            <th>Name</th>
+                            <th>Transaction</th>
+                            <th>Voucher</th>
+                            <th>Value</th>
+                          </tr>
+                          </thead>
+                        </table>
                       </div>
                     </div>
                   </div>

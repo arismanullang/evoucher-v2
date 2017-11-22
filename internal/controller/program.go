@@ -84,6 +84,34 @@ type (
 	QueryRequest struct {
 		Query string `json:"query"`
 	}
+
+	SearchProgram struct {
+		Id                string                 `json:"id"`
+		AccountId         string                 `json:"account_id"`
+		Name              string                 `json:"name"`
+		Type              string                 `json:"type"`
+		VoucherType       string                 `json:"voucher_type"`
+		VoucherPrice      float64                `json:"voucher_price"`
+		VoucherValue      float64                `json:"voucher_value"`
+		AllowAccumulative bool                   `json:"allow_accumulative"`
+		MaxVoucher        float64                `json:"max_quantity_voucher"`
+		ImgUrl            string                 `json:"image_url"`
+		StartDate         string                 `json:"start_date"`
+		EndDate           string                 `json:"end_date"`
+		Partners          []SearchProgramPartner `json:"partners"`
+		Status            string                 `json:"status"`
+		CreatedAt         string                 `json:"created_at"`
+		UpdatedAt         string                 `json:"updated_at"`
+	}
+	SearchProgramPartner struct {
+		Id      string                 `json:"id"`
+		Name    string                 `json:"name"`
+		Voucher []SearchProgramVoucher `json:"vouchers"`
+	}
+	SearchProgramVoucher struct {
+		Voucher string `json:"voucher"`
+		State   string `json:"state"`
+	}
 )
 
 func CustomQuery(w http.ResponseWriter, r *http.Request) {
@@ -102,7 +130,7 @@ func CustomQuery(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, http.StatusOK)
 }
 
-func ListPrograms(w http.ResponseWriter, r *http.Request) {
+func ListMobilePrograms(w http.ResponseWriter, r *http.Request) {
 	res := NewResponse(nil)
 	var status int
 
@@ -327,7 +355,6 @@ func GetAllPrograms(w http.ResponseWriter, r *http.Request) {
 
 	program, err := model.FindAllPrograms(a.User.Account.Id)
 	res = NewResponse(program)
-	//logger.SetStatus(status).Log("param account ID from token :", a.User.Account.Id, "response :", program)
 	if err != nil {
 		status = http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError
@@ -337,8 +364,87 @@ func GetAllPrograms(w http.ResponseWriter, r *http.Request) {
 		}
 
 		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-		//logger.SetStatus(status).Log("param account ID from token :", a.User.Account.Id, "response :", res.Errors)
 	}
+	render.JSON(w, res, status)
+}
+
+func GetOnGoingPrograms(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusOK
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("program_all")
+
+	res := NewResponse(nil)
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	param := make(map[string]string)
+	param["end_date"] = " > now()"
+	param["start_date"] = " < now()"
+	param["account_id"] = a.User.Account.Id
+
+	program, err := model.FindAllProgramsCustom(param)
+	if err != nil {
+		status = http.StatusInternalServerError
+		errTitle := model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+	}
+
+	resProgram := []SearchProgram{}
+	for _, v := range program {
+		tempProgram := SearchProgram{
+			Id:                v.Id,
+			AccountId:         v.AccountId,
+			Name:              v.Name,
+			Type:              v.Type,
+			VoucherType:       v.VoucherType,
+			VoucherPrice:      v.VoucherPrice,
+			VoucherValue:      v.VoucherValue,
+			AllowAccumulative: v.AllowAccumulative,
+			MaxVoucher:        v.MaxVoucher,
+			ImgUrl:            v.ImgUrl,
+			StartDate:         v.StartDate,
+			EndDate:           v.EndDate,
+			CreatedAt:         v.CreatedAt,
+			UpdatedAt:         v.UpdatedAt.String,
+		}
+
+		tempVoucher := make(map[string][]SearchProgramVoucher)
+		tempPartners := make(map[string]string)
+		for _, vv := range v.Vouchers {
+			tempPartner := strings.ToLower(vv.PartnerId.String)
+			if tempPartner == "" {
+				tempPartner = "0"
+			}
+			tempVoucher[tempPartner] = append(tempVoucher[tempPartner], SearchProgramVoucher{vv.Voucher, vv.State})
+			tempPartners[tempPartner] = vv.PartnerName.String
+		}
+		result := []SearchProgramPartner{}
+		for kk, vv := range tempVoucher {
+			tempPartners := SearchProgramPartner{
+				Id:      kk,
+				Name:    tempPartners[kk],
+				Voucher: vv,
+			}
+			result = append(result, tempPartners)
+		}
+
+		tempProgram.Partners = result
+		resProgram = append(resProgram, tempProgram)
+	}
+	res = NewResponse(resProgram)
 	render.JSON(w, res, status)
 }
 

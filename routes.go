@@ -31,31 +31,30 @@ func setRoutes() http.Handler {
 	r.GetFunc("/notfound", viewNotFound)
 	r.GetFunc("/", login)
 
-	//report
-	//r.GetFunc("/v1/api/report", controller.MakeReport)
-	//r.GetFunc("/v1/api/report/Program", controller.MakeReportProgram)
-	//r.GetFunc("/v1/api/report/voucher/Program", controller.MakeCompleteReportVoucherByUser)
-	//r.GetFunc("/v1/api/report/vouchers/Program", controller.MakeReportVoucherByUser)
-
 	//program
 	r.PostFunc("/v1/ui/program/create", controller.CreateProgram)
 	r.GetFunc("/v1/ui/program/all", controller.GetAllPrograms)
+	r.GetFunc("/v1/ui/program/ongoing", controller.GetOnGoingPrograms)
 	r.GetFunc("/v1/ui/program", controller.GetPrograms)
 	r.GetFunc("/v1/ui/program/detail", controller.GetProgramDetailsCustom)
 	r.PostFunc("/v1/ui/program/update", controller.UpdateProgramRoute)
 	r.GetFunc("/v1/ui/program/delete", controller.DeleteProgram)
+	r.GetFunc("/v1/ui/program/partner", controller.GetProgramPartnerSummary)
 
 	//campaign
 	r.PostFunc("/v1/ui/campaign/create", controller.CreateEmailCampaign)
 
 	//transaction
-	r.GetFunc("/v1/ui/transaction/partner", controller.GetAllTransactionsByPartner)
+	r.GetFunc("/v1/ui/transaction/partner", controller.GetTransactionsByPartner)
+	r.GetFunc("/v1/ui/transaction/cashout/partner", controller.GetTransactionsByPartner)
 	r.GetFunc("/v1/ui/transaction/voucher", controller.GetVoucherTransactionDetails)
-	r.GetFunc("/v1/ui/transaction", controller.CashoutTransactionDetails)
-	r.PostFunc("/v1/ui/transaction/cashout/update", controller.CashoutTransactions)
-	r.GetFunc("/v1/ui/transaction/cashout/print", controller.PrintCashoutTransaction)
-	r.GetFunc("/v1/ui/transaction/cashout/partner", controller.GetPartnerCashoutActivity)
-	r.GetFunc("/v1/ui/transaction/cashout/daily_partner", controller.GetTodayPartnerCashoutActivity)
+	r.GetFunc("/v1/ui/transaction/cashout", controller.CashoutTransactionDetails)
+
+	//cashout
+	r.PostFunc("/v1/ui/cashout", controller.CashoutTransactions)
+	r.GetFunc("/v1/ui/cashout/print", controller.PrintCashoutTransaction)
+	r.GetFunc("/v1/ui/voucher/partner", controller.GetVouchersByPartner)
+	r.GetFunc("/v1/ui/voucher/daily/partner", controller.GetTodayVouchersByPartner)
 
 	//user
 	r.GetFunc("/v1/ui/user/login", controller.Login)
@@ -88,7 +87,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/ui/partner", controller.GetPartners)
 	r.GetFunc("/v1/ui/partner/programs", controller.GetProgramsPartner)
 	r.GetFunc("/v1/ui/partner/performance", controller.GetPerformancePartner)
-	r.GetFunc("/v1/ui/partner/daily_performance", controller.GetDailyPerformancePartner)
+	r.GetFunc("/v1/ui/partner/daily/performance", controller.GetDailyPerformancePartner)
 	r.PostFunc("/v1/ui/partner/update", controller.UpdatePartner)
 	r.GetFunc("/v1/ui/partner/delete", controller.DeletePartner)
 
@@ -121,7 +120,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/ui/sample/link", controller.GetCsvSample)
 
 	//mobile API
-	r.GetFunc("/v1/program", controller.ListPrograms)
+	r.GetFunc("/v1/program", controller.ListMobilePrograms)
 	r.GetFunc("/v1/mall-program", controller.ListMallPrograms)
 	r.GetFunc("/v1/program/:id", controller.ListProgramsDetails)
 	r.GetFunc("/v1/voucher", controller.GetVoucherOfProgram)
