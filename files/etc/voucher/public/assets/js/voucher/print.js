@@ -15,17 +15,14 @@ function cashout(id){
 			var result = data.data;
 			var total = 0;
 			for ( var i = 0; i < result.transactions.length; i++){
-				for ( y = 0; y < result.transactions[i].vouchers.length; y++){
-					var date = new Date(result.created_at);
-					var body = "<td>"+result.transactions[i].transaction_code+"</td>"
-						+ "<td>"+result.transactions[i].vouchers[y].voucher_code+"</td>"
-						+ "<td>Rp. "+addDecimalPoints(result.transactions[i].vouchers[y].voucher_value)+",00</td>"
-						+ "<td>"+date.toDateString() + ", " +toTwoDigit(date.getHours()) + ":" + toTwoDigit(date.getMinutes())+"</td>"
-						+ "<td>"+result.transactions[i].vouchers[y].state.toUpperCase()+"</td>";
-					var li = $("<tr class='text-center'></tr>");
-					li.html(body);
-					li.appendTo('#list-transaction');
-				}
+				var date = new Date(result.created_at);
+				var body = "<td>"+result.transactions[i].transaction_id+"</td>"
+					+ "<td>"+result.transactions[i].voucher_id+"</td>"
+					+ "<td>Rp. "+addDecimalPoints(result.transactions[i].voucher_value)+",00</td>"
+					+ "<td>"+date.toDateString() + ", " +toTwoDigit(date.getHours()) + ":" + toTwoDigit(date.getMinutes())+"</td>";
+				var li = $("<tr class='text-center'></tr>");
+				li.html(body);
+				li.appendTo('#list-transaction');
 			}
 
 			getPartnerName(result.partner_id, result.bank_account);

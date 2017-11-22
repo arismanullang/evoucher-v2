@@ -21,6 +21,7 @@ type (
 	CashoutTransaction struct {
 		TransactionId string `db:"transaction_id" json:"transaction_id"`
 		VoucherId     string `db:"voucher_id" json:"voucher_id"`
+		VoucherValue  string `db:"voucher_value" json:"voucher_value"`
 	}
 )
 
@@ -61,7 +62,7 @@ func InsertCashout(d Cashout) (string, error) {
 				, created_by
 				, status
 			)
-			VALUES (?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?)
 		`
 
 		_, err := tx.Exec(tx.Rebind(q), d.Id, v.TransactionId, v.VoucherId, d.CreatedBy, StatusCreated)
@@ -163,7 +164,7 @@ func PrintCashout(accountId string, cashoutCode string) (Cashout, error) {
 
 	q = `
 		SELECT DISTINCT
-			t.transaction_code as transaction_id, v.voucher_code
+			t.transaction_code as transaction_id, v.voucher_code as voucher_id, v.voucher_value
 		FROM cashout_details as cd
 		JOIN
 			transactions as t

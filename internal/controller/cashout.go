@@ -81,6 +81,7 @@ func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
 
 		logger.SetStatus(status).Info("param :", cashout, "response :", res.Errors)
 	} else {
+		res = NewResponse(id)
 		if err := model.UpdateCashoutTransactions(rd.Transactions, a.User.ID); err != nil {
 			status = http.StatusInternalServerError
 			errTitle := model.ErrCodeInternalError
@@ -90,7 +91,6 @@ func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	res = NewResponse(id)
 	render.JSON(w, res, status)
 }
 
