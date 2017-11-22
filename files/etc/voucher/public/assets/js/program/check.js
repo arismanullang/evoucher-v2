@@ -132,35 +132,69 @@ function getVoucher(id) {
 function getPartner(id) {
 	var arrData = [];
 	$.ajax({
-		url: '/v1/ui/partner/program?program_id=' + id + '&token=' + token,
+		url: '/v1/ui/program/partner?program_id=' + id + '&token=' + token,
 		type: 'get',
 		success: function (data) {
-			var i;
-			var arrData = data.data;
-			var limit = arrData.length;
-
-			for (i = 0; i < 10; i++) {
-				var sn = arrData[i].serial_number.String;
-				if (sn == "") {
-					sn = "-";
-				}
-
-				var html = "<div class='mda-list-item'>"
-					+ "<div class='mda-list-item-icon mt0'><div class='text-lg initial64 bg-blue-500'>" + arrData[i].name.charAt(0).toUpperCase() + "</div></div>"
-					+ "<div class='mda-list-item-text'>"
-					+ "<h3>" + arrData[i].name + "</h3>"
-					+ "<div class='text-muted text-ellipsis'>Serial Number : " + sn + "</div>"
-					+ "</div></div>";
-				var li = $("<div class='mda-list col-lg-6'></div>").html(html);
-				li.appendTo('#listPartner');
+			if ($.fn.DataTable.isDataTable("#datatablePartner")) {
+				$('#datatablePartner').DataTable().clear().destroy();
 			}
 
-			var html = "<span  class='pull-right'>Show more</span>";
-			var li = $("<div class='mda-list col-lg-12'></div>").html(html);
-			li.appendTo('#listPartner');
+			var arrData = data.data;
+			var i;
+			var dataSet = [];
+			for (i = 0; i < arrData.length; i++) {
+				var tempArray = [
+					arrData[i].name.toUpperCase()
+					, arrData[i].transactions
+					, arrData[i].vouchers
+					, arrData[i].transaction_values
+				];
+
+				dataSet.push(tempArray);
+			}
+
+			var table = $('#datatablePartner').dataTable({
+				data: dataSet,
+				dom: 'lBrtip',
+				buttons: [
+					'copy', 'csv', 'excel', 'pdf', 'print'
+				],
+				"order": [[3, "desc"]],
+				columns: [
+					{title: "NAME"},
+					{title: "TRANSACTION"},
+					{title: "VOUCHER"},
+					{title: "VALUE"}
+				],
+				oLanguage: {
+					sSearch: '<em class="ion-search"></em>',
+					sLengthMenu: '_MENU_ records per page',
+					info: 'Showing page _PAGE_ of _PAGES_',
+					zeroRecords: 'Nothing found - sorry',
+					infoEmpty: 'No records available',
+					infoFiltered: '(filtered from _MAX_ total records)',
+					oPaginate: {
+						sNext: '<em class="ion-ios-arrow-right"></em>',
+						sPrevious: '<em class="ion-ios-arrow-left"></em>'
+					}
+				}
+			});
+			var inputSearchClass = 'datatable_input_col_search';
+			var columnInputs = $('thead .' + inputSearchClass);
+			for (i = 0; i < columnInputs.length; i++) {
+				if (columnInputs.get(i).tagName.toLowerCase() == "select") {
+					columnInputs[i].onchange = function () {
+						table.fnFilter(this.value, columnInputs.index(this));
+					};
+				} else {
+					columnInputs[i].onkeyup = function () {
+						table.fnFilter(this.value, columnInputs.index(this));
+					};
+				}
+			}
 		},
 		error: function (data) {
-			$("<div class='card-body text-center'>No Partner Found</div>").appendTo('#cardPartner');
+			$("<div class='card-body text-center'>No Partner Found</div>").appendTo('#tablePartner');
 		}
 	});
 }

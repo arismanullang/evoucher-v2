@@ -77,28 +77,30 @@ type (
 		Img_url string `db:"img_url"`
 	}
 	SearchProgram struct {
-		Id           string                 `db:"id" json:"id"`
-		AccountId    string                 `db:"account_id" json:"account_id"`
-		Name         string                 `db:"name" json:"name"`
-		Type         string                 `db:"type" json:"type"`
-		VoucherType  string                 `db:"voucher_type" json:"voucher_type"`
-		VoucherPrice float64                `db:"voucher_price" json:"voucher_price"`
-		VoucherValue float64                `db:"voucher_value" json:"voucher_value"`
-		AllowAccumulative bool		    `db:"allow_accumulative" json:"allow_accumulative"`
-		MaxVoucher   float64                `db:"max_quantity_voucher" json:"max_quantity_voucher"`
-		ImgUrl       string                 `db:"img_url" json:"image_url"`
-		StartDate    string                 `db:"start_date" json:"start_date"`
-		EndDate      string                 `db:"end_date" json:"end_date"`
-		Vouchers     []SearchProgramVoucher `db:"-" json:"vouchers"`
-		Voucher      string                 `db:"voucher" json:"voucher"`
-		State        sql.NullString         `db:"state" json:"state"`
-		Status       string                 `db:"status" json:"status"`
-		CreatedAt    string                 `db:"created_at" json:"created_at"`
-		UpdatedAt    sql.NullString         `db:"updated_at" json:"updated_at"`
+		Id                string                 `db:"id" json:"id"`
+		AccountId         string                 `db:"account_id" json:"account_id"`
+		Name              string                 `db:"name" json:"name"`
+		Type              string                 `db:"type" json:"type"`
+		VoucherType       string                 `db:"voucher_type" json:"voucher_type"`
+		VoucherPrice      float64                `db:"voucher_price" json:"voucher_price"`
+		VoucherValue      float64                `db:"voucher_value" json:"voucher_value"`
+		AllowAccumulative bool                   `db:"allow_accumulative" json:"allow_accumulative"`
+		MaxVoucher        float64                `db:"max_quantity_voucher" json:"max_quantity_voucher"`
+		ImgUrl            string                 `db:"img_url" json:"image_url"`
+		StartDate         string                 `db:"start_date" json:"start_date"`
+		EndDate           string                 `db:"end_date" json:"end_date"`
+		Vouchers          []SearchProgramVoucher `db:"-" json:"vouchers"`
+		Voucher           string                 `db:"voucher" json:"voucher"`
+		State             sql.NullString         `db:"state" json:"state"`
+		Status            string                 `db:"status" json:"status"`
+		CreatedAt         string                 `db:"created_at" json:"created_at"`
+		UpdatedAt         sql.NullString         `db:"updated_at" json:"updated_at"`
 	}
 	SearchProgramVoucher struct {
-		Voucher string `db:"voucher" json:"voucher"`
-		State   string `db:"state" json:"state"`
+		Voucher     string         `db:"voucher" json:"voucher"`
+		State       string         `db:"state" json:"state"`
+		PartnerName sql.NullString `db:"partner_name" json:"partner_name"`
+		PartnerId   sql.NullString `db:"partner_id" json:"partner_id"`
 	}
 	UpdateProgramArrayRequest struct {
 		ProgramId string   `db:"program_id"`
@@ -595,6 +597,92 @@ func FindAllPrograms(accountId string) ([]SearchProgram, error) {
 		GROUP BY
 			state
 	`
+
+		var resvo []SearchProgramVoucher
+		if err := db.Select(&resvo, db.Rebind(q), StatusCreated, value.Id); err != nil {
+			fmt.Println(err.Error())
+			return []SearchProgram{}, ErrServerInternal
+		}
+		if len(resv) < 1 {
+			return []SearchProgram{}, ErrResourceNotFound
+		}
+
+		resv[index].Vouchers = resvo
+	}
+	return resv, nil
+}
+
+func FindAllProgramsCustom(param map[string]string) ([]SearchProgram, error) {
+	q := `
+		SELECT
+			id
+			, account_id
+			, type
+			, name
+			, voucher_type
+			, voucher_price
+			, voucher_value
+			, max_quantity_voucher
+			, img_url
+			, start_date
+			, end_date
+			, created_at
+			, updated_at
+			, status
+		FROM
+			programs
+		WHERE
+			status = ?
+	`
+	for key, value := range param {
+		if _, err := strconv.Atoi(value); err == nil {
+			q += ` AND ` + key + ` = '` + value + `'`
+		} else if strings.Contains(key, "date") {
+			q += ` AND ` + key + ` ` + value
+		} else {
+			q += ` AND ` + key + ` LIKE '%` + value + `%'`
+
+		}
+	}
+	q += `
+		ORDER BY
+			end_date ASC
+	`
+	//fmt.Println(q)
+	var resv []SearchProgram
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+		fmt.Println(err.Error())
+		return resv, ErrServerInternal
+	}
+	if len(resv) < 1 {
+		return resv, ErrResourceNotFound
+	}
+
+	for index, value := range resv {
+		q = `SELECT
+			COUNT(v.id) as voucher, v.state, p.name as partner_name, p.id as partner_id
+		FROM
+			vouchers as v
+		LEFT JOIN
+			transaction_details as td
+		ON
+			td.voucher_id = v.id
+		LEFT JOIN
+			transactions as t
+		ON
+			td.transaction_id = t.id
+		LEFT JOIN
+			partners as p
+		ON
+			t.partner_id = p.id
+		WHERE
+			v.status = ?
+			AND v.program_id = ?
+		GROUP BY
+			v.state, p.name, p.id
+		ORDER BY
+			voucher DESC
+		`
 
 		var resvo []SearchProgramVoucher
 		if err := db.Select(&resvo, db.Rebind(q), StatusCreated, value.Id); err != nil {

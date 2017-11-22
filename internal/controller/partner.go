@@ -457,7 +457,7 @@ func GetPerformancePartner(w http.ResponseWriter, r *http.Request) {
 
 	var result PartnerPerformance
 
-	transactions, err := model.FindAllTransactionByPartner(a.User.Account.Id, id)
+	transactions, err := model.FindTransactionsByPartner(a.User.Account.Id, id)
 	if err != nil {
 		if err != model.ErrResourceNotFound {
 			status = http.StatusInternalServerError
@@ -632,6 +632,46 @@ func GetDailyPerformancePartner(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res = NewResponse(result)
+	render.JSON(w, res, status)
+}
+
+func GetProgramPartnerSummary(w http.ResponseWriter, r *http.Request) {
+	apiName := "partner_performance"
+	programId := r.FormValue("program_id")
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
+	status := http.StatusOK
+	res := NewResponse(nil)
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	if CheckAPIRole(a, apiName) {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	transaction, err := model.FindProgramPartnerSummary(a.User.Account.Id, programId)
+	res = NewResponse(transaction)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", programId, "response :", res.Errors)
+	}
+
 	render.JSON(w, res, status)
 }
 

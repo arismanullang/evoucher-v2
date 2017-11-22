@@ -23,7 +23,7 @@ function getPartner() {
 function getTransactionByPartner(partnerId) {
 	var arrData = [];
 	$.ajax({
-		url: '/v1/ui/transaction/partner?token=' + token + '&partner=' + partnerId,
+		url: '/v1/ui/transaction/cashout/partner?token=' + token + '&partner=' + partnerId,
 		type: 'get',
 		success: function (data) {
 			if ($.fn.DataTable.isDataTable("#datatable1")) {
@@ -44,12 +44,6 @@ function getTransactionByPartner(partnerId) {
 				var date3 = arrData[i].cashout.String.substring(0, 10).split("-");
 				var cashoutDate = date3[2] + " " + months[parseInt(date3[1]) - 1] + " " + date3[0];
 				var cashoutCashier = arrData[i].username.String;
-				var status = "Paid"
-				if (arrData[i].state == "used") {
-					cashoutDate = "-";
-					cashoutCashier = "-";
-					status = "Pending";
-				}
 
 				if (username.length == 0) {
 					usernameExist = true;
@@ -68,6 +62,17 @@ function getTransactionByPartner(partnerId) {
 				}
 				var tempVoucherLength = arrData[i].vouchers.length;
 				for (y = 0; y < tempVoucherLength; y++) {
+					var status = "Paid"
+					if (arrData[i].vouchers[y].state == "used") {
+						cashoutDate = "-";
+						cashoutCashier = "-";
+						status = "Pending";
+					}else if (arrData[i].vouchers[y].state == "created"){
+						cashoutDate = "-";
+						cashoutCashier = "-";
+						status = "Issued";
+					}
+
 					var tempArray = [
 						arrData[i].partner_name.toUpperCase()
 						, arrData[i].transaction_code
