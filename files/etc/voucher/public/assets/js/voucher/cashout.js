@@ -55,7 +55,7 @@ function getTransactionByPartner(partnerId) {
 				var date = new Date(arrData[i].issued);
 				for(var j = 0; j < arrData[i].vouchers.length; j++){
 					var body = "<td class='col-lg-1 checkbox c-checkbox'><label>"
-						+ "<input type='checkbox' name='transaction' class='transaction' value='"+arrData[i].transaction_id+";"+arrData[i].voucher_value+"'><span class='ion-checkmark-round'></span>"
+						+ "<input type='checkbox' name='transaction' class='transaction' value='"+arrData[i].transaction_id+";"+arrData[i].voucher_value+";"+arrData[i].vouchers[j].id+"'><span class='ion-checkmark-round'></span>"
 						+ "</label></td>"
 						+ "<td class='text-ellipsis'>"+arrData[i].transaction_code+"</td>"
 						+ "<td class='text-ellipsis'>"+arrData[i].vouchers[j].voucher_code+"</td>"
@@ -77,6 +77,7 @@ function cashout(){
 	}
 
 	var listVoucher = [];
+	var listVoucherValue = [];
 	var listTransaction = [];
 	var li = $("input[class=transaction]:checked");
 	var total = 0;
@@ -87,12 +88,13 @@ function cashout(){
 			var tempValue = li[i].value.split(";");
 
 			listTransaction[i] = tempValue[0];
-			listVoucher[i] = tempValue[1];
+			listVoucherValue[i] = tempValue[1];
+			listVoucher[i] = tempValue[2];
 		}
 	}
 
 	for (i = 0; i < listVoucher.length; i++) {
-		total += parseInt(listVoucher[i]);
+		total += parseInt(listVoucherValue[i]);
 	}
 
 	var transaction = {
@@ -100,10 +102,10 @@ function cashout(){
 		bank_account : $("#bankAccount").val(),
 		total_cashout : total,
 		payment_method : "transfer",
-		transactions : listTransaction
+		transactions : listTransaction,
+		vouchers : listVoucher
 	};
 
-	console.log(transaction);
 	$.ajax({
 		url: '/v1/ui/cashout?token='+token,
 		type: 'post',

@@ -14,6 +14,7 @@ type (
 		TotalCashout  float64  `json:"total_cashout"`
 		PaymentMethod string   `json:"payment_method"`
 		Transactions  []string `json:"transactions"`
+		Vouchers      []string `json:"vouchers"`
 	}
 )
 
@@ -53,9 +54,9 @@ func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	transactions := []model.Transaction{}
-	for _, v := range rd.Transactions {
-		transactions = append(transactions, model.Transaction{Id: v})
+	transactions := []model.CashoutTransaction{}
+	for i, v := range rd.Transactions {
+		transactions = append(transactions, model.CashoutTransaction{TransactionId: v, VoucherId: rd.Vouchers[i]})
 	}
 
 	seedCode := randStr(model.DEFAULT_TRANSACTION_LENGTH, model.DEFAULT_TRANSACTION_SEED)

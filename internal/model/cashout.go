@@ -7,16 +7,20 @@ import (
 
 type (
 	Cashout struct {
-		Id            string        `db:"id" json:"id"`
-		AccountId     string        `db:"account_id" json:"account_id"`
-		CashoutCode   string        `db:"cashout_code" json:"cashout_code"`
-		PartnerId     string        `db:"partner_id" json:"partner_id"`
-		BankAccount   string        `db:"bank_account" json:"bank_account"`
-		TotalCashout  float64       `db:"total_cashout" json:"total_cashout"`
-		PaymentMethod string        `db:"payment_method" json:"payment_method"`
-		CreatedAt     time.Time     `db:"created_at" json:"created_at"`
-		CreatedBy     string        `db:"created_by" json:"created_by"`
-		Transactions  []Transaction `db:"-" json:"transactions"`
+		Id            string               `db:"id" json:"id"`
+		AccountId     string               `db:"account_id" json:"account_id"`
+		CashoutCode   string               `db:"cashout_code" json:"cashout_code"`
+		PartnerId     string               `db:"partner_id" json:"partner_id"`
+		BankAccount   string               `db:"bank_account" json:"bank_account"`
+		TotalCashout  float64              `db:"total_cashout" json:"total_cashout"`
+		PaymentMethod string               `db:"payment_method" json:"payment_method"`
+		CreatedAt     time.Time            `db:"created_at" json:"created_at"`
+		CreatedBy     string               `db:"created_by" json:"created_by"`
+		Transactions  []CashoutTransaction `db:"-" json:"transactions"`
+	}
+	CashoutTransaction struct {
+		TransactionId string `db:"transaction_id" json:"transaction_id"`
+		VoucherId     string `db:"voucher_id" json:"voucher_id"`
 	}
 )
 
@@ -53,13 +57,14 @@ func InsertCashout(d Cashout) (string, error) {
 			INSERT INTO cashout_details(
 				cashout_id
 				, transaction_id
+				, voucher_id
 				, created_by
 				, status
 			)
 			VALUES (?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q), d.Id, v.Id, d.CreatedBy, StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q), d.Id, v.TransactionId, v.VoucherId, d.CreatedBy, StatusCreated)
 		if err != nil {
 			return "", err
 		}
@@ -157,17 +162,21 @@ func PrintCashout(accountId string, cashoutCode string) (Cashout, error) {
 	}
 
 	q = `
-		SELECT
-			cd.transaction_id as id, t.transaction_code
+		SELECT DISTINCT
+			t.transaction_code as transaction_id, v.voucher_code
 		FROM cashout_details as cd
 		JOIN
 			transactions as t
 		ON
 			cd.transaction_id = t.id
+		JOIN
+			vouchers as v
+		ON
+			cd.voucher_id = v.id
 		WHERE
 			cd.status = ?
 			AND cd.cashout_id = ?`
-	var rest []Transaction
+	var rest []CashoutTransaction
 	if err := db.Select(&rest, db.Rebind(q), StatusCreated, res[0].Id); err != nil {
 		fmt.Println("cashout detail : " + err.Error())
 		return Cashout{}, err
@@ -177,55 +186,6 @@ func PrintCashout(accountId string, cashoutCode string) (Cashout, error) {
 		return Cashout{}, ErrResourceNotFound
 	}
 
-	transactions := []Transaction{}
-	for _, v := range rest {
-		q := `
-		SELECT
-			v.id
-			, v.voucher_code
-			, v.reference_no
-			, v.holder
-			, v.holder_phone
-			, v.holder_email
-			, v.holder_description
-			, v.program_id
-			, v.valid_at
-			, v.expired_at
-			, v.voucher_value
-			, v.state
-			, v.created_by
-			, v.created_at
-			, v.updated_by
-			, v.updated_at
-			, v.deleted_by
-			, v.deleted_at
-			, v.status
-		FROM vouchers as v
-		JOIN transaction_details as dt
-		ON
-			v.id = dt.voucher_id
-		WHERE
-			v.status = ?
-			AND dt.transaction_id = ?
-	`
-		//fmt.Println(q)
-		var resv []Voucher
-		if err := db.Select(&resv, db.Rebind(q), StatusCreated, v.Id); err != nil {
-			fmt.Println("voucher : " + err.Error())
-			return Cashout{}, err
-		}
-		if len(resv) < 1 {
-			fmt.Println("voucher : not found")
-			return Cashout{}, ErrResourceNotFound
-		}
-		transaction := Transaction{
-			Id:              v.Id,
-			TransactionCode: v.TransactionCode,
-			Vouchers:        resv,
-		}
-		transactions = append(transactions, transaction)
-	}
-
-	res[0].Transactions = transactions
+	res[0].Transactions = rest
 	return res[0], nil
 }
