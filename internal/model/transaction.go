@@ -280,7 +280,7 @@ func FindCashoutTransactionDetails(transactionCode string) (TransactionCashout, 
 
 func FindVoucherCycle(accountId, voucherId string) (VoucherTransaction, error) {
 	q := `
-		SELECT
+		SELECT DISTINCT
 			 t.id as transaction_id
 			, p.name as partner_name
 			, va.name as program_name
@@ -370,7 +370,7 @@ func FindVoucherCycle(accountId, voucherId string) (VoucherTransaction, error) {
 
 func FindTransactionsByPartner(accountId, partnerId string) ([]TransactionList, error) {
 	q := `
-		SELECT
+		SELECT DISTINCT
 			 t.id as transaction_id
 			 , p.name as partner_name
 			 , va.name as program_name
@@ -478,7 +478,7 @@ func FindTransactionsByPartner(accountId, partnerId string) ([]TransactionList, 
 
 func FindTransactions(param map[string]string) ([]TransactionList, error) {
 	q := `
-		SELECT
+		SELECT DISTINCT
 			 t.id as transaction_id
 			 , p.name as partner_name
 			 , va.name as program_name
@@ -571,7 +571,7 @@ func FindTransactions(param map[string]string) ([]TransactionList, error) {
 
 func FindTodayTransactionByPartner(accountId, partnerId string) ([]TransactionList, error) {
 	q := `
-		SELECT
+		SELECT DISTINCT
 			 t.id as transaction_id
 			 , p.name as partner_name
 			 , va.name as program_name
