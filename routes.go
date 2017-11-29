@@ -73,6 +73,7 @@ func setRoutes() http.Handler {
 	r.PostFunc("/v1/ui/sa/create", controller.SuperadminRegisterUser)
 	r.GetFunc("/v1/ui/sa/all", controller.SuperadminGetUser)
 	r.PostFunc("/v1/ui/sa/a-create", controller.RegisterAccount)
+	r.PostFunc("/v1/ui/sa/a-update", controller.UpdateAccount)
 	r.GetFunc("/v1/ui/sa/account", controller.GetAllAccountsDetail)
 	r.PostFunc("/v1/ui/sa/a-block", controller.BlockAccount)
 	r.PostFunc("/v1/ui/sa/a-activate", controller.ActivateAccount)
@@ -100,9 +101,11 @@ func setRoutes() http.Handler {
 	//account
 	r.GetFunc("/v1/ui/account/all", controller.GetAllAccount)
 	r.GetFunc("/v1/ui/account", controller.GetAccountDetailByUser)
+	r.GetFunc("/v1/ui/account/other", controller.GetAccountDetailByOtherUser)
 
 	//role
 	r.GetFunc("/v1/ui/role/all", controller.GetAllAccountRoles)
+	r.GetFunc("/v1/ui/role/account", controller.GetAccountRoles)
 	r.GetFunc("/v1/ui/feature/all", controller.GetAllFeatures)
 	r.GetFunc("/v1/ui/role/detail", controller.GetFeaturesDetail)
 	r.PostFunc("/v1/ui/role/create", controller.AddRole)

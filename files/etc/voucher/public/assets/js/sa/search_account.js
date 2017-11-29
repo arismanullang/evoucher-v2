@@ -13,6 +13,7 @@ function getAccount() {
 			var dataSet = [];
 			for (i = 0; i < arrData.length; i++) {
 				var button = "<button value='" + arrData[i].id + "' status=" + arrData[i].status + " type='button' class='btn btn-flat btn-sm btn-danger swal-demo-delete'><em class='ion-trash-a'></em></button>";
+				button += "<button value='" + arrData[i].id + "' onclick='modalUpdate(this.value)' type='button' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>";
 
 				var status = "ACTIVE";
 				if (arrData[i].status == "deleted") {
@@ -22,6 +23,7 @@ function getAccount() {
 				var tempArray = [
 					arrData[i].name.toUpperCase()
 					, arrData[i].alias.toUpperCase()
+					, arrData[i].email.toUpperCase()
 					, status
 					, button
 				];
@@ -40,6 +42,7 @@ function getAccount() {
 				columns: [
 					{title: "NAME"},
 					{title: "ALIAS"},
+					{title: "EMAIL"},
 					{title: "STATUS"},
 					{title: "ACTION"}
 				],
@@ -71,10 +74,59 @@ function detail(id) {
 	window.location = "/sa/a-check?id=" + id;
 }
 
+function modalUpdate(id) {
+	$("#modalUpdate").modal();
+	$("#updateId").val(id);
+	getAccountDetail(id);
+}
+
+function getAccountDetail(id){
+	$.ajax({
+		url: '/v1/ui/account/other?id='+id+'&token=' + token,
+		type: 'get',
+		success: function (data) {
+			var account = data.data;
+			$("#updateName").val(account.name),
+			$("#updateAlias").val(account.alias),
+			$("#updateEmail").val(account.email)
+		},
+		error: function (data) {
+			var a = JSON.parse(data.responseText);
+			swal("Error", a.errors.detail);
+		}
+	});
+}
+
+function update() {
+	var account = {
+		id: $("#updateId").val(),
+		name: $("#updateName").val(),
+		alias: $("#updateAlias").val(),
+		email: $("#updateEmail").val(),
+	};
+
+	$.ajax({
+		url: '/v1/ui/sa/a-update?token=' + token,
+		type: 'post',
+		dataType: 'json',
+		contentType: "application/json",
+		data: JSON.stringify(account),
+		success: function () {
+			$("#modalUpdate").attr("style", "display : none");
+			swal('Updated!', 'Update success.', window.location.reload());
+		},
+		error: function (data) {
+			var a = JSON.parse(data.responseText);
+			swal("Error", a.errors.detail);
+		}
+	});
+}
+
 function create() {
 	var account = {
-		name: $("#input-name").val(),
-		alias: $("#input-alias").val(),
+		name: $("#inputName").val(),
+		alias: $("#inputAlias").val(),
+		email: $("#inputEmail").val(),
 	};
 
 	$.ajax({

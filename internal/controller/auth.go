@@ -16,8 +16,15 @@ type (
 		Valid bool
 	}
 	LoginResponse struct {
-		Token model.Token  `json:"token"`
-		Role  []model.Role `json:"role"`
+		Token       model.Token  `json:"token"`
+		Role        []model.Role `json:"role"`
+		Ui          []string     `json:"ui"`
+		Api         []string     `json:"api"`
+		Destination string       `json:"destination"`
+	}
+	Check struct {
+		User        model.User `json:"user"`
+		Destination string     `json:"destination"`
 	}
 )
 
@@ -62,7 +69,7 @@ func basicAuth(r *http.Request) (model.User, bool) {
 	}
 
 	logger.SetStatus(http.StatusUnauthorized).Log("User :" + s[1] + " # response : success")
-	user.Account = ac[0]
+	user.Account = ac
 
 	return user, true
 }
@@ -163,9 +170,25 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	d := model.GenerateToken(u)
+
+	uiFeatures := []string{}
+	ui, err := model.GetUiFeatures(u.Role[0].Id)
+	if err != nil {
+	}
+
+	for _, value := range ui {
+		uiFeatures = append(uiFeatures, "/"+value.Category+"/"+value.Detail)
+	}
+
+	dest := "/program/index"
+	if u.Role[0].Id == "Mn78I1wc" {
+		dest = "/sa/search"
+	}
 	login := LoginResponse{
-		Token: d,
-		Role:  u.Role,
+		Token:       d,
+		Role:        u.Role,
+		Ui:          uiFeatures,
+		Destination: dest,
 	}
 	res = NewResponse(login)
 	render.JSON(w, res, status)
@@ -231,7 +254,16 @@ func UICheckToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res = NewResponse(a)
+	dest := "/program/index"
+	if a.User.Role[0].Id == "Mn78I1wc" {
+		dest = "/sa/search"
+	}
+	result := Check{
+		User:        a.User,
+		Destination: dest,
+	}
+
+	res = NewResponse(result)
 	render.JSON(w, res, status)
 }
 

@@ -15,6 +15,7 @@ function getPartner(id) {
 			var arrData = data.data[0];
 			$("#partnerName").html(arrData.name);
 			$("#serialNumber").val(arrData.serial_number.String);
+			$("#email").val(arrData.email);
 			$("#description").val(arrData.description.String);
 		}
 	});
@@ -25,6 +26,7 @@ function update() {
 
 	var partner = {
 		serial_number: $("#serialNumber").val(),
+		email: $("#email").val(),
 		description: $("#description").val()
 	};
 

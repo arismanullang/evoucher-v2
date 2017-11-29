@@ -46,6 +46,8 @@ function getTransactionByPartner(partnerId) {
 		type: 'get',
 		success: function (data) {
 			var result = data.data;
+			var voucher = 0;
+			$("#listTransaction").html(" ");
 			for(var i = 0; i < result.length; i++){
 				if(result[i].vouchers[0].state == 'used')
 					arrData.push(result[i]);
@@ -64,8 +66,18 @@ function getTransactionByPartner(partnerId) {
 					var li = $("<tr></tr>");
 					li.html(body);
 					li.appendTo('#listTransaction');
+					voucher++;
 				}
 			}
+
+			if(voucher > 5){
+				$("#tableTransaction").attr("style","overflow:scroll; max-height: 300px;");
+			}else{
+				$("#tableTransaction").removeAttribute("style");
+			}
+		},
+		error: function(){
+			$("#listTransaction").html(" ");
 		}
 	});
 }

@@ -21,8 +21,11 @@ type (
 		ID           string `json:"id"`
 		Name         string `json:"name"`
 		SerialNumber string `json:"serial_number"`
+		Email        string `json:"email"`
 		Tag          string `json:"tag"`
 		Description  string `json:"description"`
+		CreatedBy    string `json:"created_by"`
+		CreatedAt    string `json:"created_at"`
 	}
 	PartnerResponseDetails []PartnerResponse
 	PartnerResponse        struct {
@@ -229,6 +232,7 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var serial, desc sql.NullString
+	var email string
 
 	if rd.SerialNumber != "" {
 		serial = sql.NullString{rd.SerialNumber, true}
@@ -238,9 +242,14 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 		desc = sql.NullString{rd.Description, true}
 	}
 
+	if rd.Email != "" {
+		email = rd.Email
+	}
+
 	partner := model.Partner{
 		Id:           id,
 		SerialNumber: serial,
+		Email:        email,
 		Description:  desc,
 	}
 
@@ -348,6 +357,7 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 			String: rd.SerialNumber,
 			Valid:  true,
 		},
+		Email: rd.Email,
 		CreatedBy: sql.NullString{
 			String: a.User.ID,
 			Valid:  true,

@@ -83,7 +83,7 @@ function send() {
 
 function getRole() {
 	$.ajax({
-		url: '/v1/ui/role/all',
+		url: '/v1/ui/role/all?token='+token,
 		type: 'get',
 		success: function (data) {
 			var arrData = [];

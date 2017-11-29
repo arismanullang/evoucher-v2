@@ -121,12 +121,50 @@ func UpdateRole(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllAccountRoles(w http.ResponseWriter, r *http.Request) {
-	role, err := model.FindAllRole()
+	res := NewResponse("")
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Get Feature Detail")
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		render.JSON(w, res, http.StatusUnauthorized)
+		return
+	}
+
+	role, err := model.FindAllRole(a.User.Account.Id)
 	if err != nil && err != model.ErrResourceNotFound {
 		log.Panic(err)
 	}
 
-	res := NewResponse(role)
+	res = NewResponse(role)
+	render.JSON(w, res)
+}
+
+func GetAccountRoles(w http.ResponseWriter, r *http.Request) {
+	res := NewResponse("")
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Get Feature Detail")
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		render.JSON(w, res, http.StatusUnauthorized)
+		return
+	}
+
+	accountId := r.FormValue("id")
+
+	role, err := model.FindAllRole(accountId)
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
+	}
+
+	res = NewResponse(role)
 	render.JSON(w, res)
 }
 
