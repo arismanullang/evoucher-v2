@@ -17,17 +17,17 @@ function addElem(){
 			$('#transaction-code').val('');
 
 			var date = new Date(result.created_at);
-			var body = "";
-			for( i = 0; i < result.vouchers.length; i++){
-				body += result.vouchers[i].VoucherCode + "<br>";
-			}
+			// var body = "";
+			// for( i = 0; i < result.vouchers.length; i++){
+			// 	body += result.vouchers[i].VoucherCode + "<br>";
+			// }
 
 			$("#label-transaction-code").html(result.transaction_code);
-			$("#voucher-code").html(body);
+			// $("#voucher-code").html(body);
 			$("#voucher-value").html("Rp. "+toDigit(result.discount_value.toString())+",00");
 			$("#transaction-date").html(date.toDateString() + ", " +toTwoDigit(date.getHours()) + ":" + toTwoDigit(date.getMinutes()));
 			$("#partner-name").html(result.partner_name);
-			$("#member-name").html(result.vouchers[0].Holder);
+			$("#member-name").html(result.vouchers[0].holder);
 			$("#voucher-status").html(result.state);
 
 			$("#error").html('');

@@ -600,7 +600,7 @@ func CreateProgram(w http.ResponseWriter, r *http.Request) {
 	accountDetail, err := model.GetAccountDetailByUser(a.User.ID)
 	fr := model.FormatReq{
 		Prefix:     rd.VoucherFormat.Prefix,
-		Postfix:    accountDetail[0].Alias,
+		Postfix:    accountDetail.Alias,
 		Body:       rd.VoucherFormat.Body,
 		FormatType: rd.VoucherFormat.FormatType,
 		Length:     rd.VoucherFormat.Length,

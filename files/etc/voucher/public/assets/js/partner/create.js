@@ -66,6 +66,7 @@ function send() {
 	var partner = {
 		name: $("#partnerName").val(),
 		serial_number: $("#serialNumber").val(),
+		email: $("#email").val(),
 		tag: listTag,
 		description: $("#description").val()
 	};

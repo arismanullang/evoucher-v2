@@ -12,6 +12,7 @@ type (
 		Id           string         `db:"id" json:"id"`
 		AccountId    string         `db:"account_id" json:"acccount_id"`
 		Name         string         `db:"name" json:"name"`
+		Email        string         `db:"email" json:"email"`
 		SerialNumber sql.NullString `db:"serial_number" json:"serial_number"`
 		CreatedBy    sql.NullString `db:"created_by" json:"created_by"`
 		ProgramID    string         `db:"program_id" json:"program_id"`
@@ -65,15 +66,16 @@ func InsertPartner(p Partner) error {
 				name
 				, account_id
 				, serial_number
+				, email
 				, tag
 				, description
 				, created_by
 				, status
 			)
-			VALUES (?, ?, ?, ?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		`
 
-		_, err = tx.Exec(tx.Rebind(q), p.Name, p.AccountId, p.SerialNumber, p.Tag.String, p.Description, p.CreatedBy.String, StatusCreated)
+		_, err = tx.Exec(tx.Rebind(q), p.Name, p.AccountId, p.SerialNumber, p.Email, p.Tag.String, p.Description, p.CreatedBy.String, StatusCreated)
 		if err != nil {
 			fmt.Println(err.Error())
 			return ErrServerInternal
@@ -115,6 +117,7 @@ func FindPartners(param map[string]string) ([]Partner, error) {
 			, account_id
 			, name
 			, serial_number
+			, email
 			, tag
 			, description
 		FROM partners
@@ -204,6 +207,7 @@ func UpdatePartner(partner Partner, user string) error {
 		UPDATE partners
 		SET
 			serial_number = ?
+			, email = ?
 			, description = ?
 			, updated_by = ?
 			, updated_at = ?
@@ -211,7 +215,7 @@ func UpdatePartner(partner Partner, user string) error {
 			id = ?
 			AND status = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), partner.SerialNumber, partner.Description, user, time.Now(), partner.Id, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), partner.SerialNumber, partner.Email, partner.Description, user, time.Now(), partner.Id, StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return err

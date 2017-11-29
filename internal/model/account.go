@@ -16,6 +16,7 @@ type (
 		Name      string         `db:"name" json:"name"`
 		Billing   sql.NullString `db:"billing" json:"billing"`
 		Alias     string         `db:"alias" json:"alias"`
+		Email     string         `db:"email" json:"email"`
 		CreatedAt string         `db:"created_at" json:"created_at"`
 		CreatedBy string         `db:"created_by" json:"created_by"`
 		UpdatedAt sql.NullString `db:"updated_at" json:"updated_at"`
@@ -47,16 +48,25 @@ func AddAccount(a Account, user string) error {
 				name
 				, billing
 				, alias
+				, email
 				, created_by
 				, status
 			)
-			VALUES (?, ?, ?, ?, ?)
-		`
-	if _, err := tx.Exec(tx.Rebind(q), a.Name, a.Billing, a.Alias, user, StatusCreated); err != nil {
+			VALUES (?, ?, ?, ?, ?, ?)
+			RETURNING
+				id
+	`
+
+	var res []string
+	if err := tx.Select(&res, tx.Rebind(q), a.Name, a.Billing, a.Alias, a.Email, user, StatusCreated); err != nil {
+		return err
+	}
+	if err := tx.Commit(); err != nil {
 		return err
 	}
 
-	if err := tx.Commit(); err != nil {
+	err = AddAdmin(res[0], user)
+	if err != nil {
 		return err
 	}
 	return nil
@@ -77,6 +87,39 @@ func checkName(name string) (string, error) {
 		return "", nil
 	}
 	return res[0], nil
+}
+
+func UpdateAccount(account Account, userId string) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE accounts
+		SET
+			name = ?
+			, alias = ?
+			, email = ?
+			, updated_by = ?
+			, updated_at = ?
+		WHERE
+			id = ?
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), account.Name, account.Alias, account.Email, userId, time.Now(), account.Id)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	return nil
 }
 
 func FindAllAccounts() ([]AccountRes, error) {
@@ -116,40 +159,37 @@ func FindAllAccountsDetail() ([]Account, error) {
 	return resv, nil
 }
 
-func GetAccountDetailByUser(userID string) ([]Account, error) {
+func GetAccountDetailByUser(userID string) (Account, error) {
 	vc, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err)
-		return []Account{}, ErrServerInternal
+		return Account{}, ErrServerInternal
 	}
 	defer vc.Rollback()
 
 	q := `
 		SELECT
-			a.id
-			, a.name
-			, a.billing
-			, a.alias
-			, a.created_at
+			id
+			, name
+			, billing
+			, email
+			, alias
+			, created_at
 		FROM
-			accounts as a
-		JOIN
-			user_accounts as ua
-		ON
-			a.id = ua.account_id
+			accounts
 		WHERE
-			ua.user_id = ?
-			AND a.status = ?
+			id = ?
+			AND status = ?
 	`
 	var resd []Account
 	if err := db.Select(&resd, db.Rebind(q), userID, StatusCreated); err != nil {
 		fmt.Println(err)
-		return []Account{}, ErrServerInternal
+		return Account{}, ErrServerInternal
 	}
 	if len(resd) == 0 {
-		return []Account{}, ErrResourceNotFound
+		return Account{}, ErrResourceNotFound
 	}
-	return resd, nil
+	return resd[0], nil
 }
 
 func GetAccountDetailByAccountId(accountId string) ([]Account, error) {

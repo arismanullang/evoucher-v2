@@ -6,24 +6,26 @@ import (
 
 type (
 	Role struct {
-		Id       string   `db:"id" json:"id"`
-		Detail   string   `db:"detail" json:"detail"`
-		Features []string `db:"-" json:"features"`
+		Id        string   `db:"id" json:"id"`
+		Detail    string   `db:"detail" json:"detail"`
+		Features  []string `db:"-" json:"features"`
+		AccountId string   `db:"-" json:"account_id"`
 	}
 )
 
 // Role -----------------------------------------------------------------------------------------------
 
-func FindAllRole() ([]Role, error) {
+func FindAllRole(accountId string) ([]Role, error) {
 	q := `
 		SELECT id, detail
 		FROM roles
 		WHERE status = ?
 		AND NOT detail = 'suadmin'
+		AND account_id = ?
 	`
 
 	var resv []Role
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId); err != nil {
 		fmt.Println(err)
 		return []Role{}, ErrServerInternal
 	}
@@ -44,15 +46,16 @@ func AddRole(r Role, user string) error {
 	q := `
 				INSERT INTO roles(
 					detail
+					, account_id
 					, created_by
 					, status
 				)
-				VALUES (?, ?, ?)
+				VALUES (?, ?, ?, ?)
 				RETURNING
 					id
 			`
 	var res []string
-	if err := tx.Select(&res, tx.Rebind(q), r.Detail, user, StatusCreated); err != nil {
+	if err := tx.Select(&res, tx.Rebind(q), r.Detail, r.AccountId, user, StatusCreated); err != nil {
 		fmt.Println(err)
 		return ErrServerInternal
 	}
@@ -82,11 +85,67 @@ func AddRole(r Role, user string) error {
 	return nil
 }
 
+func AddAdmin(account, user string) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	q := `
+		INSERT INTO roles(
+			detail
+			, account_id
+			, created_by
+			, status
+		)
+		VALUES (?, ?, ?, ?)
+		RETURNING
+			id
+	`
+	var res []string
+	if err := tx.Select(&res, tx.Rebind(q), "admin", account, user, StatusCreated); err != nil {
+		fmt.Println(err)
+		return ErrServerInternal
+	}
+
+	features, err := GetAllFeatures()
+	if err != nil {
+		fmt.Println(err)
+		return ErrServerInternal
+	}
+
+	for _, v := range features {
+		q := `
+			INSERT INTO role_features(
+				role_id
+				, feature_id
+				, created_by
+				, status
+			)
+			VALUES (?, ?, ?, ?)
+		`
+
+		_, err := tx.Exec(tx.Rebind(q), res[0], v.Id, user, StatusCreated)
+		if err != nil {
+			fmt.Println(err)
+			return ErrServerInternal
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err)
+		return ErrServerInternal
+	}
+	return nil
+}
+
 func GetRoleDetail(id string) (Role, error) {
 	q := `
 		SELECT
 			id
 			, detail
+			, account_id
 		FROM roles
 		WHERE
 			status = ?

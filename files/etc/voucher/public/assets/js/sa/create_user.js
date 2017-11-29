@@ -3,8 +3,10 @@ $(window).ready(function () {
 		if ( e.which == 13 ) e.preventDefault();
 	});
 
-	getRole();
 	getAccount();
+	$("#account").change(function (){
+		getRole(this.value);
+	});
 
 	$('#createUser').validate({
 		errorPlacement: errorPlacementInput,
@@ -81,9 +83,10 @@ function send() {
 	});
 }
 
-function getRole() {
+function getRole(account) {
+	$('#role').html("");
 	$.ajax({
-		url: '/v1/ui/role/all',
+		url: '/v1/ui/role/account?token='+token+'&id='+account,
 		type: 'get',
 		success: function (data) {
 			var arrData = [];
@@ -122,6 +125,7 @@ function getAccount() {
 				li.appendTo('#account');
 			}
 
+			getRole(arrData[0].id);
 			$('.select2').select2();
 		},
 		error: function (data) {
