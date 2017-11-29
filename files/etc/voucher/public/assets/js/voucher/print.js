@@ -18,7 +18,7 @@ function cashout(id){
 				var date = new Date(result.created_at);
 				var body = "<td>"+result.transactions[i].transaction_id+"</td>"
 					+ "<td>"+result.transactions[i].voucher_id+"</td>"
-					+ "<td>Rp. "+addDecimalPoints(result.transactions[i].voucher_value)+",00</td>"
+					+ "<td>Rp. "+addDecimalPoints(parseInt(result.transactions[i].voucher_value))+",00</td>"
 					+ "<td>"+date.toDateString() + ", " +toTwoDigit(date.getHours()) + ":" + toTwoDigit(date.getMinutes())+"</td>";
 				var li = $("<tr class='text-center'></tr>");
 				li.html(body);
