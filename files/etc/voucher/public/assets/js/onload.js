@@ -28,19 +28,21 @@ $( window ).ready(function() {
 });
 
 function setSideNavBar() {
-	var role = localStorage.getItem("r").split(",");
-	var li = $("#sidenav").children("li");
+	var ui = localStorage.getItem("ui").split(",");
+	var li = $("#sidenav").find("a");
 	var bool = false;
 	for(var i = 0; i < li.length; i++){
-		for(var y = 0; y < role.length-1; y ++) {
+		for(var y = 0; y < ui.length-1; y ++) {
 			bool = false;
-			if (li[i].getAttribute("r").includes(role[y])) {
-				bool = true;
-			}
-		}
 
+			if (li[i].getAttribute("ui").match(ui[y])) {
+				bool = true;
+				break;
+			}
+
+		}
 		if(bool){
-			li[i].setAttribute("style", "display:block");
+			$(li[i]).parent('li').attr("style", "display:block");
 		}
 	}
 }

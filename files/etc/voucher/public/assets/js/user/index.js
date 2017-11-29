@@ -5,15 +5,8 @@ $(window).ready(function () {
 			url: '/v1/ui/token/check?token=' + token + '&url=' + window.location.pathname,
 			type: 'get',
 			success: function (data) {
-				if (data.data.Valid == true) {
-					console.log("a");
-					var role = data.data.User.role;
-					if (role[0].id != 'Mn78I1wc') {
-						window.location = "/program/index";
-					} else {
-						window.location = "/sa/search";
-					}
-				}
+				var result = data.data;
+				window.location = result.destination;
 			}
 		});
 	}
@@ -35,9 +28,9 @@ function login() {
 			xhr.setRequestHeader("Authorization", "Basic " + btoa($("#username").val() + ":" + $("#password").val()));
 		},
 		success: function (data) {
-
-			var token = data.data.token.token;
-			var role = data.data.role;
+			var result = data.data;
+			var token = result.token.token;
+			var role = result.role;
 			if (typeof(Storage) !== "undefined") {
 				localStorage.setItem("token", token);
 				tempRole = "";
@@ -45,13 +38,10 @@ function login() {
 					tempRole += role[i].id + ",";
 				}
 				localStorage.setItem("r", tempRole);
+				localStorage.setItem("ui", result.ui);
 			}
 
-			if (role[0].id != 'Mn78I1wc') {
-				window.location = "/program/index";
-			} else {
-				window.location = "/sa/search";
-			}
+			window.location = result.destination;
 		},
 		error: function (data) {
 			alert("Invalid Username or Password");

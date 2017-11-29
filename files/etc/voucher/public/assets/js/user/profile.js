@@ -9,7 +9,6 @@ function getUserDetails() {
 		url: '/v1/ui/user?token=' + token,
 		type: 'get',
 		success: function (data) {
-			console.log(data.data);
 			var i;
 			var result = data.data;
 			var limit = result.role.length;
@@ -41,7 +40,6 @@ function getVariant() {
 		url: '/v1/ui/program/all?token=' + token,
 		type: 'get',
 		success: function (data) {
-			console.log(data.data);
 			var result = data.data;
 			$("#user-program").html(result.length);
 		},

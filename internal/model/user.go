@@ -319,10 +319,7 @@ func FindUserDetail(userId string) (User, error) {
 		fmt.Println(err)
 		return User{}, ErrServerInternal
 	}
-	if len(account) == 0 {
-		return User{}, ErrAccountNotFound
-	}
-	res[0].Account = account[0]
+	res[0].Account = account
 
 	return res[0], nil
 }
@@ -772,7 +769,7 @@ func SuperAdminFindAllUsers() ([]User, error) {
 	`
 	var res []User
 	if err := db.Select(&res, db.Rebind(q)); err != nil {
-		fmt.Println(err)
+		fmt.Println("User : " + err.Error())
 		return []User{}, ErrServerInternal
 	}
 
@@ -797,16 +794,16 @@ func SuperAdminFindAllUsers() ([]User, error) {
 
 		var role []Role
 		if err := db.Select(&role, db.Rebind(q1), v.ID); err != nil {
-			fmt.Println(err)
+			fmt.Println("Role : " + err.Error())
 			return []User{}, ErrServerInternal
 		}
 		res[i].Role = role
 		account, err := GetAccountDetailByUser(v.ID)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Account : " + err.Error())
 			return []User{}, ErrServerInternal
 		}
-		res[i].Account = account[0]
+		res[i].Account = account
 	}
 
 	return res, nil

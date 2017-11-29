@@ -40,6 +40,7 @@
             <tr role="row">
               <th>NAME</th>
               <th>ALIAS</th>
+              <th>EMAIL</th>
               <th>STATUS</th>
               <th class="center-text"></th>
             </tr>
@@ -61,7 +62,7 @@
             <div class="col-sm-12">
               <div class="mda-form-group">
                 <div class="mda-form-control">
-                  <input id="input-name" name="input-name" check="true" tabindex="0" aria-invalid="false" class="form-control">
+                  <input id="inputName" name="inputName" check="true" tabindex="0" aria-invalid="false" class="form-control">
                   <div class="mda-form-control-line"></div>
                   <label>Name</label>
                 </div>
@@ -72,7 +73,7 @@
             <div class="col-sm-12">
               <div class="mda-form-group">
                 <div class="mda-form-control">
-                  <input id="input-alias" name="input-alias" tabindex="0" aria-invalid="false" class="form-control">
+                  <input id="inputAlias" name="inputAlias" tabindex="0" aria-invalid="false" class="form-control">
                   <div class="mda-form-control-line"></div>
                   <label>Alias</label>
                 </div>
@@ -80,8 +81,71 @@
             </div>
           </div>
           <div class="row">
+            <div class="col-sm-12">
+              <div class="mda-form-group">
+                <div class="mda-form-control">
+                  <input type="email" id="inputEmail" name="inputEmail" tabindex="0" aria-invalid="false" class="form-control">
+                  <div class="mda-form-control-line"></div>
+                  <label>Email</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
             <div class=" pull-right pr">
               <button type="button" onclick="create()" class="btn btn-raised btn-primary">Create</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalUpdate" tabindex="-1" role="dialog" aria-labelledby="modalUpdate" class="modal fade bs-example-modal-lg">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">&times;</span></button>
+          <h4 id="account-title" class="modal-title">Update Account</h4>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="mda-form-group">
+                <div class="mda-form-control">
+                  <input id="updateId" name="updateId" type="hidden">
+                  <input id="updateName" name="updateName" check="true" tabindex="0" aria-invalid="false" class="form-control">
+                  <div class="mda-form-control-line"></div>
+                  <label>Name</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="mda-form-group">
+                <div class="mda-form-control">
+                  <input id="updateAlias" name="updateAlias" tabindex="0" aria-invalid="false" class="form-control">
+                  <div class="mda-form-control-line"></div>
+                  <label>Alias</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="mda-form-group">
+                <div class="mda-form-control">
+                  <input type="email" id="updateEmail" name="updateEmail" tabindex="0" aria-invalid="false" class="form-control">
+                  <div class="mda-form-control-line"></div>
+                  <label>Email</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class=" pull-right pr">
+              <button type="button" onclick="update()" class="btn btn-raised btn-primary">Update</button>
             </div>
           </div>
         </div>
