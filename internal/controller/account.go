@@ -211,7 +211,7 @@ func GetAccountDetailByOtherUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	account, err := model.GetAccountDetailByUser(id)
+	account, err := model.GetAccountDetailByAccountId(id)
 	if err != nil {
 		status = http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError

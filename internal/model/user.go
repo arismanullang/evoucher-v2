@@ -207,7 +207,7 @@ func FindAllUsers(accountId string) ([]User, error) {
 			fmt.Println(err)
 			return []User{}, ErrServerInternal
 		}
-		res[i].Account = account[0]
+		res[i].Account = account
 	}
 
 	return res, nil

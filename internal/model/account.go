@@ -169,17 +169,20 @@ func GetAccountDetailByUser(userID string) (Account, error) {
 
 	q := `
 		SELECT
-			id
-			, name
-			, billing
-			, email
-			, alias
-			, created_at
+			a.id
+			, a.name
+			, a.billing
+			, a.alias
+			, a.created_at
 		FROM
-			accounts
+			accounts as a
+		JOIN
+			user_accounts as ua
+		ON
+			a.id = ua.account_id
 		WHERE
-			id = ?
-			AND status = ?
+			ua.user_id = ?
+			AND a.status = ?
 	`
 	var resd []Account
 	if err := db.Select(&resd, db.Rebind(q), userID, StatusCreated); err != nil {
@@ -192,11 +195,11 @@ func GetAccountDetailByUser(userID string) (Account, error) {
 	return resd[0], nil
 }
 
-func GetAccountDetailByAccountId(accountId string) ([]Account, error) {
+func GetAccountDetailByAccountId(accountId string) (Account, error) {
 	vc, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err)
-		return []Account{}, ErrServerInternal
+		return Account{}, ErrServerInternal
 	}
 	defer vc.Rollback()
 
@@ -220,12 +223,12 @@ func GetAccountDetailByAccountId(accountId string) ([]Account, error) {
 	var resd []Account
 	if err := db.Select(&resd, db.Rebind(q), accountId, StatusCreated); err != nil {
 		fmt.Println(err)
-		return []Account{}, ErrServerInternal
+		return Account{}, ErrServerInternal
 	}
 	if len(resd) == 0 {
-		return []Account{}, ErrResourceNotFound
+		return Account{}, ErrResourceNotFound
 	}
-	return resd, nil
+	return resd[0], nil
 }
 
 func GetAccountsByUser(userID string) ([]string, error) {
