@@ -28,7 +28,8 @@ function getVoucher(id, type) {
 
 				var dataSet = [];
 				for (i = 0; i < limit; i++) {
-					var dateValid = new Date(arrData[i].updated_at);
+					console.log(arrData[i].updated_at.Time);
+					var dateValid = new Date(arrData[i].updated_at.Time);
 					var voucherState = '';
 					if(arrData[i].state == 'used'){
 						voucherState = 'redeemed';
