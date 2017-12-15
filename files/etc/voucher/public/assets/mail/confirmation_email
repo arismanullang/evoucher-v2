@@ -110,7 +110,7 @@
                                 <tr>
                                     <td>
                                         <br>
-                                        <img src="gilkor.png" width="122" height="45" alt="alt_text" border="0">
+                                        <img src="https://voucher.elys.id/assets/img/icon.png" width="122" height="45" alt="alt_text" border="0">
                                         <hr width="90%" style="border-width: 0.5px">
                                     </td>
                                 </tr>
@@ -127,7 +127,7 @@
                                                 <tr>
                                                     <td style="color:#ffffff;">
                                                         <br>
-                                                        Anda telah menggunakan voucher Gilkor
+                                                        Anda telah menggunakan Voucher Sedayu One
                                                         <br>
                                                         <br>
                                                     </td>
@@ -154,7 +154,6 @@
                                                     <td style="text-align:right; vertical-align:top; color:#4a4a4a">
                                                         <br>
                                                         <br>
-                                                        <span style="color:#4a4a4a;">ID Transaksi : %%transaction-code%%</span><br>
                                                         <span>%%transaction-date%%</span>
                                                     </td>
                                                 </tr>
@@ -167,8 +166,14 @@
                                                         <br>
                                                         <br>
                                                         <br>
-                                                        <span style="color:#4a4a4a;">Shopping Program :</span> <br>
+                                                        <span style="color:#4a4a4a;">Kode Transaksi : %%transaction-code%%</span>
+							                                          <br>
+                                                        <br>
+                                                        <span style="color:#4a4a4a;">Shopping Program :</span>
+							                                          <br>
                                                         <span>%%program-name%%</span>
+                                                        <br>
+                                                        <br>
                                                     </td>
                                                 </tr>
 
@@ -193,10 +198,10 @@
                                                 <tr>
                                                     <td style="text-align:left; color: #4a4a4a;">
                                                         <br>
-                                                        Terima kasih telah menggunakan voucher Gilkor. Silahkan <a style="color:#4a4a4a;" href="mailto@support@gilkor.com?Subject=Penggunaan%20Voucher">menghubungi kami</a> untuk informasi lebih lanjut.
+                                                        Terima kasih telah menggunakan Voucher Sedayu One. Silahkan <a style="color:#4a4a4a;" href="mailto@support@gilkor.com?Subject=Penggunaan%20Voucher">menghubungi kami</a> untuk informasi lebih lanjut.
                                                         <br>
                                                         <br>
-                                                        <span color="#000"><a style="color:#4a4a4a;" href="mailto@support@gilkor.com?Subject=Penggunaan%20Voucher">Gilkor</a></span>
+                                                        <span color="#000"><a style="color:#4a4a4a;" href="mailto@support@gilkor.com?Subject=Penggunaan%20Voucher">Sedayu One</a></span>
                                                         <br>
                                                         <br>
                                                         <br>
