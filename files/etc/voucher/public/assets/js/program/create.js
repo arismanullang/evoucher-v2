@@ -391,10 +391,11 @@ function send() {
 											type: 'success',
 											showCancelButton: false,
 											confirmButtonText: 'Ok',
-											closeOnConfirm: false
+											//closeOnConfirm: false
+											closeOnConfirm: true
 										},
 										function() {
-											window.location = "/program/search";
+											//window.location = "/program/search";
 										});
 								},
 								error: function (data) {
@@ -411,10 +412,11 @@ function send() {
 									type: 'success',
 									showCancelButton: false,
 									confirmButtonText: 'Ok',
-									closeOnConfirm: false
+									// closeOnConfirm: false
+									closeOnConfirm: true
 								},
 								function() {
-									window.location = "/program/search";
+									//window.location = "/program/search";
 								});
 						}
 					},
@@ -482,10 +484,11 @@ function send() {
 									type: 'success',
 									showCancelButton: false,
 									confirmButtonText: 'Ok',
-									closeOnConfirm: false
+									// closeOnConfirm: false
+									closeOnConfirm: true
 								},
 								function() {
-									window.location = "/program/search";
+									//window.location = "/program/search";
 								});
 						},
 						error: function (data) {
@@ -501,10 +504,11 @@ function send() {
 							type: 'success',
 							showCancelButton: false,
 							confirmButtonText: 'Ok',
-							closeOnConfirm: false
+							// closeOnConfirm: false
+							closeOnConfirm: true
 						},
 						function() {
-							window.location = "/program/search";
+							//window.location = "/program/search";
 						});
 				}
 			},

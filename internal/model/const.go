@@ -107,7 +107,7 @@ const (
 	ErrMessageParsingError        string = "Parsing error."
 
 	EmailCreated string = "created"
-	EmailSend    string = "broadcast"
+	EmailSend    string = "send"
 	EmailVoid    string = "void"
 
 	StatusCreated string = "created"
