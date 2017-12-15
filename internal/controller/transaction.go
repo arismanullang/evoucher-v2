@@ -599,7 +599,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		ListVoucher:     listVoucher,
 	}
 
-	if err := model.SendConfirmationEmail(model.Domain, model.ApiKey, model.PublicApiKey, "Sedayu One Voucher Confirmation", req, a.User.Account.Id); err != nil {
+	if err := model.SendConfirmationEmail(model.Domain, model.ApiKey, model.PublicApiKey, "Sedayu One Voucher Confirmation", req, partner.AccountId); err != nil {
 		res := NewResponse(nil)
 		status := http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError
