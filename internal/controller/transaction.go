@@ -11,6 +11,7 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	"github.com/gilkor/evoucher/internal/model"
+	"golang.org/x/tools/go/gcimporter15/testdata"
 	"time"
 )
 
@@ -312,7 +313,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		ListVoucher:     listVoucher,
 	}
 
-	if err := model.SendConfirmationEmail(model.Domain, model.ApiKey, model.PublicApiKey, "Sedayu One Voucher", req, a.User.Account.Id); err != nil {
+	if err := model.SendConfirmationEmail(model.Domain, model.ApiKey, model.PublicApiKey, "Sedayu One Voucher Confirmation", req, a.User.Account.Id); err != nil {
 		res := NewResponse(nil)
 		status := http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError
@@ -487,9 +488,10 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	txCode := randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
-
 	program, _ := model.FindProgramDetailsById(rd.ProgramID)
+
+	seedCode := randStr(model.DEFAULT_TRANSACTION_LENGTH, model.DEFAULT_TRANSACTION_SEED)
+	txCode := seedCode + randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
 
 	d := model.Transaction{
 		AccountId:       program.AccountId,
@@ -500,8 +502,9 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		User:            rd.CreatedBy,
 		VoucherIds:      rd.Vouchers,
 	}
-	fmt.Println(d)
-	if _, err := model.InsertTransaction(d); err != nil {
+
+	tId, err := model.InsertTransaction(d)
+	if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
 		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
@@ -515,7 +518,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		State:     model.VoucherStateUsed,
 		Vouchers:  rd.Vouchers,
 	}
-	fmt.Println("List valid voucher :", rv.Vouchers)
+
 	// update voucher state "Used"
 	if ok, err := rv.UpdateVoucher(); !ok {
 		status = http.StatusInternalServerError
@@ -527,6 +530,86 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
 		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+
+	listEmail := []string{}
+	emails, err := model.GetEmail(tId)
+
+	if strings.Contains(emails.EmailAccount, ";") {
+		tempEmailAccount := strings.Split(emails.EmailAccount, ";")
+		for _, v := range tempEmailAccount {
+			listEmail = append(listEmail, v)
+		}
+	} else {
+		listEmail = append(listEmail, emails.EmailAccount)
+	}
+
+	if strings.Contains(emails.EmailPartner, ";") {
+		tempEmailPartner := strings.Split(emails.EmailPartner, ";")
+		for _, v := range tempEmailPartner {
+			listEmail = append(listEmail, v)
+		}
+	} else {
+		listEmail = append(listEmail, emails.EmailPartner)
+	}
+
+	if strings.Contains(emails.EmailMember, ";") {
+		tempEmailMember := strings.Split(emails.EmailMember, ";")
+		for _, v := range tempEmailMember {
+			listEmail = append(listEmail, v)
+		}
+	} else {
+		listEmail = append(listEmail, emails.EmailMember)
+	}
+
+	// voucher detail
+	voucherDetail, err := model.FindVouchersById(rd.Vouchers)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, "voucher error "+model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd, "voucher error response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+
+	listVoucher := []string{}
+	for _, v := range voucherDetail.VoucherData {
+		listVoucher = append(listVoucher, v.VoucherCode)
+	}
+
+	// partner detail
+	partner, err := model.FindPartnerById(rd.Partner)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, "partner error "+model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd, "partner error response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+
+	req := model.ConfirmationEmailRequest{
+		Holder:          voucherDetail.VoucherData[0].HolderDescription.String,
+		ProgramName:     voucherDetail.VoucherData[0].ProgramName,
+		PartnerName:     partner.Name,
+		TransactionCode: txCode,
+		TransactionDate: time.Now().Format("2006-01-02 15:04:05"),
+		ListEmail:       listEmail,
+		ListVoucher:     listVoucher,
+	}
+
+	if err := model.SendConfirmationEmail(model.Domain, model.ApiKey, model.PublicApiKey, "Sedayu One Voucher Confirmation", req, partner.AccountId); err != nil {
+		res := NewResponse(nil)
+		status := http.StatusInternalServerError
+		errTitle := model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", listEmail, "response :", err.Error())
 		render.JSON(w, res, status)
 		return
 	}
