@@ -61,12 +61,12 @@ func UpdateBroadcastUserState(programId, email string) error {
 
 	_, err = tx.Exec(tx.Rebind(q), EmailSend, programId, email, StatusCreated)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("Update User State | " + err.Error())
 		return ErrServerInternal
 	}
 
 	if err := tx.Commit(); err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("Update User State | " + err.Error())
 		return ErrServerInternal
 	}
 	return nil
