@@ -154,13 +154,14 @@ func ListMobilePrograms(w http.ResponseWriter, r *http.Request) {
 	delete(param, "token")
 
 	program, err := model.FindAvailablePrograms(param)
-	if err == model.ErrResourceNotFound {
-		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilProgram, logger.TraceID)
-		logger.SetStatus(status).Log("param :", param, "response :", res.Errors)
-		render.JSON(w, res, status)
-		return
-	} else if err != nil {
+	//if err == model.ErrResourceNotFound {
+	//	status = http.StatusNotFound
+	//	res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilProgram, logger.TraceID)
+	//	logger.SetStatus(status).Log("param :", param, "response :", res.Errors)
+	//	render.JSON(w, res, status)
+	//	return
+	//} else
+	if err != nil && err != model.ErrResourceNotFound {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
 		logger.SetStatus(status).Log("param :", param, "response :", res.Errors)
@@ -217,13 +218,14 @@ func ListMallPrograms(w http.ResponseWriter, r *http.Request) {
 	delete(param, "token")
 
 	program, err := model.FindAvailablePrograms(param)
-	if err == model.ErrResourceNotFound {
-		status = http.StatusNotFound
-		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilProgram, logger.TraceID)
-		logger.SetStatus(status).Log("param :", param, "response :", res.Errors)
-		render.JSON(w, res, status)
-		return
-	} else if err != nil {
+	//if err == model.ErrResourceNotFound {
+	//	status = http.StatusNotFound
+	//	res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageNilProgram, logger.TraceID)
+	//	logger.SetStatus(status).Log("param :", param, "response :", res.Errors)
+	//	render.JSON(w, res, status)
+	//	return
+	//} else
+	if err != nil && err != model.ErrResourceNotFound {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
 		logger.SetStatus(status).Log("param :", param, "response :", res.Errors)
