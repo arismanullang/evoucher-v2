@@ -177,6 +177,7 @@ func SendSedayuOneEmail(w http.ResponseWriter, r *http.Request) {
 	for _, v := range listBroadcast {
 		gvd.ReferenceNo = its(v.ID)
 		gvd.Holder.Key = v.Target
+		gvd.Holder.Email = v.Target
 		gvd.Holder.Description = v.Description
 
 		tempListVoucher, err = gvd.generateVoucher(&program)

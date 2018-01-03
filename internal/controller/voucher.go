@@ -896,6 +896,7 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 
 	for _, v := range listBroadcast {
 		gvd.ReferenceNo = its(v.ID)
+		gvd.Holder.Key = v.Target
 		gvd.Holder.Email = v.Description
 		gvd.Holder.Description = v.Target
 

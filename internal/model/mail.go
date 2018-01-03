@@ -132,7 +132,7 @@ func makeMessageEmailSedayuOne(program ProgramCampaign, target TargetEmail) stri
 	}
 
 	imageHeader := "http://mailer.gilkor.com/admin/temp/newsletters/137/header_oct2017.jpg"
-	imageVoucher := "http://mailer.gilkor.com/admin/temp/newsletters/116/pik_marvelous_prizes.jpg"
+	imageVoucher := "http://coma.greenparksolo.com/gilkor/images/testvoucher_image2.jpg"
 	imageFooter := "http://mailer.gilkor.com/admin/temp/newsletters/137/footer_oct-2017.jpg"
 
 	if program.ImageHeader != "" {
@@ -159,17 +159,22 @@ func SendConfirmationEmail(domain, apiKey, publicApiKey, subject string, target 
 	mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
 
 	for _, v := range target.ListEmail {
-		message := mailgun.NewMessage(
-			Email,
-			subject,
-			subject,
-			v)
-		message.SetHtml(makeMessageConfirmationEmail(accountId, target))
-		resp, id, err := mg.Send(message)
-		if err != nil {
-			return err
+		fmt.Println(v)
+		if v != ""{
+			message := mailgun.NewMessage(
+				Email,
+				subject,
+				subject,
+				v)
+			message.SetHtml(makeMessageConfirmationEmail(accountId, target))
+			resp, id, err := mg.Send(message)
+			if err != nil {
+				fmt.Println(message)
+				fmt.Println(err.Error())
+				return err
+			}
+			fmt.Printf("ID: %s Resp: %s\n", id, resp)
 		}
-		fmt.Printf("ID: %s Resp: %s\n", id, resp)
 	}
 
 	return nil
@@ -200,6 +205,7 @@ func makeMessageConfirmationEmail(accountId string, target ConfirmationEmailRequ
 	result = strings.Replace(result, "%%transaction-date%%", target.TransactionDate, 1)
 	result = strings.Replace(result, "%%program-name%%", target.ProgramName, 1)
 	result = strings.Replace(result, "%%voucher-code%%", voucher, 1)
+	
 	return result
 }
 
