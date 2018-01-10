@@ -16,8 +16,8 @@ $( document ).ready(function() {
 		rules: {
 			bankAccount: {
 				required: true,
-				minlength: 16,
-				maxlength: 16
+				minlength: 10,
+				maxlength: 20
 			}
 		}
 	});
