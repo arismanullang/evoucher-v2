@@ -288,7 +288,6 @@ func FindVoucherCycle(accountId, voucherId string) (VoucherTransaction, error) {
 			, vo.voucher_value
 			, va.created_at as issued
 			, t.created_at as redeemed
-			, c.created_at as cashout
 			, u.username
 			, vo.state
 		FROM transactions as t
@@ -307,12 +306,6 @@ func FindVoucherCycle(accountId, voucherId string) (VoucherTransaction, error) {
 		JOIN partners as p
 		ON
 			p.id = t.partner_id
-		JOIN cashout_details as cd
-		ON
-			t.id = cd.transaction_id
-		JOIN cashouts as c
-		ON
-			cd.cashout_id = c.id
 		WHERE
 			t.status = ?
 			AND t.account_id = ?
@@ -328,32 +321,50 @@ func FindVoucherCycle(accountId, voucherId string) (VoucherTransaction, error) {
 		return VoucherTransaction{}, ErrResourceNotFound
 	}
 
+	q = `
+		SELECT DISTINCT
+			c.created_at as cashout
+		FROM cashout_details as cd
+		JOIN cashouts as c
+		ON
+			cd.cashout_id = c.id
+		WHERE
+			cd.transaction_id = ?`
+
+	var cashoutDate []string
+	if err := db.Select(&cashoutDate, db.Rebind(q), resv[0].TransactionId); err != nil {
+		fmt.Println(err.Error())
+	}
+	if len(cashoutDate) > 0 {
+		resv[0].CashOut.String = cashoutDate[0]
+	}
+
 	q1 := `
-	SELECT
-		v.id
-		, v.voucher_code
-		, v.reference_no
-		, v.holder
-		, v.holder_phone
-		, v.holder_email
-		, v.holder_description
-		, v.program_id
-		, v.valid_at
-		, v.expired_at
-		, v.voucher_value
-		, v.state
-		, v.created_by
-		, v.created_at
-		, v.updated_by
-		, v.updated_at
-		, v.deleted_by
-		, v.deleted_at
-		, v.status
-	FROM vouchers as v
-	WHERE
-		v.status = ?
-		AND v.id = ?
-`
+		SELECT
+			v.id
+			, v.voucher_code
+			, v.reference_no
+			, v.holder
+			, v.holder_phone
+			, v.holder_email
+			, v.holder_description
+			, v.program_id
+			, v.valid_at
+			, v.expired_at
+			, v.voucher_value
+			, v.state
+			, v.created_by
+			, v.created_at
+			, v.updated_by
+			, v.updated_at
+			, v.deleted_by
+			, v.deleted_at
+			, v.status
+		FROM vouchers as v
+		WHERE
+			v.status = ?
+			AND v.id = ?
+	`
 	//fmt.Println(q)
 	var resv1 []Voucher
 	if err := db.Select(&resv1, db.Rebind(q1), StatusCreated, voucherId); err != nil {

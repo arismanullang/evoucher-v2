@@ -120,7 +120,6 @@ function getProgram() {
 			chart(stock,outstanding,pending,totalPaidVoucher);
 		},
 		error: function (data) {
-			swal("Error", "Program Not Found.");
 		}
 	});
 }
