@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Evoucher Email</title>
+
+    <style type="text/css">
+        @import url('https://fonts.googleapis.com/css?family=Roboto');
+
+        /* Take care of image borders and formatting */
+
+        img {
+            max-width: 600px;
+            outline: none;
+            text-decoration: none;
+            -ms-interpolation-mode: bicubic;
+        }
+
+        a {
+            text-decoration: none;
+            border: 0;
+            outline: none;
+            color: #bbbbbb;
+        }
+
+        a img {
+            border: none;
+        }
+
+        /* General styling */
+
+        td, h1, h2, h3  {
+            font-family: Helvetica, Arial, sans-serif;
+            font-weight: 400;
+        }
+
+        td {
+            text-align: center;
+        }
+
+        body {
+            -webkit-font-smoothing:antialiased;
+            -webkit-text-size-adjust:none;
+            width: 100%;
+            height: 100%;
+            color: #37302d;
+            background: #ffffff;
+            font-size: 16px;
+        }
+
+        table {
+            border-collapse: collapse !important;
+        }
+
+        .headline {
+            color: #ffffff;
+            font-size: 36px;
+        }
+
+        .force-full-width {
+            width: 100% !important;
+        }
+
+        .force-width-80 {
+            width: 80% !important;
+        }
+
+
+
+
+    </style>
+
+    <style type="text/css" media="screen">
+        @media screen {
+            /*Thanks Outlook 2013! http://goo.gl/XLxpyl*/
+            td, h1, h2, h3 {
+                font-family: 'Roboto, 'Helvetica Neue', 'Arial', 'sans-serif' !important;
+            }
+        }
+    </style>
+
+    <style type="text/css" media="only screen and (max-width: 480px)">
+        /* Mobile styles */
+        @media only screen and (max-width: 480px) {
+
+            table[class="w320"] {
+                width: 320px !important;
+            }
+
+            td[class="mobile-block"] {
+                width: 100% !important;
+                display: block !important;
+            }
+
+
+        }
+    </style>
+</head>
+<body class="body" style="padding:0; margin:0; display:block; background:#ffffff; -webkit-text-size-adjust:none" bgcolor="#ffffff">
+<br>
+<table align="center" cellpadding="0" cellspacing="0" class="force-full-width" height="100%" >
+    <tr>
+        <td align="center" valign="top" bgcolor="#ffffff"  width="100%">
+            <center>
+                <table style="margin: 0 auto;" cellpadding="0" cellspacing="0" width="600" class="w320">
+                    <tr>
+                        <td align="center" valign="top">
+                            <table style="margin: 0 auto;border-radius: 2px 2px 0px 0px;box-shadow: 0 0 0 1px #D8DDE2;" cellpadding="0" cellspacing="0" class="force-full-width" bgcolor="#69cdcd">
+                                <tr>
+                                    <td>
+                                        <br>
+                                        <img src="https://voucher.elys.id/assets/img/elys_email.png" width="122" height="45" alt="alt_text" border="0">
+                                        <hr width="90%" style="border-width: 0.5px">
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="headline">
+                                        Success
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <center>
+                                            <table style="margin: 0 auto;" cellpadding="0" cellspacing="0" width="60%">
+                                                <tr>
+                                                    <td style="color:#ffffff;">
+                                                        <br>
+                                                        Anda telah menggunakan Voucher Elys
+                                                        <br>
+                                                        <br>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </center>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <table style="margin: 0 auto;border-radius: 0px;box-shadow: 0 0 0 1px #D8DDE2;" cellpadding="0" cellspacing="0" class="force-full-width" bgcolor="#ffffff">
+
+                                <tr>
+                                    <td style="background-color:#ffffff;">
+                                        <center>
+                                            <table style="margin:0 auto;" cellspacing="0" cellpadding="0" class="force-width-80">
+                                                <tr>
+                                                    <td style="text-align:left; color:#4a4a4a">
+                                                        <br>
+                                                        <br>
+                                                        <span style="color:#4a4a4a;">%%full-name%%</span> <br>
+
+                                                    </td>
+                                                    <td style="text-align:right; vertical-align:top; color:#4a4a4a">
+                                                        <br>
+                                                        <br>
+                                                        <span>%%transaction-date%%</span>
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+
+                                            <table style="margin:0 auto;" cellspacing="0" cellpadding="0" class="force-width-80">
+                                                <tr>
+                                                    <td style="text-align:left; color: #4a4a4a;">
+                                                        <br>
+                                                        <br>
+                                                        <br>
+                                                        <span style="color:#4a4a4a;">Kode Transaksi : %%transaction-code%%</span>
+							                                          <br>
+                                                        <br>
+                                                        <span style="color:#4a4a4a;">Shopping Program :</span>
+							                                          <br>
+                                                        <span>%%program-name%%</span>
+                                                        <br>
+                                                        <br>
+                                                    </td>
+                                                </tr>
+
+                                            </table>
+
+
+                                            <table style="margin:0 auto;" cellspacing="0" cellpadding="0" class="force-width-80">
+                                                <tr>
+                                                    <td class="mobile-block" style="color:#ffffff; background-color:#44b2aa; padding: 10px 0px;">
+                                                        Voucher Code
+                                                    </td>
+                                                    <td  class="mobile-block" style="color:#ffffff; background-color:#44b2aa; padding: 10px 0px;">
+                                                        Tenant Name
+                                                    </td>
+                                                </tr>
+                                                %%voucher-code%%
+                                            </table>
+
+
+
+                                            <table style="margin: 0 auto;" cellspacing="0" cellpadding="0" class="force-width-80">
+                                                <tr>
+                                                    <td style="text-align:left; color: #4a4a4a;">
+                                                        <br>
+                                                        Terima kasih telah menggunakan Voucher Elys. Silahkan <a style="color:#4a4a4a;" href="mailto@support@gilkor.com?Subject=Penggunaan%20Voucher">menghubungi kami</a> untuk informasi lebih lanjut.
+                                                        <br>
+                                                        <br>
+                                                        <span color="#000"><a style="color:#4a4a4a;" href="mailto@support@gilkor.com?Subject=Penggunaan%20Voucher">Elys</a></span>
+                                                        <br>
+                                                        <br>
+                                                        <br>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </center>
+                                    </td>
+                                </tr>
+                            </table>
+                            <table style="margin: 0 auto;box-shadow: 0 0 0 1px #D8DDE2;border-radius: 0 0 2px 2px;" cellpadding="0" cellspacing="0" class="force-full-width" bgcolor="#44b2aa" style="margin: 0 auto">
+                                <tr>
+                                    <td style="color:#ffffff; font-size:12px;">
+                                        <br>
+                                        © 2017 All Rights Reserved
+                                        <br>
+                                        <br>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </center>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
