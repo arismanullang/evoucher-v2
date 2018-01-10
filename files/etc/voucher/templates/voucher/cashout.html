@@ -36,16 +36,26 @@
             </div>
             <div class="form-group">
               <div class="col-md-3 col-sm-3">
+                <p>Total Transaction</p>
+              </div>
+              <div class="col-md-9 col-sm-9">
+                <p id="totalTransaction" class="text-muted">Rp. 0,00</p>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-md-3 col-sm-3">
                 <p>Voucher List</p>
               </div>
               <div id="tableTransaction" class="col-md-9 col-sm-9">
                 <table class="table table-striped table-bordered">
                   <thead>
-                    <th></th>
-                    <th>Transaction Code</th>
-                    <th>Voucher Code</th>
-                    <th>Voucher Value</th>
-                    <th>Date</th>
+                    <th class="col-lg-1 checkbox c-checkbox" style="padding-bottom: 0px !important;">
+                      <label><input type='checkbox' id='transactionAll' name='transactionAll' class='transactionAll' value=''><span class='ion-checkmark-round'></span></label>
+                    </th>
+                    <th style="padding-bottom: 0px !important;">Transaction Code</th>
+                    <th style="padding-bottom: 0px !important;">Voucher Code</th>
+                    <th style="padding-bottom: 0px !important;">Voucher Value</th>
+                    <th style="padding-bottom: 0px !important;">Date</th>
                   </thead>
                   <tbody id="listTransaction">
 

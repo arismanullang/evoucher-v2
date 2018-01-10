@@ -132,7 +132,7 @@ func makeMessageEmailSedayuOne(program ProgramCampaign, target TargetEmail) stri
 	}
 
 	imageHeader := "http://mailer.gilkor.com/admin/temp/newsletters/137/header_oct2017.jpg"
-	imageVoucher := "http://mailer.gilkor.com/admin/temp/newsletters/116/pik_marvelous_prizes.jpg"
+	imageVoucher := "http://coma.greenparksolo.com/gilkor/images/testvoucher_image2.jpg"
 	imageFooter := "http://mailer.gilkor.com/admin/temp/newsletters/137/footer_oct-2017.jpg"
 
 	if program.ImageHeader != "" {

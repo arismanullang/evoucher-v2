@@ -50,7 +50,7 @@
                                         <td data-link-style="text-decoration:none; color:black;" data-color="Feature Content" data-size="Feature Content" style="color: black; font-size: 14px;" align="center">
                                           <p><span style="font-size: small;"><span>Selamat anda mendapatkan Digital Voucher untuk promo :</span></span></p>
                                           <p><span style="font-size: small;"><span>%%program-name%%</span></span></p>
-                                          <a style="color: #fff !important; background-color:#448AFF; color: #448AFF; text-align: center; display: inline-block; padding: 6px 12px" href="%%link-voucher%%">Use Voucher</a>
+                                          <a style="color: #fff !important; background-color:#448AFF; text-align: center; display: inline-block; padding: 6px 12px" href="%%link-voucher%%">Use Voucher</a>
                                         </td>
                                       </tr>
                                       </tbody>

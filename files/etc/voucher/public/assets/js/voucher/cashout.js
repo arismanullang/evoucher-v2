@@ -1,4 +1,5 @@
 $( document ).ready(function() {
+	var total = 0;
 	$('#transaction').submit(function(e) {
 		e.preventDefault();
 		addElem();
@@ -9,6 +10,12 @@ $( document ).ready(function() {
 	$('#partnerList').change(function () {
 		getTransactionByPartner(this.value);
 	});
+	$("#transactionAll").change(function () {
+		var _this = $(this);
+		$('#listTransaction').find("input.transaction").prop('checked', _this.prop('checked'));
+
+		updateTotal();
+	});
 
 	$('#transaction').validate({
 		errorPlacement: errorPlacementInput,
@@ -16,12 +23,22 @@ $( document ).ready(function() {
 		rules: {
 			bankAccount: {
 				required: true,
-				minlength: 16,
-				maxlength: 16
+				minlength: 10,
+				maxlength: 20
 			}
 		}
 	});
 });
+
+function updateTotal() {
+	var li = $("input[class=transaction]:checked");
+	total = 0;
+	for( var i = 0; i < li.length; i++){
+		total += parseInt(li[i].value.split(";")[1]);
+	}
+
+	$('#totalTransaction').html("Rp. "+addDecimalPoints(total)+",00");
+}
 
 function getPartner() {
 	$.ajax({
@@ -61,7 +78,7 @@ function getTransactionByPartner(partnerId) {
 						+ "</label></td>"
 						+ "<td class='text-ellipsis'>"+arrData[i].transaction_code+"</td>"
 						+ "<td class='text-ellipsis'>"+arrData[i].vouchers[j].voucher_code+"</td>"
-						+ "<td class='text-ellipsis'> Rp. "+addDecimalPoints(arrData[i].voucher_value)+",00</td>"
+						+ "<td class='text-ellipsis'>Rp. "+addDecimalPoints(arrData[i].voucher_value)+",00</td>"
 						+ "<td class='text-ellipsis'>"+date.toDateString() + ", " + date.getHours() + ":" + date.getMinutes()+"</td>"
 					var li = $("<tr></tr>");
 					li.html(body);
@@ -69,6 +86,10 @@ function getTransactionByPartner(partnerId) {
 					voucher++;
 				}
 			}
+
+			$('.transaction').change(function () {
+				updateTotal();
+			});
 
 			if(voucher > 5){
 				$("#tableTransaction").attr("style","overflow:scroll; max-height: 300px;");

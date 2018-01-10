@@ -162,6 +162,7 @@ func getConfig() map[string]map[string]string {
 			if i != 0 && i+1 != len(configs) {
 				lastId = configs[i+1].AccountId
 				if value.AccountId != lastId {
+					mTemp[value.ConfigDetail] = value.ConfigValue
 					m[value.AccountId] = mTemp
 					mTemp = make(map[string]string)
 				}

@@ -562,6 +562,7 @@ func CreateProgram(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 	}
+	te = time.Date(te.Year(), te.Month(), te.Day(), 23, 59, 59, 0, time.Local)
 	tvs, err := time.Parse("01/02/2006", rd.ValidVoucherStart)
 	if err != nil {
 		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
@@ -570,6 +571,7 @@ func CreateProgram(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 	}
+	tve = time.Date(tve.Year(), tve.Month(), tve.Day(), 23, 59, 59, 0, time.Local)
 
 	vr := model.ProgramReq{
 		AccountId:          a.User.Account.Id,
