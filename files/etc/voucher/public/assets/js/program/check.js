@@ -231,9 +231,18 @@ function getProgram(id, voucher, used, paid) {
 					break;
 			}
 
+			var title = "";
+			$("#visibility").val(result.visibility);
+			if(result.visibility == true){
+				title = "Hide";
+			}else{
+				title = "Show";
+			}
+			var button = "<button value='"+result.id+"' type=\"button\" style=\"margin-left: 10px\" onclick='visibility(this.value)' class=\"btn btn-md btn-primary\">"+title+" Program</button>";
+
 			// Program
 			$('#programName').html(result.name);
-			$('#programNames').html(result.name);
+			$('#programNames').html(result.name + button);
 			$('#programDescription').html(result.description);
 			$('#programType').html(programType);
 			$('#conversionRate').html(result.voucher_price + ' Point');
@@ -277,6 +286,21 @@ function getProgram(id, voucher, used, paid) {
 			swal("Error", a.errors.detail);
 		}
 	});
+}
+
+function visibility(id) {
+	var status = ""
+	$.ajax({
+		url: '/v1/ui/program/visibility?id=' + id + '&visibility='+$('#visibility').value+'&token=' + token,
+		type: 'get',
+		success: function (data) {
+			swal('Change Visibility Success!');
+		},
+		error: function (xhr, ajaxOptions, thrownError) {
+			swal('Error!', xhr.responseJSON.errors.detail);
+		}
+	});
+	return status;
 }
 
 function programCampaign(){
