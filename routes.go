@@ -40,12 +40,14 @@ func setRoutes() http.Handler {
 	r.PostFunc("/v1/ui/program/update", controller.UpdateProgramRoute)
 	r.GetFunc("/v1/ui/program/delete", controller.DeleteProgram)
 	r.GetFunc("/v1/ui/program/partner", controller.GetProgramPartnerSummary)
+	r.GetFunc("/v1/ui/program/visibility", controller.VisibilityProgram)
 
 	//campaign
 	r.PostFunc("/v1/ui/campaign/create", controller.CreateEmailCampaign)
 
 	//transaction
 	r.GetFunc("/v1/ui/transaction/partner", controller.GetTransactionsByPartner)
+	r.GetFunc("/v1/ui/transaction/date", controller.GetTransactionsByDate)
 	r.GetFunc("/v1/ui/transaction/cashout/partner", controller.GetTransactionsByPartner)
 	r.GetFunc("/v1/ui/transaction/voucher", controller.GetVoucherTransactionDetails)
 	r.GetFunc("/v1/ui/transaction/cashout", controller.CashoutTransactionDetails)
@@ -91,6 +93,8 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/ui/partner/daily/performance", controller.GetDailyPerformancePartner)
 	r.PostFunc("/v1/ui/partner/update", controller.UpdatePartner)
 	r.GetFunc("/v1/ui/partner/delete", controller.DeletePartner)
+	r.PostFunc("/v1/ui/bank_account/create", controller.RegisterBankAccount)
+	r.GetFunc("/v1/ui/bank_account/all", controller.GetAllBankAccounts)
 
 	//tag
 	r.GetFunc("/v1/ui/tag/all", controller.GetAllTags)
@@ -247,6 +251,8 @@ func viewPartner(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "partner/check.html", nil)
 	} else if page == "update" {
 		render.FileInLayout(w, "layout.html", "partner/update.html", nil)
+	} else if page == "bank" {
+		render.FileInLayout(w, "layout.html", "bank_account/create.html", nil)
 	} else {
 		render.File(w, "notfound.html", nil, 404)
 	}
@@ -301,6 +307,8 @@ func viewVoucher(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "voucher/check.html", nil)
 	} else if page == "cashout" {
 		render.FileInLayout(w, "layout.html", "voucher/cashout.html", nil)
+	} else if page == "cashout_detail" {
+		render.FileInLayout(w, "layout.html", "voucher/cashout_detail.html", nil)
 	} else if page == "print" {
 		render.FileInLayout(w, "layout.html", "voucher/print.html", nil)
 	} else {

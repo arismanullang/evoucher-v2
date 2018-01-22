@@ -36,6 +36,7 @@ type (
 		ImgUrl             string  `db:"img_url" json:"image_url"`
 		Tnc                string  `db:"tnc" json:"tnc"`
 		Description        string  `db:"description" json:"description"`
+		Visibility         bool    `db:"visibility" json:"visibility"`
 		CreatedBy          string  `db:"created_by" json:"created_by"`
 		CreatedAt          string  `db:"created_at" json:"created_at"`
 	}
@@ -550,6 +551,39 @@ func (d *DeleteProgramRequest) Delete() error {
 	return nil
 }
 
+func VisibilityProgram(d DeleteProgramRequest, status bool) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE 	programs
+		SET
+			updated_by = ?
+			, updated_at = ?
+			, visibility = ?
+		WHERE
+			id = ?
+			AND status = ?
+
+	`
+	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), status, d.Id, StatusCreated)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	return nil
+}
+
 func FindAllPrograms(accountId string) ([]SearchProgram, error) {
 	q := `
 		SELECT
@@ -722,6 +756,7 @@ func FindAvailablePrograms(param map[string]string) ([]SearchProgram, error) {
 			va.id = vo.program_id
 		WHERE
 			va.status = ?
+			AND visibility = ?
 	`
 	for key, value := range param {
 		if strings.Contains(key, "date") {
@@ -739,7 +774,7 @@ func FindAvailablePrograms(param map[string]string) ([]SearchProgram, error) {
 	`
 
 	var resv []SearchProgram
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, true); err != nil {
 		fmt.Println(err.Error())
 		return []SearchProgram{}, err
 	}
@@ -878,6 +913,7 @@ func FindProgramDetailsCustomParam(param map[string]string) ([]Program, error) {
 			, img_url
 			, tnc
 			, description
+			, visibility
 			, created_by
 			, created_at
 		FROM
