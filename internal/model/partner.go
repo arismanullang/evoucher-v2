@@ -18,6 +18,7 @@ type (
 		ProgramID    string         `db:"program_id" json:"program_id"`
 		Tag          sql.NullString `db:"tag" json:"tag"`
 		Description  sql.NullString `db:"description" json:"description"`
+		BankAccount  BankAccount    `db:"bank_account" json:"bank_account"`
 	}
 	PartnerProgramSummary struct {
 		Id                string         `db:"id" json:"id"`
@@ -32,7 +33,6 @@ type (
 		Vouchers          int            `db:"-" json:"vouchers"`
 		TransactionValues float32        `db:"-" json:"transaction_values"`
 	}
-
 	Tag struct {
 		Value string `db:"value" json:"value"`
 	}
@@ -69,13 +69,14 @@ func InsertPartner(p Partner) error {
 				, email
 				, tag
 				, description
+				, bank_account_id
 				, created_by
 				, status
 			)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`
 
-		_, err = tx.Exec(tx.Rebind(q), p.Name, p.AccountId, p.SerialNumber, p.Email, p.Tag.String, p.Description, p.CreatedBy.String, StatusCreated)
+		_, err = tx.Exec(tx.Rebind(q), p.Name, p.AccountId, p.SerialNumber, p.Email, p.Tag.String, p.Description, p.BankAccount.Id, p.CreatedBy.String, StatusCreated)
 		if err != nil {
 			fmt.Println(err.Error())
 			return ErrServerInternal

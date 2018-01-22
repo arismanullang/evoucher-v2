@@ -227,6 +227,13 @@ function send() {
 	var voucherValue = parseInt($("#voucherValue").val());
 	var programDescription = $("#programDescription").val();
 
+	if(startHour == '00:00'){
+		startHour = '00:01';
+	}
+	if(endHour == '00:00'){
+		endHour = '23:59';
+	}
+
 	// valid days
 	var listDay = "";
 	if ($("#redeemValidityType").val() == "all") {

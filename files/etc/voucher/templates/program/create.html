@@ -41,46 +41,50 @@
           <div class="card-title">Program</div>
         </div>
         <div class="card-body">
-          <div class="row">
-            <div class="col-sm-6">
-              <div class="mda-form-group">
-                <div class="mda-form-control">
+          <div class="row form-horizontal">
+            <div class="col-sm-2">
+              <label class="control-label">Program Name</label>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <div class="form-control no-border">
                   <input id="programName" name="programName" placeholder="Program Name" tabindex="0" aria-invalid="false" class="form-control">
-                  <div class="mda-form-control-line"></div>
-                  <label>Program Name</label>
                 </div>
               </div>
             </div>
-            <div class="col-sm-6">
-              <div class="mda-form-group">
-                <div class="mda-form-control">
+            <div class="col-sm-2">
+              <label class="control-label">Program Type</label>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <div class="form-control no-border">
                   <select id="programType" name="programType" class="form-control select2" tabindex="0">
                     <option value="on-demand">Mobile Application</option>
                     <option value="bulk">Email Blast</option>
                     <option value="gift">Gift Voucher</option>
                   </select>
-                  <div class="mda-form-control-line"></div>
-                  <label>Program Type</label>
                 </div>
               </div>
             </div>
           </div>
-          <div class="row ">
-            <div class="col-sm-6">
-              <div class="mda-form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
-                <div id="datepickerProgramFrom" class="mda-form-control">
+          <div class="row form-horizontal">
+            <div class="col-sm-2">
+              <label class="control-label">Distribution Period</label>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
+                <div id="datepickerProgramFrom" class="form-control no-border">
                   <input id="programValidFrom" name="programValidFrom" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepickerProgramFrom">
-                  <div class="mda-form-control-line"></div>
-                  <label>Distribution Period : From</label>
                 </div>
               </div>
             </div>
-            <div class="col-sm-6">
-              <div class="mda-form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
-                <div id="datepickerProgramTo" class="mda-form-control">
+            <div class="col-sm-1" style="text-align: center">
+              <label class="control-label">-</label>
+            </div>
+            <div class="col-sm-5">
+              <div class="form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
+                <div id="datepickerProgramTo" class="form-control no-border">
                   <input id="programValidTo" name="programValidTo" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepickerProgramTo">
-                  <div class="mda-form-control-line"></div>
-                  <label>To</label>
                 </div>
               </div>
             </div>
@@ -285,7 +289,7 @@
               </div>
             </div>
 
-            <div id="conversionRow" class="col-sm-6 col-sm-offset-2">
+            <div id="conversionRow" class="col-sm-6">
               <div class="col-sm-6">
                 <label class='checkbox-inline c-checkbox'>
                   <input type='checkbox' id="allowAccumulative">
@@ -302,27 +306,6 @@
                       <span class="input-group-addon">Vouchers</span>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-          <div class="row">
-            <div class="col-sm-6">
-              <div class="mda-form-group clockpicker" data-autoclose="true">
-                <div class="mda-form-control">
-                  <input id="startHour" name="startHour" placeholder="00:00" tabindex="0" aria-invalid="false" class="form-control">
-                  <div class="mda-form-control-line"></div>
-                  <label>Valid Hours : From</label>
-                </div>
-              </div>
-            </div>
-            <div class="col-sm-6">
-              <div class="mda-form-group clockpicker" data-autoclose="true">
-                <div class="mda-form-control">
-                  <input id="endHour" name="endHour" placeholder="00:00" tabindex="0" aria-invalid="false" class="form-control">
-                  <div class="mda-form-control-line"></div>
-                  <label>To</label>
                 </div>
               </div>
             </div>
@@ -392,6 +375,30 @@
               </div>
             </div>
           </div>
+
+          <div class="row form-horizontal">
+            <div class="col-sm-2">
+              <label class="control-label">Valid Hours</label>
+            </div>
+            <div class="col-sm-2 ">
+              <div class="form-group clockpicker" data-autoclose="true">
+                <div class="form-control no-border">
+                  <input id="startHour" name="startHour" placeholder="00:00" tabindex="0" aria-invalid="false" class="form-control" style="text-align: center">
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-1" style="text-align: center">
+              <label class="control-label">-</label>
+            </div>
+            <div class="col-sm-2">
+              <div class="form-group clockpicker" data-autoclose="true">
+                <div class="form-control no-border">
+                  <input id="endHour" name="endHour" placeholder="00:00" tabindex="0" aria-invalid="false" class="form-control" style="text-align: center">
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="row form-horizontal">
             <div class="col-sm-2">
               <label class="control-label">Partner</label>

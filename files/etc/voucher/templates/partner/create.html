@@ -7,7 +7,7 @@
 <!-- Page content-->
 <section>
 <div class="container container-md">
-  <form id="createPartner" name="createPartner" novalidate="" class="card b0 form-validate">
+  <form id="create-partner" name="create-partner" novalidate="" class="card b0 form-validate">
     <div class="card">
       <div class="card-heading bg-amber-500">
           <div class="card-title text-center">Partner</div>
@@ -17,7 +17,20 @@
           <div class="col-sm-12">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input id="partnerName" name="partnerName" tabindex="0" aria-invalid="false" class="form-control">
+                <select id="bank-accounts" name="bank-accounts" class="form-control select2" tabindex="0">
+                  <option>Select Bank Account</option>
+                </select>
+                <div class="mda-form-control-line"></div>
+                <label>Bank Account</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input id="partner-name" name="partner-name" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Partner Name</label>
               </div>
@@ -28,9 +41,9 @@
           <div class="col-sm-12">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input id="serialNumber" name="serialNumber" tabindex="0" aria-invalid="false" class="form-control">
+                <input id="serial-number" name="serial-number" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
-                <label>Serial Number</label>
+                <label>Token Serial Number</label>
               </div>
             </div>
           </div>
