@@ -13,10 +13,6 @@ import (
 )
 
 type (
-	PartnerReq struct {
-		Partner   string `json:logger.TraceID`
-		CreatedBy string `json:"created_by"`
-	}
 	Partner struct {
 		ID           string `json:"id"`
 		Name         string `json:"name"`
@@ -24,6 +20,7 @@ type (
 		Email        string `json:"email"`
 		Tag          string `json:"tag"`
 		Description  string `json:"description"`
+		BankAccount  string `json:"bank_account"`
 		CreatedBy    string `json:"created_by"`
 		CreatedAt    string `json:"created_at"`
 	}
@@ -370,6 +367,7 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 			String: rd.Description,
 			Valid:  true,
 		},
+		BankAccount: model.BankAccount{Id: rd.BankAccount},
 	}
 	err := model.InsertPartner(param)
 	if err != nil {

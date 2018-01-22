@@ -183,7 +183,7 @@ function addProgram(url) {
 }
 
 function deleteProgram(id) {
-	var status = ""
+	var status = "";
 	$.ajax({
 		url: '/v1/ui/program/delete?id=' + id + '&token=' + token,
 		type: 'get',

@@ -111,8 +111,8 @@ function getPartner(id) {
 			var arrData = data.data[0];
 			$("#initial").html(arrData.name.charAt(0).toUpperCase());
 			$("#partnerTitle").html(arrData.name.toUpperCase());
-			$("#partnerName").html(arrData.name);
-			$("#serialNumber").html(arrData.serial_number.String);
+			$("#partner-name").html(arrData.name);
+			$("#serial-number").html(arrData.serial_number.String);
 			$("#tag").html(arrData.tag.String);
 			$("#desciption").html(arrData.description.String);
 		}
