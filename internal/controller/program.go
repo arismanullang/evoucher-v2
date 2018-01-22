@@ -46,6 +46,7 @@ type (
 		Tnc                string    `json:"tnc"`
 		Description        string    `json:"description"`
 		ValidPartners      []string  `json:"valid_partners"`
+		Visibility         string    `json:"visibility"`
 	}
 	ProgramDetailResponse struct {
 		Id                 string  `json:"id"`
@@ -823,6 +824,53 @@ func DeleteProgram(w http.ResponseWriter, r *http.Request) {
 		User: a.User.ID,
 	}
 	if err := d.Delete(); err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Log("param :", d, "response :", err.Error())
+	}
+
+	render.JSON(w, res, status)
+}
+
+func VisibilityProgram(w http.ResponseWriter, r *http.Request) {
+	apiName := "program_delete"
+
+	res := NewResponse(nil)
+	id := r.FormValue("id")
+	visible := r.FormValue("visible")
+	status := http.StatusOK
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	if CheckAPIRole(a, apiName) {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	d := model.DeleteProgramRequest{
+		Id:   id,
+		User: a.User.ID,
+	}
+	visibility := true
+	if visible == "false" {
+		visibility = false
+	}
+
+	if err := model.VisibilityProgram(d, visibility); err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
 		logger.SetStatus(status).Log("param :", d, "response :", err.Error())
