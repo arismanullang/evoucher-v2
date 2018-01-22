@@ -658,6 +658,50 @@ func GetTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
+func GetTransactionsByDate(w http.ResponseWriter, r *http.Request) {
+	apiName := "report_transaction"
+	date := r.FormValue("date")
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
+	status := http.StatusOK
+	res := NewResponse(nil)
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	if CheckAPIRole(a, apiName) {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	timeDate, err := time.Parse("01/02/2006", date)
+	if err != nil {
+		logger.SetStatus(status).Panic("param :", date, "response :", err.Error())
+	}
+	transaction, err := model.FindTransactionsByDate(a.User.Account.Id, timeDate)
+	res = NewResponse(transaction)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", a.User.Account.Id+" || "+timeDate.String(), "response :", res.Errors)
+	}
+
+	render.JSON(w, res, status)
+}
+
 func GetVoucherTransactionDetails(w http.ResponseWriter, r *http.Request) {
 	apiName := "report_transaction"
 	voucherId := r.FormValue("id")

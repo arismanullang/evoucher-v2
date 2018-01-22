@@ -4,6 +4,7 @@ $(document).ready(function () {
 	});
 
 	getTag();
+	getBankAccount();
 
 	jQuery.validator.addMethod("greaterThan",
 		function(value, element, params) {
@@ -16,14 +17,14 @@ $(document).ready(function () {
 				|| (Number(value) > Number($(params).val()));
 		},'Must be greater than {0}.');
 
-	$('#createPartner').validate({
+	$('#create-partner').validate({
 		errorPlacement: errorPlacementInput,
 		// Form rules
 		rules: {
-			partnerName: {
+			'partner-name': {
 				required: true
 			},
-			serialNumber:{
+			'serial-number':{
 				digits: true
 			}
 		}
@@ -47,8 +48,25 @@ function getTag() {
 	});
 }
 
+function getBankAccount() {
+	$.ajax({
+		url: '/v1/ui/bank_account/all?token='+token,
+		type: 'get',
+		success: function (data) {
+			var arrData = [];
+			arrData = data.data;
+
+			var i;
+			for (i = 0; i < arrData.length; i++) {
+				var li = $("<option value='"+arrData[i].id+"'></option>").html(arrData[i].company_name + ", "+ arrData[i].bank_account_holder + " - " + arrData[i].bank_account_number);
+				li.appendTo('#bank-accounts');
+			}
+		}
+	});
+}
+
 function send() {
-	if(!$("#createPartner").valid()){
+	if(!$("#create-partner").valid()){
 		$(".error").focus();
 		return;
 	}
@@ -64,12 +82,14 @@ function send() {
 	}
 
 	var partner = {
-		name: $("#partnerName").val(),
-		serial_number: $("#serialNumber").val(),
+		name: $("#partner-name").val(),
+		serial_number: $("#serial-number").val(),
 		email: $("#email").val(),
 		tag: listTag,
-		description: $("#description").val()
+		description: $("#description").val(),
+		bank_account: $("#bank-accounts").find(":selected").val()
 	};
+	console.log(partner);
 
 	$.ajax({
 		url: '/v1/ui/partner/create?token=' + token,
@@ -112,11 +132,11 @@ function send() {
 		$(document).on('click', '.swal-demo4', function (e) {
 			e.preventDefault();
 			var html;
-			if ($("#serialNumber").val() == null) {
-				html = 'Do you want create partner ' + $("#partnerName").val() + ' with no serial number?';
+			if ($("#serial-number").val() == null) {
+				html = 'Do you want create partner ' + $("#partner-name").val() + ' with no serial number?';
 			}
 			else {
-				html = 'Do you want create partner ' + $("#partnerName").val() + ' with serial number ' + $("#serialNumber").val() + '?';
+				html = 'Do you want create partner ' + $("#partner-name").val() + ' with serial number ' + $("#serial-number").val() + '?';
 			}
 
 			swal({
