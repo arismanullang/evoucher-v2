@@ -19,7 +19,7 @@ function getPartner() {
 
 	  var tempArray = [
 		arrData[i].name
-		, arrData[i].serial_number.String
+		, arrData[i].bank_account.company_name + ", " + arrData[i].bank_account.bank_name + " - " + arrData[i].bank_account.bank_account_number
 		, arrData[i].tag.String
 		, button
 	  ];
@@ -35,12 +35,6 @@ function getPartner() {
 	      data: dataSet,
 	      dom: 'rtip',
 	      "order": [[ 1, "desc" ]],
-	      columns: [
-		      { title: "Partner Name" },
-		      { title: "Serial Number" },
-		      { title: "Tag" },
-		      { title: "Action"}
-	      ],
 	      oLanguage: {
 		      sSearch: '<em class="ion-search"></em>',
 		      sLengthMenu: '_MENU_ records per page',

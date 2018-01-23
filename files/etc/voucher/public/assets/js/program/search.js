@@ -100,7 +100,7 @@ function getProgram() {
 				var tempArray = [
 					dataName[i].toUpperCase()
 					, dataType[i].toUpperCase()
-					, dataPrice[i] + " / " + addDecimalPoints(dataValue[i])
+					, dataPrice[i] + " /<br> Rp. " + addDecimalPoints(dataValue[i]) + ",00"
 					, dataStatus[i].toUpperCase()
 					, dataStart[i].toUpperCase()
 					, dataEnd[i].toUpperCase()
@@ -126,20 +126,6 @@ function getProgram() {
 					'copy', 'csv', 'excel', 'pdf', 'print'
 				],
 				"order": [[6, "desc"]],
-				columns: [
-					{title: "PROGRAM"},
-					{title: "TYPE"},
-					{title: "CONVERSION (POINT / CURRENCY)"},
-					{title: "STATUS"},
-					{title: "START"},
-					{title: "END"},
-					{title: "LAST MODIFIED"},
-					{title: "QUOTA VOUCHERS"},
-					{title: "CURRENT AVAILABLE VOUCHERS"},
-					//{title: "DISTRIBUTION"},
-					{title: "REDEMPTION"},
-					{title: "ACTION"}
-				],
 				oLanguage: {
 					sSearch: '<em class="ion-search"></em>',
 					sLengthMenu: '_MENU_ records per page',

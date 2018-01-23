@@ -84,19 +84,19 @@
                             <option value="today">Today</option>
                           </select>
                         </td>
-                        <td><em class="ion-ios-pricetags-outline icon-fw mr"></em>Total Vouchers Issued</td>
+                        <td><em class="ion-ios-pricetags-outline icon-fw mr"></em>Total Vouchers Redeemed</td>
                         <td class="text-muted" id="totalValidVoucher"></td>
-                      </tr>
-                      <tr>
-                        <td><em class="ion-ios-cart-outline icon-fw mr"></em>Total Transactions</td>
-                        <td class="text-muted" id="totalTransaction"></td>
-                        <td><em class="icon-fw mr"></em>Total Vouchers Redeemed</td>
-                        <td class="text-muted" id="totalUsedVoucher"></td>
                       </tr>
                       <tr>
                         <td><em class="ion-ios-person-outline icon-fw mr"></em>Total Customer</td>
                         <td class="text-muted" id="totalCustomer"></td>
-                        <td><em class="icon-fw mr"></em>Total Value Redeemed</td>
+                        <td><em class="icon-fw mr"></em>Total Vouchers Used</td>
+                        <td class="text-muted" id="totalUsedVoucher"></td>
+                      </tr>
+                      <tr>
+                        <td><em class="ion-ios-cart-outline icon-fw mr"></em>Total Transactions</td>
+                        <td class="text-muted" id="totalTransaction"></td>
+                        <td><em class="icon-fw mr"></em>Total Transaction Value</td>
                         <td class="text-muted" id="totalVoucherValue"></td>
                       </tr>
                     </tbody>
@@ -127,7 +127,7 @@
                               </th>
                               <th>
                                 <div class="pt0">
-                                  <input type="text" name="filter_holder_name" placeholder="Holder" class="form-control input-sm datatable_input_col_search">
+                                  <input type="text" name="filter_holder_name" placeholder="Member" class="form-control input-sm datatable_input_col_search">
                                   <div class="mda-form-control-line"></div>
                                 </div>
                               </th>
@@ -141,20 +141,20 @@
                                 <div class="pt0">
                                   <select name="filter_status" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
                                     <option value="">ALL</option>
-                                    <option value="ISSUED">ISSUED</option>
                                     <option value="REDEEMED">REDEEMED</option>
+                                    <option value="USED">USED</option>
                                     <option value="PAID">PAID</option>
                                   </select>
                                 </div>
                               </th>
                             </tr>
                             <tr role="row">
-                              <th>Program</th>
-                              <th>Voucher</th>
-                              <th>Holder</th>
-                              <th>Last Update</th>
-                              <th>Status</th>
-                              <th>Action</th>
+                              <th>PROGRAM</th>
+                              <th>VOUCHER</th>
+                              <th>MEMBER</th>
+                              <th>LAST UPDATE</th>
+                              <th>STATUS</th>
+                              <th>ACTION</th>
                             </tr>
                             </thead>
                           </table>
@@ -222,12 +222,12 @@
                               </th>
                             </tr>
                             <tr role="row">
-                              <th>Program</th>
-                              <th>Type</th>
-                              <th>Start Date</th>
-                              <th>End Date</th>
-                              <th>Voucher</th>
-                              <th>Action</th>
+                              <th>PROGRAM</th>
+                              <th>TYPE</th>
+                              <th>START DATE</th>
+                              <th>END DATE</th>
+                              <th>VOUCHER</th>
+                              <th>ACTION</th>
                             </tr>
                             </thead>
                           </table>

@@ -48,10 +48,10 @@ function getVoucher(id) {
 
 			var dataSet = [];
 			for (i = 0; i < limit; i++) {
-				var voucherState = "issued";
+				var voucherState = "redeemed";
 				if (arrData[i].state == "used") {
 					used++;
-					voucherState = "redeemed";
+					voucherState = "used";
 				}
 
 				if (arrData[i].state == "paid") {
@@ -85,14 +85,6 @@ function getVoucher(id) {
 					'copy', 'csv', 'excel', 'pdf', 'print'
 				],
 				"order": [[4, "desc"]],
-				columns: [
-					{title: "VOUCHER"},
-					{title: "HOLDER"},
-					{title: "ISSUED"},
-					{title: "EXPIRED"},
-					{title: "STATUS"},
-					{title: "ACTION"}
-				],
 				oLanguage: {
 					sSearch: '<em class="ion-search"></em>',
 					sLengthMenu: '_MENU_ records per page',
@@ -147,7 +139,7 @@ function getPartner(id) {
 					arrData[i].name.toUpperCase()
 					, arrData[i].transactions
 					, arrData[i].vouchers
-					, arrData[i].transaction_values
+					, "Rp. "+addDecimalPoints(arrData[i].transaction_values)+",00"
 				];
 
 				dataSet.push(tempArray);
@@ -160,12 +152,6 @@ function getPartner(id) {
 					'copy', 'csv', 'excel', 'pdf', 'print'
 				],
 				"order": [[3, "desc"]],
-				columns: [
-					{title: "NAME"},
-					{title: "TRANSACTION"},
-					{title: "VOUCHER"},
-					{title: "VALUE"}
-				],
 				oLanguage: {
 					sSearch: '<em class="ion-search"></em>',
 					sLengthMenu: '_MENU_ records per page',
@@ -179,7 +165,7 @@ function getPartner(id) {
 					}
 				}
 			});
-			var inputSearchClass = 'datatable_input_col_search';
+			var inputSearchClass = 'partner_datatable_input_col_search';
 			var columnInputs = $('thead .' + inputSearchClass);
 			for (i = 0; i < columnInputs.length; i++) {
 				if (columnInputs.get(i).tagName.toLowerCase() == "select") {
@@ -231,18 +217,16 @@ function getProgram(id, voucher, used, paid) {
 					break;
 			}
 
-			var title = "";
 			$("#visibility").val(result.visibility);
 			if(result.visibility == true){
-				title = "Hide";
+				$("#label-visibility").html("Show");
 			}else{
-				title = "Show";
+				$("#label-visibility").html("Hidden");
 			}
-			var button = "<button value='"+result.id+"' type=\"button\" style=\"margin-left: 10px\" onclick='visibility(this.value)' class=\"btn btn-md btn-primary\">"+title+" Program</button>";
 
 			// Program
 			$('#programName').html(result.name);
-			$('#programNames').html(result.name + button);
+			$('#programNames').html(result.name);
 			$('#programDescription').html(result.description);
 			$('#programType').html(programType);
 			$('#conversionRate').html(result.voucher_price + ' Point');
@@ -288,13 +272,24 @@ function getProgram(id, voucher, used, paid) {
 	});
 }
 
-function visibility(id) {
-	var status = ""
+function changeVisibility() {
+	var status = "";
+	var id = $("#programId").val();
 	$.ajax({
-		url: '/v1/ui/program/visibility?id=' + id + '&visibility='+$('#visibility').value+'&token=' + token,
+		url: '/v1/ui/program/visibility?id=' + id + '&visible='+$('#visibility').val()+'&token=' + token,
 		type: 'get',
 		success: function (data) {
-			swal('Change Visibility Success!');
+			swal({
+					title: 'Success',
+					text: 'Change Visibility Success',
+					type: 'success',
+					showCancelButton: false,
+					confirmButtonText: 'Ok',
+					closeOnConfirm: true
+				},
+				function() {
+					window.location.reload();
+				});
 		},
 		error: function (xhr, ajaxOptions, thrownError) {
 			swal('Error!', xhr.responseJSON.errors.detail);
