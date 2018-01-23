@@ -78,7 +78,7 @@ function getProgram() {
 						if(tempPartner.name != ""){
 							eleVoucher += "<div class='row'>"
 								+ "<div class='col-md-4'>Partner : "+tempPartner.name+"</div>"
-								+ "<div class='col-md-4'>Redeemed : "+tempRedeemed+" / Rp. "+addDecimalPoints(tempRedeemValue)+",00 </div>"
+								+ "<div class='col-md-4'>Used : "+tempRedeemed+" / Rp. "+addDecimalPoints(tempRedeemValue)+",00 </div>"
 								+ "<div class='col-md-4'>Unpaid : "+tempUnpaid+" / Rp. "+addDecimalPoints(tempUnpaidValue)+",00 </div>"
 								+ "</div>";
 						}
@@ -90,8 +90,8 @@ function getProgram() {
 					+ "<div class='row'><div class='col-lg-2'>" +result[i].name+"</div>"
 					+ "<div class='col-lg-2'>End in : "+diffNow+" Days</div>"
 					+ "<div class='col-lg-2'>Stock : "+(voucher-tempProgramIssued)+"</div>"
-					+ "<div class='col-lg-2'>Issued : "+tempProgramIssued+"</div>"
-					+ "<div class='col-lg-2'>Redeemed : "+tempProgramRedeemed+"</div>"
+					+ "<div class='col-lg-2'>Redeemed : "+tempProgramIssued+"</div>"
+					+ "<div class='col-lg-2'>Used : "+tempProgramRedeemed+"</div>"
 					+ "<div class='col-lg-2'>Paid : "+tempProgramPaid+"</div>"
 					+ "</div></div></a></h4></div>"
 					+ "<div id='collapse"+i+"' role='tabpanel' aria-labelledby='heading"+i+"' class='panel-collapse collapse' aria-expanded='false' style='height: 0px;'>"
