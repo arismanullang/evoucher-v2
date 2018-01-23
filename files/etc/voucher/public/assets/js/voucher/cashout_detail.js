@@ -6,9 +6,13 @@ $( document ).ready(function() {
 		return false;
 	});
 	$('.select2').select2();
-	getPartner();
-	getTransactionByPartner("");
-	$('#partnerList').change(function () {
+
+	var partner = findGetParameter('partner');
+	getBankAccount(partner);
+	getPartner(partner);
+	getTransactionByPartner(partner);
+
+	$('#partner-list').change(function () {
 		getTransactionByPartner(this.value);
 	});
 	$("#transactionAll").change(function () {
@@ -16,18 +20,6 @@ $( document ).ready(function() {
 		$('#listTransaction').find("input.transaction").prop('checked', _this.prop('checked'));
 
 		updateTotal();
-	});
-
-	$('#transaction').validate({
-		errorPlacement: errorPlacementInput,
-		// Form rules
-		rules: {
-			bankAccount: {
-				required: true,
-				minlength: 10,
-				maxlength: 20
-			}
-		}
 	});
 });
 
@@ -41,16 +33,28 @@ function updateTotal() {
 	$('#totalTransaction').html("Rp. "+addDecimalPoints(total)+",00");
 }
 
-function getPartner() {
+function getBankAccount(id) {
 	$.ajax({
-		url: '/v1/ui/partner/all?token='+token,
+		url: '/v1/ui/bank_account/partner?partner='+id+'&token='+token,
 		type: 'get',
 		success: function (data) {
 			var result = data.data;
-			for(var i = 0; i < result.length; i++){
-				var li = $("<option value='"+result[i].id+"'>"+result[i].name+"</td>");
-				li.appendTo('#partnerList');
-			}
+
+			$('#bank_account').html(result.company_name + ", " + result.bank_name + " - " + result.bank_account_number);
+		},
+		error: function (data) {
+		}
+	});
+}
+
+function getPartner(id) {
+	$.ajax({
+		url: '/v1/ui/partner?id='+id+'&token='+token,
+		type: 'get',
+		success: function (data) {
+			var result = data.data[0];
+
+			$('#partner').html(result.name);
 		},
 		error: function (data) {
 		}
@@ -58,9 +62,10 @@ function getPartner() {
 }
 
 function getTransactionByPartner(partnerId) {
+	var date = findGetParameter('date');
 	var arrData = [];
 	$.ajax({
-		url: '/v1/ui/transaction/partner?token=' + token + '&partner=0k9xtz1A',
+		url: '/v1/ui/transaction/cashout/partner?token=' + token + '&partner='+partnerId + '&date='+date,
 		type: 'get',
 		success: function (data) {
 			var result = data.data;
@@ -85,6 +90,7 @@ function getTransactionByPartner(partnerId) {
 					li.html(body);
 					li.appendTo('#listTransaction');
 					voucher++;
+
 				}
 			}
 
@@ -95,7 +101,7 @@ function getTransactionByPartner(partnerId) {
 			if(voucher > 5){
 				$("#tableTransaction").attr("style","overflow:scroll; max-height: 300px;");
 			}else{
-				$("#tableTransaction").removeAttribute("style");
+				$("#tableTransaction").removeAttr("style");
 			}
 		},
 		error: function(){
@@ -105,10 +111,7 @@ function getTransactionByPartner(partnerId) {
 }
 
 function cashout(){
-
-	if(!$("#transaction").valid()) {
-		return
-	}
+	var partner = findGetParameter('partner');
 
 	var listVoucher = [];
 	var listVoucherValue = [];
@@ -130,10 +133,13 @@ function cashout(){
 	for (i = 0; i < listVoucher.length; i++) {
 		total += parseInt(listVoucherValue[i]);
 	}
+	if(total == 0) {
+		return
+	}
 
 	var transaction = {
-		partner_id : $("#partnerList").find(":selected").val(),
-		bank_account : $("#bankAccount").val(),
+		partner_id : partner,
+		bank_account : $("#bank-account-id").val(),
 		total_cashout : total,
 		payment_method : "transfer",
 		transactions : listTransaction,
@@ -149,8 +155,8 @@ function cashout(){
 		success: function (data) {
 			console.log(data);
 			$("#success-page").attr("style","display:block");
-			$("#cashoutId").val(data.data);
-			$("#transaction").attr("style","display:none");
+			$("#cashout-id").val(data.data);
+			$("#transaction-card").attr("style","display:none");
 		},
 		error: function (data) {
 			var a = JSON.parse(data.responseText);
@@ -160,7 +166,7 @@ function cashout(){
 }
 
 function print(){
-	window.location = "/voucher/print?id="+$("#cashoutId").val();
+	window.location = "/voucher/print?id="+$("#cashout-id").val();
 }
 
 function next(){

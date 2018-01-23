@@ -48,7 +48,7 @@ func setRoutes() http.Handler {
 	//transaction
 	r.GetFunc("/v1/ui/transaction/partner", controller.GetTransactionsByPartner)
 	r.GetFunc("/v1/ui/transaction/date", controller.GetTransactionsByDate)
-	r.GetFunc("/v1/ui/transaction/cashout/partner", controller.GetTransactionsByPartner)
+	r.GetFunc("/v1/ui/transaction/cashout/partner", controller.GetTransactionsCustom)
 	r.GetFunc("/v1/ui/transaction/voucher", controller.GetVoucherTransactionDetails)
 	r.GetFunc("/v1/ui/transaction/cashout", controller.CashoutTransactionDetails)
 
@@ -93,8 +93,11 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/ui/partner/daily/performance", controller.GetDailyPerformancePartner)
 	r.PostFunc("/v1/ui/partner/update", controller.UpdatePartner)
 	r.GetFunc("/v1/ui/partner/delete", controller.DeletePartner)
+
+	//bank account
 	r.PostFunc("/v1/ui/bank_account/create", controller.RegisterBankAccount)
 	r.GetFunc("/v1/ui/bank_account/all", controller.GetAllBankAccounts)
+	r.GetFunc("/v1/ui/bank_account/partner", controller.GetBankAccountDetailByPartner)
 
 	//tag
 	r.GetFunc("/v1/ui/tag/all", controller.GetAllTags)

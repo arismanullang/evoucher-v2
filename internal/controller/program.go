@@ -866,7 +866,7 @@ func VisibilityProgram(w http.ResponseWriter, r *http.Request) {
 		User: a.User.ID,
 	}
 	visibility := true
-	if visible == "false" {
+	if visible == "true" {
 		visibility = false
 	}
 

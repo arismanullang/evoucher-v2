@@ -4,6 +4,7 @@ $(document).ready(function () {
 	getPerformance(id, 'all');
 	getVoucher(id, 'all');
 	getProgram(id);
+	getBankAccount(id);
 	makeQRCode(id);
 
 	$("#performanceType").change(function () {
@@ -14,6 +15,21 @@ $(document).ready(function () {
 
 	$(".select2").select2();
 });
+
+function getBankAccount(id) {
+	$.ajax({
+		url: '/v1/ui/bank_account/partner?partner='+id+'&token='+token,
+		type: 'get',
+		success: function (data) {
+			var result = data.data;
+
+			$('#bank-account').html(result.company_name + ", " + result.bank_name + " - " + result.bank_account_number);
+
+		},
+		error: function (data) {
+		}
+	});
+}
 
 function getVoucher(id, type) {
 	var arrData = [];
@@ -32,9 +48,9 @@ function getVoucher(id, type) {
 					var dateValid = new Date(arrData[i].updated_at.Time);
 					var voucherState = '';
 					if(arrData[i].state == 'used'){
-						voucherState = 'redeemed';
+						voucherState = 'used';
 					}else if(arrData[i].state == 'created'){
-						voucherState = 'issued';
+						voucherState = 'redeemed';
 					}else{
 						voucherState = 'paid';
 					}
@@ -209,14 +225,6 @@ function initGraphReport(dataSet) {
 			'copy', 'csv', 'excel', 'pdf', 'print'
 		],
 		"order": [[4, "desc"]],
-		columns: [
-			{title: "PROGRAM"},
-			{title: "VOUCHER"},
-			{title: "HOLDER"},
-			{title: "LAST UPDATE"},
-			{title: "STATUS"},
-			{title: "ACTION"}
-		],
 		oLanguage: {
 			sSearch: '<em class="ion-search"></em>',
 			sLengthMenu: 'Display _MENU_ records',
@@ -257,14 +265,6 @@ function initProgramReport(dataSet) {
 			'copy', 'csv', 'excel', 'pdf', 'print'
 		],
 		"order": [[2, "desc"]],
-		columns: [
-			{title: "PROGRAM"},
-			{title: "TYPE"},
-			{title: "START DATE"},
-			{title: "END DATE"},
-			{title: "VOUCHERS"},
-			{title: "ACTION"}
-		],
 		oLanguage: {
 			sSearch: '<em class="ion-search"></em>',
 			sLengthMenu: 'Display _MENU_ records',

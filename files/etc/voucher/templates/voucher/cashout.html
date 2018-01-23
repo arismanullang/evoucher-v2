@@ -28,29 +28,11 @@
                 <tr role="row">
                   <th>PARTNER</th>
                   <th>TOTAL TRANSACTION</th>
-                  <th>TOTAL VOUCHER VALUE</th>
+                  <th>TOTAL TRANSACTION VALUE</th>
                   <th class="center-text"></th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr role="row" class="odd">
-                  <td>SHIGERU</td>
-                  <td>10</td>
-                  <td>RP. 100.000,00</td>
-                  <td><button type="button" onclick="detail(&quot;aBv4vi9r&quot;)" class="btn btn-flat btn-sm btn-info"><em class="ion-search"></em></button><button type="button" onclick="edit(&quot;aBv4vi9r&quot;)" class="btn btn-flat btn-sm btn-info"><em class="ion-edit"></em></button><button type="button" value="aBv4vi9r" class="btn btn-flat btn-sm btn-danger swal-demo4"><em class="ion-trash-a"></em></button></td>
-                </tr>
-                <tr role="row" class="odd">
-                  <td>H&M</td>
-                  <td>10</td>
-                  <td>RP. 100.000,00</td>
-                  <td><button type="button" onclick="detail(&quot;aBv4vi9r&quot;)" class="btn btn-flat btn-sm btn-info"><em class="ion-search"></em></button><button type="button" onclick="edit(&quot;aBv4vi9r&quot;)" class="btn btn-flat btn-sm btn-info"><em class="ion-edit"></em></button><button type="button" value="aBv4vi9r" class="btn btn-flat btn-sm btn-danger swal-demo4"><em class="ion-trash-a"></em></button></td>
-                </tr>
-                <tr role="row" class="odd">
-                  <td>POJOK MINUMAN</td>
-                  <td>10</td>
-                  <td>RP. 100.000,00</td>
-                  <td><button type="button" onclick="detail(&quot;aBv4vi9r&quot;)" class="btn btn-flat btn-sm btn-info"><em class="ion-search"></em></button><button type="button" onclick="edit(&quot;aBv4vi9r&quot;)" class="btn btn-flat btn-sm btn-info"><em class="ion-edit"></em></button><button type="button" value="aBv4vi9r" class="btn btn-flat btn-sm btn-danger swal-demo4"><em class="ion-trash-a"></em></button></td>
-                </tr>
                 </tbody>
               </table>
             </div>
@@ -63,10 +45,15 @@
 {{ end }}
 
 {{ define "scripts" }}
-<script type="text/javascript" src="/assets/js/voucher/cashout.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/jquery.dataTables.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/nouislider/distribute/nouislider.js"></script>
 <script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="/assets/js/voucher/cashout.js"></script>
 {{ end }}
 
 {{ define "stylesheets" }}
+<link rel="stylesheet" href="/assets/vendor/nouislider/distribute/nouislider.min.css">
+<link rel="stylesheet" href="/assets/vendor/datatables/media/css/jquery.dataTables.css">
 <link rel="stylesheet" href="/assets/vendor/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css">
 {{ end }}

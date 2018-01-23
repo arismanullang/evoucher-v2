@@ -66,9 +66,6 @@
             width: 80% !important;
         }
 
-
-
-
     </style>
 
     <style type="text/css" media="screen">
@@ -101,7 +98,7 @@
 <br>
 <table align="center" cellpadding="0" cellspacing="0" class="force-full-width" height="100%" >
     <tr>
-        <td align="center" valign="top" bgcolor="#ffffff"  width="100%">
+        <td align="center" valign="top" bgcolor="#ffffff" width="100%">
             <center>
                 <table style="margin: 0 auto;" cellpadding="0" cellspacing="0" width="600" class="w320">
                     <tr>
@@ -110,7 +107,7 @@
                                 <tr>
                                     <td>
                                         <br>
-                                        <img src="https://voucher.elys.id/assets/img/elys_email2.png" width="122" height="45" alt="alt_text" border="0">
+                                        <img src="/assets/img/Header_ELYS_email_rev.jpg" alt="alt_text" border="0">
                                         <hr width="90%" style="border-width: 0.5px">
                                     </td>
                                 </tr>
