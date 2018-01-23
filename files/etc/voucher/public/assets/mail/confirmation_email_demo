@@ -106,8 +106,7 @@
                             <table style="margin: 0 auto;border-radius: 2px 2px 0px 0px;box-shadow: 0 0 0 1px #D8DDE2;" cellpadding="0" cellspacing="0" class="force-full-width" bgcolor="#263171">
                                 <tr>
                                     <td>
-                                        <br>
-                                        <img src="/assets/img/Header_ELYS_email_rev.jpg" alt="alt_text" border="0">
+                                        <img src="https://voucher.elys.id/assets/img/Header_ELYS_email_rev.jpg" style="width:100%" alt="alt_text" border="0">
                                         <hr width="90%" style="border-width: 0.5px">
                                     </td>
                                 </tr>
