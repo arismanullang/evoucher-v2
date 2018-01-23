@@ -211,3 +211,39 @@ func GetBankAccountDetailByBankAccountNumber(w http.ResponseWriter, r *http.Requ
 
 	render.JSON(w, res, status)
 }
+
+func GetBankAccountDetailByPartner(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusOK
+	res := NewResponse(nil)
+	partner := r.FormValue("partner")
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Get Account By User")
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	account, err := model.FindBankAccountByPartner(a.User.Account.Id, partner)
+	if err != nil {
+		status = http.StatusInternalServerError
+		errTitle := model.ErrCodeInternalError
+		if err != model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Log("param :", a.User.ID, "response :", err.Error())
+	} else {
+		res = NewResponse(account)
+	}
+
+	render.JSON(w, res, status)
+}

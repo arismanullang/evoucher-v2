@@ -402,7 +402,7 @@ function send() {
 											closeOnConfirm: true
 										},
 										function() {
-											//window.location = "/program/search";
+											window.location = "/program/search";
 										});
 								},
 								error: function (data) {
@@ -423,7 +423,7 @@ function send() {
 									closeOnConfirm: true
 								},
 								function() {
-									//window.location = "/program/search";
+									window.location = "/program/search";
 								});
 						}
 					},
@@ -495,7 +495,7 @@ function send() {
 									closeOnConfirm: true
 								},
 								function() {
-									//window.location = "/program/search";
+									window.location = "/program/search";
 								});
 						},
 						error: function (data) {
@@ -515,7 +515,7 @@ function send() {
 							closeOnConfirm: true
 						},
 						function() {
-							//window.location = "/program/search";
+							window.location = "/program/search";
 						});
 				}
 			},

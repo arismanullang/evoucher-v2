@@ -180,3 +180,36 @@ func FindBankAccount(accountId, number string) (BankAccount, error) {
 
 	return resv[0], nil
 }
+
+func FindBankAccountByPartner(accountId, partnerId string) (BankAccount, error) {
+	q := `
+		SELECT
+			ba.id
+			, ba.company_name
+			, ba.company_pic
+			, ba.company_telp
+			, ba.company_email
+			, ba.bank_name
+			, ba.bank_branch
+			, ba.bank_account_number
+			, ba.bank_account_holder
+		FROM bank_accounts as ba
+		JOIN partners as p
+		ON
+			ba.id = p.bank_account_id
+		WHERE
+			ba.status = ?
+			AND ba.account_id = ?
+			AND p.id = ?
+	`
+
+	var resv []BankAccount
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId, partnerId); err != nil {
+		return BankAccount{}, err
+	}
+	if len(resv) < 1 {
+		return BankAccount{}, ErrResourceNotFound
+	}
+
+	return resv[0], nil
+}

@@ -193,6 +193,15 @@ func FindAllPartners(accountId string) ([]Partner, error) {
 		return []Partner{}, ErrResourceNotFound
 	}
 
+	for i := 0; i < len(resv); i++ {
+		tempBank, err := FindBankAccountByPartner(resv[i].AccountId, resv[i].Id)
+		if err != nil {
+			fmt.Println(err.Error())
+			return []Partner{}, ErrServerInternal
+		}
+
+		resv[i].BankAccount = tempBank
+	}
 	return resv, nil
 }
 

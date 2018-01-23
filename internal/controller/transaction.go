@@ -312,7 +312,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		ListVoucher:     listVoucher,
 	}
 
-	if err := model.SendConfirmationEmail(model.Domain, model.ApiKey, model.PublicApiKey, "Sedayu One Voucher Confirmation", req, a.User.Account.Id); err != nil {
+	if err := model.SendConfirmationEmail(model.Domain, model.ApiKey, model.PublicApiKey, "Elys Voucher Confirmation", req, a.User.Account.Id); err != nil {
 		res := NewResponse(nil)
 		status := http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError
@@ -699,6 +699,52 @@ func GetTransactionsByDate(w http.ResponseWriter, r *http.Request) {
 		logger.SetStatus(status).Info("param :", a.User.Account.Id+" || "+timeDate.String(), "response :", res.Errors)
 	}
 
+	render.JSON(w, res, status)
+}
+
+func GetTransactionsCustom(w http.ResponseWriter, r *http.Request) {
+	apiName := "report_transaction"
+	partnerId := r.FormValue("partner")
+	date := r.FormValue("date")
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
+	status := http.StatusOK
+	res := NewResponse(nil)
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	if CheckAPIRole(a, apiName) {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	timeDate, err := time.Parse("01/02/2006", date)
+	if err != nil {
+		logger.SetStatus(status).Panic("param :", date, "response :", err.Error())
+	}
+
+	transaction, err := model.FindTransactionsByPartnerDate(a.User.Account.Id, partnerId, timeDate)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", a.User.Account.Id+" || "+partnerId, "response :", res.Errors)
+	}
+
+	res = NewResponse(transaction)
 	render.JSON(w, res, status)
 }
 

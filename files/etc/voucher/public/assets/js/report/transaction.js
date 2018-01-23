@@ -23,7 +23,7 @@ function getPartner() {
 function getTransactionByPartner(partnerId) {
 	var arrData = [];
 	$.ajax({
-		url: '/v1/ui/transaction/cashout/partner?token=' + token + '&partner=' + partnerId,
+		url: '/v1/ui/transaction/partner?token=' + token + '&partner=' + partnerId,
 		type: 'get',
 		success: function (data) {
 			if ($.fn.DataTable.isDataTable("#datatable1")) {
@@ -102,17 +102,6 @@ function getTransactionByPartner(partnerId) {
 					'copy', 'csv', 'excel', 'pdf', 'print'
 				],
 				"order": [[8, "desc"]],
-				columns: [
-					{title: "PARTNER"},
-					{title: "TRANSACTION CODE"},
-					{title: "PROGRAM"},
-					{title: "VOUCHER"},
-					{title: "ISSUED"},
-					{title: "REDEEM"},
-					{title: "CASHOUT"},
-					{title: "USER"},
-					{title: "STATUS"}
-				],
 				oLanguage: {
 					sSearch: '<em class="ion-search"></em>',
 					sLengthMenu: '_MENU_ records per page',
