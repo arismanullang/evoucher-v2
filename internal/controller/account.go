@@ -24,6 +24,9 @@ type (
 		Alias     string         `json:"alias"`
 		Email     string         `json:"email"`
 		Billing   sql.NullString `json:"billing"`
+		Address   string         `json:"address"`
+		City      string         `json:"city"`
+		Province  string         `json:"province"`
 		CreatedBy string         `json:"created_by"`
 	}
 )

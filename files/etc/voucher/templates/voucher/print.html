@@ -10,28 +10,46 @@
   <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
   <link href="/assets/css/style.css" rel="stylesheet">
   <link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
-
 </head>
 <body>
 <div class="container">
   <div class="row">
-    <div class="caption">
-      <div class="col-sm-8">
-        <h4 class="title">
-          Payment Receipt
-        </h4>
-      </div>
-      <div class="col-sm-4">
-        <h4 id="date" class="pull-right title">
-          ----------
-        </h4>
-      </div>
+    <div class="col-sm-8">
+      <h4> Payment Receipt</h4>
+    </div>
+    <div class="col-sm-4">
+      <h4 id="date" class="pull-right title">
+        ----------
+      </h4>
     </div>
   </div>
   <hr class="separator">
   <div class="row">
+    <div class="col-sm-6">
+      <h4 id="account-name" style="font-weight: 600"></h4>
+    </div>
+    <div class="col-sm-6">
+      <h4 id="tenant" style="font-weight: 600"></h4>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-6">
+      <h5 id="account-bulding"></h5>
+      <h5 id="account-address"></h5>
+      <h5 id="account-province"></h5>
+      <h5>Indonesia</h5>
+    </div>
+    <div class="col-sm-6">
+      <h5 id="company-name"></h5>
+      <h5 id="bank-account-holder"></h5>
+      <h5 id="bank-account"></h5>
+    </div>
+  </div>
+  <br>
+  <br>
+  <div class="row">
     <div class="col-sm-12">
-      <h4> Cashout Code : <span id="cashoutCode" style="font-weight: 600"></span> </h4>
+      <h4> Invoice Number : <span id="cashout-code" style="font-weight: 600"></span></h4>
     </div>
   </div>
   <div class="row">
@@ -52,7 +70,16 @@
   </div>
   <div class="row">
     <div class="col-sm-12">
-      <h4> Total Cashout Amount For <span id="tenant" style="font-weight: 600"></span> : <span class="pull-right" id="total"></span> </h4>
+      <h4> Total Amount: <span class="pull-right" id="total"></span> </h4>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-3">
+      <h5> Terms & Condition : </h5>
+    </div>
+    <div class="col-sm-9">
+      <h5>* All transactions and all vouchers in this receipt already paid and transfer to partner's bank account number.</h5>
+      <h5>* Any mistakes happen in this reimbursement are bank's responsibility.</h5>
     </div>
   </div>
   <hr class="separator">

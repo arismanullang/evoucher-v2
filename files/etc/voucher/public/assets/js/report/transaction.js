@@ -42,6 +42,8 @@ function getTransactionByPartner(partnerId) {
 				var date1 = arrData[i].issued.substring(0, 10).split("-");
 				var date2 = arrData[i].redeemed.substring(0, 10).split("-");
 				var date3 = arrData[i].cashout.String.substring(0, 10).split("-");
+				console.log(date3);
+				console.log(arrData[i].cashout.String);
 				var cashoutDate = date3[2] + " " + months[parseInt(date3[1]) - 1] + " " + date3[0];
 				var cashoutCashier = arrData[i].username.String;
 
