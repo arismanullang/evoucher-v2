@@ -41,6 +41,7 @@ function getBankAccount(id) {
 			var result = data.data;
 
 			$('#bank_account').html(result.company_name + ", " + result.bank_name + " - " + result.bank_account_number);
+			$('#bank-account-id').val(result.id);
 		},
 		error: function (data) {
 		}

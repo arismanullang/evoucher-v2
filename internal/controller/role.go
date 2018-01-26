@@ -54,8 +54,9 @@ func AddRole(w http.ResponseWriter, r *http.Request) {
 	}
 
 	param := model.Role{
-		Detail:   rd.Detail,
-		Features: rd.Features,
+		Detail:    rd.Detail,
+		Features:  rd.Features,
+		AccountId: a.User.Account.Id,
 	}
 
 	err := model.AddRole(param, a.User.ID)

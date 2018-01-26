@@ -107,7 +107,6 @@ function getProgram() {
 					, dataModified[i].toUpperCase()
 					, dataMax[i]
 					, avail
-					//, Math.round(distributionRate) + "%"
 					, Math.round(redemptionRate) + "%"
 					, button
 				];
