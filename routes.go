@@ -27,6 +27,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/public/:page", viewPublic)
 	r.GetFunc("/sa/:page", viewSuperAdmin)
 	r.GetFunc("/role/:page", viewRole)
+	r.GetFunc("/bank_account/:page", viewBankAccount)
 	r.GetFunc("/unauthorize", viewUnauthorize)
 	r.GetFunc("/notfound", viewNotFound)
 	r.GetFunc("/", login)
@@ -254,8 +255,18 @@ func viewPartner(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "partner/check.html", nil)
 	} else if page == "update" {
 		render.FileInLayout(w, "layout.html", "partner/update.html", nil)
-	} else if page == "bank" {
+	} else {
+		render.File(w, "notfound.html", nil, 404)
+	}
+}
+
+func viewBankAccount(w http.ResponseWriter, r *http.Request) {
+	page := bone.GetValue(r, "page")
+
+	if page == "create" {
 		render.FileInLayout(w, "layout.html", "bank_account/create.html", nil)
+	} else if page == "search" {
+		render.FileInLayout(w, "layout.html", "bank_account/search.html", nil)
 	} else {
 		render.File(w, "notfound.html", nil, 404)
 	}

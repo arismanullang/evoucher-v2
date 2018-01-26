@@ -62,11 +62,14 @@ func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
 	seedCode := randStr(model.DEFAULT_TRANSACTION_LENGTH, model.DEFAULT_TRANSACTION_SEED)
 	csCode := seedCode + randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
 
+	tempBank := model.BankAccount{
+		Id: rd.BankAccount,
+	}
 	cashout := model.Cashout{
 		AccountId:     a.User.Account.Id,
 		CashoutCode:   csCode,
 		PartnerId:     rd.PartnerId,
-		BankAccount:   rd.BankAccount,
+		BankAccount:   tempBank,
 		TotalCashout:  rd.TotalCashout,
 		PaymentMethod: rd.PaymentMethod,
 		CreatedBy:     a.User.ID,

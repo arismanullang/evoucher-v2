@@ -17,6 +17,11 @@ type (
 		Billing   sql.NullString `db:"billing" json:"billing"`
 		Alias     string         `db:"alias" json:"alias"`
 		Email     string         `db:"email" json:"email"`
+		Address   string         `db:"address" json:"address"`
+		City      string         `db:"city" json:"city"`
+		Province  string         `db:"province" json:"province"`
+		Building  string         `db:"building" json:"building"`
+		ZipCode   string         `db:"zip_code" json:"zip_code"`
 		CreatedAt string         `db:"created_at" json:"created_at"`
 		CreatedBy string         `db:"created_by" json:"created_by"`
 		UpdatedAt sql.NullString `db:"updated_at" json:"updated_at"`
@@ -174,6 +179,11 @@ func GetAccountDetailByUser(userID string) (Account, error) {
 			, a.billing
 			, a.alias
 			, a.created_at
+			, a.address
+			, a.city
+			, a.province
+			, a.building
+			, a.zip_code
 		FROM
 			accounts as a
 		JOIN
@@ -210,6 +220,11 @@ func GetAccountDetailByAccountId(accountId string) (Account, error) {
 			, a.billing
 			, a.alias
 			, a.created_at
+			, a.address
+			, a.city
+			, a.province
+			, a.building
+			, a.zip_code
 		FROM
 			accounts as a
 		JOIN
