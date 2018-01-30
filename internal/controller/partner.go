@@ -21,6 +21,11 @@ type (
 		Tag          string `json:"tag"`
 		Description  string `json:"description"`
 		BankAccount  string `json:"bank_account"`
+		Address      string `json:"address"`
+		Building     string `json:"building"`
+		City         string `json:"city"`
+		Province     string `json:"province"`
+		ZipCode      string `json:"zip_code"`
 		CreatedBy    string `json:"created_by"`
 		CreatedAt    string `json:"created_at"`
 	}
@@ -368,6 +373,11 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 			Valid:  true,
 		},
 		BankAccount: model.BankAccount{Id: rd.BankAccount},
+		Building:    rd.Building,
+		Address:     rd.Address,
+		City:        rd.City,
+		Province:    rd.Province,
+		ZipCode:     rd.ZipCode,
 	}
 	err := model.InsertPartner(param)
 	if err != nil {

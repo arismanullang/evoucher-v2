@@ -87,7 +87,12 @@ function send() {
 		email: $("#email").val(),
 		tag: listTag,
 		description: $("#description").val(),
-		bank_account: $("#bank-accounts").find(":selected").val()
+		bank_account: $("#bank-accounts").find(":selected").val(),
+		address: $("#address").val(),
+		city: $("#city").val(),
+		province: $("#province").val(),
+		building: $("#building").val(),
+		zip_code: $("#zip-code").val()
 	};
 	console.log(partner);
 

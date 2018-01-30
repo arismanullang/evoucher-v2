@@ -775,7 +775,7 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if (int(dt.MaxGenerateVoucher) - model.CountHolderVoucher(gvd.ProgramID, gvd.Holder.Key)) < 0 {
+	if int(dt.MaxGenerateVoucher) <= model.CountHolderVoucher(gvd.ProgramID, gvd.Holder.Key) {
 		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, logger.TraceID)
 		logger.SetStatus(status).Log("param :", gvd, "response :", res.Errors.ToString())

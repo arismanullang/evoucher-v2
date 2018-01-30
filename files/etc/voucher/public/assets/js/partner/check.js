@@ -146,7 +146,6 @@ function getProgram(id) {
 
 			var dataSet = [];
 			for (i = 0; i < limit; i++) {
-				var button = "<button type='button' onclick='detail(\"" + arrData[i].id + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"
 				var type = 'mobile application';
 				if(arrData[i].type == 'bulk'){
 					type = 'email blast';
@@ -160,7 +159,6 @@ function getProgram(id) {
 					, new Date(arrData[i].start_date).toDateString().toUpperCase()
 					, new Date(arrData[i].end_date).toDateString().toUpperCase()
 					, arrData[i].voucher
-					, button
 				];
 			}
 			initProgramReport(dataSet);
