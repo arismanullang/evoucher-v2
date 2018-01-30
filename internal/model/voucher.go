@@ -636,12 +636,14 @@ func CountHolderVoucher(programId, holder string) int {
 		FROM
 			vouchers
 		WHERE
-			program_id = ?
+			created_at BETWEEN ?
+			AND ?
+			AND program_id = ?
 			AND holder = ?
 			AND status = ?
 	`
 	var resd []int
-	if err := db.Select(&resd, db.Rebind(q), programId, holder, StatusCreated); err != nil {
+	if err := db.Select(&resd, db.Rebind(q), time.Now().AddDate(0, 0, -1), time.Now(), programId, holder, StatusCreated); err != nil {
 		log.Panic(err)
 		return 0
 	}

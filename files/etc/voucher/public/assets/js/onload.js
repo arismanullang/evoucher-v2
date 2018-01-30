@@ -32,7 +32,7 @@ function setSideNavBar() {
 	var li = $("#sidenav").find("a");
 	var bool = false;
 	for(var i = 0; i < li.length; i++){
-		for(var y = 0; y < ui.length-1; y ++) {
+		for(var y = 0; y < ui.length; y ++) {
 			bool = false;
 
 			if (li[i].getAttribute("ui").match(ui[y])) {
