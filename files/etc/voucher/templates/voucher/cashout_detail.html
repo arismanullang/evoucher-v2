@@ -1,7 +1,7 @@
 {{ template "layout" . }}
 
-{{ define "title" }}Cashout Voucher{{ end }}
-{{ define "header-title" }}Cashout Voucher{{ end }}
+{{ define "title" }}Reimburse Voucher{{ end }}
+{{ define "header-title" }}Reimburse Voucher{{ end }}
 
 {{ define "content" }}
 <!-- Page content-->
@@ -9,7 +9,7 @@
   <div class="container-fluid">
     <div id="transaction-card" class="card">
       <div class="card-heading bg-amber-500">
-        <div class="card-title text-center">Cashout</div>
+        <div class="card-title text-center">Reimburse</div>
       </div>
       <div class="card-body">
         <form id="transaction" name="transaction" novalidate="" class="card b0 form-validate">
@@ -84,7 +84,7 @@
               <div class="row">
                 <button type="button" onclick="print()" class="btn btn-raised btn-success ripple">Print</button>
                 OR
-                <button type="button" onclick="next()" class="btn btn-raised btn-primary ripple">Next Cashout</button>
+                <button type="button" onclick="next()" class="btn btn-raised btn-primary ripple">Next Reimburse</button>
               </div>
             </div>
           </div>
