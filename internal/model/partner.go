@@ -131,6 +131,11 @@ func FindPartners(param map[string]string) ([]Partner, error) {
 			, email
 			, tag
 			, description
+			, building
+			, address
+			, city
+			, province
+			, zip_code
 		FROM partners
 		WHERE status = ?
 	`
@@ -151,6 +156,18 @@ func FindPartners(param map[string]string) ([]Partner, error) {
 		return []Partner{}, ErrResourceNotFound
 	}
 
+	for i := 0; i < len(resv); i++ {
+		tempBank, err := FindBankAccountByPartner(resv[i].AccountId, resv[i].Id)
+		if err != nil {
+			fmt.Println(err.Error())
+			return []Partner{}, ErrServerInternal
+		}
+		if len(resv) < 1 {
+			return []Partner{}, ErrResourceNotFound
+		}
+
+		resv[i].BankAccount = tempBank
+	}
 	return resv, nil
 }
 
@@ -229,13 +246,20 @@ func UpdatePartner(partner Partner, user string) error {
 			serial_number = ?
 			, email = ?
 			, description = ?
+			, building = ?
+			, address = ?
+			, city = ?
+			, province = ?
+			, zip_code = ?
+			, bank_account_id = ?
+			, tag = ?
 			, updated_by = ?
 			, updated_at = ?
 		WHERE
 			id = ?
 			AND status = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), partner.SerialNumber, partner.Email, partner.Description, user, time.Now(), partner.Id, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), partner.SerialNumber, partner.Email, partner.Description, partner.Building, partner.Address, partner.City, partner.Province, partner.ZipCode, partner.BankAccount.Id, partner.Tag, user, time.Now(), partner.Id, StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return err

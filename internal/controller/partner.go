@@ -233,7 +233,7 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var serial, desc sql.NullString
+	var serial, desc, tag sql.NullString
 	var email string
 
 	if rd.SerialNumber != "" {
@@ -248,11 +248,25 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 		email = rd.Email
 	}
 
+	if rd.Tag != "" {
+		tag = sql.NullString{rd.Tag, true}
+	}
+
+	bank := model.BankAccount{
+		Id: rd.BankAccount,
+	}
 	partner := model.Partner{
 		Id:           id,
 		SerialNumber: serial,
 		Email:        email,
 		Description:  desc,
+		Building:     rd.Building,
+		Address:      rd.Address,
+		City:         rd.City,
+		Province:     rd.Province,
+		ZipCode:      rd.ZipCode,
+		BankAccount:  bank,
+		Tag:          tag,
 	}
 
 	err := model.UpdatePartner(partner, a.User.ID)
