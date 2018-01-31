@@ -10,27 +10,97 @@
   <form id="updatePartner" name="updatePartner" novalidate="" class="card b0 form-validate">
     <div class="card">
       <div class="card-heading bg-amber-500">
-          <div class="card-title text-center">Edit Partner : <span id="partnerName"></span></div>
+          <div class="card-title text-center">Edit Partner : <span id="partner-name"></span></div>
       </div>
       <div class="card-body">
         <div class="row">
-          <div class="col-sm-12">
+          <div class="col-sm-6">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input id="serial-number" name="serial-number" tabindex="0" aria-invalid="false" class="form-control">
+                <select id="bank-accounts" name="bank-accounts" class="form-control select2" tabindex="0">
+                  <option>Select Bank Account</option>
+                </select>
                 <div class="mda-form-control-line"></div>
-                <label>Serial Number</label>
+                <label>Bank Account</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input id="building" name="building" tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Building</label>
               </div>
             </div>
           </div>
         </div>
         <div class="row">
-          <div class="col-sm-12">
+          <div class="col-sm-6">
             <div class="mda-form-group">
               <div class="mda-form-control">
-                <input id="email" name="email" tabindex="0" aria-invalid="false" class="form-control">
+                <input id="serial-number" name="serial-number" tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Token Serial Number</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input id="address" name="address" tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Address</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input id="email" name="email" type="email" tabindex="0" aria-invalid="false" class="form-control">
                 <div class="mda-form-control-line"></div>
                 <label>Email</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input id="city" name="city" tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>City</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input id="province" name="province" tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Province</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-9">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <select id="tags" name="tags" multiple="multiple" class="form-control select2" tabindex="0">
+                </select>
+                <div class="mda-form-control-line"></div>
+                <label>Tag</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="mda-form-group">
+              <div class="mda-form-control">
+                <input id="zip-code" name="zip-code" tabindex="0" aria-invalid="false" class="form-control">
+                <div class="mda-form-control-line"></div>
+                <label>Zip Code</label>
               </div>
             </div>
           </div>
@@ -59,8 +129,10 @@
 {{ end }}
 
 {{ define "scripts" }}
+<script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
 <script type="text/javascript" src="/assets/js/partner/update.js"></script>
 {{ end }}
 
 {{ define "stylesheets" }}
+<link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
 {{ end }}
