@@ -80,6 +80,7 @@ function getTransactionByPartner(partnerId) {
 						, arrData[i].transaction_code
 						, arrData[i].program_name.toUpperCase()
 						, arrData[i].vouchers[y].voucher_code
+						, "Rp." + addDecimalPoints(arrData[i].voucher_value).trim() + ",00"
 						, date1[2] + " " + months[parseInt(date1[1]) - 1] + " " + date1[0]
 						, date2[2] + " " + months[parseInt(date2[1]) - 1] + " " + date2[0]
 						, cashoutDate

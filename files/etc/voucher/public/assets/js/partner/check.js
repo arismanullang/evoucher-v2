@@ -4,7 +4,6 @@ $(document).ready(function () {
 	getPerformance(id, 'all');
 	getVoucher(id, 'all');
 	getProgram(id);
-	getBankAccount(id);
 	makeQRCode(id);
 
 	$("#performanceType").change(function () {
@@ -15,21 +14,6 @@ $(document).ready(function () {
 
 	$(".select2").select2();
 });
-
-function getBankAccount(id) {
-	$.ajax({
-		url: '/v1/ui/bank_account/partner?partner='+id+'&token='+token,
-		type: 'get',
-		success: function (data) {
-			var result = data.data;
-
-			$('#bank-account').html(result.company_name + ", " + result.bank_name + " - " + result.bank_account_number);
-
-		},
-		error: function (data) {
-		}
-	});
-}
 
 function getVoucher(id, type) {
 	var arrData = [];
@@ -131,6 +115,7 @@ function getPartner(id) {
 			$("#serial-number").html(arrData.serial_number.String);
 			$("#tag").html(arrData.tag.String);
 			$("#desciption").html(arrData.description.String);
+			$('#bank-account').html(arrData.bank_account.company_name + ", " + arrData.bank_account.bank_name + " - " + arrData.bank_account.bank_account_number);
 		}
 	});
 }

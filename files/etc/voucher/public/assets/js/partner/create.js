@@ -94,7 +94,6 @@ function send() {
 		building: $("#building").val(),
 		zip_code: $("#zip-code").val()
 	};
-	console.log(partner);
 
 	$.ajax({
 		url: '/v1/ui/partner/create?token=' + token,
