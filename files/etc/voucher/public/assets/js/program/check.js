@@ -151,7 +151,7 @@ function getPartner(id) {
 				buttons: [
 					'copy', 'csv', 'excel', 'pdf', 'print'
 				],
-				"order": [[3, "desc"]],
+				"order": [[2, "desc"]],
 				oLanguage: {
 					sSearch: '<em class="ion-search"></em>',
 					sLengthMenu: '_MENU_ records per page',

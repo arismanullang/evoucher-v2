@@ -323,6 +323,8 @@ func viewVoucher(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "voucher/cashout.html", nil)
 	} else if page == "cashout_detail" {
 		render.FileInLayout(w, "layout.html", "voucher/cashout_detail.html", nil)
+	} else if page == "cashout_success" {
+		render.FileInLayout(w, "layout.html", "voucher/cashout_success.html", nil)
 	} else if page == "print" {
 		render.FileInLayout(w, "layout.html", "voucher/print.html", nil)
 	} else {
