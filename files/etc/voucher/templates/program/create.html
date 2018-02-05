@@ -15,7 +15,7 @@
         <div class="pv distribution"><a href="#distribution">Distribution Rules</a></div>
         <div class="pv"><a href="#using">Redeem Rules</a></div>
 
-        <div id="modalLoader" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" class="modal fade">
+        <div id="modal-loader" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" class="modal fade">
           <div class="modal-dialog modal-loader">
             <div class="modal-content">
               <div class="modal-body">
@@ -35,7 +35,7 @@
     </div>
   </div>
   <div class="col-lg-10 p0 overflow-container">
-    <form id="createProgram" name="createProgram" novalidate="" class="card b0 form-validate redeem-rules-form" action="" method="">
+    <form id="create-program" name="create-program" novalidate="" class="card b0 form-validate redeem-rules-form" action="" method="">
       <div class="card">
         <div class="card-heading text-center" id="program">
           <div class="card-title">Program</div>
@@ -48,7 +48,7 @@
             <div class="col-sm-4">
               <div class="form-group">
                 <div class="form-control no-border">
-                  <input id="programName" name="programName" placeholder="Program Name" tabindex="0" aria-invalid="false" class="form-control">
+                  <input id="program-name" name="program-name" placeholder="Program Name" tabindex="0" aria-invalid="false" class="form-control">
                 </div>
               </div>
             </div>
@@ -58,7 +58,7 @@
             <div class="col-sm-4">
               <div class="form-group">
                 <div class="form-control no-border">
-                  <select id="programType" name="programType" class="form-control select2" tabindex="0">
+                  <select id="program-type" name="program-type" class="form-control select2" tabindex="0">
                     <option value="on-demand">Mobile Application</option>
                     <option value="bulk">Email Blast</option>
                     <option value="gift">Gift Voucher</option>
@@ -73,8 +73,8 @@
             </div>
             <div class="col-sm-4">
               <div class="form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
-                <div id="datepickerProgramFrom" class="form-control no-border">
-                  <input id="programValidFrom" name="programValidFrom" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepickerProgramFrom">
+                <div id="datepicker-program-from" class="form-control no-border">
+                  <input id="program-valid-from" name="program-valid-from" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepicker-program-from">
                 </div>
               </div>
             </div>
@@ -83,8 +83,8 @@
             </div>
             <div class="col-sm-5">
               <div class="form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
-                <div id="datepickerProgramTo" class="form-control no-border">
-                  <input id="programValidTo" name="programValidTo" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepickerProgramTo">
+                <div id="datepicker-program-to" class="form-control no-border">
+                  <input id="program-valid-to" name="program-valid-to" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepicker-program-to">
                 </div>
               </div>
             </div>
@@ -93,8 +93,8 @@
             <div class="col-sm-6">
               <div class="mda-form-group">
                 <div class="mda-form-control no-border-bottom">
-                  <span><img id="imagePreview" class="image-preview" src="/assets/img/Default_image_blank_voucher.jpg"></span>
-                  <input id="imageUrl" name="imageUrl" type="file" tabindex="0" aria-invalid="false" class="form-control">
+                  <span><img id="image-preview" class="image-preview" src="/assets/img/Default_image_blank_voucher.jpg"></span>
+                  <input id="image-url" name="image-url" type="file" tabindex="0" aria-invalid="false" class="form-control">
                   <div class="mda-form-control-line"></div>
                   <label>Voucher Image</label>
                 </div>
@@ -107,7 +107,7 @@
                 </div>
                 <div class="col-sm-8">
                   <div class="form-group">
-                    <input id="listTarget" name="listTarget" type="file" tabindex="0" aria-invalid="false" class="no-border form-control">
+                    <input id="list-target" name="list-target" type="file" tabindex="0" aria-invalid="false" class="no-border form-control">
                   </div>
                 </div>
               </div>
@@ -120,7 +120,7 @@
             <div class="col-sm-12">
               <div class="mda-form-group">
                 <div class="mda-form-control">
-                  <textarea id="programDescription" name="programDescription" rows="6" aria-multiline="true" tabindex="0" class="form-control"></textarea>
+                  <textarea id="program-description" name="program-description" rows="6" aria-multiline="true" tabindex="0" class="form-control"></textarea>
                   <div class="mda-form-control-line"></div>
                   <label>Description</label><span class="mda-form-msg right">Any message here</span>
                 </div>
@@ -134,7 +134,7 @@
           </div>
           <div class="row">
             <div class="col-sm-12">
-              <div id="listRule" class="summernote"></div>
+              <div id="list-rule" class="summernote"></div>
             </div>
           </div>
         </div>
@@ -158,14 +158,14 @@
             <div class="col-sm-5">
               <div class="form-group">
                 <div class="input-group">
-                  <input id="voucherPrice" class="form-control" type="text" placeholder="0"><span class="input-group-addon">Points</span>
+                  <input id="voucher-price" name="voucher-price" class="form-control" type="text" placeholder="0"><span class="input-group-addon">Points</span>
                 </div>
               </div>
             </div>
             <div class="col-sm-5 col-sm-offset-2">
               <div class="form-group">
                 <div class="input-group"><span class="input-group-addon">Rp.</span>
-                  <input id="voucherValue" name="voucherValue" class="form-control" type="text" placeholder="0"><span class="input-group-addon">.00</span>
+                  <input id="voucher-value" name="voucher-value" class="form-control" type="text" placeholder="0"><span class="input-group-addon">.00</span>
                 </div>
               </div>
             </div>
@@ -174,7 +174,7 @@
             <div class="col-sm-6">
               <div class="mda-form-group">
                 <div class="mda-form-control">
-                  <select id="voucherFormat" name="voucher-format" class="form-control select2" tabindex="0">
+                  <select id="voucher-format" name="voucher-format" class="form-control select2" tabindex="0">
                     <option value="Alphanumeric">Alphanumeric</option>
                     <option value="Alphabet">Alphabetic</option>
                     <option value="Numerals">Numeric</option>
@@ -206,7 +206,7 @@
             <div class="col-sm-6">
               <div class="mda-form-group">
                 <div class="mda-form-control">
-                  <input id="voucherQuantity" name="voucherQuantity" placeholder="Min 1" tabindex="0" aria-invalid="false" class="form-control">
+                  <input id="voucher-quantity" name="voucher-quantity" placeholder="Min 1" tabindex="0" aria-invalid="false" class="form-control">
                   <div class="mda-form-control-line"></div>
                   <label>Voucher Quantity</label>
                 </div>
@@ -215,7 +215,7 @@
             <div class="col-sm-6">
               <div class="mda-form-group">
                 <div class="mda-form-control">
-                  <input id="generateVoucher" name="generateVoucher" placeholder="Min 1" tabindex="0" aria-invalid="false" class="form-control">
+                  <input id="generate-voucher" name="generate-voucher" placeholder="Min 1" tabindex="0" aria-invalid="false" class="form-control">
                   <div class="mda-form-control-line"></div>
                   <label>Maximum Number of Redeemed Vouchers</label>
                 </div>
@@ -235,28 +235,28 @@
             <div class="col-sm-2">
               <div class="form-group">
                 <div class="form-control no-border">
-                  <select id="voucherValidityType" name="voucherValidityType" class="form-control select2" tabindex="0">
+                  <select id="voucher-validity-type" name="voucher-validity-type" class="form-control select2" tabindex="0">
                     <option value="lifetime">Days</option>
                     <option value="period">Date Range</option>
                   </select>
                 </div>
               </div>
             </div>
-            <div id="validityLifetime" class="col-sm-2" style="display:none">
+            <div id="validity-lifetime" class="col-sm-2" style="display:none">
               <div class="form-group">
                 <div class="form-control no-border">
                   <div class="input-group">
-                    <input id="voucherLifetime" name="voucherLifetime" type="text" placeholder="0" class="form-control">
+                    <input id="voucher-lifetime" name="voucher-lifetime" type="text" placeholder="0" class="form-control">
                     <span class="input-group-addon">Days</span>
                   </div>
                 </div>
               </div>
             </div>
-            <div id="validityDate" class="col-sm-8">
+            <div id="validity-date" class="col-sm-8">
               <div class="col-sm-6">
                 <div class="mda-form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
-                  <div id="datepickerVoucherFrom" class="mda-form-control">
-                    <input id="voucherValidFrom" name="voucherValidFrom" tabindex="0" aria-invalid="false" class="form-control datepickerVoucherFrom">
+                  <div id="datepicker-voucher-from" class="mda-form-control">
+                    <input id="voucher-valid-from" name="voucher-valid-from" tabindex="0" aria-invalid="false" class="form-control datepicker-voucher-from">
                     <div class="mda-form-control-line"></div>
                     <label>From</label>
                   </div>
@@ -264,8 +264,8 @@
               </div>
               <div class="col-sm-6">
                 <div class="mda-form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
-                  <div id="datepickerVoucherTo" class="mda-form-control">
-                    <input id="voucherValidTo" name="voucherValidTo" tabindex="0" aria-invalid="false" class="form-control datepickerVoucherTo">
+                  <div id="datepicker-voucher-to" class="mda-form-control">
+                    <input id="voucher-valid-to" name="voucher-valid-to" tabindex="0" aria-invalid="false" class="form-control datepicker-voucher-to">
                     <div class="mda-form-control-line"></div>
                     <label>To</label>
                   </div>
@@ -281,7 +281,7 @@
             <div class="col-sm-2">
               <div class="form-group">
                 <div class="form-control no-border">
-                  <select id="redemptionMethod" name="redemptionMethod" class="form-control select2" tabindex="0">
+                  <select id="redemption-method" name="redemption-method" class="form-control select2" tabindex="0">
                     <option value="qr">QR</option>
                     <option value="token">Token</option>
                   </select>
@@ -289,20 +289,20 @@
               </div>
             </div>
 
-            <div id="conversionRow" class="col-sm-6">
+            <div id="conversion-row" class="col-sm-6">
               <div class="col-sm-6">
                 <label class='checkbox-inline c-checkbox'>
-                  <input type='checkbox' id="allowAccumulative">
+                  <input type='checkbox' id="allow-accumulative">
                   <span class='ion-checkmark-round'></span>
                   <label class='checkbox-label'>Allow Multiple Vouchers</label>
                 </label>
               </div>
 
-              <div id="divMaxRedeemVoucher" class="col-sm-6" style="display: none">
+              <div id="div-max-redeem-voucher" class="col-sm-6" style="display: none">
                 <div class="form-group">
                   <div class="form-control no-border">
                     <div class="input-group">
-                      <input id="maxRedeemVoucher" name="maxRedeemVoucher" type="text" placeholder="0" class="form-control">
+                      <input id="max-redeem-voucher" name="max-redeem-voucher" type="text" placeholder="0" class="form-control">
                       <span class="input-group-addon">Vouchers</span>
                     </div>
                   </div>
@@ -318,7 +318,7 @@
             <div class="col-sm-2">
               <div class="form-group">
                 <div class="form-control no-border">
-                  <select id="redeemValidityType" name="redeemValidityType" class="form-control select2" tabindex="0">
+                  <select id="redeem-validity-type" name="redeem-validity-type" class="form-control select2" tabindex="0">
                     <option value="all">All Day</option>
                     <option value="weekend">Weekend</option>
                     <option value="weekday">Weekday</option>
@@ -328,7 +328,7 @@
               </div>
             </div>
 
-            <div id="validityDay" class="col-sm-8 border">
+            <div id="validity-day" class="col-sm-8 border">
               <div id="dayList" class="mda-form-group checkbox-add-padding">
                 <div class='col-sm-4'>
                   <label class='checkbox-inline c-checkbox'>
@@ -383,7 +383,7 @@
             <div class="col-sm-2 ">
               <div class="form-group clockpicker" data-autoclose="true">
                 <div class="form-control no-border">
-                  <input id="startHour" name="startHour" placeholder="00:00" tabindex="0" aria-invalid="false" class="form-control" style="text-align: center">
+                  <input id="start-hour" name="start-hour" placeholder="00:00" tabindex="0" aria-invalid="false" class="form-control" style="text-align: center">
                 </div>
               </div>
             </div>
@@ -393,7 +393,7 @@
             <div class="col-sm-2">
               <div class="form-group clockpicker" data-autoclose="true">
                 <div class="form-control no-border">
-                  <input id="endHour" name="endHour" placeholder="00:00" tabindex="0" aria-invalid="false" class="form-control" style="text-align: center">
+                  <input id="end-hour" name="end-hour" placeholder="00:00" tabindex="0" aria-invalid="false" class="form-control" style="text-align: center">
                 </div>
               </div>
             </div>
@@ -416,10 +416,10 @@
           <div class="row form-horizontal">
             <div name="" class="col-sm-10 col-sm-offset-2 border">
               <div class="row">
-                <div id="partnerList" class="mda-form-group checkbox-add-padding">
+                <div id="partner-list" class="mda-form-group checkbox-add-padding">
                   <div class='col-sm-12'>
                     <label class='checkbox-inline c-checkbox'>
-                      <input type='checkbox' name="partner" id="allTenant">
+                      <input type='checkbox' name="partner" id="all-tenant">
                       <span class='ion-checkmark-round'></span>All Partners
                     </label>
                   </div>

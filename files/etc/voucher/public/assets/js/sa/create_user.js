@@ -8,7 +8,7 @@ $(window).ready(function () {
 		getRole(this.value);
 	});
 
-	$('#createUser').validate({
+	$('#create-user').validate({
 		errorPlacement: errorPlacementInput,
 		// Form rules
 		rules: {
@@ -33,7 +33,7 @@ $(window).ready(function () {
 });
 
 function send() {
-	if(!$("#createUser").valid()){
+	if(!$("#create-user").valid()){
 		return;
 	}
 
@@ -100,6 +100,11 @@ function getRole(account) {
 					+ "<span class='ion-checkmark-round'></span>" + arrData[i].detail
 					+ "</label>";
 				li.html(html);
+				li.appendTo('#role');
+			}
+			if(arrData.length == 0){
+				var li = $("<div class='col-sm-4'></div>");
+				li.html("No Role Found");
 				li.appendTo('#role');
 			}
 		},
