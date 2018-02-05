@@ -155,32 +155,11 @@ function cashout(){
 		data: JSON.stringify(transaction),
 		success: function (data) {
 			console.log(data);
-			$("#success-page").attr("style","display:block");
-			$("#cashout-id").val(data.data);
-			$("#transaction-card").attr("style","display:none");
+			window.location = "/voucher/cashout_success?id="+data.data;
 		},
 		error: function (data) {
 			var a = JSON.parse(data.responseText);
 			swal("Error", a.errors.detail);
 		}
 	});
-}
-
-function print(){
-	window.location = "/voucher/print?id="+$("#cashout-id").val();
-}
-
-function next(){
-	swal({
-			title: 'Are you already print the invoice?',
-			text: 'You will not be able to recover the last details',
-			type: 'warning',
-			showCancelButton: true,
-			confirmButtonColor: '#4CAF50',
-			confirmButtonText: 'Yes',
-			closeOnConfirm: true
-		},
-		function() {
-			window.location.reload();
-		});
 }

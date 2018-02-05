@@ -17,7 +17,7 @@
         </div>
       </div>
 
-      <div id="modalLoader" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" class="modal fade">
+      <div id="modal-loader" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" class="modal fade">
         <div class="modal-dialog modal-loader">
           <div class="modal-content">
             <div class="modal-body">
@@ -41,52 +41,52 @@
             <div class="card-title">Program</div>
           </div>
           <div class="card-body">
-            <div class="row">
-              <div class="col-sm-6">
-                <div class="mda-form-group">
-                  <div class="mda-form-control">
-                    <input id="programName" name="programName" placeholder="Program Name" tabindex="0" aria-invalid="false" class="form-control">
-                    <input id="programId" type="hidden">
-                    <div class="mda-form-control-line"></div>
-                    <label>Program Name</label>
+            <input id="image-url-default" name="image-url-default" type="hidden">
+            <input id="program-id" name="program-id" type="hidden">
+            <div class="row form-horizontal">
+              <div class="col-sm-2">
+                <label class="control-label">Program Name</label>
+              </div>
+              <div class="col-sm-4">
+                <div class="form-group">
+                  <div class="form-control no-border">
+                    <input id="program-name" name="program-name" placeholder="Program Name" tabindex="0" aria-invalid="false" class="form-control">
                   </div>
                 </div>
               </div>
-              <div class="col-sm-6">
-                <div class="mda-form-group">
-                  <div class="mda-form-control">
-                    <select id="programType" name="programType" class="form-control select2" tabindex="0">
+              <div class="col-sm-2">
+                <label class="control-label">Program Type</label>
+              </div>
+              <div class="col-sm-4">
+                <div class="form-group">
+                  <div class="form-control no-border">
+                    <select id="program-type" name="program-type" class="form-control select2" tabindex="0">
                       <option value="on-demand">Mobile Application</option>
                       <option value="bulk">Email Blast</option>
                       <option value="gift">Gift Voucher</option>
                     </select>
-                    <div class="mda-form-control-line"></div>
-                    <label>Program Type</label>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="row">
-              <div class="col-sm-12">
-                <label>Distribution Period</label>
+            <div class="row form-horizontal">
+              <div class="col-sm-2">
+                <label class="control-label">Program Period</label>
               </div>
-            </div>
-            <div class="row ">
-              <div class="col-sm-6">
-                <div class="mda-form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
-                  <div id="example-datepicker-container-4" class="mda-form-control">
-                    <input id="programValidFrom" name="programValidFrom" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepicker4">
-                    <div class="mda-form-control-line"></div>
-                    <label>From</label>
+              <div class="col-sm-4">
+                <div class="form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
+                  <div id="datepicker-program-from" class="form-control no-border">
+                    <input id="program-valid-from" name="program-valid-from" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepicker-program-from">
                   </div>
                 </div>
               </div>
-              <div class="col-sm-6">
-                <div class="mda-form-group">
-                  <div class="mda-form-control">
-                    <input id="programValidTo" name="programValidTo" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepicker4">
-                    <div class="mda-form-control-line"></div>
-                    <label>To</label>
+              <div class="col-sm-1" style="text-align: center">
+                <label class="control-label">-</label>
+              </div>
+              <div class="col-sm-5">
+                <div class="form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
+                  <div id="datepicker-program-to" class="form-control no-border">
+                    <input id="program-valid-to" name="program-valid-to" placeholder="Select Date" tabindex="0" aria-invalid="false" class="form-control datepicker-program-to">
                   </div>
                 </div>
               </div>
@@ -95,11 +95,10 @@
               <div class="col-sm-6">
                 <div class="mda-form-group">
                   <div class="mda-form-control no-border-bottom">
-                    <span><img id="imagePreview" class="image-preview" src="/assets/img/Default_image_blank_voucher.jpg"></span>
-                    <input id="imageUrl" name="imageUrl" type="file" tabindex="0" aria-invalid="false" class="form-control">
+                    <span><img id="image-preview" class="image-preview" src="/assets/img/Default_image_blank_voucher.jpg"></span>
+                    <input id="image-url" name="image-url" type="file" tabindex="0" aria-invalid="false" class="form-control">
                     <div class="mda-form-control-line"></div>
                     <label>Voucher Image</label>
-                    <input id="imageUrlDefault" name="imageUrlDefault" type="hidden">
                   </div>
                 </div>
               </div>
@@ -108,7 +107,7 @@
               <div class="col-sm-12">
                 <div class="mda-form-group">
                   <div class="mda-form-control">
-                    <textarea id="programDescription" name="program-description" rows="6" aria-multiline="true" tabindex="0" class="form-control"></textarea>
+                    <textarea id="program-description" name="program-description" rows="6" aria-multiline="true" tabindex="0" class="form-control"></textarea>
                     <div class="mda-form-control-line"></div>
                     <label>Description</label><span class="mda-form-msg right">Any message here</span>
                   </div>
@@ -122,7 +121,7 @@
             </div>
             <div class="row">
               <div class="col-sm-12">
-                <div id="listRule" class="summernote"></div>
+                <div id="list-rule" class="summernote"></div>
               </div>
             </div>
           </div>
@@ -146,14 +145,14 @@
               <div class="col-sm-5">
                 <div class="form-group">
                   <div class="input-group">
-                    <input id="voucherPrice" name="voucherPrice" class="form-control" type="text" placeholder="0"><span class="input-group-addon">Points</span>
+                    <input id="voucher-price" name="voucher-price" class="form-control" type="text" placeholder="0"><span class="input-group-addon">Points</span>
                   </div>
                 </div>
               </div>
               <div class="col-sm-5 col-sm-offset-2">
                 <div class="form-group">
                   <div class="input-group"><span class="input-group-addon">Rp.</span>
-                    <input id="voucherValue" name="voucherValue" class="form-control" type="text" placeholder="0"><span class="input-group-addon">.00</span>
+                    <input id="voucher-value" name="voucher-value" class="form-control" type="text" placeholder="0"><span class="input-group-addon">.00</span>
                   </div>
                 </div>
               </div>
@@ -163,12 +162,12 @@
           <div class="card-heading text-center" id="distribution">
             <div class="card-title">Distribution Rules</div>
           </div>
-          <div class="card-body">
+          <div class="card-body distribution">
             <div class="row">
               <div class="col-sm-6">
                 <div class="mda-form-group">
                   <div class="mda-form-control">
-                    <input id="maxQuantityVoucher" name="maxQuantityVoucher" placeholder="Min 1" tabindex="0" aria-invalid="false" class="form-control">
+                    <input id="voucher-quantity" name="voucher-quantity" placeholder="Min 1" tabindex="0" aria-invalid="false" class="form-control">
                     <div class="mda-form-control-line"></div>
                     <label>Voucher Quantity</label>
                   </div>
@@ -177,7 +176,7 @@
               <div class="col-sm-6">
                 <div class="mda-form-group">
                   <div class="mda-form-control">
-                    <input id="maxGenerateVoucher" name="maxGenerateVoucher" placeholder="Min 1" tabindex="0" aria-invalid="false" class="form-control">
+                    <input id="generate-voucher" name="generate-voucher" placeholder="Min 1" tabindex="0" aria-invalid="false" class="form-control">
                     <div class="mda-form-control-line"></div>
                     <label>Maximum Number of Redeemed Vouchers</label>
                   </div>
@@ -197,37 +196,37 @@
               <div class="col-sm-2">
                 <div class="form-group">
                   <div class="form-control no-border">
-                    <select id="voucherValidityType" name="voucher-type" class="form-control select2" tabindex="0">
+                    <select id="voucher-validity-type" name="voucher-validity-type" class="form-control select2" tabindex="0">
                       <option value="lifetime">Days</option>
                       <option value="period">Date Range</option>
                     </select>
                   </div>
                 </div>
               </div>
-              <div id="validityLifetime" class="col-sm-2" style="display:none">
+              <div id="validity-lifetime" class="col-sm-2" style="display:none">
                 <div class="form-group">
                   <div class="form-control no-border">
                     <div class="input-group">
-                      <input id="voucherLifetime" name="voucherLifetime" type="text" placeholder="0" class="form-control">
+                      <input id="voucher-lifetime" name="voucher-lifetime" type="text" placeholder="0" class="form-control">
                       <span class="input-group-addon">Days</span>
                     </div>
                   </div>
                 </div>
               </div>
-              <div id="validityDate" class="col-sm-8">
+              <div id="validity-date" class="col-sm-8">
                 <div class="col-sm-6">
                   <div class="mda-form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
-                    <div id="example-datepicker-container-3" class="mda-form-control">
-                      <input id="voucherValidFrom" name="voucherValidFrom" tabindex="0" aria-invalid="false" class="form-control datepicker3">
+                    <div id="datepicker-voucher-from" class="mda-form-control">
+                      <input id="voucher-valid-from" name="voucher-valid-from" tabindex="0" aria-invalid="false" class="form-control datepicker-voucher-from">
                       <div class="mda-form-control-line"></div>
                       <label>From</label>
                     </div>
                   </div>
                 </div>
                 <div class="col-sm-6">
-                  <div class="mda-form-group">
-                    <div class="mda-form-control">
-                      <input id="voucherValidTo" name="voucherValidTo" tabindex="0" aria-invalid="false" class="form-control datepicker3">
+                  <div class="mda-form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
+                    <div id="datepicker-voucher-to" class="mda-form-control">
+                      <input id="voucher-valid-to" name="voucher-valid-to" tabindex="0" aria-invalid="false" class="form-control datepicker-voucher-to">
                       <div class="mda-form-control-line"></div>
                       <label>To</label>
                     </div>
@@ -236,7 +235,6 @@
               </div>
             </div>
 
-
             <div class="row form-horizontal">
               <div class="col-sm-2">
                 <label class="control-label">Redemption Method</label>
@@ -244,7 +242,7 @@
               <div class="col-sm-2">
                 <div class="form-group">
                   <div class="form-control no-border">
-                    <select id="redemptionMethod" name="redemptionMethod" class="form-control select2" tabindex="0">
+                    <select id="redemption-method" name="redemption-method" class="form-control select2" tabindex="0">
                       <option value="qr">QR</option>
                       <option value="token">Token</option>
                     </select>
@@ -252,44 +250,23 @@
                 </div>
               </div>
 
-              <div id="conversionRow" class="col-sm-6 col-sm-offset-2">
+              <div id="conversion-row" class="col-sm-6">
                 <div class="col-sm-6">
                   <label class='checkbox-inline c-checkbox'>
-                    <input type='checkbox' id="allowAccumulative">
+                    <input type='checkbox' id="allow-accumulative">
                     <span class='ion-checkmark-round'></span>
                     <label class='checkbox-label'>Allow Multiple Vouchers</label>
                   </label>
                 </div>
 
-                <div id="divMaxRedeemVoucher" class="col-sm-6" style="display: none">
+                <div id="div-max-redeem-voucher" class="col-sm-6" style="display: none">
                   <div class="form-group">
                     <div class="form-control no-border">
                       <div class="input-group">
-                        <input id="maxRedeemVoucher" name="maxRedeemVoucher" type="text" placeholder="0" class="form-control">
+                        <input id="max-redeem-voucher" name="max-redeem-voucher" type="text" placeholder="0" class="form-control">
                         <span class="input-group-addon">Vouchers</span>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-            <div class="row ">
-              <div class="col-sm-6">
-                <div class="mda-form-group clockpicker" data-autoclose="true">
-                  <div class="mda-form-control">
-                    <input id="startHour" name="startHour" placeholder="00:00" tabindex="0" aria-invalid="false" class="form-control">
-                    <div class="mda-form-control-line"></div>
-                    <label>Valid Hours : From</label>
-                  </div>
-                </div>
-              </div>
-              <div class="col-sm-6">
-                <div class="mda-form-group clockpicker" data-autoclose="true">
-                  <div class="mda-form-control">
-                    <input id="endHour" name="endHour" placeholder="00:00" tabindex="0" aria-invalid="false" class="form-control">
-                    <div class="mda-form-control-line"></div>
-                    <label>To</label>
                   </div>
                 </div>
               </div>
@@ -297,12 +274,12 @@
 
             <div class="row form-horizontal">
               <div class="col-sm-2">
-                <label class="control-label">Valid Days</label>
+                <label class="control-label">Valid Day</label>
               </div>
               <div class="col-sm-2">
                 <div class="form-group">
                   <div class="form-control no-border">
-                    <select id="redeemValidityType" name="redeemValidityType" class="form-control select2" tabindex="0">
+                    <select id="redeem-validity-type" name="redeem-validity-type" class="form-control select2" tabindex="0">
                       <option value="all">All Day</option>
                       <option value="weekend">Weekend</option>
                       <option value="weekday">Weekday</option>
@@ -312,7 +289,7 @@
                 </div>
               </div>
 
-              <div id="validityDay" class="col-sm-8 border">
+              <div id="validity-day" class="col-sm-8 border">
                 <div id="dayList" class="mda-form-group checkbox-add-padding">
                   <div class='col-sm-4'>
                     <label class='checkbox-inline c-checkbox'>
@@ -359,25 +336,62 @@
                 </div>
               </div>
             </div>
-            <div class="row">
+
+            <div class="row form-horizontal">
               <div class="col-sm-2">
-                <label class="control-label">Partner</label>
+                <label class="control-label">Valid Hours</label>
               </div>
-              <div class="col-sm-10 border">
-                <div id="partnerList" class="mda-form-group checkbox-add-padding">
-                  <div class='col-sm-12'>
-                    <label class='checkbox-inline c-checkbox'>
-                      <input type='checkbox' id="all-tenant">
-                      <span class='ion-checkmark-round'></span>All Partners
-                    </label>
+              <div class="col-sm-2 ">
+                <div class="form-group clockpicker" data-autoclose="true">
+                  <div class="form-control no-border">
+                    <input id="start-hour" name="start-hour" placeholder="00:00" tabindex="0" aria-invalid="false" class="form-control" style="text-align: center">
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-1" style="text-align: center">
+                <label class="control-label">-</label>
+              </div>
+              <div class="col-sm-2">
+                <div class="form-group clockpicker" data-autoclose="true">
+                  <div class="form-control no-border">
+                    <input id="end-hour" name="end-hour" placeholder="00:00" tabindex="0" aria-invalid="false" class="form-control" style="text-align: center">
                   </div>
                 </div>
               </div>
             </div>
+
+            <div class="row form-horizontal">
+              <div class="col-sm-2">
+                <label class="control-label">Partner</label>
+              </div>
+              <div name="" class="col-sm-2">
+                <div class="form-group">
+                  <div class="form-control no-border">
+                    <select id="tag" name="tag" class="form-control select2" tabindex="0">
+                      <option>All</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row form-horizontal">
+              <div name="" class="col-sm-10 col-sm-offset-2 border">
+                <div class="row">
+                  <div id="partner-list" class="mda-form-group checkbox-add-padding">
+                    <div class='col-sm-12'>
+                      <label class='checkbox-inline c-checkbox'>
+                        <input type='checkbox' name="partner" id="all-tenant">
+                        <span class='ion-checkmark-round'></span>All Partners
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="row">
               <div class=" pull-right p">
-                <span id="error-message" class="text-danger"></span>
-                <button type="button" data-toggle="modal" onclick="send()" class="btn btn-raised btn-primary ripple">Update</button>
+                <button type="button" id="sendButton" data-toggle="modal" onclick="send()" class="btn btn-raised btn-primary ripple">Create</button>
               </div>
             </div>
           </div>

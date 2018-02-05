@@ -33,44 +33,44 @@ $(document).ready(function () {
 				|| (Number(value) <= Number($(ele).val()));
 		}, 'Must be lower than {0}.');
 
-	$('#createProgram').validate({
+	$('#create-program').validate({
 		errorPlacement: errorPlacementInput,
 		// Form rules
 		rules: {
-			programName: {
+			"program-name": {
 				required: true
 			},
-			programValidFrom: {
+			'program-valid-from': {
 				required: true
 			},
-			programValidTo: {
+			'program-valid-to': {
 				required: true,
-				greaterThan: "#programValidFrom"
+				greaterThan: "#program-valid-from"
 			},
-			voucherPrice: {
+			'voucher-price': {
 				required: true,
 				digits: true
 			},
-			voucherValue: {
+			'voucher-value': {
 				required: true,
 				digits: true,
 				min: 5000
 			},
-			voucherQuantity: {
+			'voucher-quantity': {
 				required: true,
 				digits: true,
 				min: 1
 			},
-			generateVoucher: {
+			'generate-voucher': {
 				required: true,
 				digits: true,
 				min: 1,
-				lowerThan: "Voucher Quantity"
+				lowerThan: "voucher-quantity"
 			},
-			startHour: {
+			'start-hour': {
 				required: true
 			},
-			endHour: {
+			'end-hour': {
 				required: true
 			},
 			partner: {
@@ -81,54 +81,49 @@ $(document).ready(function () {
 });
 
 function initForm(){
-	if ($("#voucherValidityType").val() == "lifetime") {
-		$("#validityLifetime").attr("style", "display:block");
-		$("#validityDate").attr("style", "display:none");
-		$("#voucherValidFrom").val("");
-		$("#voucherValidTo").val("");
-	} else if ($("#voucherValidityType").val() == "period") {
-		$("#validityLifetime").attr("style", "display:none");
-		$("#validityDate").attr("style", "display:block");
-		$("#voucherLifetime").val("");
+	if ($("#voucher-validity-type").val() == "lifetime") {
+		$("#validity-tifetime").attr("style", "display:block");
+		$("#validity-date").attr("style", "display:none");
+		$("#voucher-valid-from").val("");
+		$("#voucher-valid-to").val("");
+	} else if ($("#voucher-validity-type").val() == "period") {
+		$("#validity-tifetime").attr("style", "display:none");
+		$("#validity-date").attr("style", "display:block");
+		$("#voucher-lifetime").val("");
 	} else {
-		$("#validityLifetime").attr("style", "display:none");
-		$("#validityDate").attr("style", "display:none");
-		$("#voucherValidFrom").val("");
-		$("#voucherValidTo").val("");
-		$("#voucherLifetime").val("");
+		$("#validity-tifetime").attr("style", "display:none");
+		$("#validity-date").attr("style", "display:none");
+		$("#voucher-valid-from").val("");
+		$("#voucher-valid-to").val("");
+		$("#voucher-lifetime").val("");
 	}
 
-	if ($("#redeemValidityType").val() == "all") {
-		$("#validityDay").attr("style", "display:none");
-	} else if ($("#redeemValidityType").val() == "selected") {
-		$("#validityDay").attr("style", "display:block");
+	if ($("#redeem-validity-type").val() == "all") {
+		$("#validity-day").attr("style", "display:none");
+	} else if ($("#redeem-validity-type").val() == "selected") {
+		$("#validity-day").attr("style", "display:block");
 	} else {
-		$("#validityDay").attr("style", "display:none");
+		$("#validity-day").attr("style", "display:none");
 	}
 
-	if ($("#programType").val() == "bulk") {
+	if ($("#program-type").val() == "bulk") {
 		$("#target").attr("style", "display:block");
-		$("#conversionRow").attr("style", "display:none");
+		$("#conversion-row").attr("style", "display:none");
 		$(".distribution").attr("style", "display:none");
-		$("#voucherPrice").val(0);
-		$("#voucherPrice").attr("disabled", true);
+		$("#voucher-price").val(0);
+		$("#voucher-price").attr("disabled", true);
 	} else {
 		$("#target").attr("style", "display:none");
-		$("#conversionRow").attr("style", "display:block");
+		$("#conversion-row").attr("style", "display:block");
 		$(".distribution").attr("style", "display:block");
-		$("#voucherPrice").attr("disabled", false);
-	}
-	if ($("#allowAccumulative").is(":checked")) {
-		$("#useVoucher").attr("style", "display:block");
-	} else {
-		$("#useVoucher").attr("style", "display:none");
+		$("#voucher-price").attr("disabled", false);
 	}
 }
 
 function onChangeElem(){
-	$("#allTenant").change(function () {
+	$("#all-tenant").change(function () {
 		var _this = $(this);
-		_this.closest('#partnerList').find("input.partner").prop('checked', _this.prop('checked'));
+		_this.closest('#partner-list').find("input.partner").prop('checked', _this.prop('checked'));
 	});
 	$("#tag").change(function () {
 		var li = $("input[class=partner]:not(:checked)");
@@ -145,56 +140,56 @@ function onChangeElem(){
 //   $(elem).parent().closest('tr').remove();
 // }
 
-	$("#voucherValidityType").change(function () {
+	$("#voucher-validity-type").change(function () {
 		if (this.value == "lifetime") {
-			$("#validityLifetime").attr("style", "display:block");
-			$("#validityDate").attr("style", "display:none");
-			$("#voucherValidFrom").val("");
-			$("#voucherValidTo").val("");
+			$("#validity-tifetime").attr("style", "display:block");
+			$("#validity-date").attr("style", "display:none");
+			$("#voucher-valid-from").val("");
+			$("#voucher-valid-to").val("");
 		} else if (this.value == "period") {
-			$("#validityLifetime").attr("style", "display:none");
-			$("#validityDate").attr("style", "display:block");
-			$("#voucherLifetime").val("");
+			$("#validity-tifetime").attr("style", "display:none");
+			$("#validity-date").attr("style", "display:block");
+			$("#voucher-lifetime").val("");
 		} else {
-			$("#validityLifetime").attr("style", "display:none");
-			$("#validityDate").attr("style", "display:none");
-			$("#voucherValidFrom").val("");
-			$("#voucherValidTo").val("");
-			$("#voucherLifetime").val("");
+			$("#validity-tifetime").attr("style", "display:none");
+			$("#validity-date").attr("style", "display:none");
+			$("#voucher-valid-from").val("");
+			$("#voucher-valid-to").val("");
+			$("#voucher-lifetime").val("");
 		}
 	});
-	$("#redeemValidityType").change(function () {
+	$("#redeem-validity-type").change(function () {
 		if (this.value == "all") {
-			$("#validityDay").attr("style", "display:none");
+			$("#validity-day").attr("style", "display:none");
 		} else if (this.value == "selected") {
-			$("#validityDay").attr("style", "display:block");
+			$("#validity-day").attr("style", "display:block");
 		} else {
-			$("#validityDay").attr("style", "display:none");
+			$("#validity-day").attr("style", "display:none");
 		}
 	});
-	$("#programType").change(function () {
+	$("#program-type").change(function () {
 		if (this.value == "bulk") {
 			$("#target").attr("style", "display:block");
-			$("#conversionRow").attr("style", "display:none");
+			$("#conversion-row").attr("style", "display:none");
 			$(".distribution").attr("style", "display:none");
-			$("#voucherPrice").val(0);
-			$("#voucherPrice").attr("disabled", true);
+			$("#voucher-price").val(0);
+			$("#voucher-price").attr("disabled", true);
 		} else {
 			$("#target").attr("style", "display:none");
-			$("#conversionRow").attr("style", "display:block");
+			$("#conversion-row").attr("style", "display:block");
 			$(".distribution").attr("style", "display:block");
-			$("#voucherPrice").val("");
-			$("#voucherPrice").attr("disabled", false);
+			$("#voucher-price").val("");
+			$("#voucher-price").attr("disabled", false);
 		}
 	});
-	$("#allowAccumulative").change(function () {
+	$("#allow-accumulative").change(function () {
 		if (this.checked == true) {
-			$("#divMaxRedeemVoucher").attr("style", "display:block");
+			$("#div-max-redeem-voucher").attr("style", "display:block");
 		} else {
-			$("#divMaxRedeemVoucher").attr("style", "display:none");
+			$("#div-max-redeem-voucher").attr("style", "display:none");
 		}
 	});
-	$("#imageUrl").change(function () {
+	$("#image-url").change(function () {
 		readURL(this);
 	});
 }
@@ -203,7 +198,7 @@ function readURL(input) {
 	if (input.files && input.files[0]) {
 		var reader = new FileReader();
 		reader.onload = function (e) {
-			$('#imagePreview').attr('src', e.target.result);
+			$('#image-preview').attr('src', e.target.result);
 		}
 
 		reader.readAsDataURL(input.files[0]);
@@ -215,17 +210,17 @@ function download() {
 }
 
 function send() {
-	var programName = $("#programName").val();
-	var programType = $("#programType").find(":selected").val();
-	var voucherPrice = parseInt($("#voucherPrice").val());
-	var maxQuantityVoucher = parseInt($("#voucherQuantity").val());
-	var redemptionMethod = $("#redemptionMethod").find(":selected").val();
-	var programValidFrom = $("#programValidFrom").val();
-	var programValidTo = $("#programValidTo").val();
-	var startHour = $("#startHour").val();
-	var endHour = $("#endHour").val();
-	var voucherValue = parseInt($("#voucherValue").val());
-	var programDescription = $("#programDescription").val();
+	var programName = $("#program-name").val();
+	var programType = $("#program-type").find(":selected").val();
+	var voucherPrice = parseInt($("#voucher-price").val());
+	var maxQuantityVoucher = parseInt($("#voucher-quantity").val());
+	var redemptionMethod = $("#redemption-method").find(":selected").val();
+	var programValidFrom = $("#program-valid-from").val();
+	var programValidTo = $("#program-valid-to").val();
+	var startHour = $("#start-hour").val();
+	var endHour = $("#end-hour").val();
+	var voucherValue = parseInt($("#voucher-value").val());
+	var programDescription = $("#program-description").val();
 
 	if(startHour == '00:00'){
 		startHour = '00:01';
@@ -236,13 +231,13 @@ function send() {
 
 	// valid days
 	var listDay = "";
-	if ($("#redeemValidityType").val() == "all") {
+	if ($("#redeem-validity-type").val() == "all") {
 		listDay = "all";
-	} else if ($("#redeemValidityType").val() == "weekend") {
+	} else if ($("#redeem-validity-type").val() == "weekend") {
 		listDay = "sunday;saturday";
-	} else if ($("#redeemValidityType").val() == "weekday") {
+	} else if ($("#redeem-validity-type").val() == "weekday") {
 		listDay = "monday;tuesday;wednesday;thursday;friday";
-	} else if ($("#redeemValidityType").val() == "selected") {
+	} else if ($("#redeem-validity-type").val() == "selected") {
 		var li = $("input[class=days]:checked");
 
 		$( ".days" ).rules( "add", {
@@ -273,19 +268,19 @@ function send() {
 	var periodStart = "";
 	var periodEnd = "";
 
-	if ($("#voucherValidityType").val() == "period") {
+	if ($("#voucher-validity-type").val() == "period") {
 		lifetime = 0;
-		periodStart = $("#voucherValidFrom").val();
-		periodEnd = $("#voucherValidTo").val();
-	} else if ($("#voucherValidityType").val() == "lifetime") {
-		$( "#voucherLifetime" ).rules( "add", {
+		periodStart = $("#voucher-valid-from").val();
+		periodEnd = $("#voucher-valid-to").val();
+	} else if ($("#voucher-validity-type").val() == "lifetime") {
+		$( "#voucher-lifetime" ).rules( "add", {
 			required: true,
 			min: 1,
 			max: 1800,
 			digits: true
 		});
 
-		lifetime = parseInt($("#voucherLifetime").val());
+		lifetime = parseInt($("#voucher-lifetime").val());
 
 		periodStart = "01/01/0001";
 		periodEnd = "01/01/0001";
@@ -296,47 +291,47 @@ function send() {
 		prefix: $("#prefix").val(),
 		postfix: "",
 		body: "",
-		format_type: $("#voucherFormat").find(":selected").val(),
+		format_type: $("#voucher-format").find(":selected").val(),
 		length: 5
 	};
 
 
 	// tnc
-	var str = $("#listRule").summernote('code');
+	var str = $("#list-rule").summernote('code');
 	var tnc = str.replace(/^\s+|\s+$|(\r?\n|\r)/g, '');
 	tnc = str.replace('<p>', '');
 	tnc = str.replace('</p>', '');
 	tnc = '<p>' + tnc + '</p>';
 
 	// max generate and redeem
-	var maxGenerate = parseInt($("#generateVoucher").val());
+	var maxGenerate = parseInt($("#generate-voucher").val());
 	var maxRedeem = 1;
 
 	// voucher type
 	var voucherType = "cash";
 
 	// allow accumulative
-	var allowAccumulative = $("#allowAccumulative").is(":checked");
+	var allowAccumulative = $("#allow-accumulative").is(":checked");
 	if (allowAccumulative) {
-		maxRedeem = parseInt($("#maxRedeemVoucher").val());
+		maxRedeem = parseInt($("#max-redeem-voucher").val());
 
-		$( "#voucherLifetime" ).rules( "add", {
+		$( "#voucher-lifetime" ).rules( "add", {
 			required: true,
 			digits: true,
 			min: 1
 		});
 	}
 
-	if(!$("#createProgram").valid()) {
+	if(!$("#create-program").valid()) {
 		return
 	}
 
 	// image
 	var formData = new FormData();
 	var img = "https://storage.googleapis.com/e-voucher/L1LXN5bpMphnvG6Ce8eUbBSYDW5G3MaH.jpg";
-	if ($('#imageUrl')[0].files[0] != null) {
-		$('#modalLoader').modal({backdrop: 'static',keyboard: false}, 'show');
-		formData.append('image-url', $('#imageUrl')[0].files[0]);
+	if ($('#image-url')[0].files[0] != null) {
+		$('#modal-loader').modal({backdrop: 'static',keyboard: false}, 'show');
+		formData.append('image-url', $('#image-url')[0].files[0]);
 
 		jQuery.ajax({
 			url: '/file/upload',
@@ -379,10 +374,10 @@ function send() {
 					contentType: "application/json",
 					data: JSON.stringify(program),
 					success: function (data) {
-						if ($("#programType").find(":selected").val() == "bulk") {
+						if ($("#program-type").find(":selected").val() == "bulk") {
 
 							var targets = new FormData();
-							targets.append('list-target', $("#listTarget")[0].files[0]);
+							targets.append('list-target', $("#list-target")[0].files[0]);
 
 							jQuery.ajax({
 								url: '/v1/ui/user/create/broadcast?token=' + token + '&program-id=' + data.data,
@@ -472,10 +467,10 @@ function send() {
 			contentType: "application/json",
 			data: JSON.stringify(program),
 			success: function (data) {
-				if ($("#programType").find(":selected").val() == "bulk") {
+				if ($("#program-type").find(":selected").val() == "bulk") {
 
 					var targets = new FormData();
-					targets.append('list-target', $("#listTarget")[0].files[0]);
+					targets.append('list-target', $("#list-target")[0].files[0]);
 
 					jQuery.ajax({
 						url: '/v1/ui/user/create/broadcast?token=' + token + '&program-id=' + data.data,
@@ -543,7 +538,7 @@ function getPartner() {
 					+ "<span class='ion-checkmark-round'></span>" + arrData[i].name
 					+ "</label>";
 				li.html(html);
-				li.appendTo('#partnerList');
+				li.appendTo('#partner-list');
 			}
 		}
 	});
@@ -565,7 +560,7 @@ function getPartnerByTag(param) {
 					+ "<span class='ion-checkmark-round'></span>" + arrData[i].name
 					+ "</label>";
 				li.html(html);
-				li.appendTo('#partnerList');
+				li.appendTo('#partner-list');
 			}
 		}
 	});
@@ -595,33 +590,33 @@ function getTag() {
 
 	function formAdvanced() {
 		$(".select2").select2();
-		$('.datepickerProgramFrom').datepicker({
-			container: '#datepickerProgramFrom',
+		$('.datepicker-program-from').datepicker({
+			container: '#datepicker-program-from',
 			autoclose: true,
 			startDate: 'd',
 			setDate: new Date()
 		}).on('changeDate', function (selected) {
 			var minDate = new Date(selected.date.valueOf());
-			$('.datepickerProgramTo').datepicker('setStartDate', minDate);
-			$('.datepickerVoucherFrom').datepicker('setStartDate', minDate);
+			$('.datepicker-program-to').datepicker('setStartDate', minDate);
+			$('.datepicker-voucher-from').datepicker('setStartDate', minDate);
 		});
-		$('.datepickerProgramTo').datepicker({
-			container: '#datepickerProgramTo',
+		$('.datepicker-program-to').datepicker({
+			container: '#datepicker-program-to',
 			autoclose: true,
 			startDate: '+1d',
 			setDate: new Date()
 		});
-		$('.datepickerVoucherFrom').datepicker({
-			container: '#datepickerVoucherFrom',
+		$('.datepicker-voucher-from').datepicker({
+			container: '#datepicker-voucher-from',
 			autoclose: true,
 			startDate: 'd',
 			setDate: new Date()
 		}).on('changeDate', function (selected) {
 			var minDate = new Date(selected.date.valueOf());
-			$('.datepickerVoucherTo').datepicker('setStartDate', minDate);
+			$('.datepicker-voucher-to').datepicker('setStartDate', minDate);
 		});
-		$('.datepickerVoucherTo').datepicker({
-			container: '#datepickerVoucherTo',
+		$('.datepicker-voucher-to').datepicker({
+			container: '#datepicker-voucher-to',
 			autoclose: true,
 			startDate: '+1d',
 			setDate: new Date()

@@ -161,7 +161,6 @@ func GetAllAccount(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAccountDetailByUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Get Account Details")
 	status := http.StatusOK
 	res := NewResponse(nil)
 

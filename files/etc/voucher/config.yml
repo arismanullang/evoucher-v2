@@ -9,7 +9,6 @@ database:
     redis:
       endpoint: "127.0.0.1:6379"
       token_lifetime: 1800 #in minutes (30 hours)
-#      token_lifetime: 2 #test
 
 mailgun:
   domain: "sedayuone.com"
