@@ -38,7 +38,7 @@ function myResult(e) {
 			id: localStorage.getItem("emailSpin"),
 			email: localStorage.getItem("emailSpin"),
 			phone: "",
-			description: localStorage.getItem("nameSpin")
+			description: localStorage.getItem("userSpin")
 		},
 		subject: "Gift Voucher "+response[1]
 	};
@@ -70,7 +70,7 @@ function myGameEnd(e) {
   //e is gameResultsArray
   console.log(e);
   TweenMax.delayedCall(6, function(){
-//    window.location.reload();
+   window.location.reload();
   })
 
 
