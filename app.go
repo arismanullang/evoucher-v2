@@ -26,7 +26,7 @@ var (
 	path_config = os.Getenv("EVOUCHER_CONFIG")
 
 	fversion = flag.Bool("version", false, "print the version.")
-	//fconfig  = flag.String("config", path_config, "set the config file path.")
+	// fconfig  = flag.String("config", path_config, "set the config file path.")
 	fconfig  = flag.String("config", "files/etc/voucher/config.yml", "set the config file path.")
 	fprofile = flag.String("profile", "", "enable profiler, value either one of [cpu, mem, block].")
 
