@@ -186,9 +186,9 @@ func makeMessageVoucherEmail(program ProgramCampaign, target TargetEmail) string
 		return ""
 	}
 
-	imageHeader := "http://voucher.apps.id:8889/assets/img/template_demo_email_01.jpg"
-	imageVoucher := "http://voucher.apps.id:8889/assets/img/template_demo_email_02.jpg"
-	imageFooter := "http://voucher.apps.id:8889/assets/img/template_demo_email_03.jpg"
+	imageHeader := "https://voucher.elys.id/assets/img/template_demo_email_01.jpg"
+	imageVoucher := "https://voucher.elys.id/assets/img/template_demo_email_02.jpg"
+	imageFooter := "https://voucher.elys.id/assets/img/template_demo_email_03.jpg"
 
 	if program.ImageHeader != "" {
 		imageHeader = program.ImageHeader
