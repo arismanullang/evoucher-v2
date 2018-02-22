@@ -88,6 +88,8 @@ func main() {
 	model.Email = config.Mailgun.Email
 	model.RootUrl = config.Mailgun.RootUrl
 
+	model.GetProgramTypes()
+
 	//logger config
 	model.Path = config.Logger.Path
 	model.FileName = config.Logger.FileName

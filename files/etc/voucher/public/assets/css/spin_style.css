@@ -1,0 +1,135 @@
+, .peg, .wheelSVG {
+ visibility: hidden;
+}
+.wheelContainer, body, html {
+ width: 100%;
+ height: 100%;
+ margin: 0;
+ padding: 0;
+}
+.centerCircle, .valueContainer, .wheelOutline, .wheelText {
+ pointer-events: none;
+}
+.toast, .wheelContainer, body, html {
+ text-align: center;
+}
+.wheelContainer, .buttonSpin {
+ transform: translate(-50%, 0);
+}
+.toast, .buttonSpin {
+ position: absolute;
+ background-color: transparent;
+}
+body {
+ background-color: #2d2d2d;
+ overflow: hidden;
+}
+body, html {
+ margin: 0;
+ padding: 0;
+}
+.wheelContainer {
+ position: absolute;
+ max-width: 1000px;
+ margin-left: auto;
+ margin-right: auto;
+ left: 50%;
+ top: 100px;
+}
+.wheelSVG {
+ position: absolute;
+ overflow: visible;
+ width: 100%;
+ height: auto;
+}
+.wheelText {
+ text-anchor: middle;
+ font-family: 'Fjalla One', Arial, sans-serif;
+ -webkit-user-select: none;
+ user-select: none;
+}
+.toast {
+ border-radius: 12px;
+ opacity: 0;
+ background-color: #1c75bc;
+}
+.toast p {
+ clear: both;
+ font-family: 'Fjalla One', Arial, sand-serif;
+ margin: 15px;
+ font-size: 30px;
+ color: #ededed;
+ letter-spacing: 0;
+ -webkit-touch-callout: none;
+ -webkit-user-select: none;
+ -khtml-user-select: none;
+ -moz-user-select: none;
+ -ms-user-select: none;
+ user-select: none;
+ line-height: 32px;
+ -webkit-transition: line-height .2s ease;
+ transition: line-height .2s ease;
+}
+.buttonSpin {
+ left:50%;
+ width: 80%;
+ top: 20px;
+ max-width: 400px;
+ padding: 20px;
+ font-weight: 700;
+ font-size: 32px;
+ color: #ededed;
+ border-radius: 6px;
+ border: none;
+ box-shadow: 0 2px 0 #D71559;
+ cursor: pointer;
+ font-family: "Fjalla One", Helvetica, Arial, sans-serif;
+}
+@media only screen and (max-width: 480px) {
+ .toast p, .toast span {
+  font-size: 18px;
+  line-height: 18px;
+ }
+}
+@media only screen and (min-width: 481px) and (max-width: 800px) {
+ .toast p, .toast span {
+  font-size: 38px;
+  line-height: 38px;
+ }
+}
+@media only screen and (min-width: 801px) {
+ .toast p, .toast span {
+  font-size: 45px;
+  line-height: 45px;
+ }
+}
+@media only screen and (max-height: 480px) {
+ .toast p, .toast span {
+  font-size: 33px;
+  line-height: 35px;
+ }
+ .buttonSpin {
+  font-size: 22px;
+  padding: 10px;
+  width: 40%;
+ }
+ .wheelContainer {
+  top: 70px;
+ }
+}
+.buttonSpin:focus {
+ outline: 0;
+}
+
+.spinBtn {
+  background: white;
+  box-shadow: none;
+}
+
+.arrow {
+    z-index: 1;
+    position: relative;
+    width: 53px;
+    height: 80px;
+    top: 17%;
+}
