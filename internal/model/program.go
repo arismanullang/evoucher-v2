@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+var (
+	ProgramType []string
+)
+
 type (
 	Program struct {
 		Id                 string  `db:"id" json:"id"`
@@ -189,14 +193,15 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 			, format_type
 			, length
 			, created_by
+			, created_at
 			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING
 			id
 	`
 	var res []string
-	if err := tx.Select(&res, tx.Rebind(q), fr.Prefix, fr.Postfix, fr.Body, fr.FormatType, fr.Length, user, StatusCreated); err != nil {
+	if err := tx.Select(&res, tx.Rebind(q), fr.Prefix, fr.Postfix, fr.Body, fr.FormatType, fr.Length, user, time.Now(), StatusCreated); err != nil {
 		fmt.Println(err.Error(), "(insert voucher format)")
 		return "", ErrServerInternal
 	}
@@ -228,14 +233,15 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 			, tnc
 			, description
 			, created_by
+			, created_at
 			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING
 			id
 	`
 	var res2 []string
-	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.Name, vr.Type, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.StartHour, vr.EndHour, vr.ValidVoucherStart, vr.ValidVoucherEnd, vr.VoucherLifetime, vr.ValidityDays, vr.VoucherValue, vr.MaxQuantityVoucher, vr.MaxRedeemVoucher, vr.MaxGenerateVoucher, vr.RedemptionMethod, vr.ImgUrl, vr.Tnc, vr.Description, user, StatusCreated); err != nil {
+	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.Name, vr.Type, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.StartHour, vr.EndHour, vr.ValidVoucherStart, vr.ValidVoucherEnd, vr.VoucherLifetime, vr.ValidityDays, vr.VoucherValue, vr.MaxQuantityVoucher, vr.MaxRedeemVoucher, vr.MaxGenerateVoucher, vr.RedemptionMethod, vr.ImgUrl, vr.Tnc, vr.Description, user, time.Now(), StatusCreated); err != nil {
 		fmt.Println(err.Error(), "(insert program)")
 		return "", ErrServerInternal
 	}
@@ -248,12 +254,13 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 					program_id
 					, partner_id
 					, created_by
+					, created_at
 					, status
 				)
-				VALUES (?, ?, ?, ?)
+				VALUES (?, ?, ?, ?, ?)
 			`
 
-			_, err := tx.Exec(tx.Rebind(q), res2[0], v, user, StatusCreated)
+			_, err := tx.Exec(tx.Rebind(q), res2[0], v, user, time.Now(), StatusCreated)
 			if err != nil {
 				fmt.Println("data :", res2[0], v, user)
 				fmt.Println(err.Error(), "(insert program_partner)")
@@ -267,12 +274,13 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 					program_id
 					, partner_id
 					, created_by
+					, created_at
 					, status
 				)
-				VALUES (?, ?, ?, ?)
+				VALUES (?, ?, ?, ?, ?)
 			`
 
-			_, err := tx.Exec(tx.Rebind(q), res2[0], v, user, StatusCreated)
+			_, err := tx.Exec(tx.Rebind(q), res2[0], v, user, time.Now(), StatusCreated)
 			if err != nil {
 				fmt.Println("data :", res2[0], v, user)
 				fmt.Println(err.Error(), "(insert program_partner)")
@@ -401,12 +409,13 @@ func UpdateProgramBroadcasts(user UpdateProgramArrayRequest) error {
 				program_id
 				, account_id
 				, created_by
+				, created_at
 				, status
 			)
-			VALUES (?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q), user.ProgramId, v, user.User, StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q), user.ProgramId, v, user.User, time.Now(), StatusCreated)
 		if err != nil {
 			fmt.Println(err.Error())
 			return ErrServerInternal
@@ -450,12 +459,13 @@ func UpdateProgramPartners(param UpdateProgramArrayRequest) error {
 				program_id
 				, partner_id
 				, created_by
+				, created_at
 				, status
 			)
-			VALUES (?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q), param.ProgramId, v, param.User, StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q), param.ProgramId, v, param.User, time.Now(), StatusCreated)
 		if err != nil {
 			fmt.Println(err.Error())
 			return ErrServerInternal
@@ -1036,4 +1046,27 @@ func FindTodayProgramsPartner(parterId, accountId string) ([]SearchProgram, erro
 	}
 
 	return resv, nil
+}
+
+func GetProgramTypes() error {
+	q := `
+		SELECT
+			value
+		FROM
+			account_configs
+		WHERE
+			config_id = 4
+			AND account_id = 'unknown'
+			AND status = ?
+	`
+
+	var resv []string
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+		return ErrServerInternal
+	}
+	if len(resv) < 1 {
+		return ErrResourceNotFound
+	}
+	ProgramType = resv
+	return nil
 }

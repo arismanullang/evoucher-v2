@@ -12,9 +12,10 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
 
-	"github.com/gilkor/evoucher/internal/model"
 	"io"
 	"os"
+
+	"github.com/gilkor/evoucher/internal/model"
 )
 
 type (
@@ -112,6 +113,50 @@ type (
 	SearchProgramVoucher struct {
 		Voucher string `json:"voucher"`
 		State   string `json:"state"`
+	}
+	SpinResponse struct {
+		ColorArray              []string       `json:"colorArray"`
+		SegmentValueArray       []SegmentValue `json:"segmentValuesArray"`
+		SvgWidth                int            `json:"svgWidth"`
+		SvgHeight               int            `json:"svgHeight"`
+		WheelStrokeColor        string         `json:"wheelStrokeColor"`
+		WheelStrokeWidth        int            `json:"wheelStrokeWidth"`
+		WheelSize               int            `json:"wheelSize"`
+		WheelTextOffsetY        int            `json:"wheelTextOffsetY"`
+		WheelTextColor          string         `json:"wheelTextColor"`
+		WheelTextSize           string         `json:"wheelTextSize"`
+		WheelImageOffsetY       int            `json:"wheelImageOffsetY"`
+		WheelImageSize          int            `json:"wheelImageSize"`
+		CenterCircleSize        int            `json:"centerCircleSize"`
+		CenterCircleStrokeColor string         `json:"centerCircleStrokeColor"`
+		CenterCircleStrokeWidth int            `json:"centerCircleStrokeWidth"`
+		CenterCircleFillColor   string         `json:"centerCircleFillColor"`
+		SegmentStrokeColor      string         `json:"segmentStrokeColor"`
+		SegmentStrokeWidth      int            `json:"segmentStrokeWidth"`
+		CenterX                 int            `json:"centerX"`
+		CenterY                 int            `json:"centerY"`
+		HasShadows              bool           `json:"hasShadows"`
+		NumSpins                int            `json:"numSpins"`
+		SpinDestinationArray    []string       `json:"spinDestinationArray"`
+		MinSpinDuration         int            `json:"minSpinDuration"`
+		GameOverText            string         `json:"gameOverText"`
+		InvalidSpinText         string         `json:"invalidSpinText"`
+		IntroText               string         `json:"introText"`
+		HasSound                bool           `json:"hasSound"`
+		GameId                  string         `json:"gameId"`
+		ClickToSpin             bool           `json:"clickToSpin"`
+		SpinDirection           string         `json:"spinDirection"`
+	}
+	SegmentValue struct {
+		Probability int          `json:"probability"`
+		Type        string       `json:"type"`
+		Value       string       `json:"value"`
+		Win         bool         `json:"win"`
+		ResultText  string       `json:"resultText"`
+		UserData    UserDataSpin `json:"userData"`
+	}
+	UserDataSpin struct {
+		Score int `json:"score"`
 	}
 )
 
@@ -970,6 +1015,110 @@ func CreateTemplateCampaign(w http.ResponseWriter, r *http.Request) {
 		logger.SetStatus(status).Info("param :", programId+" || "+its(len(listTarget)), "response :", err.Error())
 	}
 
+	render.JSON(w, res, status)
+}
+
+func GetProgramType(w http.ResponseWriter, r *http.Request) {
+	res := NewResponse(nil)
+	var status int
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("program_list")
+
+	status = http.StatusOK
+	res = NewResponse(model.ProgramType)
+	logger.SetStatus(status).Log("response :", model.ProgramType)
+	render.JSON(w, res, status)
+}
+
+func GetListSpinPrograms(w http.ResponseWriter, r *http.Request) {
+	res := NewResponse(nil)
+	var status int
+
+	a := AuthToken(w, r)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("program_list")
+
+	param := getUrlParam(r.URL.String())
+
+	param["end_date"] = " > now()"
+	param["start_date"] = " < now()"
+	param["type"] = model.ProgramTypeOnDemand
+	param["account_id"] = a.User.Account.Id
+	delete(param, "token")
+
+	program, err := model.FindAvailablePrograms(param)
+	if err != nil && err != model.ErrResourceNotFound {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", param, "response :", res.Errors)
+		render.JSON(w, res, status)
+		return
+	}
+
+	segments := []SegmentValue{}
+	for _, dt := range program {
+		if (int(dt.MaxVoucher) - sti(dt.Voucher)) > 0 {
+			tempUserData := UserDataSpin{
+				Score: 0,
+			}
+			tempVoucher := SegmentValue{}
+			tempVoucher.Probability = int(dt.MaxVoucher) - sti(dt.Voucher)
+			tempVoucher.Type = "string"
+			tempVoucher.Value = dt.Name
+			tempVoucher.Win = true
+			tempVoucher.ResultText = "<img width='567' height='283' src='" + dt.ImgUrl + "' /><p>" + dt.Name + "</p> `" + dt.Name + "`" + dt.Id
+			tempVoucher.UserData = tempUserData
+
+			segments = append(segments, tempVoucher)
+		}
+	}
+
+	d := SpinResponse{}
+	d.ColorArray = []string{"#ed1c24", "#f15a29", "#f7941e", "#8dc63f", "#39b54a", "#00a79d", "#27aae1", "#1c75bc", "#5c099c", "#9c099a"}
+	d.SegmentValueArray = segments
+	d.SvgWidth = 1024
+	d.SvgHeight = 768
+	d.WheelStrokeColor = "#1C75BC" // warna lingkar
+	d.WheelStrokeWidth = 18
+	d.WheelSize = 700
+	d.WheelTextOffsetY = 80
+	d.WheelTextColor = "#EDEDED"
+	d.WheelTextSize = "1.4em"
+	d.WheelImageOffsetY = 40
+	d.WheelImageSize = 50
+	d.CenterCircleSize = 400
+	d.CenterCircleStrokeColor = "#27AAE1"
+	d.CenterCircleStrokeWidth = 12
+	d.CenterCircleFillColor = "#EDEDED"
+	d.SegmentStrokeColor = "#E2E2E2"
+	d.SegmentStrokeWidth = 4
+	d.CenterX = 512 //buletan tengah
+	d.CenterY = 384
+	d.HasShadows = false
+	d.NumSpins = 1
+	d.SpinDestinationArray = []string{}
+	d.MinSpinDuration = 6
+	d.GameOverText = ""
+	d.InvalidSpinText = "INVALID SPIN. PLEASE SPIN AGAIN."
+	d.IntroText = ""
+	d.HasSound = false
+	d.GameId = "9a0232ec06bc431114e2a7f3aea03bbe2164f1aa"
+	d.ClickToSpin = true
+	d.SpinDirection = "ccw"
+
+	status = http.StatusOK
+	res = NewResponse(d)
+	logger.SetStatus(status).Log("param :", param, "response :", d)
 	render.JSON(w, res, status)
 }
 

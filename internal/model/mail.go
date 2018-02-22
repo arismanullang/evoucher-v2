@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"gopkg.in/mailgun/mailgun-go.v1"
 	"strings"
 	"time"
+
+	"gopkg.in/mailgun/mailgun-go.v1"
 )
 
 var (
@@ -155,6 +156,60 @@ func makeMessageEmailSedayuOne(program ProgramCampaign, target TargetEmail) stri
 	return result
 }
 
+func SendVoucherMail(domain, apiKey, publicApiKey, subject string, target []TargetEmail, program ProgramCampaign) error {
+	mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
+
+	for _, v := range target {
+		message := mailgun.NewMessage(
+			Email,
+			subject,
+			subject,
+			v.HolderEmail)
+		message.SetHtml(makeMessageVoucherEmail(program, v))
+		resp, id, err := mg.Send(message)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("ID: %s Resp: %s\n", id, resp)
+	}
+
+	return nil
+}
+func makeMessageVoucherEmail(program ProgramCampaign, target TargetEmail) string {
+	// %%full-name%%
+	// %%link-voucher%%
+	fmt.Println(program.AccountId)
+	templateCampaign := Config[program.AccountId]["email_campaign"]
+	str, err := ioutil.ReadFile(RootTemplate + templateCampaign)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ""
+	}
+
+	imageHeader := "https://voucher.elys.id/assets/img/template_demo_email_01.jpg"
+	imageVoucher := "https://voucher.elys.id/assets/img/template_demo_email_02.jpg"
+	imageFooter := "https://voucher.elys.id/assets/img/template_demo_email_03.jpg"
+
+	if program.ImageHeader != "" {
+		imageHeader = program.ImageHeader
+	}
+	if program.ImageVoucher != "" {
+		imageVoucher = program.ImageVoucher
+	}
+	if program.ImageFooter != "" {
+		imageFooter = program.ImageFooter
+	}
+
+	result := string(str)
+	result = strings.Replace(result, "%%full-name%%", target.HolderName, 1)
+	result = strings.Replace(result, "%%link-voucher%%", target.VoucherUrl, 1)
+	result = strings.Replace(result, "%%program-name%%", program.ProgramName, 1)
+	result = strings.Replace(result, "%%image-header%%", imageHeader, 1)
+	result = strings.Replace(result, "%%image-voucher%%", imageVoucher, 1)
+	result = strings.Replace(result, "%%image-footer%%", imageFooter, 1)
+	return result
+}
+
 func SendConfirmationEmail(domain, apiKey, publicApiKey, subject string, target ConfirmationEmailRequest, accountId string) error {
 	mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
 
@@ -179,6 +234,7 @@ func SendConfirmationEmail(domain, apiKey, publicApiKey, subject string, target 
 
 	return nil
 }
+
 func makeMessageConfirmationEmail(accountId string, target ConfirmationEmailRequest) string {
 	// %%full-name%%
 	// %%link-voucher%%
@@ -230,14 +286,15 @@ func InsertCampaign(request ProgramCampaign, user string) (string, error) {
 				, voucher_image
 				, footer_image
 				, created_by
+				, created_at
 				, status
 			)
-			VALUES (?, ?, ?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?, ?, ?)
 			RETURNING
 				id
 		`
 
-		err = tx.Select(&res, tx.Rebind(q), request.ProgramId, request.ImageHeader, request.ImageVoucher, request.ImageFooter, user, StatusCreated)
+		err = tx.Select(&res, tx.Rebind(q), request.ProgramId, request.ImageHeader, request.ImageVoucher, request.ImageFooter, user, time.Now(), StatusCreated)
 		if err != nil {
 			fmt.Println(err.Error())
 			fmt.Println(q)

@@ -85,14 +85,15 @@ func InsertTransaction(d Transaction) (string, error) {
 			, discount_value
 			, token
 			, created_by
+			, created_at
 			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING
 			id
 	`
 	var res []string //[]Transaction
-	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.PartnerId, d.TransactionCode, d.DiscountValue, d.Token, d.User, StatusCreated); err != nil {
+	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.PartnerId, d.TransactionCode, d.DiscountValue, d.Token, d.User, time.Now(), StatusCreated); err != nil {
 		return "", err
 	}
 	d.Id = res[0]
@@ -103,12 +104,13 @@ func InsertTransaction(d Transaction) (string, error) {
 				transaction_id
 				, voucher_id
 				, created_by
+				, created_at
 				, status
 			)
-			VALUES (?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q), d.Id, v, d.User, StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q), d.Id, v, d.User, time.Now(), StatusCreated)
 		if err != nil {
 			return "", err
 		}
@@ -167,12 +169,13 @@ func (d *Transaction) Update() error {
 				transaction_id
 				, voucher_id
 				, created_by
+				, created_at
 				, status
 			)
-			VALUES (?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?)
 			`
 
-		_, err := tx.Exec(tx.Rebind(q), d.Id, v, d.User, StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q), d.Id, v, d.User, time.Now(), StatusCreated)
 		if err != nil {
 			return err
 		}

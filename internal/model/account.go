@@ -7,10 +7,12 @@ import (
 )
 
 type (
+	//AccountRes Response Account
 	AccountRes struct {
 		Id   string `db:"id" json:"id"`
 		Name string `db:"name" json:"name"`
 	}
+	//Account Account object
 	Account struct {
 		Id        string         `db:"id" json:"id"`
 		Name      string         `db:"name" json:"name"`
@@ -28,6 +30,7 @@ type (
 		UpdatedBy sql.NullString `db:"updated_by" json:"updated_by"`
 		Status    string         `db:"status" json:"status"`
 	}
+	//AccountConfig Config account
 	AccountConfig struct {
 		AccountId    string `db:"account_id"`
 		ConfigDetail string `db:"config_detail"`
@@ -55,15 +58,16 @@ func AddAccount(a Account, user string) error {
 				, alias
 				, email
 				, created_by
+				, created_at
 				, status
 			)
-			VALUES (?, ?, ?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?, ?, ?)
 			RETURNING
 				id
 	`
 
 	var res []string
-	if err := tx.Select(&res, tx.Rebind(q), a.Name, a.Billing, a.Alias, a.Email, user, StatusCreated); err != nil {
+	if err := tx.Select(&res, tx.Rebind(q), a.Name, a.Billing, a.Alias, a.Email, user, time.Now(), StatusCreated); err != nil {
 		return err
 	}
 	if err := tx.Commit(); err != nil {
