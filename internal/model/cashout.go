@@ -42,14 +42,15 @@ func InsertCashout(d Cashout) (string, error) {
 			, total_cashout
 			, payment_method
 			, created_by
+			, created_at
 			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING
 			id
 	`
 	var res []string
-	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.CashoutCode, d.PartnerId, d.BankAccount.Id, d.TotalCashout, d.PaymentMethod, d.CreatedBy, StatusCreated); err != nil {
+	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.CashoutCode, d.PartnerId, d.BankAccount.Id, d.TotalCashout, d.PaymentMethod, d.CreatedBy, time.Now(), StatusCreated); err != nil {
 		return "", err
 	}
 	d.Id = res[0]
@@ -61,12 +62,13 @@ func InsertCashout(d Cashout) (string, error) {
 				, transaction_id
 				, voucher_id
 				, created_by
+				, created_at
 				, status
 			)
-			VALUES (?, ?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q), d.Id, v.TransactionId, v.VoucherId, d.CreatedBy, StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q), d.Id, v.TransactionId, v.VoucherId, d.CreatedBy, time.Now(), StatusCreated)
 		if err != nil {
 			return "", err
 		}

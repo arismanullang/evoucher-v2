@@ -152,6 +152,27 @@ func CheckUsername(username, accountId string) (string, error) {
 	return res[0], nil
 }
 
+func GetWebuser() (string, error) {
+	q := `
+		SELECT
+			u.id
+		FROM
+			users as u
+		WHERE
+			u.username = 'web'
+			AND u.account_id = 'unknown'
+	`
+	var res []string
+	if err := db.Select(&res, db.Rebind(q)); err != nil {
+		fmt.Println(err)
+		return "", ErrServerInternal
+	}
+	if len(res) == 0 {
+		return "", nil
+	}
+	return res[0], nil
+}
+
 func FindAllUsers(accountId string) ([]User, error) {
 	q := `
 		SELECT

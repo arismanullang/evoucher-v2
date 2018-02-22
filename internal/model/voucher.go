@@ -454,8 +454,9 @@ func (d *Voucher) InsertVc() error {
 			      , voucher_value
 			      , state
 			      , created_by
+			      , created_at
 	      		)
-	      	 VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	      	 VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	      RETURNING
 			      id
 			      , voucher_code
@@ -479,7 +480,7 @@ func (d *Voucher) InsertVc() error {
       `
 	var res []Voucher
 	// fmt.Println("insert data =>", d)
-	if err := vc.Select(&res, vc.Rebind(q), d.VoucherCode, d.ReferenceNo, d.Holder, d.HolderPhone, d.HolderEmail, d.HolderDescription, d.ProgramID, d.ValidAt, d.ExpiredAt, d.VoucherValue, VoucherStateCreated, d.CreatedBy); err != nil {
+	if err := vc.Select(&res, vc.Rebind(q), d.VoucherCode, d.ReferenceNo, d.Holder, d.HolderPhone, d.HolderEmail, d.HolderDescription, d.ProgramID, d.ValidAt, d.ExpiredAt, d.VoucherValue, VoucherStateCreated, d.CreatedBy, time.Now()); err != nil {
 		return err
 	}
 

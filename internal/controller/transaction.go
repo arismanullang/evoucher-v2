@@ -9,9 +9,10 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
 
+	"time"
+
 	"github.com/asaskevich/govalidator"
 	"github.com/gilkor/evoucher/internal/model"
-	"time"
 )
 
 type (
@@ -492,13 +493,22 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	seedCode := randStr(model.DEFAULT_TRANSACTION_LENGTH, model.DEFAULT_TRANSACTION_SEED)
 	txCode := seedCode + randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
 
+	user, err := model.GetWebuser()
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+
 	d := model.Transaction{
 		AccountId:       program.AccountId,
 		PartnerId:       rd.Partner,
 		TransactionCode: txCode,
 		DiscountValue:   stf(rd.DiscountValue),
 		Token:           rd.Response,
-		User:            rd.CreatedBy,
+		User:            user,
 		VoucherIds:      rd.Vouchers,
 	}
 

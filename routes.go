@@ -7,6 +7,7 @@ import (
 	"github.com/ruizu/render"
 
 	"fmt"
+
 	"github.com/gilkor/evoucher/internal/controller"
 )
 
@@ -37,11 +38,13 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/ui/program/all", controller.GetAllPrograms)
 	r.GetFunc("/v1/ui/program/ongoing", controller.GetOnGoingPrograms)
 	r.GetFunc("/v1/ui/program", controller.GetPrograms)
+	r.GetFunc("/v1/ui/program/type", controller.GetProgramType)
 	r.GetFunc("/v1/ui/program/detail", controller.GetProgramDetailsCustom)
 	r.PostFunc("/v1/ui/program/update", controller.UpdateProgramRoute)
 	r.GetFunc("/v1/ui/program/delete", controller.DeleteProgram)
 	r.GetFunc("/v1/ui/program/partner", controller.GetProgramPartnerSummary)
 	r.GetFunc("/v1/ui/program/visibility", controller.VisibilityProgram)
+	r.GetFunc("/v1/ui/program/spin", controller.GetListSpinPrograms)
 
 	//campaign
 	r.PostFunc("/v1/ui/campaign/create", controller.CreateEmailCampaign)
@@ -129,6 +132,7 @@ func setRoutes() http.Handler {
 	r.PostFunc("/v1/ui/voucher/link", controller.GetVoucherlink)
 	r.PostFunc("/v1/ui/voucher/send-voucher", controller.SendSedayuOneEmail)
 	r.GetFunc("/v1/ui/sample/link", controller.GetCsvSample)
+	r.PostFunc("/v1/ui/voucher/generate/email", controller.GenerateSingleVoucherEmail)
 
 	//mobile API
 	r.GetFunc("/v1/program", controller.ListMobilePrograms)
@@ -327,6 +331,8 @@ func viewVoucher(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "voucher/cashout_success.html", nil)
 	} else if page == "print" {
 		render.FileInLayout(w, "layout.html", "voucher/print.html", nil)
+	} else if page == "spin" {
+		render.FileInLayout(w, "layout.html", "voucher/spin.html", nil)
 	} else {
 		render.File(w, "notfound.html", nil, 404)
 	}

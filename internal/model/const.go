@@ -117,16 +117,17 @@ const (
 	VoucherTypediscount string = "discount"
 	VoucherTypePromo    string = "promo"
 
+	ProgramTypeOnDemand string = "on-demand"
+	ProgramTypeGift     string = "gift"
+	ProgramTypeBulk     string = "bulk"
+	ProgramTypeStock    string = "stock"
+
 	VoucherStateCreated  string = "created"
 	VoucherStateActived  string = "actived"
 	VoucherStateUsed     string = "used"
 	VoucherStatePaid     string = "paid"
 	VoucherStateDeleted  string = "deleted"
 	VoucherStateRollback string = "rollback"
-
-	ProgramTypeBulk     string = "bulk"
-	ProgramTypeOnDemand string = "on-demand"
-	ProgramTypeGift     string = "gift"
 
 	ALPHABET     = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 	NUMERALS     = "1234567890"

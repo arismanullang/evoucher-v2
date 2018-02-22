@@ -5,6 +5,7 @@ $(document).ready(function () {
 
 	getPartner();
 	getTag();
+	getType();
 	initForm();
 	onChangeElem();
 
@@ -82,16 +83,16 @@ $(document).ready(function () {
 
 function initForm(){
 	if ($("#voucher-validity-type").val() == "lifetime") {
-		$("#validity-tifetime").attr("style", "display:block");
+		$("#validity-lifetime").attr("style", "display:block");
 		$("#validity-date").attr("style", "display:none");
 		$("#voucher-valid-from").val("");
 		$("#voucher-valid-to").val("");
 	} else if ($("#voucher-validity-type").val() == "period") {
-		$("#validity-tifetime").attr("style", "display:none");
+		$("#validity-lifetime").attr("style", "display:none");
 		$("#validity-date").attr("style", "display:block");
 		$("#voucher-lifetime").val("");
 	} else {
-		$("#validity-tifetime").attr("style", "display:none");
+		$("#validity-lifetime").attr("style", "display:none");
 		$("#validity-date").attr("style", "display:none");
 		$("#voucher-valid-from").val("");
 		$("#voucher-valid-to").val("");
@@ -578,6 +579,32 @@ function getTag() {
 			for (i = 0; i < arrData.length; i++) {
 				var li = $("<option value='"+arrData[i]+"'></option>").html(arrData[i]);
 				li.appendTo('#tag');
+			}
+		}
+	});
+}
+
+function getType() {
+	$.ajax({
+		url: '/v1/ui/program/type',
+		type: 'get',
+		success: function (data) {
+			var arrData = [];
+			arrData = data.data;
+
+			var i;
+			for (i = 0; i < arrData.length; i++) {
+				var tempLabel = 'Stock Voucher';
+				if(arrData[i] == 'on-demand'){
+					tempLabel = 'Mobile Application';
+				}else if(arrData[i] == 'bulk'){
+					tempLabel = 'Email Blast';
+				}else if(arrData[i] == 'gift'){
+					tempLabel = 'Gift Voucher';
+				}
+
+				var li = $("<option value='"+arrData[i]+"'></option>").html(tempLabel);
+				li.appendTo('#program-type');
 			}
 		}
 	});

@@ -84,6 +84,13 @@ func replaceSpecialCharacter(param string) string {
 	return safe
 }
 
+func randomize(param int) int {
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+
+	return r1.Intn(param)
+}
+
 func randStr(ln int, fm string) string {
 	CharsType := map[string]string{
 		"Alphabet":     model.ALPHABET,
@@ -121,12 +128,12 @@ func stringInSlice(str string, list []string) bool {
 	return false
 }
 
-func StrEncode(s string) string{
+func StrEncode(s string) string {
 	base64.StdEncoding.DecodedLen(32)
 	return base64.StdEncoding.EncodeToString([]byte(s))
 }
 
-func StrDecode(s string) string{
+func StrDecode(s string) string {
 	data, err := base64.StdEncoding.DecodeString(s)
 	if err != nil {
 		log.Panic(err)
@@ -135,6 +142,6 @@ func StrDecode(s string) string{
 }
 
 func stf(s string) float64 {
-	f,_:= strconv.ParseFloat(s,64)
+	f, _ := strconv.ParseFloat(s, 64)
 	return f
 }
