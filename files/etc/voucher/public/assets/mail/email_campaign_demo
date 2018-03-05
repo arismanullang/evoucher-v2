@@ -14,7 +14,7 @@
             <tbody>
             <tr>
               <td>
-                <img id="image-header" src="/assets/img/template_demo_email_01.jpg" alt="Digital Voucher" title="Digital Voucher" width="560" />
+                <img id="image-header" src="%%image-header%%" alt="Digital Voucher" title="Digital Voucher" width="560" />
               </td>
             </tr>
             <tr>
@@ -30,7 +30,7 @@
                             <table style="background-color: #ffffff; width: 560px;" cellspacing="0" cellpadding="0" border="0"><!-- Top news item table -->
                               <tbody>
                               <tr>
-                                <td height="15" width="560"><img id="image-voucher" src="/assets/img/template_demo_email_02.jpg" alt="Voucher" title="Voucher" width="560" /></td>
+                                <td height="15" width="560"><img id="image-voucher" src="%%image-voucher%%" alt="Voucher" title="Voucher" width="560" /></td>
                               </tr>
                               <!-- POIN --> <!-- POIN --> <!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN -->
                               <tr width="560px">
@@ -43,7 +43,7 @@
                                       <td data-link-style="text-decoration:none; color:black;" data-color="Feature Content" data-size="Feature Content" style="color: black; font-size: 14px;" align="center">
                                         <p><span style="font-size: small;"><span style="color: black">Dear&nbsp;%%full-name%%</span></span></p>
                                         <p><span style="font-size: small;"><span>Selamat anda mendapatkan Digital Voucher untuk promo :</span></span></p>
-                                        <p><span style="font-size: small;"><i id="modal-program-name">Gift Voucher Rp. 250.000,00</i></span></p>
+                                        <p><span style="font-size: small;"><i id="modal-program-name">%%program-name%%</i></span></p>
                                         <a style="color: #fff !important; background-color:#448AFF; color: #448AFF; text-align: center; display: inline-block; padding: 6px 12px" href="%%link-voucher%%">Use Voucher</a>
                                         <p style="color: black;"><span style="font-size: small; color: black;"><br \>Nantikan program-program Digital Voucher menarik lainnya.</span></p>
                                       </td>
@@ -55,7 +55,7 @@
                               <!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --><!-- POIN --> <!-- Top news item table --></tbody>
                               <tbody>
                               <tr>
-                                <td height="15" width="560"><img id="image-footer" title="Digital Voucher" alt="Digital Voucher" src="/assets/img/template_demo_email_03.jpg" width="560" /></td>
+                                <td height="15" width="560"><img id="image-footer" title="Digital Voucher" alt="Digital Voucher" src="%%image-footer%%" width="560" /></td>
                               </tr>
                               </tbody>
                             </table>

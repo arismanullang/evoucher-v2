@@ -119,7 +119,7 @@ func InsertBroadcastUser(w http.ResponseWriter, r *http.Request) {
 		logger.SetStatus(status).Info("param :", programId+" || "+strings.Join(listTarget, ";"), "response :", err.Error())
 	}
 
-	if err := model.UpdateBulkProgram(programId, len(listTarget)); err != nil {
+	if err := model.UpdateBulkProgram(programId, a.User.ID, len(listTarget)); err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
 		logger.SetStatus(status).Info("param :", programId+" || "+its(len(listTarget)), "response :", err.Error())

@@ -729,6 +729,7 @@ func UpdateProgram(w http.ResponseWriter, r *http.Request, logger *model.LogFiel
 	if err != nil {
 		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 	}
+	te = time.Date(te.Year(), te.Month(), te.Day(), 23, 59, 59, 0, time.Local)
 
 	tvs, err := time.Parse("2006-01-02T00:00:00Z", rd.ValidVoucherStart)
 	if err != nil {
@@ -738,6 +739,7 @@ func UpdateProgram(w http.ResponseWriter, r *http.Request, logger *model.LogFiel
 	if err != nil {
 		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 	}
+	tve = time.Date(tve.Year(), tve.Month(), tve.Day(), 23, 59, 59, 0, time.Local)
 
 	vr := model.Program{
 		Id:                 id,
@@ -750,13 +752,13 @@ func UpdateProgram(w http.ResponseWriter, r *http.Request, logger *model.LogFiel
 		MaxRedeemVoucher:   rd.MaxRedeemVoucher,
 		RedemptionMethod:   rd.RedemptionMethod,
 		VoucherValue:       rd.VoucherValue,
-		StartDate:          ts.Format("2006-01-02 15:04:05.000"),
-		EndDate:            te.Format("2006-01-02 15:04:05.000"),
+		StartDate:          ts.Format("2006-01-02T15:04:05+07:00"),
+		EndDate:            te.Format("2006-01-02T15:04:05+07:00"),
 		StartHour:          rd.StartHour,
 		EndHour:            rd.EndHour,
 		AllowAccumulative:  rd.AllowAccumulative,
-		ValidVoucherStart:  tvs.Format("2006-01-02 15:04:05.000"),
-		ValidVoucherEnd:    tve.Format("2006-01-02 15:04:05.000"),
+		ValidVoucherStart:  tvs.Format("2006-01-02T15:04:05Z"),
+		ValidVoucherEnd:    tve.Format("2006-01-02T15:04:05Z"),
 		VoucherLifetime:    rd.VoucherLifetime,
 		ValidityDays:       rd.ValidityDays,
 		ImgUrl:             rd.ImgUrl,
@@ -1009,7 +1011,7 @@ func CreateTemplateCampaign(w http.ResponseWriter, r *http.Request) {
 		logger.SetStatus(status).Info("param :", programId+" || "+strings.Join(listTarget, ";"), "response :", err.Error())
 	}
 
-	if err := model.UpdateBulkProgram(programId, len(listTarget)); err != nil {
+	if err := model.UpdateBulkProgram(programId, a.User.ID, len(listTarget)); err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
 		logger.SetStatus(status).Info("param :", programId+" || "+its(len(listTarget)), "response :", err.Error())

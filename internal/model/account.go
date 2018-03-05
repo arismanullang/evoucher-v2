@@ -3,6 +3,9 @@ package model
 import (
 	"database/sql"
 	"fmt"
+	"reflect"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -78,6 +81,21 @@ func AddAccount(a Account, user string) error {
 	if err != nil {
 		return err
 	}
+
+	log := Log{
+		TableName:   "accounts",
+		TableNameId: ValueChangeLogNone,
+		ColumnName:  ColumnChangeLogInsert,
+		Action:      ActionChangeLogInsert,
+		Old:         ValueChangeLogNone,
+		New:         res[0],
+		CreatedBy:   user,
+	}
+
+	err = addLog(log)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	return nil
 }
 
@@ -98,7 +116,7 @@ func checkName(name string) (string, error) {
 	return res[0], nil
 }
 
-func UpdateAccount(account Account, userId string) error {
+func UpdateAccount(account Account, user string) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -106,28 +124,111 @@ func UpdateAccount(account Account, userId string) error {
 	}
 	defer tx.Rollback()
 
+	accountDetail, err := GetAccountDetailByAccountId(account.Id)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	reflectParam := reflect.ValueOf(&account)
+	dataParam := reflect.Indirect(reflectParam)
+
+	reflectDb := reflect.ValueOf(&accountDetail).Elem()
+	dataDb := reflect.Indirect(reflectDb)
+
+	updates := getUpdate(dataParam, reflectDb)
+
 	q := `
 		UPDATE accounts
 		SET
-			name = ?
-			, alias = ?
-			, email = ?
-			, updated_by = ?
+			updated_by = ?
 			, updated_at = ?
 		WHERE
 			id = ?
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), account.Name, account.Alias, account.Email, userId, time.Now(), account.Id)
+	_, err = tx.Exec(tx.Rebind(q), user, time.Now(), account.Id)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
+	}
+
+	logs := []Log{}
+	tempLog := Log{
+		TableName:   "accounts",
+		TableNameId: account.Id,
+		ColumnName:  "updated_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         user,
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	tempLog = Log{
+		TableName:   "accounts",
+		TableNameId: account.Id,
+		ColumnName:  "updated_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	for k, v := range updates {
+		var value = v.String()
+		if strings.Contains(value, "<") {
+			tempString := strings.Replace(value, "<", "", -1)
+			tempString = strings.Replace(tempString, ">", "", -1)
+			tempStringArr := strings.Split(tempString, " ")
+			if tempStringArr[0] == "int" {
+				value = strconv.FormatInt(v.Int(), 64)
+			} else if tempStringArr[0] == "float64" {
+				value = strconv.FormatFloat(v.Float(), 'f', -1, 64)
+			}
+		}
+
+		keys := strings.Split(k, ";")
+		q = `
+			UPDATE accounts
+			SET
+				`
+		q += keys[1] + ` = '` + value + `'`
+		q += `
+			WHERE
+				id = ?
+				AND status = ?;
+		`
+		_, err = tx.Exec(tx.Rebind(q), account.Id, StatusCreated)
+		if err != nil {
+			fmt.Println(err.Error())
+			fmt.Println(q)
+			return ErrServerInternal
+		}
+
+		tempLog = Log{
+			TableName:   "accounts",
+			TableNameId: account.Id,
+			ColumnName:  keys[1],
+			Action:      ActionChangeLogUpdate,
+			Old:         dataDb.FieldByName(keys[0]).Interface().(string),
+			New:         value,
+			CreatedBy:   user,
+		}
+		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -310,6 +411,46 @@ func BlockAccount(accountId, userId string) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	logs := []Log{}
+	log := Log{
+		TableName:   "accounts",
+		TableNameId: accountId,
+		ColumnName:  "status",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         StatusDeleted,
+		CreatedBy:   userId,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "accounts",
+		TableNameId: accountId,
+		ColumnName:  "updated_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   userId,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "accounts",
+		TableNameId: accountId,
+		ColumnName:  "updated_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         userId,
+		CreatedBy:   userId,
+	}
+	logs = append(logs, log)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -341,6 +482,46 @@ func ActivateAccount(accountId, userId string) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	logs := []Log{}
+	log := Log{
+		TableName:   "accounts",
+		TableNameId: accountId,
+		ColumnName:  "status",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         StatusCreated,
+		CreatedBy:   userId,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "accounts",
+		TableNameId: accountId,
+		ColumnName:  "updated_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   userId,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "accounts",
+		TableNameId: accountId,
+		ColumnName:  "updated_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         userId,
+		CreatedBy:   userId,
+	}
+	logs = append(logs, log)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 

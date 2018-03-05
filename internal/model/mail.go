@@ -115,7 +115,7 @@ func SendMailSedayuOne(domain, apiKey, publicApiKey, subject string, target []Ta
 		if err != nil {
 			return err
 		}
-		UpdateBroadcastUserState(v.HolderEmail, program.ProgramId)
+		UpdateBroadcastUserState(v.HolderEmail, program.ProgramId, program.CreatedBy)
 		fmt.Printf("ID: %s Resp: %s\n", id, resp)
 	}
 
@@ -199,7 +199,7 @@ func makeMessageVoucherEmail(program ProgramCampaign, target TargetEmail) string
 	if program.ImageFooter != "" {
 		imageFooter = program.ImageFooter
 	}
-
+	fmt.Println(program)
 	result := string(str)
 	result = strings.Replace(result, "%%full-name%%", target.HolderName, 1)
 	result = strings.Replace(result, "%%link-voucher%%", target.VoucherUrl, 1)
@@ -276,6 +276,8 @@ func InsertCampaign(request ProgramCampaign, user string) (string, error) {
 	defer tx.Rollback()
 
 	var res []string
+	logs := []Log{}
+	tempLog := Log{}
 
 	campaign, err := GetCampaign(request.ProgramId)
 	if campaign.ProgramId == "" {
@@ -300,6 +302,17 @@ func InsertCampaign(request ProgramCampaign, user string) (string, error) {
 			fmt.Println(q)
 			return "", ErrServerInternal
 		}
+
+		tempLog = Log{
+			TableName:   "program_campaigns",
+			TableNameId: ValueChangeLogNone,
+			ColumnName:  ColumnChangeLogInsert,
+			Action:      ActionChangeLogInsert,
+			Old:         ValueChangeLogNone,
+			New:         res[0],
+			CreatedBy:   request.CreatedBy,
+		}
+		logs = append(logs, tempLog)
 	} else {
 		q := `
 			UPDATE program_campaigns
@@ -321,12 +334,51 @@ func InsertCampaign(request ProgramCampaign, user string) (string, error) {
 			return "", ErrServerInternal
 		}
 		res = append(res, request.ProgramId)
+
+		tempLog = Log{
+			TableName:   "program_campaigns",
+			TableNameId: request.ProgramId,
+			ColumnName:  "header_image",
+			Action:      ActionChangeLogUpdate,
+			Old:         ValueChangeLogNone,
+			New:         request.ImageHeader,
+			CreatedBy:   request.CreatedBy,
+		}
+		logs = append(logs, tempLog)
+
+		tempLog = Log{
+			TableName:   "program_campaigns",
+			TableNameId: request.ProgramId,
+			ColumnName:  "voucher_image",
+			Action:      ActionChangeLogUpdate,
+			Old:         ValueChangeLogNone,
+			New:         request.ImageVoucher,
+			CreatedBy:   request.CreatedBy,
+		}
+		logs = append(logs, tempLog)
+
+		tempLog = Log{
+			TableName:   "program_campaigns",
+			TableNameId: request.ProgramId,
+			ColumnName:  "footer_image",
+			Action:      ActionChangeLogUpdate,
+			Old:         ValueChangeLogNone,
+			New:         request.ImageFooter,
+			CreatedBy:   request.CreatedBy,
+		}
+		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return "", ErrServerInternal
 	}
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return res[0], nil
 }
 

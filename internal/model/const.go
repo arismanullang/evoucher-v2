@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"reflect"
 )
 
 var (
@@ -151,4 +152,35 @@ const (
 	CHALLENGE_FORMAT string = "Numerals"
 	CHALLENGE_LENGTH int    = 4
 	TIMEOUT_DURATION int    = 120 //in Second
+
+	//Change Log
+	ColumnChangeLogInsert string = "all"
+	ColumnChangeLogSelect string = "custom"
+	ColumnChangeLogDelete string = "all"
+	ValueChangeLogNone    string = "none"
+	ValueChangeLogAll     string = "all"
+	ActionChangeLogInsert string = "insert"
+	ActionChangeLogUpdate string = "update"
+	ActionChangeLogDelete string = "delete"
+	ActionChangeLogSelect string = "select"
 )
+
+func getUpdate(paramUpdate, param2 reflect.Value) map[string]reflect.Value {
+	updates := make(map[string]reflect.Value)
+
+	dataParam2 := param2.Type()
+	for i := 0; i < paramUpdate.NumField(); i++ {
+		f := param2.Field(i)
+		string1 := f.Interface()
+		string2 := paramUpdate.FieldByName(dataParam2.Field(i).Name)
+
+		if string1 != string2.Interface() && string2.Interface() != reflect.Zero(f.Type()).Interface() {
+			col, _ := dataParam2.Field(i).Tag.Lookup("db")
+			va := dataParam2.Field(i).Name
+
+			updates[va+";"+col] = string2
+		}
+	}
+
+	return updates
+}
