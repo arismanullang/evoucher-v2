@@ -3,7 +3,7 @@ $( window ).ready(function() {
 	  	$(".toast").attr("style","display:none");
 		$(".modal-qr").modal();
 		localStorage.removeItem('emailSpin');
-		localStorage.removeItem('nameSpin');
+		localStorage.removeItem('userSpin');
 });
 
 var token = localStorage.getItem("token");
@@ -70,7 +70,7 @@ function myGameEnd(e) {
   //e is gameResultsArray
   console.log(e);
   TweenMax.delayedCall(6, function(){
-   window.location.reload();
+   // window.location.reload();
   })
 
 

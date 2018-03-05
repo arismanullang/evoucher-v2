@@ -41,7 +41,7 @@ func FindBroadcastUser(param map[string]string) ([]BroadcastUser, error) {
 	}
 	return resd, nil
 }
-func UpdateBroadcastUserState(programId, email string) error {
+func UpdateBroadcastUserState(programId, email, user string) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -53,13 +53,15 @@ func UpdateBroadcastUserState(programId, email string) error {
 		UPDATE broadcast_users
 		SET
 			state = ?
+			, updated_by = ?
+			, updated_at = ?
 		WHERE
 			program_id = ?
 			AND target = ?
 			AND status = ?
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), EmailSend, programId, email, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), EmailSend, user, time.Now(), programId, email, StatusCreated)
 	if err != nil {
 		fmt.Println("Update User State | " + err.Error())
 		return ErrServerInternal
@@ -69,5 +71,45 @@ func UpdateBroadcastUserState(programId, email string) error {
 		fmt.Println("Update User State | " + err.Error())
 		return ErrServerInternal
 	}
+
+	logs := []Log{}
+	log := Log{
+		TableName:   "broadcast_users",
+		TableNameId: programId,
+		ColumnName:  "state",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         EmailSend,
+		CreatedBy:   user,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "broadcast_users",
+		TableNameId: programId,
+		ColumnName:  "updated_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         user,
+		CreatedBy:   user,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "broadcast_users",
+		TableNameId: programId,
+		ColumnName:  "updated_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   user,
+	}
+	logs = append(logs, log)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }

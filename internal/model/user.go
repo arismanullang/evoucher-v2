@@ -63,68 +63,108 @@ func AddUser(u RegisterUser, user, accountId string) error {
 
 	username, err := CheckUsername(u.Username, accountId)
 
-	if username == "" {
+	if username != "" {
+		return ErrDuplicateEntry
+	}
+
+	q := `
+		INSERT INTO users(
+			username
+			, password
+			, email
+			, phone
+			, created_by
+			, status
+		)
+		VALUES (?, ?, ?, ?, ?, ?)
+		RETURNING
+			id
+	`
+	var res []string
+	if err := tx.Select(&res, tx.Rebind(q), u.Username, u.Password, u.Email, u.Phone, user, StatusCreated); err != nil {
+		fmt.Println(err)
+		return ErrServerInternal
+	}
+
+	logs := []Log{}
+	tempLog := Log{
+		TableName:   "users",
+		TableNameId: ValueChangeLogNone,
+		ColumnName:  ColumnChangeLogInsert,
+		Action:      ActionChangeLogInsert,
+		Old:         ValueChangeLogNone,
+		New:         res[0],
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	for _, v := range u.Role {
 		q := `
-			INSERT INTO users(
-				username
-				, password
-				, email
-				, phone
-				, created_by
-				, status
-			)
-			VALUES (?, ?, ?, ?, ?, ?)
-			RETURNING
-				id
-		`
-		var res []string
-		if err := tx.Select(&res, tx.Rebind(q), u.Username, u.Password, u.Email, u.Phone, user, StatusCreated); err != nil {
-			fmt.Println(err)
-			return ErrServerInternal
-		}
-
-		for _, v := range u.Role {
-			q := `
-				INSERT INTO user_roles(
-					user_id
-					, role_id
-					, created_by
-					, status
-				)
-				VALUES (?, ?, ?, ?)
-			`
-
-			_, err := tx.Exec(tx.Rebind(q), res[0], v, user, StatusCreated)
-			if err != nil {
-				fmt.Println(err)
-				return ErrServerInternal
-			}
-		}
-
-		q2 := `
-			INSERT INTO user_accounts(
+			INSERT INTO user_roles(
 				user_id
-				, account_id
+				, role_id
 				, created_by
 				, status
 			)
 			VALUES (?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q2), res[0], accountId, user, StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q), res[0], v, user, StatusCreated)
 		if err != nil {
 			fmt.Println(err)
 			return ErrServerInternal
 		}
 
-		if err := tx.Commit(); err != nil {
-			fmt.Println(err)
-			return ErrServerInternal
+		tempLog = Log{
+			TableName:   "user_roles",
+			TableNameId: res[0],
+			ColumnName:  ColumnChangeLogInsert,
+			Action:      ActionChangeLogInsert,
+			Old:         ValueChangeLogNone,
+			New:         v,
+			CreatedBy:   user,
 		}
-		return nil
+		logs = append(logs, tempLog)
 	}
 
-	return ErrDuplicateEntry
+	q2 := `
+		INSERT INTO user_accounts(
+			user_id
+			, account_id
+			, created_by
+			, status
+		)
+		VALUES (?, ?, ?, ?)
+	`
+
+	_, err = tx.Exec(tx.Rebind(q2), res[0], accountId, user, StatusCreated)
+	if err != nil {
+		fmt.Println(err)
+		return ErrServerInternal
+	}
+
+	if err = tx.Commit(); err != nil {
+		fmt.Println(err)
+		return ErrServerInternal
+	}
+
+	tempLog = Log{
+		TableName:   "user_accounts",
+		TableNameId: res[0],
+		ColumnName:  ColumnChangeLogInsert,
+		Action:      ActionChangeLogInsert,
+		Old:         ValueChangeLogNone,
+		New:         accountId,
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	return nil
 }
 
 func CheckUsername(username, accountId string) (string, error) {
@@ -364,6 +404,22 @@ func Login(username, password string) (string, error) {
 	if len(res) == 0 {
 		return "", ErrResourceNotFound
 	}
+
+	log := Log{
+		TableName:   "users",
+		TableNameId: res[0],
+		ColumnName:  ColumnChangeLogSelect,
+		Action:      ActionChangeLogSelect,
+		Old:         ValueChangeLogNone,
+		New:         ValueChangeLogNone,
+		CreatedBy:   res[0],
+	}
+
+	err := addLog(log)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return res[0], nil
 }
 
@@ -394,11 +450,33 @@ func UpdatePassword(id, password string) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	log := Log{
+		TableName:   "users",
+		TableNameId: id,
+		ColumnName:  "password",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         password,
+		CreatedBy:   id,
+	}
+
+	err = addLog(log)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
 func ChangePassword(id, oldPassword, newPassword string) error {
-	fmt.Println("Change Password")
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
+
 	q := `
 		SELECT
 			id
@@ -418,13 +496,6 @@ func ChangePassword(id, oldPassword, newPassword string) error {
 		return ErrResourceNotFound
 	}
 
-	tx, err := db.Beginx()
-	if err != nil {
-		fmt.Println(err.Error())
-		return ErrServerInternal
-	}
-	defer tx.Rollback()
-
 	q = `
 		UPDATE users
 		SET
@@ -444,11 +515,32 @@ func ChangePassword(id, oldPassword, newPassword string) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	log := Log{
+		TableName:   "users",
+		TableNameId: id,
+		ColumnName:  "password",
+		Action:      ActionChangeLogUpdate,
+		Old:         oldPassword,
+		New:         newPassword,
+		CreatedBy:   id,
+	}
+
+	err = addLog(log)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
 func ResetPassword(id, newPassword string) error {
-	fmt.Println("Change Password")
+	tx, err := db.Beginx()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+	defer tx.Rollback()
 
 	q := `
 		SELECT
@@ -468,13 +560,6 @@ func ResetPassword(id, newPassword string) error {
 		return ErrResourceNotFound
 	}
 
-	tx, err := db.Beginx()
-	if err != nil {
-		fmt.Println(err.Error())
-		return ErrServerInternal
-	}
-	defer tx.Rollback()
-
 	q = `
 		UPDATE users
 		SET
@@ -494,6 +579,22 @@ func ResetPassword(id, newPassword string) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	log := Log{
+		TableName:   "users",
+		TableNameId: id,
+		ColumnName:  "password",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         newPassword,
+		CreatedBy:   id,
+	}
+
+	err = addLog(log)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -510,16 +611,47 @@ func UpdateOtherUser(user User) error {
 		SET
 			email = ?
 			, phone = ?
+			, updated_by = ?
+			, updated_at = ?
 		WHERE
 			id = ?
 			AND status = ?
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), user.Email, user.Phone, user.ID, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), user.Email, user.Phone, user.ID, time.Now(), user.ID, StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	userDetail, err := FindUserDetail(user.ID)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	logs := []Log{}
+	log := Log{
+		TableName:   "users",
+		TableNameId: user.ID,
+		ColumnName:  "email",
+		Action:      ActionChangeLogUpdate,
+		Old:         userDetail.Email,
+		New:         user.Email,
+		CreatedBy:   user.ID,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "users",
+		TableNameId: user.ID,
+		ColumnName:  "phone",
+		Action:      ActionChangeLogUpdate,
+		Old:         userDetail.Phone,
+		New:         user.Phone,
+		CreatedBy:   user.ID,
+	}
+	logs = append(logs, log)
 
 	q = `
 		UPDATE user_roles
@@ -534,6 +666,17 @@ func UpdateOtherUser(user User) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	log = Log{
+		TableName:   "user_roles",
+		TableNameId: user.ID,
+		ColumnName:  ColumnChangeLogDelete,
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         StatusDeleted,
+		CreatedBy:   user.ID,
+	}
+	logs = append(logs, log)
 
 	for _, v := range user.Role {
 		q := `
@@ -551,12 +694,29 @@ func UpdateOtherUser(user User) error {
 			fmt.Println(err)
 			return ErrServerInternal
 		}
+
+		log = Log{
+			TableName:   "user_roles",
+			TableNameId: user.ID,
+			ColumnName:  ColumnChangeLogInsert,
+			Action:      ActionChangeLogInsert,
+			Old:         ValueChangeLogNone,
+			New:         v.Id,
+			CreatedBy:   user.ID,
+		}
+		logs = append(logs, log)
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -569,25 +729,116 @@ func UpdateUser(user User) error {
 	defer tx.Rollback()
 
 	q := `
-		UPDATE users
-		SET
-			email = ?
-			, phone = ?
-		WHERE
-			username = ?
-			AND status = ?
-	`
+			UPDATE users
+			SET
+				email = ?
+				, phone = ?
+				, updated_by = ?
+				, updated_at = ?
+			WHERE
+				username = ?
+				AND status = ?
+		`
 
-	_, err = tx.Exec(tx.Rebind(q), user.Email, user.Phone, user.Username, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), user.Email, user.Phone, user.ID, time.Now(), user.Username, StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
+	}
+
+	userDetail, err := FindUserDetail(user.ID)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	logs := []Log{}
+	log := Log{
+		TableName:   "users",
+		TableNameId: user.ID,
+		ColumnName:  "email",
+		Action:      ActionChangeLogUpdate,
+		Old:         userDetail.Email,
+		New:         user.Email,
+		CreatedBy:   user.ID,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "users",
+		TableNameId: user.ID,
+		ColumnName:  "phone",
+		Action:      ActionChangeLogUpdate,
+		Old:         userDetail.Phone,
+		New:         user.Phone,
+		CreatedBy:   user.ID,
+	}
+	logs = append(logs, log)
+
+	q = `
+			UPDATE user_roles
+			SET
+				status = ?
+			WHERE
+				user_id = ?
+		`
+
+	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, user.ID)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	log = Log{
+		TableName:   "user_roles",
+		TableNameId: user.ID,
+		ColumnName:  ColumnChangeLogDelete,
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         StatusDeleted,
+		CreatedBy:   user.ID,
+	}
+	logs = append(logs, log)
+
+	for _, v := range user.Role {
+		q := `
+			INSERT INTO user_roles(
+				user_id
+				, role_id
+				, created_by
+				, status
+			)
+			VALUES (?, ?, ?, ?)
+		`
+
+		_, err := tx.Exec(tx.Rebind(q), user.ID, v.Id, user.CreatedBy, StatusCreated)
+		if err != nil {
+			fmt.Println(err)
+			return ErrServerInternal
+		}
+
+		log = Log{
+			TableName:   "user_roles",
+			TableNameId: user.ID,
+			ColumnName:  ColumnChangeLogInsert,
+			Action:      ActionChangeLogInsert,
+			Old:         ValueChangeLogNone,
+			New:         v.Id,
+			CreatedBy:   user.ID,
+		}
+		logs = append(logs, log)
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -619,6 +870,46 @@ func BlockUser(userId, user string) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	logs := []Log{}
+	log := Log{
+		TableName:   "user_roles",
+		TableNameId: user,
+		ColumnName:  "status",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         StatusDeleted,
+		CreatedBy:   user,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "user_roles",
+		TableNameId: user,
+		ColumnName:  "updated_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         user,
+		CreatedBy:   user,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "user_roles",
+		TableNameId: user,
+		ColumnName:  "updated_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   user,
+	}
+	logs = append(logs, log)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -650,19 +941,60 @@ func ReleaseUser(userId, user string) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	logs := []Log{}
+	log := Log{
+		TableName:   "user_roles",
+		TableNameId: user,
+		ColumnName:  "status",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         StatusCreated,
+		CreatedBy:   user,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "user_roles",
+		TableNameId: user,
+		ColumnName:  "updated_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         user,
+		CreatedBy:   user,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "user_roles",
+		TableNameId: user,
+		ColumnName:  "updated_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   user,
+	}
+	logs = append(logs, log)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
 // Broadcast User
 
 func InsertBroadcastUser(variantId, user string, target, description []string) error {
-	fmt.Println("Add")
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err)
 		return ErrServerInternal
 	}
 	defer tx.Rollback()
+
+	logs := []Log{}
 	q := ""
 	for i, v := range target {
 		q = q + `
@@ -674,10 +1006,23 @@ func InsertBroadcastUser(variantId, user string, target, description []string) e
 				, created_by
 				, status
 			)
-			VALUES ('` + variantId + `', '` + v + `', '` + description[i] + `', 'pending', '` + user + `', 'created');
+			VALUES ('` + variantId + `', '` + v + `', '` + description[i] + `', 'pending', '` + user + `', 'created')
+			RETURNING
+				id;
 		`
+
+		log := Log{
+			TableName:   "broadcast_users",
+			TableNameId: variantId,
+			ColumnName:  ColumnChangeLogInsert,
+			Action:      ActionChangeLogInsert,
+			Old:         ValueChangeLogNone,
+			New:         v,
+			CreatedBy:   user,
+		}
+		logs = append(logs, log)
 	}
-	fmt.Println(q)
+
 	_, err = tx.Exec(tx.Rebind(q))
 	if err != nil {
 		fmt.Println(err)
@@ -689,13 +1034,18 @@ func InsertBroadcastUser(variantId, user string, target, description []string) e
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
 // superadmin
 
 func SuperAdminAddUser(u SuperAdminRegisterUser, user string) error {
-	fmt.Println("Add")
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err)
@@ -705,68 +1055,109 @@ func SuperAdminAddUser(u SuperAdminRegisterUser, user string) error {
 
 	username, err := CheckUsername(u.Username, u.AccountId)
 
-	if username == "" {
+	if username != "" {
+		return ErrDuplicateEntry
+	}
+
+	q := `
+		INSERT INTO users(
+			username
+			, password
+			, email
+			, phone
+			, created_by
+			, status
+		)
+		VALUES (?, ?, ?, ?, ?, ?)
+		RETURNING
+			id
+	`
+
+	var res []string
+	if err := tx.Select(&res, tx.Rebind(q), u.Username, u.Password, u.Email, u.Phone, user, StatusCreated); err != nil {
+		fmt.Println(err)
+		return ErrServerInternal
+	}
+
+	logs := []Log{}
+	log := Log{
+		TableName:   "users",
+		TableNameId: ValueChangeLogNone,
+		ColumnName:  ColumnChangeLogInsert,
+		Action:      ActionChangeLogInsert,
+		Old:         ValueChangeLogNone,
+		New:         res[0],
+		CreatedBy:   user,
+	}
+	logs = append(logs, log)
+
+	for _, v := range u.Role {
 		q := `
-			INSERT INTO users(
-				username
-				, password
-				, email
-				, phone
-				, created_by
-				, status
-			)
-			VALUES (?, ?, ?, ?, ?, ?)
-			RETURNING
-				id
-		`
-		var res []string
-		if err := tx.Select(&res, tx.Rebind(q), u.Username, u.Password, u.Email, u.Phone, user, StatusCreated); err != nil {
-			fmt.Println(err)
-			return ErrServerInternal
-		}
-
-		for _, v := range u.Role {
-			q := `
-				INSERT INTO user_roles(
-					user_id
-					, role_id
-					, created_by
-					, status
-				)
-				VALUES (?, ?, ?, ?)
-			`
-
-			_, err := tx.Exec(tx.Rebind(q), res[0], v, user, StatusCreated)
-			if err != nil {
-				fmt.Println(err)
-				return ErrServerInternal
-			}
-		}
-
-		q2 := `
-			INSERT INTO user_accounts(
+			INSERT INTO user_roles(
 				user_id
-				, account_id
+				, role_id
 				, created_by
 				, status
 			)
 			VALUES (?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q2), res[0], u.AccountId, user, StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q), res[0], v, user, StatusCreated)
 		if err != nil {
 			fmt.Println(err)
 			return ErrServerInternal
 		}
 
-		if err := tx.Commit(); err != nil {
-			fmt.Println(err)
-			return ErrServerInternal
+		log = Log{
+			TableName:   "user_roles",
+			TableNameId: res[0],
+			ColumnName:  ColumnChangeLogInsert,
+			Action:      ActionChangeLogInsert,
+			Old:         ValueChangeLogNone,
+			New:         v,
+			CreatedBy:   user,
 		}
-		return nil
+		logs = append(logs, log)
 	}
 
-	return ErrDuplicateEntry
+	q2 := `
+		INSERT INTO user_accounts(
+			user_id
+			, account_id
+			, created_by
+			, status
+		)
+		VALUES (?, ?, ?, ?)
+	`
+
+	_, err = tx.Exec(tx.Rebind(q2), res[0], u.AccountId, user, StatusCreated)
+	if err != nil {
+		fmt.Println(err)
+		return ErrServerInternal
+	}
+
+	log = Log{
+		TableName:   "user_accounts",
+		TableNameId: res[0],
+		ColumnName:  ColumnChangeLogInsert,
+		Action:      ActionChangeLogInsert,
+		Old:         ValueChangeLogNone,
+		New:         u.AccountId,
+		CreatedBy:   user,
+	}
+	logs = append(logs, log)
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err)
+		return ErrServerInternal
+	}
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	return nil
 }
 
 func SuperAdminFindAllUsers() ([]User, error) {

@@ -3,6 +3,9 @@ package model
 import (
 	"database/sql"
 	"fmt"
+	"reflect"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -66,6 +69,21 @@ func AddBankAccount(a BankAccount, user User) error {
 		return err
 	}
 
+	log := Log{
+		TableName:   "bank_accounts",
+		TableNameId: ValueChangeLogNone,
+		ColumnName:  ColumnChangeLogInsert,
+		Action:      ActionChangeLogInsert,
+		Old:         ValueChangeLogNone,
+		New:         res[0],
+		CreatedBy:   user.ID,
+	}
+
+	err = addLog(log)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -94,33 +112,111 @@ func UpdateBankAccount(account BankAccount, userId string) error {
 	}
 	defer tx.Rollback()
 
+	bankAccountDetail, err := FindBankAccountById(account.Id)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	reflectParam := reflect.ValueOf(&account)
+	dataParam := reflect.Indirect(reflectParam)
+
+	reflectDb := reflect.ValueOf(&bankAccountDetail).Elem()
+	dataDb := reflect.Indirect(reflectDb)
+
+	updates := getUpdate(dataParam, reflectDb)
+
 	q := `
-		UPDATE accounts
+		UPDATE bank_accounts
 		SET
-			company_name = ?
-			, company_pic = ?
-			, company_telp = ?
-			, company_email = ?
-			, bank_name = ?
-			, bank_branch = ?
-			, bank_account_number = ?
-			, bank_account_holder = ?
-			, updated_by = ?
+			updated_by = ?
 			, updated_at = ?
 		WHERE
 			id = ?
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), account.CompanyName, account.CompanyPic, account.CompanyTelp, account.CompanyEmail, account.BankName, account.BankBranch, account.BankAccountNumber, account.BankAccountHolder, userId, time.Now(), account.Id)
+	_, err = tx.Exec(tx.Rebind(q), userId, time.Now(), account.Id)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
+	}
+
+	logs := []Log{}
+	tempLog := Log{
+		TableName:   "bank_accounts",
+		TableNameId: account.Id,
+		ColumnName:  "updated_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         userId,
+		CreatedBy:   userId,
+	}
+	logs = append(logs, tempLog)
+
+	tempLog = Log{
+		TableName:   "bank_accounts",
+		TableNameId: account.Id,
+		ColumnName:  "updated_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   userId,
+	}
+	logs = append(logs, tempLog)
+
+	for k, v := range updates {
+		var value = v.String()
+		if strings.Contains(value, "<") {
+			tempString := strings.Replace(value, "<", "", -1)
+			tempString = strings.Replace(tempString, ">", "", -1)
+			tempStringArr := strings.Split(tempString, " ")
+			if tempStringArr[0] == "int" {
+				value = strconv.FormatInt(v.Int(), 64)
+			} else if tempStringArr[0] == "float64" {
+				value = strconv.FormatFloat(v.Float(), 'f', -1, 64)
+			}
+		}
+
+		keys := strings.Split(k, ";")
+		q = `
+			UPDATE bank_accounts
+			SET
+				`
+		q += keys[1] + ` = '` + value + `'`
+		q += `
+			WHERE
+				id = ?
+				AND status = ?;
+		`
+		_, err = tx.Exec(tx.Rebind(q), account.Id, StatusCreated)
+		if err != nil {
+			fmt.Println(err.Error())
+			fmt.Println(q)
+			return ErrServerInternal
+		}
+
+		tempLog = Log{
+			TableName:   "bank_accounts",
+			TableNameId: account.Id,
+			ColumnName:  keys[1],
+			Action:      ActionChangeLogUpdate,
+			Old:         dataDb.FieldByName(keys[0]).Interface().(string),
+			New:         value,
+			CreatedBy:   userId,
+		}
+		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -205,6 +301,34 @@ func FindBankAccountByPartner(accountId, partnerId string) (BankAccount, error) 
 
 	var resv []BankAccount
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId, partnerId); err != nil {
+		return BankAccount{}, err
+	}
+	if len(resv) < 1 {
+		return BankAccount{}, ErrResourceNotFound
+	}
+
+	return resv[0], nil
+}
+
+func FindBankAccountById(id string) (BankAccount, error) {
+	q := `
+		SELECT
+			id
+			, company_name
+			, company_pic
+			, company_telp
+			, company_email
+			, bank_name
+			, bank_branch
+			, bank_account_number
+			, bank_account_holder
+		FROM bank_accounts
+		WHERE status = ?
+		AND id = ?
+	`
+
+	var resv []BankAccount
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, id); err != nil {
 		return BankAccount{}, err
 	}
 	if len(resv) < 1 {

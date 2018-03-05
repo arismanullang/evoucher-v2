@@ -2,6 +2,7 @@ package model
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 
@@ -489,6 +490,22 @@ func (d *Voucher) InsertVc() error {
 	if err := vc.Commit(); err != nil {
 		return err
 	}
+
+	log := Log{
+		TableName:   "vouchers",
+		TableNameId: ValueChangeLogNone,
+		ColumnName:  ColumnChangeLogInsert,
+		Action:      ActionChangeLogInsert,
+		Old:         ValueChangeLogNone,
+		New:         res[0].ID,
+		CreatedBy:   d.CreatedBy,
+	}
+
+	err = addLog(log)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -523,6 +540,57 @@ func (d *UpdateDeleteRequest) DeleteVc() error {
 	if err := vc.Commit(); err != nil {
 		return err
 	}
+
+	logs := []Log{}
+	log := Log{
+		TableName:   "vouchers",
+		TableNameId: d.ID,
+		ColumnName:  "state",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         d.State,
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "vouchers",
+		TableNameId: d.ID,
+		ColumnName:  "status",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         StatusDeleted,
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "vouchers",
+		TableNameId: d.ID,
+		ColumnName:  "deleted_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         d.User,
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "vouchers",
+		TableNameId: d.ID,
+		ColumnName:  "deleted_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, log)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -682,7 +750,7 @@ func HardDelete(program string) error {
 	return nil
 }
 
-func RollbackVoucher(vcid string) error {
+func RollbackVoucher(vcid, user string) error {
 	vc, err := db.Beginx()
 	if err != nil {
 		return err
@@ -694,8 +762,7 @@ func RollbackVoucher(vcid string) error {
 			vouchers
 		SET
 			state = ?
-			status = ?
-
+			, status = ?
 		WHERE
 			id = ?
 		AND
@@ -714,5 +781,34 @@ func RollbackVoucher(vcid string) error {
 	if err := vc.Commit(); err != nil {
 		return err
 	}
+
+	logs := []Log{}
+	log := Log{
+		TableName:   "vouchers",
+		TableNameId: vcid,
+		ColumnName:  "state",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         VoucherStateRollback,
+		CreatedBy:   user,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "vouchers",
+		TableNameId: vcid,
+		ColumnName:  "status",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         StatusDeleted,
+		CreatedBy:   user,
+	}
+	logs = append(logs, log)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }

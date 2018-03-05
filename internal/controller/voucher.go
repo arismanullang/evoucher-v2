@@ -706,7 +706,7 @@ func RollbackVoucher(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := model.RollbackVoucher(vc)
+	err := model.RollbackVoucher(vc, a.User.ID)
 	if err == model.ErrNotModified {
 		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeInvalidVoucher, model.ErrMessageInvalidVoucher+"("+err.Error()+")", "")
@@ -1353,6 +1353,8 @@ func GenerateSingleVoucherEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	campaign.AccountId = a.User.Account.Id
+	campaign.ProgramName = dt.Name
+	campaign.ImageVoucher = dt.ImgUrl
 	listEmail := []model.TargetEmail{}
 	listEmail = append(listEmail, model.TargetEmail{HolderName: gvd.Holder.Description, VoucherUrl: generateLink(voucher[0].ID), HolderEmail: gvd.Holder.Email})
 

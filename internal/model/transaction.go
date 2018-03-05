@@ -98,6 +98,18 @@ func InsertTransaction(d Transaction) (string, error) {
 	}
 	d.Id = res[0]
 
+	logs := []Log{}
+	tempLog := Log{
+		TableName:   "transactions",
+		TableNameId: ValueChangeLogNone,
+		ColumnName:  ColumnChangeLogInsert,
+		Action:      ActionChangeLogInsert,
+		Old:         ValueChangeLogNone,
+		New:         d.Id,
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, tempLog)
+
 	for _, v := range d.VoucherIds {
 		q := `
 			INSERT INTO transaction_details(
@@ -114,77 +126,29 @@ func InsertTransaction(d Transaction) (string, error) {
 		if err != nil {
 			return "", err
 		}
+
+		tempLog := Log{
+			TableName:   "transaction_details",
+			TableNameId: d.Id,
+			ColumnName:  ColumnChangeLogInsert,
+			Action:      ActionChangeLogInsert,
+			Old:         ValueChangeLogNone,
+			New:         v,
+			CreatedBy:   d.User,
+		}
+		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		return "", err
 	}
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return d.Id, nil
-}
-
-func (d *Transaction) Update() error {
-	tx, err := db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	q := `
-		UPDATE transactions
-		SET
-			company_id = ?
-			, pic_merchant = ?
-			, transaction_code = ?
-			, discount_value = ?
-			, updated_by = ?
-			, updated_at = ?
-		WHERE
-			id = ?
-			AND status = ?;
-	`
-
-	_, err = tx.Exec(tx.Rebind(q), d.AccountId, d.PartnerId, d.TransactionCode, d.DiscountValue, d.User, time.Now(), d.Id, StatusCreated)
-	if err != nil {
-		return err
-	}
-
-	q = `
-		UPDATE transaction_details
-		SET
-			status = ?
-			, updated_by = ?
-			, updated_at = ?
-		WHERE
-			transaction_id = ?
-			AND status = ?;
-	`
-	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, d.User, time.Now(), d.Id, StatusCreated)
-	if err != nil {
-		return err
-	}
-
-	for _, v := range d.Vouchers {
-		q := `
-			INSERT INTO transaction_details(
-				transaction_id
-				, voucher_id
-				, created_by
-				, created_at
-				, status
-			)
-			VALUES (?, ?, ?, ?, ?)
-			`
-
-		_, err := tx.Exec(tx.Rebind(q), d.Id, v, d.User, time.Now(), StatusCreated)
-		if err != nil {
-			return err
-		}
-	}
-
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (d *DeleteTransactionRequest) Delete() error {
@@ -210,6 +174,40 @@ func (d *DeleteTransactionRequest) Delete() error {
 		return err
 	}
 
+	logs := []Log{}
+	tempLog := Log{
+		TableName:   "transactions",
+		TableNameId: d.Id,
+		ColumnName:  "deleted_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         d.User,
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, tempLog)
+
+	tempLog = Log{
+		TableName:   "transactions",
+		TableNameId: d.Id,
+		ColumnName:  "deleted_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, tempLog)
+
+	tempLog = Log{
+		TableName:   "transactions",
+		TableNameId: d.Id,
+		ColumnName:  "status",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         StatusDeleted,
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, tempLog)
+
 	q = `
 		UPDATE transaction_details
 		SET
@@ -217,7 +215,7 @@ func (d *DeleteTransactionRequest) Delete() error {
 			, updated_at = ?
 			, status = ?
 		WHERE
-			program_id = ?
+			transaction_id = ?
 			AND status = ?;
 	`
 	_, err = tx.Exec(tx.Rebind(q), d.User, time.Now(), StatusDeleted, d.Id, StatusCreated)
@@ -225,9 +223,48 @@ func (d *DeleteTransactionRequest) Delete() error {
 		return err
 	}
 
+	tempLog = Log{
+		TableName:   "transaction_details",
+		TableNameId: d.Id,
+		ColumnName:  "deleted_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         d.User,
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, tempLog)
+
+	tempLog = Log{
+		TableName:   "transaction_details",
+		TableNameId: d.Id,
+		ColumnName:  "deleted_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, tempLog)
+
+	tempLog = Log{
+		TableName:   "transaction_details",
+		TableNameId: d.Id,
+		ColumnName:  "status",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         StatusDeleted,
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, tempLog)
+
 	if err := tx.Commit(); err != nil {
 		return err
 	}
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -937,5 +974,45 @@ func UpdateCashoutTransaction(transactionCode, user string) error {
 	if err := tx.Commit(); err != nil {
 		return err
 	}
+
+	logs := []Log{}
+	tempLog := Log{
+		TableName:   "vouchers",
+		TableNameId: transactionCode,
+		ColumnName:  "updated_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         user,
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	tempLog = Log{
+		TableName:   "vouchers",
+		TableNameId: transactionCode,
+		ColumnName:  "updated_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	tempLog = Log{
+		TableName:   "vouchers",
+		TableNameId: transactionCode,
+		ColumnName:  "status",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         VoucherStatePaid,
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
