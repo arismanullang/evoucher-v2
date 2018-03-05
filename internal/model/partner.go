@@ -3,6 +3,8 @@ package model
 import (
 	"database/sql"
 	"fmt"
+	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -58,48 +60,67 @@ func InsertPartner(p Partner) error {
 		return ErrServerInternal
 	}
 
-	if partner == "" {
-		tags := strings.Split(p.Tag.String, "#")
-		err := CheckAndInsertTag(tags, p.CreatedBy.String)
-		if err != nil {
-			fmt.Println(err.Error())
-			return ErrServerInternal
-		}
-
-		q := `
-			INSERT INTO partners(
-				name
-				, account_id
-				, serial_number
-				, email
-				, tag
-				, description
-				, bank_account_id
-				, building
-				, address
-				, city
-				, province
-				, zip_code
-				, created_by
-				, status
-			)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-		`
-
-		_, err = tx.Exec(tx.Rebind(q), p.Name, p.AccountId, p.SerialNumber, p.Email, p.Tag.String, p.Description, p.BankAccount.Id, p.Building, p.Address, p.City, p.Province, p.ZipCode, p.CreatedBy.String, StatusCreated)
-		if err != nil {
-			fmt.Println(err.Error())
-			return ErrServerInternal
-		}
-
-		if err := tx.Commit(); err != nil {
-			fmt.Println(err.Error())
-			return ErrServerInternal
-		}
-		return nil
-	} else {
+	if partner != "" {
 		return ErrDuplicateEntry
 	}
+
+	tags := strings.Split(p.Tag.String, "#")
+	err = CheckAndInsertTag(tags, p.CreatedBy.String)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	q := `
+		INSERT INTO partners(
+			name
+			, account_id
+			, serial_number
+			, email
+			, tag
+			, description
+			, bank_account_id
+			, building
+			, address
+			, city
+			, province
+			, zip_code
+			, created_by
+			, status
+		)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		RETURNING
+			id
+	`
+
+	var res []string
+	err = tx.Select(&res, tx.Rebind(q), p.Name, p.AccountId, p.SerialNumber, p.Email, p.Tag.String, p.Description, p.BankAccount.Id, p.Building, p.Address, p.City, p.Province, p.ZipCode, p.CreatedBy.String, StatusCreated)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	log := Log{
+		TableName:   "partners",
+		TableNameId: ValueChangeLogNone,
+		ColumnName:  ColumnChangeLogInsert,
+		Action:      ActionChangeLogInsert,
+		Old:         ValueChangeLogNone,
+		New:         res[0],
+		CreatedBy:   p.CreatedBy.String,
+	}
+
+	err = addLog(log)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	return nil
 }
 
 func checkPartner(name, accountId string) (string, error) {
@@ -243,36 +264,112 @@ func UpdatePartner(partner Partner, user string) error {
 	q := `
 		UPDATE partners
 		SET
-			serial_number = ?
-			, email = ?
-			, description = ?
-			, building = ?
-			, address = ?
-			, city = ?
-			, province = ?
-			, zip_code = ?
-			, bank_account_id = ?
-			, tag = ?
-			, updated_by = ?
+			updated_by = ?
 			, updated_at = ?
 		WHERE
 			id = ?
 			AND status = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), partner.SerialNumber, partner.Email, partner.Description, partner.Building, partner.Address, partner.City, partner.Province, partner.ZipCode, partner.BankAccount.Id, partner.Tag, user, time.Now(), partner.Id, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), user, time.Now(), partner.Id, StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return err
+	}
+
+	partnerDetail, err := FindPartnerById(partner.Id)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	reflectParam := reflect.ValueOf(&partner)
+	dataParam := reflect.Indirect(reflectParam)
+
+	reflectDb := reflect.ValueOf(&partnerDetail).Elem()
+	dataDb := reflect.Indirect(reflectDb)
+
+	updates := getUpdate(dataParam, reflectDb)
+
+	logs := []Log{}
+	tempLog := Log{
+		TableName:   "partners",
+		TableNameId: partner.Id,
+		ColumnName:  "updated_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         user,
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	tempLog = Log{
+		TableName:   "partners",
+		TableNameId: partner.Id,
+		ColumnName:  "updated_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	for k, v := range updates {
+		var value = v.String()
+		if strings.Contains(value, "<") {
+			tempString := strings.Replace(value, "<", "", -1)
+			tempString = strings.Replace(tempString, ">", "", -1)
+			tempStringArr := strings.Split(tempString, " ")
+			if tempStringArr[0] == "int" {
+				value = strconv.FormatInt(v.Int(), 64)
+			} else if tempStringArr[0] == "float64" {
+				value = strconv.FormatFloat(v.Float(), 'f', -1, 64)
+			}
+		}
+
+		keys := strings.Split(k, ";")
+		q = `
+			UPDATE partners
+			SET
+				`
+		q += keys[1] + ` = '` + value + `'`
+		q += `
+			WHERE
+				id = ?
+				AND status = ?;
+		`
+		_, err = tx.Exec(tx.Rebind(q), partner.Id, StatusCreated)
+		if err != nil {
+			fmt.Println(err.Error())
+			fmt.Println(q)
+			return ErrServerInternal
+		}
+
+		tempLog = Log{
+			TableName:   "partners",
+			TableNameId: partner.Id,
+			ColumnName:  keys[1],
+			Action:      ActionChangeLogUpdate,
+			Old:         dataDb.FieldByName(keys[0]).Interface().(string),
+			New:         value,
+			CreatedBy:   user,
+		}
+		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return err
 	}
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
-func DeletePartner(partnerId, userId string) error {
+func DeletePartner(partner, user string) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -289,7 +386,7 @@ func DeletePartner(partnerId, userId string) error {
 		WHERE
 			id = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), userId, time.Now(), StatusDeleted, partnerId)
+	_, err = tx.Exec(tx.Rebind(q), user, time.Now(), StatusDeleted, partner)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
@@ -299,6 +396,46 @@ func DeletePartner(partnerId, userId string) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	logs := []Log{}
+	tempLog := Log{
+		TableName:   "partners",
+		TableNameId: partner,
+		ColumnName:  "updated_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         user,
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	tempLog = Log{
+		TableName:   "partners",
+		TableNameId: partner,
+		ColumnName:  "updated_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	tempLog = Log{
+		TableName:   "partners",
+		TableNameId: partner,
+		ColumnName:  "status",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         StatusDeleted,
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -450,6 +587,8 @@ func CheckAndInsertTag(tags []string, user string) error {
 	}
 	defer tx.Rollback()
 
+	logs := []Log{}
+
 	for _, v := range tags {
 		q := `
 		SELECT
@@ -467,19 +606,30 @@ func CheckAndInsertTag(tags []string, user string) error {
 
 		if len(resv) < 1 && v != "" {
 			q := `
-			INSERT INTO tags(
-				value
-				, created_by
-				, status
-			)
-			VALUES (?, ?, ?)
-		`
+				INSERT INTO tags(
+					value
+					, created_by
+					, status
+				)
+				VALUES (?, ?, ?)
+			`
 
 			_, err := tx.Exec(tx.Rebind(q), v, user, StatusCreated)
 			if err != nil {
 				fmt.Println(err.Error())
 				return ErrServerInternal
 			}
+
+			tempLog := Log{
+				TableName:   "tags",
+				TableNameId: ValueChangeLogNone,
+				ColumnName:  ColumnChangeLogInsert,
+				Action:      ActionChangeLogInsert,
+				Old:         ValueChangeLogNone,
+				New:         v,
+				CreatedBy:   user,
+			}
+			logs = append(logs, tempLog)
 		}
 	}
 
@@ -487,6 +637,12 @@ func CheckAndInsertTag(tags []string, user string) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -518,10 +674,26 @@ func InsertTag(tag, user string) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	log := Log{
+		TableName:   "tags",
+		TableNameId: ValueChangeLogNone,
+		ColumnName:  ColumnChangeLogInsert,
+		Action:      ActionChangeLogInsert,
+		Old:         ValueChangeLogNone,
+		New:         tag,
+		CreatedBy:   user,
+	}
+
+	err = addLog(log)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
-func DeleteTag(tagValue, user string) error {
+func DeleteTag(value, user string) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -538,7 +710,7 @@ func DeleteTag(tagValue, user string) error {
 		WHERE
 			value = ?;
 	`
-	_, err = tx.Exec(tx.Rebind(q), user, time.Now(), StatusDeleted, tagValue)
+	_, err = tx.Exec(tx.Rebind(q), user, time.Now(), StatusDeleted, value)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
@@ -548,6 +720,46 @@ func DeleteTag(tagValue, user string) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	logs := []Log{}
+	tempLog := Log{
+		TableName:   "tags",
+		TableNameId: value,
+		ColumnName:  "updated_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         user,
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	tempLog = Log{
+		TableName:   "tags",
+		TableNameId: value,
+		ColumnName:  "updated_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	tempLog = Log{
+		TableName:   "tags",
+		TableNameId: value,
+		ColumnName:  "status",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         StatusDeleted,
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -559,6 +771,7 @@ func DeleteTagBulk(tagValue []string, user string) error {
 	}
 	defer tx.Rollback()
 
+	logs := []Log{}
 	q := `
 		UPDATE tags
 		SET
@@ -570,8 +783,41 @@ func DeleteTagBulk(tagValue []string, user string) error {
 	`
 	for i := 1; i < len(tagValue); i++ {
 		q += " OR value = '" + tagValue[i] + "'"
+
+		tempLog := Log{
+			TableName:   "tags",
+			TableNameId: tagValue[i],
+			ColumnName:  "updated_by",
+			Action:      ActionChangeLogUpdate,
+			Old:         ValueChangeLogNone,
+			New:         user,
+			CreatedBy:   user,
+		}
+		logs = append(logs, tempLog)
+
+		tempLog = Log{
+			TableName:   "tags",
+			TableNameId: tagValue[i],
+			ColumnName:  "updated_at",
+			Action:      ActionChangeLogUpdate,
+			Old:         ValueChangeLogNone,
+			New:         time.Now().String(),
+			CreatedBy:   user,
+		}
+		logs = append(logs, tempLog)
+
+		tempLog = Log{
+			TableName:   "tags",
+			TableNameId: tagValue[i],
+			ColumnName:  "status",
+			Action:      ActionChangeLogUpdate,
+			Old:         ValueChangeLogNone,
+			New:         StatusDeleted,
+			CreatedBy:   user,
+		}
+		logs = append(logs, tempLog)
 	}
-	fmt.Println(q)
+
 	_, err = tx.Exec(tx.Rebind(q), user, time.Now(), StatusDeleted, tagValue[0])
 	if err != nil {
 		fmt.Println(err.Error())
@@ -582,5 +828,11 @@ func DeleteTagBulk(tagValue []string, user string) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }

@@ -3,9 +3,10 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/gilkor/evoucher/internal/model"
 	"github.com/ruizu/render"
-	"net/http"
 )
 
 type (
@@ -206,6 +207,7 @@ func SendSedayuOneEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	campaign.AccountId = a.User.Account.Id
+	campaign.CreatedBy = a.User.ID
 	listEmail := []model.TargetEmail{}
 
 	for _, v := range totalVoucher {

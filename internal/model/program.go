@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -177,6 +178,25 @@ func CustomQuery(q string) (map[int][]map[string]interface{}, error) {
 	return result, nil
 }
 
+func CheckValueProgram(column, id string) (string, error) {
+	q := `
+		SELECT ` + column + `
+		FROM
+			programs
+		WHERE
+			id = ?
+	`
+	var res []string
+	if err := db.Select(&res, db.Rebind(q), id); err != nil {
+		fmt.Println(err)
+		return "", ErrServerInternal
+	}
+	if len(res) == 0 {
+		return "", nil
+	}
+	return res[0], nil
+}
+
 func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 	tx, err := db.Beginx()
 	if err != nil {
@@ -206,7 +226,6 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 		return "", ErrServerInternal
 	}
 
-	fmt.Println(vr)
 	q2 := `
 		INSERT INTO programs(
 			account_id
@@ -247,7 +266,6 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 	}
 
 	if len(vr.ValidPartners) == 1 && vr.ValidPartners[0] == "all" {
-
 		for _, v := range vr.ValidPartners {
 			q := `
 				INSERT INTO program_partners(
@@ -290,10 +308,50 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 	}
 
 	if err := tx.Commit(); err != nil {
-
 		fmt.Println(err.Error())
 		return "", ErrServerInternal
 	}
+
+	logs := []Log{}
+
+	tempLog := Log{
+		TableName:   "voucher_formats",
+		TableNameId: ValueChangeLogNone,
+		ColumnName:  ColumnChangeLogInsert,
+		Action:      ActionChangeLogInsert,
+		Old:         ValueChangeLogNone,
+		New:         res[0],
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	tempLog = Log{
+		TableName:   "programs",
+		TableNameId: ValueChangeLogNone,
+		ColumnName:  ColumnChangeLogInsert,
+		Action:      ActionChangeLogInsert,
+		Old:         ValueChangeLogNone,
+		New:         res2[0],
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	tempLog = Log{
+		TableName:   "program_partners",
+		TableNameId: res[0],
+		ColumnName:  ColumnChangeLogInsert,
+		Action:      ActionChangeLogInsert,
+		Old:         ValueChangeLogNone,
+		New:         ValueChangeLogAll,
+		CreatedBy:   user,
+	}
+	logs = append(logs, tempLog)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return res2[0], nil
 }
 
@@ -305,57 +363,114 @@ func UpdateProgram(d Program) error {
 	}
 	defer tx.Rollback()
 
-	q := `
-		UPDATE programs
-		SET
-			name = ?
-			, type = ?
-			, voucher_type = ?
-			, voucher_price = ?
-			, start_date = ?
-			, end_date = ?
-			, start_hour = ?
-			, end_hour = ?
-			, allow_accumulative = ?
-			, valid_voucher_start = ?
-			, valid_voucher_end = ?
-			, voucher_lifetime = ?
-			, validity_days = ?
-			, voucher_value = ?
-			, max_quantity_voucher = ?
-			, max_redeem_voucher = ?
-			, max_generate_voucher = ?
-			, redemption_method = ?
-			, img_url = ?
-			, tnc = ?
-			, description = ?
-			, updated_by = ?
-			, updated_at = ?
-		WHERE
-			id = ?
-			AND status = ?
-	`
+	logs := []Log{}
 
-	_, err = tx.Exec(tx.Rebind(q), d.Name, d.Type, d.VoucherType, d.VoucherPrice, d.StartDate, d.EndDate, d.StartHour, d.EndHour, d.AllowAccumulative, d.ValidVoucherStart, d.ValidVoucherEnd, d.VoucherLifetime, d.ValidityDays, d.VoucherValue, d.MaxQuantityVoucher, d.MaxRedeemVoucher, d.MaxGenerateVoucher, d.RedemptionMethod, d.ImgUrl, d.Tnc, d.Description, d.CreatedBy, time.Now(), d.Id, StatusCreated)
+	programDetail, err := FindProgramDetailsById(d.Id)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
+	}
+
+	reflectParam := reflect.ValueOf(&d)
+	dataParam := reflect.Indirect(reflectParam)
+
+	reflectDb := reflect.ValueOf(&programDetail).Elem()
+	dataDb := reflect.Indirect(reflectDb)
+
+	updates := getUpdate(dataParam, reflectDb)
+
+	q := `
+		UPDATE programs
+		SET
+			updated_by = ?
+		WHERE
+			id = ?
+			AND status = ?;
+		`
+	_, err = tx.Exec(tx.Rebind(q), d.CreatedBy, d.Id, StatusCreated)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	q = `
+		UPDATE programs
+		SET
+			updated_at = ?
+		WHERE
+			id = ?
+			AND status = ?;
+		`
+	_, err = tx.Exec(tx.Rebind(q), time.Now(), d.Id, StatusCreated)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
+
+	for k, v := range updates {
+		var value = v.String()
+		if strings.Contains(value, "<") {
+			tempString := strings.Replace(value, "<", "", -1)
+			tempString = strings.Replace(tempString, ">", "", -1)
+			tempStringArr := strings.Split(tempString, " ")
+			if tempStringArr[0] == "int" {
+				value = strconv.FormatInt(v.Int(), 64)
+			} else if tempStringArr[0] == "float64" {
+				value = strconv.FormatFloat(v.Float(), 'f', -1, 64)
+			}
+		}
+
+		keys := strings.Split(k, ";")
+		q = `
+			UPDATE programs
+			SET
+				`
+		q += keys[1] + ` = '` + value + `'`
+		q += `
+			WHERE
+				id = ?
+				AND status = ?;
+		`
+		_, err = tx.Exec(tx.Rebind(q), d.Id, StatusCreated)
+		if err != nil {
+			fmt.Println(err.Error())
+			fmt.Println(q)
+			return ErrServerInternal
+		}
+
+		tempLog := Log{
+			TableName:   "programs",
+			TableNameId: d.Id,
+			ColumnName:  keys[1],
+			Action:      ActionChangeLogUpdate,
+			Old:         dataDb.FieldByName(keys[0]).Interface().(string),
+			New:         value,
+			CreatedBy:   d.CreatedBy,
+		}
+		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	return nil
 }
 
-func UpdateBulkProgram(id string, voucher int) error {
+func UpdateBulkProgram(id, user string, voucher int) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
 	defer tx.Rollback()
+
+	old, err := CheckValueProgram("max_quantity_voucher", id)
 
 	q := `
 		UPDATE programs
@@ -376,6 +491,21 @@ func UpdateBulkProgram(id string, voucher int) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	log := Log{
+		TableName:   "programs",
+		TableNameId: id,
+		ColumnName:  "max_quantity_voucher",
+		Action:      ActionChangeLogUpdate,
+		Old:         old,
+		New:         strconv.Itoa(voucher),
+		CreatedBy:   user,
+	}
+	err = addLog(log)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -426,6 +556,35 @@ func UpdateProgramBroadcasts(user UpdateProgramArrayRequest) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	logs := []Log{}
+	log := Log{
+		TableName:   "broadcast_users",
+		TableNameId: user.ProgramId,
+		ColumnName:  ColumnChangeLogDelete,
+		Action:      ActionChangeLogDelete,
+		Old:         ValueChangeLogAll,
+		New:         ValueChangeLogNone,
+		CreatedBy:   user.User,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "broadcast_users",
+		TableNameId: user.ProgramId,
+		ColumnName:  ColumnChangeLogInsert,
+		Action:      ActionChangeLogInsert,
+		Old:         ValueChangeLogNone,
+		New:         ValueChangeLogAll,
+		CreatedBy:   user.User,
+	}
+	logs = append(logs, log)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -476,6 +635,35 @@ func UpdateProgramPartners(param UpdateProgramArrayRequest) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
+
+	logs := []Log{}
+	log := Log{
+		TableName:   "program_partners",
+		TableNameId: param.ProgramId,
+		ColumnName:  ColumnChangeLogDelete,
+		Action:      ActionChangeLogDelete,
+		Old:         ValueChangeLogAll,
+		New:         ValueChangeLogNone,
+		CreatedBy:   param.User,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "program_partners",
+		TableNameId: param.ProgramId,
+		ColumnName:  ColumnChangeLogInsert,
+		Action:      ActionChangeLogInsert,
+		Old:         ValueChangeLogNone,
+		New:         ValueChangeLogAll,
+		CreatedBy:   param.User,
+	}
+	logs = append(logs, log)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
@@ -528,6 +716,78 @@ func (d *DeleteProgramRequest) Delete() error {
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
+	}
+
+	logs := []Log{}
+	log := Log{
+		TableName:   "programs",
+		TableNameId: d.Id,
+		ColumnName:  "deleted_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         d.User,
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "programs",
+		TableNameId: d.Id,
+		ColumnName:  "deleted_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "programs",
+		TableNameId: d.Id,
+		ColumnName:  "status",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         StatusDeleted,
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "program_partners",
+		TableNameId: d.Id,
+		ColumnName:  "updated_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         d.User,
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "program_partners",
+		TableNameId: d.Id,
+		ColumnName:  "updated_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "program_partners",
+		TableNameId: d.Id,
+		ColumnName:  "status",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         StatusDeleted,
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, log)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
 	}
 
 	q = `
@@ -589,6 +849,45 @@ func VisibilityProgram(d DeleteProgramRequest, status bool) error {
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
+	}
+
+	logs := []Log{}
+	log := Log{
+		TableName:   "programs",
+		TableNameId: d.Id,
+		ColumnName:  "updated_by",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         d.User,
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "programs",
+		TableNameId: d.Id,
+		ColumnName:  "updated_at",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         time.Now().String(),
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, log)
+
+	log = Log{
+		TableName:   "programs",
+		TableNameId: d.Id,
+		ColumnName:  "visibility",
+		Action:      ActionChangeLogUpdate,
+		Old:         ValueChangeLogNone,
+		New:         strconv.FormatBool(status),
+		CreatedBy:   d.User,
+	}
+	logs = append(logs, log)
+
+	err = addLogs(logs)
+	if err != nil {
+		fmt.Println(err.Error())
 	}
 
 	return nil
