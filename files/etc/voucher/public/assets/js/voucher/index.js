@@ -70,7 +70,7 @@ function myGameEnd(e) {
   //e is gameResultsArray
   console.log(e);
   TweenMax.delayedCall(6, function(){
-   // window.location.reload();
+  	window.location.reload();
   })
 
 
