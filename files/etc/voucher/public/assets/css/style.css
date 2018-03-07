@@ -1,4 +1,7 @@
-@import url('https://fonts.googleapis.com/css?family=Roboto');
+@font-face {
+  font-family: 'ProximaNova';
+  src: url('/assets/fonts/ProximaNova-Regular.otf');
+}
 
 .bg-white-grey {
   background-color: #3F3F3F;
@@ -61,7 +64,7 @@ footer, header, .card-heading{
 }
 
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'ProximaNova';
   font-weight: 500;
 }
 
@@ -297,6 +300,24 @@ button.color-red {
 
 .font-size-12px{
   font-size: 12px;
+}
+
+.table-row{
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.display-flex{
+  display: flex;
+  flex-direction: column;
+}
+
+.card100{
+  height: 100%;
+}
+
+.heading-sub{
+  padding: 4px 16px !important;
 }
 
 [name=list-transaction-code] {

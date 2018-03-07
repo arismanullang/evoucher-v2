@@ -1,7 +1,6 @@
 $( document ).ready(function() {
 	id = findGetParameter("id");
-	getFeature();
-	getFeatureDetail(id);
+	getFeature(id);
 
 	$("#all-ui-feature").change(function() {
 		var _this = $(this);
@@ -14,7 +13,7 @@ $( document ).ready(function() {
 	});
 });
 
-function getFeature() {
+function getFeature(id) {
 	$.ajax({
 		url: '/v1/ui/feature/all?token='+token,
 		type: 'get',
@@ -25,23 +24,17 @@ function getFeature() {
 			var uiFeature = [];
 			var apiFeature = [];
 			for (i = 0; i < arrData.length; i++){
-				var html = "<div class='card'><div class='card-body pt0 pb0'><div class='row'>"
-					+ "<div class='col-sm-12'>"
-					+ "<div class='checkbox c-checkbox'>"
-					+ "<label class='text-thin font-size-12px'>"
-					+ "<input id='"+arrData[i].id+"' value='"+arrData[i].id+"' type='checkbox' class='feature'><span class='ion-checkmark-round'></span>"+arrData[i].category+"-"+arrData[i].detail
-					+ "</label>"
-					+ "</div>"
-					+ "</div>"
-					+ "</div></div></div>";
-				var li = $("<div class='col-md-6'></div>").html(html);
-
 				if(arrData[i].type == 'ui'){
-					li.appendTo('#list-ui-feature');
+					uiFeature.push(arrData[i]);
 				}else{
-					li.appendTo('#list-api-feature');
+					apiFeature.push(arrData[i]);
 				}
 			}
+
+			generateElem(uiFeature, '#list-ui-features');
+			generateElem(apiFeature, '#list-api-features');
+
+			getFeatureDetail(id);
 		}
 	});
 }
@@ -110,4 +103,72 @@ function update() {
 			swal("Error", a.errors.detail);
 		}
 	});
+}
+
+function generateElem(param, targetElem){
+	console.log(param);
+	var categories = [];
+	for(i = 0; i < param.length; i++){
+		if(i == 0){
+			categories.push(param[i].category);
+		}else{
+			var tf = true;
+			for(y = 0; y < categories.length;y++){
+				if(param[i].category == categories[y]){
+					tf = false;
+				}
+			}
+
+			if(tf){
+				categories.push(param[i].category);
+			}
+		}
+	}
+
+	for(i = 0; i < categories.length/2; i++){
+		var ii = i*2;
+		var html = "<div class='col-sm-6 display-flex'><div class='card card100'><div class='card-heading heading-sub'>"
+			+ "<div class='card-title'>"+categories[ii]+"</div>"
+			+ "</div>"
+			+ "<div class='card-body pt0 pb0'>"
+			+ "<div class='row'>";
+
+		for(y = 0; y < param.length; y++){
+			if(categories[ii] == param[y].category){
+				html +="<div class='col-sm-6'>"
+				+ "<div class='checkbox c-checkbox'>"
+				+ "<label class='text-thin font-size-12px'>"
+				+ "<input id='" + param[y].id + "' value='" + param[y].id + "' type='checkbox' class='feature'><span class='ion-checkmark-round'></span>" + param[y].detail
+				+ "</label>"
+				+ "</div>"
+				+ "</div>";
+			}
+		}
+
+		html += "</div></div></div></div>";
+
+		if((ii+1) < categories.length){
+			html += "<div class='col-sm-6 display-flex'><div class='card card100'><div class='card-heading heading-sub'>"
+				+ "<div class='card-title'>"+categories[ii+1]+"</div>"
+				+ "</div>"
+				+ "<div class='card-body pt0 pb0'>"
+				+ "<div class='row'>";
+
+			for(y = 0; y < param.length; y++){
+				if(categories[ii+1] == param[y].category){
+					html +="<div class='col-sm-6'>"
+					+ "<div class='checkbox c-checkbox'>"
+					+ "<label class='text-thin font-size-12px'>"
+					+ "<input id='" + param[y].id + "' value='" + param[y].id + "' type='checkbox' class='feature'><span class='ion-checkmark-round'></span>" + param[y].detail
+					+ "</label>"
+					+ "</div>"
+					+ "</div>";
+				}
+			}
+
+			html += "</div></div></div></div>";
+		}
+		var li = $("<div class='row table-row'></div>").html(html);
+		li.appendTo(targetElem);
+	}
 }

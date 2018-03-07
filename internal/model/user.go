@@ -409,7 +409,7 @@ func Login(username, password string) (string, error) {
 		TableName:   "users",
 		TableNameId: res[0],
 		ColumnName:  ColumnChangeLogSelect,
-		Action:      ActionChangeLogSelect,
+		Action:      ActionChangeLogLogin,
 		Old:         ValueChangeLogNone,
 		New:         ValueChangeLogNone,
 		CreatedBy:   res[0],
