@@ -1090,7 +1090,7 @@ func GetListSpinPrograms(w http.ResponseWriter, r *http.Request) {
 	d.SegmentValueArray = segments
 	d.SvgWidth = 1024
 	d.SvgHeight = 768
-	d.WheelStrokeColor = "#1C75BC" // warna lingkar
+	d.WheelStrokeColor = "#ffffff" // warna lingkar
 	d.WheelStrokeWidth = 18
 	d.WheelSize = 700
 	d.WheelTextOffsetY = 80

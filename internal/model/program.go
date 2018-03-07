@@ -316,7 +316,7 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 
 	tempLog := Log{
 		TableName:   "voucher_formats",
-		TableNameId: ValueChangeLogNone,
+		TableNameId: res2[0],
 		ColumnName:  ColumnChangeLogInsert,
 		Action:      ActionChangeLogInsert,
 		Old:         ValueChangeLogNone,
@@ -338,7 +338,7 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 
 	tempLog = Log{
 		TableName:   "program_partners",
-		TableNameId: res[0],
+		TableNameId: res2[0],
 		ColumnName:  ColumnChangeLogInsert,
 		Action:      ActionChangeLogInsert,
 		Old:         ValueChangeLogNone,

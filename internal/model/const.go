@@ -129,6 +129,7 @@ const (
 	VoucherStatePaid     string = "paid"
 	VoucherStateDeleted  string = "deleted"
 	VoucherStateRollback string = "rollback"
+	VoucherStateSend     string = "send"
 
 	ALPHABET     = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 	NUMERALS     = "1234567890"
@@ -163,6 +164,7 @@ const (
 	ActionChangeLogUpdate string = "update"
 	ActionChangeLogDelete string = "delete"
 	ActionChangeLogSelect string = "select"
+	ActionChangeLogLogin  string = "login"
 )
 
 func getUpdate(paramUpdate, param2 reflect.Value) map[string]reflect.Value {

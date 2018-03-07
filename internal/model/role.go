@@ -10,7 +10,7 @@ type (
 		Id        string   `db:"id" json:"id"`
 		Detail    string   `db:"detail" json:"detail"`
 		Features  []string `db:"-" json:"features"`
-		AccountId string   `db:"-" json:"account_id"`
+		AccountId string   `db:"account_id" json:"account_id"`
 	}
 )
 
@@ -263,7 +263,7 @@ func UpdateRole(r Role, user string) error {
 			AND status = ?
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, r.Id, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), StatusDeleted, user, time.Now(), r.Id, StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal

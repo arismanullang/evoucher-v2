@@ -4,8 +4,8 @@ server:
   template_directory: "files/etc/voucher/templates"
 
 database:
-  # endpoint: "postgres://evoucher:IuA0Ayj8F0p6Iuwg@35.185.131.77:5432/evoucher?sslmode=disable"
-  endpoint: "postgres://evoucher:IuA0Ayj8F0p6Iuwg@127.0.0.1:5432/evoucher?sslmode=disable"
+  endpoint: "postgres://evoucher:IuA0Ayj8F0p6Iuwg@35.185.131.77:5432/evoucher?sslmode=disable"
+  # endpoint: "postgres://evoucher:IuA0Ayj8F0p6Iuwg@127.0.0.1:5432/evoucher?sslmode=disable"
   redis:
     endpoint: "127.0.0.1:6379"
     token_lifetime: 1800 #in minutes (30 hours)
@@ -19,9 +19,9 @@ mailgun:
   email: "voucher@gilkor.com"
 
 logger:
-  # path: "/var/log/"
+  path: "/var/log/"
   # path: "/Users/malfanmh/Documents/" #local
-  path: "/home/richard/Documents/evoucher/" #local
+  # path: "/home/richard/Documents/evoucher/" #local
   filename: "logger-evoucher"
 
 gcs:
