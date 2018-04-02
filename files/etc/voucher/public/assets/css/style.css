@@ -22,9 +22,13 @@
   height: 100px;
 }
 
-footer, header, .card-heading{
+footer, header, .card-heading, .bg-divo{
   background-color: #369694 !important;
   color: white !important;
+}
+
+.badge-remove{
+  cursor: pointer;
 }
 
 .sidebar-header, .sidebar-container{
@@ -210,6 +214,14 @@ a{
   padding-bottom: 12px;
   margin-bottom: 15px;
   margin-right: 0px;
+}
+
+.box{
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 3px;
+  padding: 8px !important;
+  margin: 0;
+  float: left:
 }
 
 .no-border{

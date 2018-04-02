@@ -2,9 +2,10 @@ package controller
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/gilkor/evoucher/internal/model"
 	"github.com/ruizu/render"
-	"net/http"
 )
 
 type (
@@ -52,6 +53,27 @@ func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
 		res.AddError(its(status), model.ErrCodeInvalidRole, "Invalid Role : "+model.ErrInvalidRole.Error(), logger.TraceID)
 		render.JSON(w, res, status)
 		return
+	}
+
+	voucherState, err := model.FindVouchersState(rd.Vouchers)
+	if err != nil {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, "Invalid Role : "+model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	for _, v := range voucherState {
+		if v.State != model.VoucherStateUsed {
+			logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+			status = http.StatusBadRequest
+			res.AddError(its(status), model.ErrServerInternal.Error(), model.ErrMessageVoucherAlreadyPaid, logger.TraceID)
+			render.JSON(w, res, status)
+			return
+		}
 	}
 
 	transactions := []model.CashoutTransaction{}

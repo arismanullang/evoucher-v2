@@ -177,7 +177,7 @@ function deleteProgram(id) {
 			swal('Delete Success!');
 		},
 		error: function (xhr, ajaxOptions, thrownError) {
-			swal('Delete Error!', xhr.responseJSON.errors.detail);
+			swal('Program Cannot Be Deleted', xhr.responseJSON.errors.detail);
 		}
 	});
 	return status;

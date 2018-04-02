@@ -32,7 +32,6 @@ type (
 		DeletedAt         pq.NullTime    `db:"deleted_at" json:"deleted_at"`
 		Status            string         `db:"status" json:"status"`
 	}
-
 	VoucherResponse struct {
 		Status      string
 		Message     string
@@ -50,6 +49,10 @@ type (
 		Body       sql.NullString `db:"body"`
 		FormatType string         `db:"format_type"`
 		Length     int            `db:"length"`
+	}
+	VoucherState struct {
+		ID    string `db:"id"`
+		State string `db:"state"`
 	}
 )
 
@@ -228,6 +231,36 @@ func FindVouchersById(param []string) (VoucherResponse, error) {
 
 	res := VoucherResponse{Status: ResponseStateOk, Message: "success", VoucherData: resd}
 	return res, nil
+}
+
+func FindVouchersState(param []string) ([]VoucherState, error) {
+	q := `
+		SELECT
+			v.id
+			, v.state
+		FROM
+			vouchers as v
+		WHERE
+			v.status = ?
+			AND (
+	`
+	for key, value := range param {
+		if key != 0 {
+			q += `OR `
+		}
+		q += `v.id ='` + value + `'`
+	}
+	q += `) ORDER BY state DESC`
+
+	var resd []VoucherState
+	if err := db.Select(&resd, db.Rebind(q), StatusCreated); err != nil {
+		return []VoucherState{}, err
+	}
+	if len(resd) < 1 {
+		return []VoucherState{}, ErrResourceNotFound
+	}
+
+	return resd, nil
 }
 
 func FindVouchers(param map[string]string) (VoucherResponse, error) {

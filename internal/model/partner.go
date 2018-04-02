@@ -20,12 +20,29 @@ type (
 		ProgramID    string         `db:"program_id" json:"program_id"`
 		Tag          sql.NullString `db:"tag" json:"tag"`
 		Description  sql.NullString `db:"description" json:"description"`
-		BankAccount  BankAccount    `db:"bank_account" json:"bank_account"`
+		BankAccount  BankAccount    `db:"-" json:"bank_account"`
 		Address      string         `db:"address" json:"address"`
 		City         string         `db:"city" json:"city"`
 		Province     string         `db:"province" json:"province"`
 		Building     string         `db:"building" json:"building"`
 		ZipCode      string         `db:"zip_code" json:"zip_code"`
+	}
+	PartnerUpdateRequest struct {
+		Id           string `db:"id" json:"id"`
+		AccountId    string `db:"account_id" json:"acccount_id"`
+		Name         string `db:"name" json:"name"`
+		Email        string `db:"email" json:"email"`
+		SerialNumber string `db:"serial_number" json:"serial_number"`
+		CreatedBy    string `db:"created_by" json:"created_by"`
+		ProgramID    string `db:"program_id" json:"program_id"`
+		Tag          string `db:"tag" json:"tag"`
+		Description  string `db:"description" json:"description"`
+		BankAccount  string `db:"-" json:"bank_account_id"`
+		Address      string `db:"address" json:"address"`
+		City         string `db:"city" json:"city"`
+		Province     string `db:"province" json:"province"`
+		Building     string `db:"building" json:"building"`
+		ZipCode      string `db:"zip_code" json:"zip_code"`
 	}
 	PartnerProgramSummary struct {
 		Id                string         `db:"id" json:"id"`
@@ -199,8 +216,14 @@ func FindPartnerById(param string) (Partner, error) {
 			, account_id
 			, name
 			, serial_number
+			, email
 			, tag
 			, description
+			, building
+			, address
+			, city
+			, province
+			, zip_code
 		FROM partners
 		WHERE status = ?
 		AND id = ?
@@ -216,6 +239,57 @@ func FindPartnerById(param string) (Partner, error) {
 	}
 
 	return resv[0], nil
+}
+
+func FindPartnerByIdUpdateRequest(param string) (PartnerUpdateRequest, error) {
+	q := `
+		SELECT
+			id
+			, account_id
+			, name
+			, serial_number
+			, email
+			, tag
+			, description
+			, building
+			, address
+			, city
+			, province
+			, zip_code
+		FROM
+			partners
+		WHERE
+			status = ?
+		 	AND id = ?
+	`
+
+	var resv []Partner
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, param); err != nil {
+		fmt.Println(err.Error())
+		return PartnerUpdateRequest{}, ErrServerInternal
+	}
+	if len(resv) < 1 {
+		return PartnerUpdateRequest{}, ErrResourceNotFound
+	}
+
+	bank, _ := FindBankAccountByPartner(resv[0].AccountId, resv[0].Id)
+	result := PartnerUpdateRequest{
+		Id:           resv[0].Id,
+		AccountId:    resv[0].AccountId,
+		BankAccount:  bank.Id,
+		Name:         resv[0].Name,
+		SerialNumber: resv[0].SerialNumber.String,
+		Email:        resv[0].Email,
+		Tag:          resv[0].Tag.String,
+		Description:  resv[0].Description.String,
+		Building:     resv[0].Building,
+		Address:      resv[0].Address,
+		City:         resv[0].City,
+		Province:     resv[0].Province,
+		ZipCode:      resv[0].ZipCode,
+	}
+
+	return result, nil
 }
 
 func FindAllPartners(accountId string) ([]Partner, error) {
@@ -253,7 +327,7 @@ func FindAllPartners(accountId string) ([]Partner, error) {
 	return resv, nil
 }
 
-func UpdatePartner(partner Partner, user string) error {
+func UpdatePartner(partner PartnerUpdateRequest, user string) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -276,7 +350,7 @@ func UpdatePartner(partner Partner, user string) error {
 		return err
 	}
 
-	partnerDetail, err := FindPartnerById(partner.Id)
+	partnerDetail, err := FindPartnerByIdUpdateRequest(partner.Id)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal

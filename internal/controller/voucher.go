@@ -1352,7 +1352,7 @@ func GenerateSingleVoucherEmail(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
-	campaign.AccountId = a.User.Account.Id
+	campaign.AccountID = a.User.Account.Id
 	campaign.ProgramName = dt.Name
 	campaign.ImageVoucher = dt.ImgUrl
 	listEmail := []model.TargetEmail{}
