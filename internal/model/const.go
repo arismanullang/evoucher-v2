@@ -103,7 +103,7 @@ const (
 	ErrMessageInvalidUser         string = "Invalid username and password."
 	ErrMessageRedeemNotValidDay   string = "Voucher cannot be used today."
 	ErrMessageRedeemNotValidHour  string = "voucher cannot be used at current time."
-	ErrMessageProgramHasBeenUsed  string = "Program has been used"
+	ErrMessageProgramHasBeenUsed  string = "Voucher has been redeemed."
 	ErrMessageValidationError     string = "Validation error."
 	ErrMessageParsingError        string = "Parsing error."
 

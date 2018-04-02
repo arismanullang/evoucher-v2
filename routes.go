@@ -29,6 +29,8 @@ func setRoutes() http.Handler {
 	r.GetFunc("/sa/:page", viewSuperAdmin)
 	r.GetFunc("/role/:page", viewRole)
 	r.GetFunc("/bank_account/:page", viewBankAccount)
+	r.GetFunc("/user/email/:page", viewEmailUser)
+	r.GetFunc("/user/list/:page", viewListEmail)
 	r.GetFunc("/unauthorize", viewUnauthorize)
 	r.GetFunc("/notfound", viewNotFound)
 	r.GetFunc("/", login)
@@ -48,6 +50,9 @@ func setRoutes() http.Handler {
 
 	//campaign
 	r.PostFunc("/v1/ui/campaign/create", controller.CreateEmailCampaign)
+	r.PostFunc("/v2/ui/campaign/create", controller.CreateEmailCampaignV2)
+	r.GetFunc("/v2/ui/campaign", controller.GetEmailCampaignByProgram)
+	r.PostFunc("/v2/ui/campaign/send", controller.SendEmailCampaign)
 
 	//transaction
 	r.GetFunc("/v1/ui/transaction/partner", controller.GetTransactionsByPartner)
@@ -74,6 +79,21 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/ui/user/forgot/mail", controller.SendForgotPasswordMail)
 	r.PostFunc("/v1/ui/user/forgot/password", controller.ForgotPassword)
 	r.PostFunc("/v1/ui/user/create/broadcast", controller.InsertBroadcastUser)
+
+	//list email
+	r.PostFunc("/v1/ui/user/list/create", controller.InsertListEmailUser)
+	r.PostFunc("/v1/ui/user/list/remove", controller.RemoveEmailUser)
+	r.PostFunc("/v1/ui/user/list/add-new", controller.AddNewEmailUser)
+	r.PostFunc("/v1/ui/user/list/add-exist", controller.AddEmailUser)
+	r.PostFunc("/v1/ui/user/list/delete", controller.DeleteListUser)
+	r.GetFunc("/v1/ui/user/list/all", controller.GetAllListEmailUser)
+	r.GetFunc("/v1/ui/user/list", controller.GetListEmailUserByID)
+	r.GetFunc("/v1/ui/user/lists", controller.GetListEmailUserByIDs)
+	r.PostFunc("/v1/ui/user/email/create", controller.InsertEmailUser)
+	r.PostFunc("/v1/ui/user/email/delete", controller.DeleteEmailUser)
+	r.GetFunc("/v1/ui/user/email/all", controller.GetAllEmailUser)
+	r.GetFunc("/v1/ui/user/email", controller.SearchEmailUser)
+	r.GetFunc("/v1/ui/user/email-id", controller.GetEmailUserByIDs)
 
 	//sa
 	r.PostFunc("/v1/ui/sa/create", controller.SuperadminRegisterUser)
@@ -193,8 +213,52 @@ func viewProgram(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "program/update.html", nil)
 	} else if page == "campaign" {
 		render.FileInLayout(w, "layout.html", "program/campaign.html", nil)
+	} else if page == "send-campaign" {
+		render.FileInLayout(w, "layout.html", "program/send_campaign.html", nil)
 	} else if page == "" || page == "index" {
 		render.FileInLayout(w, "layout.html", "program/index.html", nil)
+	} else {
+		render.File(w, "notfound.html", nil, 404)
+	}
+
+}
+
+func viewEmailUser(w http.ResponseWriter, r *http.Request) {
+	page := bone.GetValue(r, "page")
+
+	if page == "register" {
+		render.FileInLayout(w, "layout.html", "user/email/create.html", nil)
+	} else if page == "search" {
+		render.FileInLayout(w, "layout.html", "user/email/search.html", nil)
+	} else if page == "check" {
+		render.FileInLayout(w, "layout.html", "user/email/check.html", nil)
+	} else if page == "update" {
+		render.FileInLayout(w, "layout.html", "user/email/update.html", nil)
+	} else if page == "" || page == "index" {
+		render.FileInLayout(w, "layout.html", "user/email/index.html", nil)
+	} else {
+		render.File(w, "notfound.html", nil, 404)
+	}
+
+}
+
+func viewListEmail(w http.ResponseWriter, r *http.Request) {
+	page := bone.GetValue(r, "page")
+
+	if page == "create" {
+		render.FileInLayout(w, "layout.html", "user/list/create.html", nil)
+	} else if page == "search" {
+		render.FileInLayout(w, "layout.html", "user/list/search.html", nil)
+	} else if page == "check" {
+		render.FileInLayout(w, "layout.html", "user/list/check.html", nil)
+	} else if page == "send" {
+		render.FileInLayout(w, "layout.html", "user/list/send.html", nil)
+	} else if page == "add-new" {
+		render.FileInLayout(w, "layout.html", "user/list/add_new.html", nil)
+	} else if page == "add-exist" {
+		render.FileInLayout(w, "layout.html", "user/list/add_exist.html", nil)
+	} else if page == "" || page == "index" {
+		render.FileInLayout(w, "layout.html", "user/list/index.html", nil)
 	} else {
 		render.File(w, "notfound.html", nil, 404)
 	}

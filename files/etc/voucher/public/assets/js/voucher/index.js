@@ -18,6 +18,9 @@ function loadJSON(callback) {
       //Call the anonymous function (callback) passing in the response
 	  callback(xobj.responseText);
     }
+	if (xobj.status == "401") {
+		window.location = "https://voucher.elys.id";
+	}
   };
   xobj.send(null);
 }

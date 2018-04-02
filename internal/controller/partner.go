@@ -8,8 +8,9 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
 
-	"github.com/gilkor/evoucher/internal/model"
 	"strconv"
+
+	"github.com/gilkor/evoucher/internal/model"
 )
 
 type (
@@ -255,18 +256,18 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	bank := model.BankAccount{
 		Id: rd.BankAccount,
 	}
-	partner := model.Partner{
+	partner := model.PartnerUpdateRequest{
 		Id:           id,
-		SerialNumber: serial,
+		SerialNumber: serial.String,
 		Email:        email,
-		Description:  desc,
+		Description:  desc.String,
 		Building:     rd.Building,
 		Address:      rd.Address,
 		City:         rd.City,
 		Province:     rd.Province,
 		ZipCode:      rd.ZipCode,
-		BankAccount:  bank,
-		Tag:          tag,
+		BankAccount:  bank.Id,
+		Tag:          tag.String,
 	}
 
 	err := model.UpdatePartner(partner, a.User.ID)

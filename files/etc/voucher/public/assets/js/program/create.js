@@ -106,19 +106,6 @@ function initForm(){
 	} else {
 		$("#validity-day").attr("style", "display:none");
 	}
-
-	if ($("#program-type").val() == "bulk") {
-		$("#target").attr("style", "display:block");
-		$("#conversion-row").attr("style", "display:none");
-		$(".distribution").attr("style", "display:none");
-		$("#voucher-price").val(0);
-		$("#voucher-price").attr("disabled", true);
-	} else {
-		$("#target").attr("style", "display:none");
-		$("#conversion-row").attr("style", "display:block");
-		$(".distribution").attr("style", "display:block");
-		$("#voucher-price").attr("disabled", false);
-	}
 }
 
 function onChangeElem(){
@@ -166,21 +153,6 @@ function onChangeElem(){
 			$("#validity-day").attr("style", "display:block");
 		} else {
 			$("#validity-day").attr("style", "display:none");
-		}
-	});
-	$("#program-type").change(function () {
-		if (this.value == "bulk") {
-			$("#target").attr("style", "display:block");
-			$("#conversion-row").attr("style", "display:none");
-			$(".distribution").attr("style", "display:none");
-			$("#voucher-price").val(0);
-			$("#voucher-price").attr("disabled", true);
-		} else {
-			$("#target").attr("style", "display:none");
-			$("#conversion-row").attr("style", "display:block");
-			$(".distribution").attr("style", "display:block");
-			$("#voucher-price").val("");
-			$("#voucher-price").attr("disabled", false);
 		}
 	});
 	$("#allow-accumulative").change(function () {
@@ -375,53 +347,19 @@ function send() {
 					contentType: "application/json",
 					data: JSON.stringify(program),
 					success: function (data) {
-						if ($("#program-type").find(":selected").val() == "bulk") {
-
-							var targets = new FormData();
-							targets.append('list-target', $("#list-target")[0].files[0]);
-
-							jQuery.ajax({
-								url: '/v1/ui/user/create/broadcast?token=' + token + '&program-id=' + data.data,
-								type: "POST",
-								processData: false,
-								contentType: false,
-								data: targets,
-								success: function (data) {
-									$('#modal-loader').modal('hide');
-									swal({
-											title: 'Success',
-											text: 'Program Created',
-											type: 'success',
-											showCancelButton: false,
-											confirmButtonText: 'Ok',
-											//closeOnConfirm: false
-											closeOnConfirm: true
-										},
-										function() {
-											window.location = "/program/search";
-										});
-								},
-								error: function (data) {
-									var a = JSON.parse(data.responseText);
-									swal("Error", a.errors.detail);
-								}
+						$('#modal-loader').modal('hide');
+						swal({
+								title: 'Success',
+								text: 'Program Created',
+								type: 'success',
+								showCancelButton: false,
+								confirmButtonText: 'Ok',
+								// closeOnConfirm: false
+								closeOnConfirm: true
+							},
+							function() {
+								window.location = "/program/search";
 							});
-
-						} else {
-							$('#modal-loader').modal('hide');
-							swal({
-									title: 'Success',
-									text: 'Program Created',
-									type: 'success',
-									showCancelButton: false,
-									confirmButtonText: 'Ok',
-									// closeOnConfirm: false
-									closeOnConfirm: true
-								},
-								function() {
-									window.location = "/program/search";
-								});
-						}
 					},
 					error: function (data) {
 						var a = JSON.parse(data.responseText);
@@ -468,52 +406,19 @@ function send() {
 			contentType: "application/json",
 			data: JSON.stringify(program),
 			success: function (data) {
-				if ($("#program-type").find(":selected").val() == "bulk") {
-
-					var targets = new FormData();
-					targets.append('list-target', $("#list-target")[0].files[0]);
-
-					jQuery.ajax({
-						url: '/v1/ui/user/create/broadcast?token=' + token + '&program-id=' + data.data,
-						type: "POST",
-						processData: false,
-						contentType: false,
-						data: targets,
-						success: function (data) {
-							$('#modal-loader').modal('hide');
-							swal({
-									title: 'Success',
-									text: 'Program Created',
-									type: 'success',
-									showCancelButton: false,
-									confirmButtonText: 'Ok',
-									// closeOnConfirm: false
-									closeOnConfirm: true
-								},
-								function() {
-									window.location = "/program/search";
-								});
-						},
-						error: function (data) {
-							var a = JSON.parse(data.responseText);
-							swal("Error", a.errors.detail);
-						}
+				$('#modal-loader').modal('hide');
+				swal({
+						title: 'Success',
+						text: 'Program Created',
+						type: 'success',
+						showCancelButton: false,
+						confirmButtonText: 'Ok',
+						// closeOnConfirm: false
+						closeOnConfirm: true
+					},
+					function() {
+						window.location = "/program/search";
 					});
-				} else {
-					$('#modal-loader').modal('hide');
-					swal({
-							title: 'Success',
-							text: 'Program Created',
-							type: 'success',
-							showCancelButton: false,
-							confirmButtonText: 'Ok',
-							// closeOnConfirm: false
-							closeOnConfirm: true
-						},
-						function() {
-							window.location = "/program/search";
-						});
-				}
 			},
 			error: function (data) {
 				var a = JSON.parse(data.responseText);
