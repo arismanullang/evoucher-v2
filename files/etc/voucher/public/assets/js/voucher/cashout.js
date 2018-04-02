@@ -28,29 +28,31 @@ function getTransactionByDate(date) {
 			var transaction = {};
 			var transactionValue = {};
 
-			for(var i = 0; i < result.length; i++){
-				if(transaction[result[i].partner_id] == null){
-					partner[result[i].partner_id] = result[i].partner_name;
-					transaction[result[i].partner_id] = 1;
-					transactionValue[result[i].partner_id] = result[i].vouchers.length * result[i].voucher_value;
-				}else{
-					transaction[result[i].partner_id]++;
-					transactionValue[result[i].partner_id] = transactionValue[result[i].partner_id] + (result[i].vouchers.length * result[i].voucher_value);
-				}
-			}
-
 			var dataSet = [];
-			var keys = Object.keys(transaction);
+			if(result != null){
+				for(var i = 0; i < result.length; i++){
+					if(transaction[result[i].partner_id] == null){
+						partner[result[i].partner_id] = result[i].partner_name;
+						transaction[result[i].partner_id] = 1;
+						transactionValue[result[i].partner_id] = result[i].vouchers.length * result[i].voucher_value;
+					}else{
+						transaction[result[i].partner_id]++;
+						transactionValue[result[i].partner_id] = transactionValue[result[i].partner_id] + (result[i].vouchers.length * result[i].voucher_value);
+					}
+				}
 
-			for(var i = 0; i < keys.length; i++){
-				var button = "<button type='button' onclick='detail(\"" + keys[i] + "\",\""+date+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>";
+				var keys = Object.keys(transaction);
 
-				dataSet[i] = [
-					partner[keys[i]]
-					, transaction[keys[i]]
-					, "Rp. " + addDecimalPoints(transactionValue[keys[i]]) + ",00"
-					, button
-				];
+				for(var i = 0; i < keys.length; i++){
+					var button = "<button type='button' onclick='detail(\"" + keys[i] + "\",\""+date+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>";
+
+					dataSet[i] = [
+						partner[keys[i]]
+						, transaction[keys[i]]
+						, "Rp. " + addDecimalPoints(transactionValue[keys[i]]) + ",00"
+						, button
+					];
+				}
 			}
 
 			if ($.fn.DataTable.isDataTable("#datatable1")) {

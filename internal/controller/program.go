@@ -860,7 +860,7 @@ func DeleteProgram(w http.ResponseWriter, r *http.Request) {
 	v := model.CountVoucher(id)
 	if v > 0 {
 		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrMessageProgramHasBeenUsed, model.ErrBadRequest.Error(), logger.TraceID)
+		res.AddError(its(status), model.ErrBadRequest.Error(), model.ErrMessageProgramHasBeenUsed, logger.TraceID)
 		logger.SetStatus(status).Log("param :", id, "response :", model.ErrBadRequest.Error())
 		render.JSON(w, res, status)
 		return

@@ -102,7 +102,6 @@ function send() {
 		contentType: "application/json",
 		data: JSON.stringify(partner),
 		success: function () {
-			console.log("a");
 			swal({
 				title: 'Success',
 				text: 'Partner Created',
@@ -115,7 +114,6 @@ function send() {
 				console.log("c");
 				window.location = "/partner/search";
 			});
-			console.log("b");
 		},
 		error: function (data) {
 			var a = JSON.parse(data.responseText);

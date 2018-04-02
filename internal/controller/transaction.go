@@ -703,7 +703,7 @@ func GetTransactionsByDate(w http.ResponseWriter, r *http.Request) {
 	}
 	transaction, err := model.FindTransactionsByDate(a.User.Account.Id, timeDate)
 	res = NewResponse(transaction)
-	if err != nil {
+	if err != nil && err != model.ErrResourceNotFound {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
 		logger.SetStatus(status).Info("param :", a.User.Account.Id+" || "+timeDate.String(), "response :", res.Errors)

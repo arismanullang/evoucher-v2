@@ -88,6 +88,13 @@ $(document).ready(function () {
 
 function preview(){
 	readURL(files);
+
+	var content  = $("#content-email").summernote('code');
+	console.log("Content : "+ content);
+	if(content == "" || content == "<p><br></p>" || content == "<br>"){
+		content  = 'Nantikan program-program Digital Voucher menarik lainnya.'
+	}
+	$("#content").html(content);
 	$('#modal-loader').modal( 'show');
 }
 
@@ -148,7 +155,7 @@ function getProgram(id) {
 	});
 }
 
-function uploadTest() {
+function upload() {
 	$('.sendButton').attr("disabled","disabled");
 	id = findGetParameter("id");
 	var headerImage = null;
@@ -244,36 +251,45 @@ function uploadTest() {
 				n = "lalala";
 				break;
 			default:
+				clearInterval(interval);
 				console.log(headerImageUrl);
 				console.log(voucherImageUrl);
 				console.log(footerImageUrl);
-				if( (headerImage == null && headerImageUrl == "") || (voucherImage != null && voucherImageUrl == "") || (footerImage != null && footerImageUrl == "") ){
-					break;
-				}
 
 				var campaign = {
 					program_id: id,
+					email_subject: $("#subject-email").val(),
+					email_sender: $("#sender-email").val(),
+					email_content: $("#content").summernote('code'),
 					image_header: headerImageUrl,
 					image_voucher: voucherImageUrl,
 					image_footer: footerImageUrl,
 				};
 
 				$.ajax({
-					url: '/v1/ui/campaign/create?token='+token,
+					url: '/v2/ui/campaign/create?token='+token,
 					type: 'post',
 					dataType: 'json',
 					contentType: "application/json",
 					data: JSON.stringify(campaign),
 					success: function () {
 						$('#image-footer-modal').modal('hide');
-						swal("Upload Success");
-						clearInterval(interval);
-						$('.sendButton').removeAttr("disabled");
+						swal({
+								title: 'Success',
+								text: 'Campaign Created',
+								type: 'success',
+								showCancelButton: false,
+								confirmButtonText: 'Ok',
+								// closeOnConfirm: false
+								closeOnConfirm: true
+							},
+							function() {
+								window.location = "/program/check?id="+id;
+							});
 					},
 					error: function (data) {
 						var a = JSON.parse(data.responseText);
 						swal("Error", a.errors.detail);
-						clearInterval(interval);
 					}
 				});
 				break;
@@ -282,24 +298,21 @@ function uploadTest() {
 
 }
 
-function generateVoucher() {
-	var id = $('#program-id').val();
-	swal("Sending Voucher");
-	$.ajax({
-		url: '/v1/ui/voucher/send-voucher?program=' + id + '&token=' + token,
-		type: 'post',
-		success: function (data) {
-			window.location = "/program/search";
-		},
-		error: function (data) {
-			var a = JSON.parse(data.responseText);
-			swal("Error", a.errors.detail);
-		}
-	});
-}
-
-
-
+// function generateVoucher() {
+// 	var id = $('#program-id').val();
+// 	swal("Sending Voucher");
+// 	$.ajax({
+// 		url: '/v1/ui/voucher/send-voucher?program=' + id + '&token=' + token,
+// 		type: 'post',
+// 		success: function (data) {
+// 			window.location = "/program/search";
+// 		},
+// 		error: function (data) {
+// 			var a = JSON.parse(data.responseText);
+// 			swal("Error", a.errors.detail);
+// 		}
+// 	});
+// }
 
 (function () {
 	'use strict';

@@ -309,3 +309,8 @@ function editProgram() {
 function detail(id) {
 	window.location = "/voucher/check?id=" + id;
 }
+
+function sendEmail() {
+	var id = findGetParameter("id");
+	window.location = "/user/list/send?id=" + id;
+}
