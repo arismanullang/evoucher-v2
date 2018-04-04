@@ -26,6 +26,9 @@ $(document).ready(function () {
 			},
 			'serial-number':{
 				digits: true
+			},
+			'email': {
+				required: true
 			}
 		}
 	});

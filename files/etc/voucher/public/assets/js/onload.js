@@ -48,7 +48,7 @@ function setSideNavBar() {
 }
 
 function getSession() {
-	if(window.location.pathname == "program/campaign"){
+	if(window.location.pathname != "/program/index"){
 		$.ajax({
 			url: '/v1/ui/token/check?token='+token+'&url='+window.location.pathname,
 			type: 'get',

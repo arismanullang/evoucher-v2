@@ -113,6 +113,35 @@ type (
 		User      string   `db:"updated_by"`
 		Data      []string `db:"-"`
 	}
+	ProgramUpdateRequest struct {
+		Id                 string `db:"id" json:"id"`
+		AccountId          string `db:"account_id" json:"account_id"`
+		Name               string `db:"name" json:"name"`
+		Type               string `db:"type" json:"type"`
+		VoucherFormat      string `db:"voucher_format_id" json:"voucher_format"`
+		VoucherType        string `db:"voucher_type" json:"voucher_type"`
+		VoucherPrice       string `db:"voucher_price" json:"voucher_price"`
+		AllowAccumulative  string `db:"allow_accumulative" json:"allow_accumulative"`
+		StartDate          string `db:"start_date" json:"start_date"`
+		EndDate            string `db:"end_date" json:"end_date"`
+		StartHour          string `db:"start_hour" json:"start_hour"`
+		EndHour            string `db:"end_hour" json:"end_hour"`
+		ValidVoucherStart  string `db:"valid_voucher_start" json:"valid_voucher_start"`
+		ValidVoucherEnd    string `db:"valid_voucher_end" json:"valid_voucher_end"`
+		VoucherLifetime    string `db:"voucher_lifetime" json:"voucher_lifetime"`
+		ValidityDays       string `db:"validity_days" json:"validity_days"`
+		VoucherValue       string `db:"voucher_value" json:"voucher_value"`
+		MaxQuantityVoucher string `db:"max_quantity_voucher" json:"max_quantity_voucher"`
+		MaxGenerateVoucher string `db:"max_generate_voucher" json:"max_generate_voucher"`
+		MaxRedeemVoucher   string `db:"max_redeem_voucher" json:"max_redeem_voucher"`
+		RedemptionMethod   string `db:"redemption_method" json:"redeem_method"`
+		ImgUrl             string `db:"img_url" json:"image_url"`
+		Tnc                string `db:"tnc" json:"tnc"`
+		Description        string `db:"description" json:"description"`
+		Visibility         string `db:"visibility" json:"visibility"`
+		CreatedBy          string `db:"created_by" json:"created_by"`
+		CreatedAt          string `db:"created_at" json:"created_at"`
+	}
 )
 
 func CustomQuery(q string) (map[int][]map[string]interface{}, error) {
@@ -365,7 +394,7 @@ func UpdateProgram(d Program) error {
 
 	logs := []Log{}
 
-	programDetail, err := FindProgramDetailsById(d.Id)
+	programDetail, err := FindProgramDetailsByIdUpdateRequest(d.Id)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
@@ -413,10 +442,14 @@ func UpdateProgram(d Program) error {
 			tempString := strings.Replace(value, "<", "", -1)
 			tempString = strings.Replace(tempString, ">", "", -1)
 			tempStringArr := strings.Split(tempString, " ")
+			fmt.Println(v)
+			fmt.Println(v.Type())
 			if tempStringArr[0] == "int" {
-				value = strconv.FormatInt(v.Int(), 64)
+				value = strconv.FormatInt(v.Int(), 10)
 			} else if tempStringArr[0] == "float64" {
 				value = strconv.FormatFloat(v.Float(), 'f', -1, 64)
+			} else if tempStringArr[0] == "bool" {
+				value = strconv.FormatBool(v.Bool())
 			}
 		}
 
@@ -437,7 +470,6 @@ func UpdateProgram(d Program) error {
 			fmt.Println(q)
 			return ErrServerInternal
 		}
-
 		tempLog := Log{
 			TableName:   "programs",
 			TableNameId: d.Id,
@@ -1190,6 +1222,55 @@ func FindProgramDetailsById(id string) (Program, error) {
 	//fmt.Println("program data :", id, StatusCreated, resv)
 	if len(resv) < 1 {
 		return Program{}, ErrResourceNotFound
+	}
+
+	return resv[0], nil
+}
+
+func FindProgramDetailsByIdUpdateRequest(id string) (ProgramUpdateRequest, error) {
+	q := `
+		SELECT
+			id
+			, account_id
+			, name
+			, type
+			, voucher_format_id
+			, voucher_type
+			, voucher_price
+			, allow_accumulative
+			, start_date
+			, end_date
+			, start_hour
+			, end_hour
+			, valid_voucher_start
+			, valid_voucher_end
+			, voucher_lifetime
+			, validity_days
+			, voucher_value
+			, max_quantity_voucher
+			, max_redeem_voucher
+			, max_generate_voucher
+			, redemption_method
+			, img_url
+			, tnc
+			, description
+			, created_by
+			, created_at
+		FROM
+			programs
+		WHERE
+			status = ?
+			AND id = ?
+	`
+
+	var resv []ProgramUpdateRequest
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, id); err != nil {
+		fmt.Println(err.Error())
+		return ProgramUpdateRequest{}, ErrServerInternal
+	}
+	//fmt.Println("program data :", id, StatusCreated, resv)
+	if len(resv) < 1 {
+		return ProgramUpdateRequest{}, ErrResourceNotFound
 	}
 
 	return resv[0], nil

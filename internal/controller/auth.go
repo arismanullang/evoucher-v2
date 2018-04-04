@@ -238,9 +238,13 @@ func UICheckToken(w http.ResponseWriter, r *http.Request) {
 		valid = true
 	}
 	for _, valueRole := range a.User.Role {
-		features := model.UiFeatures[valueRole.Detail]
+		features, err := model.GetUiFeatures(valueRole.Id)
+		if err != nil {
+			valid = false
+		}
 		for _, valueFeature := range features {
-			if url == valueFeature {
+			tempFeature := "/" + valueFeature.Category + "/" + valueFeature.Detail
+			if url == tempFeature {
 				valid = true
 			}
 		}
@@ -255,7 +259,7 @@ func UICheckToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dest := "/program/index"
-	if a.User.Role[0].Id == "Mn78I1wc" {
+	if a.User.Role[0].Detail == "sa" {
 		dest = "/sa/search"
 	}
 	result := Check{
@@ -268,15 +272,18 @@ func UICheckToken(w http.ResponseWriter, r *http.Request) {
 }
 
 func CheckAPIRole(a Auth, apiName string) bool {
-	error := true
 	for _, valueRole := range a.User.Role {
-		features := model.ApiFeatures[valueRole.Detail]
+		features, err := model.GetApiFeatures(valueRole.Id)
+		if err != nil {
+			return true
+		}
 		for _, valueFeature := range features {
-			if apiName == valueFeature {
-				error = false
+			tempFeature := valueFeature.Category + "_" + valueFeature.Detail
+			if apiName == tempFeature {
+				return false
 			}
 		}
 	}
 
-	return error
+	return true
 }

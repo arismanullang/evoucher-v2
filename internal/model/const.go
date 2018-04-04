@@ -3,6 +3,7 @@ package model
 import (
 	"errors"
 	"reflect"
+	"time"
 )
 
 var (
@@ -185,4 +186,10 @@ func getUpdate(paramUpdate, param2 reflect.Value) map[string]reflect.Value {
 	}
 
 	return updates
+}
+
+func timeNow() time.Time {
+	now := time.Now()
+	newNow := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second(), now.Nanosecond(), time.Local)
+	return newNow
 }

@@ -3,6 +3,7 @@ package controller
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-zoo/bone"
@@ -224,7 +225,7 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
-
+	fmt.Println("Update")
 	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
