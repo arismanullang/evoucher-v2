@@ -429,7 +429,7 @@ func FindTransactionsByPartner(accountId, partnerId string) ([]TransactionList, 
 			 , va.name as program_name
 			 , t.transaction_code
 			 , va.voucher_value
-			 , va.created_at as issued
+			 , vo.created_at as issued
 			 , t.created_at as redeemed
 			 , u.username
 		FROM transactions as t

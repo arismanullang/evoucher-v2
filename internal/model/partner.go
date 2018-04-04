@@ -103,15 +103,16 @@ func InsertPartner(p Partner) error {
 			, province
 			, zip_code
 			, created_by
+			, created_at
 			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING
 			id
 	`
 
 	var res []string
-	err = tx.Select(&res, tx.Rebind(q), p.Name, p.AccountId, p.SerialNumber, p.Email, p.Tag.String, p.Description, p.BankAccount.Id, p.Building, p.Address, p.City, p.Province, p.ZipCode, p.CreatedBy.String, StatusCreated)
+	err = tx.Select(&res, tx.Rebind(q), p.Name, p.AccountId, p.SerialNumber, p.Email, p.Tag.String, p.Description, p.BankAccount.Id, p.Building, p.Address, p.City, p.Province, p.ZipCode, p.CreatedBy.String, timeNow(), StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
@@ -334,6 +335,13 @@ func UpdatePartner(partner PartnerUpdateRequest, user string) error {
 		return ErrServerInternal
 	}
 	defer tx.Rollback()
+
+	tags := strings.Split(partner.Tag, "#")
+	err = CheckAndInsertTag(tags, user)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ErrServerInternal
+	}
 
 	q := `
 		UPDATE partners

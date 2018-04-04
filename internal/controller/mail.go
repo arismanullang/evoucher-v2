@@ -108,7 +108,7 @@ func CreateEmailCampaignV2(w http.ResponseWriter, r *http.Request) {
 		EmailSubject: rd.EmailSubject,
 		EmailSender:  rd.EmailSender,
 		EmailContent: rd.EmailContent,
-		Template:     "confirmation_email_demo",
+		Template:     "email_campaign_demo",
 		ImageHeader:  rd.ImageHeader,
 		ImageVoucher: rd.ImageVoucher,
 		ImageFooter:  rd.ImageFooter,

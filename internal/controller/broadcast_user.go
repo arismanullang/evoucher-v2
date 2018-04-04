@@ -220,6 +220,33 @@ func GetEmailUserByIDs(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res)
 }
 
+func GetEmailUserByListIDs(w http.ResponseWriter, r *http.Request) {
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("select-email")
+
+	res := NewResponse("")
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status := http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	id := r.FormValue("id")
+	idArr := strings.Split(id, "`")
+
+	user, err := model.GetEmailUserByListIDs(idArr)
+	if err != nil && err != model.ErrResourceNotFound {
+		log.Panic(err)
+	}
+
+	res = NewResponse(user)
+	render.JSON(w, res)
+}
+
 func DeleteEmailUser(w http.ResponseWriter, r *http.Request) {
 	apiName := "email_delete"
 	status := http.StatusCreated

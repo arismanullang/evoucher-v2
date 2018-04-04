@@ -319,6 +319,38 @@ func GetEmailUserByIDs(id []string) ([]EmailUser, error) {
 	return res, nil
 }
 
+func GetEmailUserByListIDs(id []string) ([]EmailUser, error) {
+	q := `
+		SELECT DISTINCT
+			eu.id
+			, eu.name
+			, eu.email
+		FROM
+			email_users as eu
+		JOIN
+			list_users as lu
+		ON
+			eu.id = lu.email_user_id
+		WHERE
+			lu.email_user_id = ?
+	`
+	if len(id) > 1 {
+		for _, value := range id {
+			q += ` OR lu.list_email_user_id LIKE '%` + value + `%'`
+		}
+	}
+
+	var res []EmailUser
+	if err := db.Select(&res, db.Rebind(q), id[0]); err != nil {
+		fmt.Println(err)
+		return []EmailUser{}, ErrServerInternal
+	}
+	if len(res) == 0 {
+		return []EmailUser{}, nil
+	}
+	return res, nil
+}
+
 func DeleteEmailUser(emailUser, user string) error {
 	tx, err := db.Beginx()
 	if err != nil {

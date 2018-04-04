@@ -1,7 +1,5 @@
 package model
 
-import ()
-
 var (
 	UiFeatures  map[string][]string
 	ApiFeatures map[string][]string
@@ -78,7 +76,7 @@ func GetUiFeatures(roleId string) ([]Feature, error) {
 			f.id = rf.feature_id
 		WHERE
 			f.type = 'ui'
-			AND f.status = ?
+			AND rf.status = ?
 			AND r.id = ?
 	`
 
@@ -106,8 +104,8 @@ func GetApiFeatures(roleId string) ([]Feature, error) {
 			f.id = rf.feature_id
 		WHERE
 			f.type = 'api'
-			AND f.status = ?
-			AND rf.id = ?
+			AND rf.status = ?
+			AND rf.role_id = ?
 	`
 
 	var resv []Feature

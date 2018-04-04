@@ -200,7 +200,6 @@ func GetWebuser() (string, error) {
 			users as u
 		WHERE
 			u.username = 'web'
-			AND u.account_id = 'unknown'
 	`
 	var res []string
 	if err := db.Select(&res, db.Rebind(q)); err != nil {
