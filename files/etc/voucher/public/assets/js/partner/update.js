@@ -10,6 +10,22 @@ $(document).ready(function () {
 	getBankAccount();
 	var id = findGetParameter("id");
 	getPartner(id);
+
+	$('#update-partner').validate({
+		errorPlacement: errorPlacementInput,
+		// Form rules
+		rules: {
+			'partner-name': {
+				required: true
+			},
+			'serial-number':{
+				digits: true
+			},
+			'email': {
+				required: true
+			}
+		}
+	});
 });
 
 function getTag() {
@@ -66,6 +82,11 @@ function getPartner(id) {
 }
 
 function update() {
+	if(!$("#update-partner").valid()){
+		$(".error").focus();
+		return;
+	}
+
 	var id = findGetParameter("id");
 
 	var listTag = "";
@@ -109,7 +130,7 @@ function update() {
 				},
 				function() {
 					var id = findGetParameter("id");
-					window.location = "/partner/search";
+					// window.location = "/partner/check?id="+id;
 				});
 		},
 		error: function (data) {

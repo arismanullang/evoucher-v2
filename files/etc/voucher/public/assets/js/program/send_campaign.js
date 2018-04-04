@@ -29,7 +29,7 @@ function getCampaign(id) {
 
 function getEmail(id) {
 	$.ajax({
-		url: '/v1/ui/user/email-id?id='+id+'&token='+token,
+		url: '/v1/ui/user/email/lists?id='+id+'&token='+token,
 		type: 'get',
 		success: function (data) {
 			var result = data.data;
@@ -77,7 +77,7 @@ function send(){
 		data: JSON.stringify(param),
 		success: function (data) {
 			console.log(data);
-			swal("Success", data);
+			swal("Success", "Email Sent");
 		},
 		error: function (data) {
 			var a = JSON.parse(data.responseText);

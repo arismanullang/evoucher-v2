@@ -933,10 +933,6 @@ func CheckProgram(rm, id string, qty int) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	ed, err := time.Parse(time.RFC3339Nano, dt.EndDate)
-	if err != nil {
-		return false, err
-	}
 
 	if !validdays(dt.ValidityDays) {
 		return false, errors.New(model.ErrCodeRedeemNotValidDay)
@@ -946,7 +942,7 @@ func CheckProgram(rm, id string, qty int) (bool, error) {
 		return false, errors.New(model.ErrCodeRedeemNotValidHour)
 	}
 
-	if !sd.Before(time.Now()) || !ed.After(time.Now()) {
+	if !sd.Before(time.Now()) {
 		return false, errors.New(model.ErrCodeVoucherNotActive)
 	}
 

@@ -371,7 +371,7 @@ func InsertCampaign(request ProgramCampaign, user string) (string, error) {
 			Action:      ActionChangeLogInsert,
 			Old:         ValueChangeLogNone,
 			New:         res[0],
-			CreatedBy:   request.CreatedBy,
+			CreatedBy:   user,
 		}
 		logs = append(logs, tempLog)
 	} else {

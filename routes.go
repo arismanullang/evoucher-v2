@@ -94,6 +94,7 @@ func setRoutes() http.Handler {
 	r.GetFunc("/v1/ui/user/email/all", controller.GetAllEmailUser)
 	r.GetFunc("/v1/ui/user/email", controller.SearchEmailUser)
 	r.GetFunc("/v1/ui/user/email-id", controller.GetEmailUserByIDs)
+	r.GetFunc("/v1/ui/user/email/lists", controller.GetEmailUserByListIDs)
 
 	//sa
 	r.PostFunc("/v1/ui/sa/create", controller.SuperadminRegisterUser)

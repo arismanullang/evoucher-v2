@@ -246,7 +246,7 @@ function send() {
 	}
 
 	var maxRedeem = parseInt($("#max-redeem-voucher").val());
-	var maxGenerate = parseInt($("#max-generate-voucher").val());
+	var maxGenerate = parseInt($("#generate-voucher").val());
 
 	if ($("#program-type").val() == "bulk") {
 		maxGenerate = 1;

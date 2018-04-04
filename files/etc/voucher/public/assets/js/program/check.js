@@ -209,9 +209,13 @@ function getProgram(id, voucher, used, paid) {
 			switch(result.type){
 				case 'on-demand':
 					programType = "Mobile App"
+					$('#button-campaign').attr('style', 'display:none');
+					$('#button-voucher').attr('style', 'display:none');
 					break;
 				case 'gift':
 					programType = "Gift Voucher"
+					$('#button-campaign').attr('style', 'display:none');
+					$('#button-voucher').attr('style', 'display:none');
 					break;
 			}
 
