@@ -7,7 +7,6 @@ $(document).ready(function () {
 		tags: true
 	});
 	getTag();
-	getBankAccount();
 	var id = findGetParameter("id");
 	getPartner(id);
 
@@ -45,30 +44,13 @@ function getTag() {
 	});
 }
 
-function getBankAccount() {
-	$.ajax({
-		url: '/v1/ui/bank_account/all?token='+token,
-		type: 'get',
-		success: function (data) {
-			var arrData = [];
-			arrData = data.data;
-
-			var i;
-			for (i = 0; i < arrData.length; i++) {
-				var li = $("<option value='"+arrData[i].id+"'></option>").html(arrData[i].company_name + ", "+ arrData[i].bank_account_holder + " - " + arrData[i].bank_account_number);
-				li.appendTo('#bank-accounts');
-			}
-		}
-	});
-}
-
 function getPartner(id) {
 	$.ajax({
 		url: '/v1/ui/partner?id=' + id + "&token=" + token,
 		type: 'get',
 		success: function (data) {
 			var arrData = data.data[0];
-			$("#partner-name").html(arrData.name);
+			$("#partner-name").val(arrData.name);
 			$("#serial-number").val(arrData.serial_number.String);
 			$("#email").val(arrData.email);
 			$("#description").val(arrData.description.String);
@@ -77,6 +59,14 @@ function getPartner(id) {
 			$("#province").val(arrData.province);
 			$("#zip-code").val(arrData.zip_code);
 			$("#address").val(arrData.address);
+			$("#bank-name").val(arrData.bank_name);
+			$("#bank-branch").val(arrData.bank_branch);
+			$("#bank-account-holder").val(arrData.bank_account_holder);
+			$("#bank-account-number").val(arrData.bank_account_number);
+			$("#company-email").val(arrData.company_email);
+			$("#company-telp").val(arrData.company_telp);
+			$("#company-name").val(arrData.company_name);
+			$("#company-pic").val(arrData.company_pic);
 		}
 	});
 }
@@ -110,7 +100,15 @@ function update() {
 		city: $("#city").val(),
 		province: $("#province").val(),
 		building: $("#building").val(),
-		zip_code: $("#zip-code").val()
+		zip_code: $("#zip-code").val(),
+		bank_name: $("#bank-name").val(),
+		bank_branch: $("#bank-branch").val(),
+		bank_account_holder: $("#bank-account-holder").val(),
+		bank_account_number: $("#bank-account-number").val(),
+		company_email: $("#company-email").val(),
+		company_telp: $("#company-telp").val(),
+		company_name: $("#company-name").val(),
+		company_pic: $("#company-pic").val()
 	};
 
 	$.ajax({
@@ -130,7 +128,7 @@ function update() {
 				},
 				function() {
 					var id = findGetParameter("id");
-					// window.location = "/partner/check?id="+id;
+					window.location = "/partner/check?id="+id;
 				});
 		},
 		error: function (data) {

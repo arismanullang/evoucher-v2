@@ -4,7 +4,6 @@ $(document).ready(function () {
 	});
 
 	getTag();
-	getBankAccount();
 
 	jQuery.validator.addMethod("greaterThan",
 		function(value, element, params) {
@@ -51,23 +50,6 @@ function getTag() {
 	});
 }
 
-function getBankAccount() {
-	$.ajax({
-		url: '/v1/ui/bank_account/all?token='+token,
-		type: 'get',
-		success: function (data) {
-			var arrData = [];
-			arrData = data.data;
-
-			var i;
-			for (i = 0; i < arrData.length; i++) {
-				var li = $("<option value='"+arrData[i].id+"'></option>").html(arrData[i].company_name + ", "+ arrData[i].bank_account_holder + " - " + arrData[i].bank_account_number);
-				li.appendTo('#bank-accounts');
-			}
-		}
-	});
-}
-
 function send() {
 	if(!$("#create-partner").valid()){
 		$(".error").focus();
@@ -95,7 +77,15 @@ function send() {
 		city: $("#city").val(),
 		province: $("#province").val(),
 		building: $("#building").val(),
-		zip_code: $("#zip-code").val()
+		zip_code: $("#zip-code").val(),
+		company_name: $("#company-name").val(),
+		company_pic: $("#company-pic").val(),
+		company_telp: $("#company-telp").val(),
+		company_email: $("#company-email").val(),
+		bank_name: $("#bank-name").val(),
+		bank_branch: $("#bank-branch").val(),
+		bank_account_number: $("#bank-account-number").val(),
+		bank_account_holder: $("#bank-account-holder").val()
 	};
 
 	$.ajax({

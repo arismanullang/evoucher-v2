@@ -49,7 +49,7 @@ function getTransactionByDate(date) {
 					dataSet[i] = [
 						partner[keys[i]]
 						, transaction[keys[i]]
-						, "Rp. " + addDecimalPoints(transactionValue[keys[i]]) + ",00"
+						, "Rp. " + addDecimalPoints(transactionValue[keys[i]])
 						, button
 					];
 				}
@@ -85,5 +85,5 @@ function getTransactionByDate(date) {
 }
 
 function detail(url, date){
-	window.location = "/voucher/cashout_detail?partner="+url+"&date=" + date;
+	window.location = "/voucher/cashout-detail?partner="+url+"&date=" + date;
 }

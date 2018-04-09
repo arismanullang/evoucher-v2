@@ -8,7 +8,6 @@ $( document ).ready(function() {
 	$('.select2').select2();
 
 	var partner = findGetParameter('partner');
-	getBankAccount(partner);
 	getPartner(partner);
 	getTransactionByPartner(partner);
 
@@ -17,7 +16,7 @@ $( document ).ready(function() {
 	});
 	$("#transactionAll").change(function () {
 		var _this = $(this);
-		$('#listTransaction').find("input.transaction").prop('checked', _this.prop('checked'));
+		$('#list-transaction').find("input.transaction").prop('checked', _this.prop('checked'));
 
 		updateTotal();
 	});
@@ -30,22 +29,7 @@ function updateTotal() {
 		total += parseInt(li[i].value.split(";")[1]);
 	}
 
-	$('#totalTransaction').html("Rp. "+addDecimalPoints(total)+",00");
-}
-
-function getBankAccount(id) {
-	$.ajax({
-		url: '/v1/ui/bank_account/partner?partner='+id+'&token='+token,
-		type: 'get',
-		success: function (data) {
-			var result = data.data;
-
-			$('#bank_account').html(result.company_name + ", " + result.bank_name + " - " + result.bank_account_number);
-			$('#bank-account-id').val(result.id);
-		},
-		error: function (data) {
-		}
-	});
+	$('#total-transaction').html("Rp. "+addDecimalPoints(total));
 }
 
 function getPartner(id) {
@@ -56,6 +40,9 @@ function getPartner(id) {
 			var result = data.data[0];
 
 			$('#partner').html(result.name);
+			$('#bank-account-company').html(result.company_name);
+			$('#bank-account').html(result.bank_name);
+			$('#bank-account-number').html(result.bank_account_number);
 		},
 		error: function (data) {
 		}
@@ -85,13 +72,12 @@ function getTransactionByPartner(partnerId) {
 						+ "</label></td>"
 						+ "<td class='text-ellipsis'>"+arrData[i].transaction_code+"</td>"
 						+ "<td class='text-ellipsis'>"+arrData[i].vouchers[j].voucher_code+"</td>"
-						+ "<td class='text-ellipsis'>Rp. "+addDecimalPoints(arrData[i].voucher_value)+",00</td>"
+						+ "<td class='text-ellipsis'>Rp. "+addDecimalPoints(arrData[i].voucher_value)+"</td>"
 						+ "<td class='text-ellipsis'>"+date.toDateString() + ", " + date.getHours() + ":" + date.getMinutes()+"</td>"
 					var li = $("<tr></tr>");
 					li.html(body);
 					li.appendTo('#listTransaction');
 					voucher++;
-
 				}
 			}
 
@@ -138,13 +124,19 @@ function cashout(){
 		return
 	}
 
+	if($('#bank-account-ref-number').val() == '') {
+		return
+	}
 	var transaction = {
-		partner_id : partner,
-		bank_account : $("#bank-account-id").val(),
-		total_cashout : total,
-		payment_method : "transfer",
-		transactions : listTransaction,
-		vouchers : listVoucher
+		partner_id: partner,
+		bank_account: $('#bank-account').html(),
+		bank_account_company: $('#bank-account-company').html(),
+		bank_account_number: $('#bank-account-number').html(),
+		bank_account_ref_number: $('#bank-account-ref-number').val(),
+		total_cashout: total,
+		payment_method: "transfer",
+		transactions: listTransaction,
+		vouchers: listVoucher
 	};
 
 	$.ajax({
@@ -154,8 +146,7 @@ function cashout(){
 		contentType: "application/json",
 		data: JSON.stringify(transaction),
 		success: function (data) {
-			console.log(data);
-			window.location = "/voucher/cashout_success?id="+data.data;
+			window.location = "/voucher/cashout-success?id="+data.data;
 		},
 		error: function (data) {
 			var a = JSON.parse(data.responseText);

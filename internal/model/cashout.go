@@ -7,16 +7,19 @@ import (
 
 type (
 	Cashout struct {
-		Id            string               `db:"id" json:"id"`
-		AccountId     string               `db:"account_id" json:"account_id"`
-		CashoutCode   string               `db:"cashout_code" json:"cashout_code"`
-		PartnerId     string               `db:"partner_id" json:"partner_id"`
-		BankAccount   BankAccount          `db:"-" json:"bank_account"`
-		TotalCashout  float64              `db:"total_cashout" json:"total_cashout"`
-		PaymentMethod string               `db:"payment_method" json:"payment_method"`
-		CreatedAt     time.Time            `db:"created_at" json:"created_at"`
-		CreatedBy     string               `db:"created_by" json:"created_by"`
-		Transactions  []CashoutTransaction `db:"-" json:"transactions"`
+		Id                   string               `db:"id" json:"id"`
+		AccountId            string               `db:"account_id" json:"account_id"`
+		CashoutCode          string               `db:"cashout_code" json:"cashout_code"`
+		PartnerId            string               `db:"partner_id" json:"partner_id"`
+		BankAccount          string               `db:"bank_account" json:"bank_account"`
+		BankAccountCompany   string               `db:"bank_account_company" json:"bank_account_company"`
+		BankAccountNumber    string               `db:"bank_account_number" json:"bank_account_number"`
+		BankAccountRefNumber string               `db:"bank_account_ref_number" json:"bank_account_ref_number"`
+		TotalCashout         float64              `db:"total_cashout" json:"total_cashout"`
+		PaymentMethod        string               `db:"payment_method" json:"payment_method"`
+		CreatedAt            time.Time            `db:"created_at" json:"created_at"`
+		CreatedBy            string               `db:"created_by" json:"created_by"`
+		Transactions         []CashoutTransaction `db:"-" json:"transactions"`
 	}
 	CashoutTransaction struct {
 		TransactionId string `db:"transaction_id" json:"transaction_id"`
@@ -39,18 +42,21 @@ func InsertCashout(d Cashout) (string, error) {
 			, cashout_code
 			, partner_id
 			, bank_account
+			, bank_account_company
+			, bank_account_number
+			, bank_account_ref_number
 			, total_cashout
 			, payment_method
 			, created_by
 			, created_at
 			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING
 			id
 	`
 	var res []string
-	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.CashoutCode, d.PartnerId, d.BankAccount.Id, d.TotalCashout, d.PaymentMethod, d.CreatedBy, time.Now(), StatusCreated); err != nil {
+	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.CashoutCode, d.PartnerId, d.BankAccount, d.BankAccountCompany, d.BankAccountNumber, d.BankAccountRefNumber, d.TotalCashout, d.PaymentMethod, d.CreatedBy, time.Now(), StatusCreated); err != nil {
 		return "", err
 	}
 	d.Id = res[0]
@@ -220,7 +226,7 @@ func UpdateCashoutTransactions(transactionId []string, user string) error {
 func PrintCashout(accountId string, cashoutCode string) (Cashout, error) {
 	q := `
 		SELECT
-			id, cashout_code, partner_id, total_cashout, created_at
+			id, cashout_code, bank_account, bank_account_company, bank_account_number, bank_account_ref_number, partner_id, total_cashout, created_at
 		FROM cashouts
 		WHERE
 			status = ?
@@ -261,18 +267,7 @@ func PrintCashout(accountId string, cashoutCode string) (Cashout, error) {
 		return Cashout{}, ErrResourceNotFound
 	}
 
-	bank, err := FindBankAccountByPartner(accountId, res[0].PartnerId)
-	if err != nil {
-		fmt.Println("cashout detail : " + err.Error())
-		return Cashout{}, err
-	}
-	if len(rest) < 1 {
-		fmt.Println("cashout detail : not found")
-		return Cashout{}, ErrResourceNotFound
-	}
-
 	res[0].Transactions = rest
-	res[0].BankAccount = bank
 
 	log := Log{
 		TableName:   "cashouts",
@@ -284,7 +279,7 @@ func PrintCashout(accountId string, cashoutCode string) (Cashout, error) {
 		CreatedBy:   accountId,
 	}
 
-	err = addLog(log)
+	err := addLog(log)
 	if err != nil {
 		fmt.Println(err.Error())
 	}

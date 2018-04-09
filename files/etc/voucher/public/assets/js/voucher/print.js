@@ -27,10 +27,11 @@ function cashout(id){
 			}
 
 			getPartnerName(result.partner_id);
-			$("#company-name").html(result.bank_account.company_name + ", Acc. No. " + result.bank_account.bank_account_number);
-			$("#bank-account").html(result.bank_account.bank_name + " - " + result.bank_account.bank_branch);
+			$("#total").html("Rp. " + addDecimalPoints(result.total_cashout));
+			$("#bank-account").html(result.bank_account + ", Acc. No. " + result.bank_account_number);
+			$("#bank-account-ref-number").html(result.bank_account_ref_number);
+			$("#company-name").html(result.bank_account_company);
 			$("#cashout-code").html(result.cashout_code);
-			$("#total").html("Rp. " + addDecimalPoints(result.total_cashout) + ",00");
 		}
 	});
 }
@@ -40,6 +41,12 @@ function getPartnerName(id){
 		url: '/v1/ui/partner?id='+id+'&token='+token,
 		type: 'get',
 		success: function (data) {
+
+			// bank_account	BCA
+			// bank_account_company	Shigeru
+			// bank_account_number	1231231234
+			// bank_account_ref_number	11111111111111
+
 			var result = data.data;
 			$("#tenant").html(result[0].name);
 		}
