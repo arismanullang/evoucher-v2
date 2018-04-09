@@ -332,6 +332,10 @@ button.color-red {
   padding: 4px 16px !important;
 }
 
+.height-auto{
+  height: auto !important;
+}
+
 [name=list-transaction-code] {
   width: 120px;
 }

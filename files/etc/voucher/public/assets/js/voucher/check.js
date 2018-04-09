@@ -12,14 +12,14 @@ function getVoucher(id) {
 		success: function (data) {
 			var data = data.data;
 
-			var date1 = data.valid_at.substring(0, 19).replace("T", " ");
-			var date2 = data.expired_at.substring(0, 19).replace("T", " ");
+			var date1 = new Date(data.valid_at).toString().substring(0, 24);
+			var date2 = new Date(data.expired_at).toString().substring(0, 24);
 
 			$("#program-name").html(data.program_name);
 			$("#voucher-code").html(data.voucher_code);
-			$("#voucher-value").html("Rp " + addDecimalPoints(data.voucher_value) + ",00");
+			$("#voucher-value").html("Rp " + addDecimalPoints(data.voucher_value));
 			$("#reference-no").html(data.reference_no);
-			$("#period").html(date1 + "</br></br>To</br></br>" + date2)
+			$("#period").html("</br>" + date1 + "</br></br>" + date2)
 
 			var email = data.holder_email;
 			if (data.holder_email == "") {
@@ -34,7 +34,7 @@ function getVoucher(id) {
 			$("#holder-email").html(email);
 			$("#holder-phone").html(phone);
 
-			var dateCreated = data.created_at.substring(0, 19).replace("T", " ");
+			var dateCreated = new Date(data.created_at).toString().substring(0, 24);
 			$("#issued-state").html(dateCreated);
 		}
 	});
@@ -52,7 +52,7 @@ function getTransactionVoucher(voucherId) {
 				$('#redeem-icon').removeClass('ion-android-close');
 				$('#redeem-icon').addClass('ion-android-done');
 
-				var dateRedeem = result.redeemed.substring(0, 19).replace("T", " ");
+				var dateRedeem = new Date(result.redeemed).toString().substring(0, 24);
 				$('#redeem-state').html(result.transaction_code + " || " + dateRedeem);
 			}
 
@@ -60,7 +60,7 @@ function getTransactionVoucher(voucherId) {
 				$('#cashout-icon').removeClass('ion-android-close');
 				$('#cashout-icon').addClass('ion-android-done');
 
-				var dateCashout = result.cashout.String.substring(0, 19).replace("T", " ");
+				var dateCashout = new Date(result.cashout.String).toString().substring(0, 24);
 				$('#cashed-state').html(dateCashout);
 			}
 		}

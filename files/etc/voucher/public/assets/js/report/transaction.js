@@ -104,7 +104,7 @@ function getTransactionByPartner(partnerId) {
 				buttons: [
 					'copy', 'csv', 'excel', 'pdf', 'print'
 				],
-				"order": [[8, "desc"]],
+				"order": [[9, "desc"]],
 				oLanguage: {
 					sSearch: '<em class="ion-search"></em>',
 					sLengthMenu: '_MENU_ records per page',

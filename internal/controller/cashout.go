@@ -10,12 +10,15 @@ import (
 
 type (
 	CashoutRequest struct {
-		PartnerId     string   `json:"partner_id"`
-		BankAccount   string   `json:"bank_account"`
-		TotalCashout  float64  `json:"total_cashout"`
-		PaymentMethod string   `json:"payment_method"`
-		Transactions  []string `json:"transactions"`
-		Vouchers      []string `json:"vouchers"`
+		PartnerId            string   `json:"partner_id"`
+		BankAccount          string   `json:"bank_account"`
+		BankAccountCompany   string   `json:"bank_account_company"`
+		BankAccountNumber    string   `json:"bank_account_number"`
+		BankAccountRefNumber string   `json:"bank_account_ref_number"`
+		TotalCashout         float64  `json:"total_cashout"`
+		PaymentMethod        string   `json:"payment_method"`
+		Transactions         []string `json:"transactions"`
+		Vouchers             []string `json:"vouchers"`
 	}
 )
 
@@ -84,18 +87,18 @@ func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
 	seedCode := randStr(model.DEFAULT_TRANSACTION_LENGTH, model.DEFAULT_TRANSACTION_SEED)
 	csCode := seedCode + randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
 
-	tempBank := model.BankAccount{
-		Id: rd.BankAccount,
-	}
 	cashout := model.Cashout{
-		AccountId:     a.User.Account.Id,
-		CashoutCode:   csCode,
-		PartnerId:     rd.PartnerId,
-		BankAccount:   tempBank,
-		TotalCashout:  rd.TotalCashout,
-		PaymentMethod: rd.PaymentMethod,
-		CreatedBy:     a.User.ID,
-		Transactions:  transactions,
+		AccountId:            a.User.Account.Id,
+		CashoutCode:          csCode,
+		PartnerId:            rd.PartnerId,
+		BankAccount:          rd.BankAccount,
+		BankAccountCompany:   rd.BankAccountCompany,
+		BankAccountNumber:    rd.BankAccountNumber,
+		BankAccountRefNumber: rd.BankAccountRefNumber,
+		TotalCashout:         rd.TotalCashout,
+		PaymentMethod:        rd.PaymentMethod,
+		CreatedBy:            a.User.ID,
+		Transactions:         transactions,
 	}
 
 	id, err := model.InsertCashout(cashout)
