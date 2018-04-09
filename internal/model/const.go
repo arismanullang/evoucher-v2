@@ -188,8 +188,17 @@ func getUpdate(paramUpdate, param2 reflect.Value) map[string]reflect.Value {
 	return updates
 }
 
-func timeNow() time.Time {
-	now := time.Now()
-	newNow := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second(), now.Nanosecond(), time.Local)
-	return newNow
+func StringToTimeJakarta(param string) time.Time {
+	jakarta, _ := time.LoadLocation("Asia/Jakarta")
+	layout := "2006-01-02T15:04:05.000Z"
+	newTime, err := time.Parse(layout, param)
+	if err != nil {
+		return time.Date(1001, 1, 1, 1, 1, 1, 1, time.Local)
+	}
+	return newTime.In(jakarta)
+}
+
+func TimeToTimeJakarta(param time.Time) time.Time {
+	jakarta, _ := time.LoadLocation("Asia/Jakarta")
+	return param.In(jakarta)
 }

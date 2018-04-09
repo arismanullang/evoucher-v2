@@ -3,7 +3,6 @@ package controller
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/go-zoo/bone"
@@ -16,20 +15,27 @@ import (
 
 type (
 	Partner struct {
-		ID           string `json:"id"`
-		Name         string `json:"name"`
-		SerialNumber string `json:"serial_number"`
-		Email        string `json:"email"`
-		Tag          string `json:"tag"`
-		Description  string `json:"description"`
-		BankAccount  string `json:"bank_account"`
-		Address      string `json:"address"`
-		Building     string `json:"building"`
-		City         string `json:"city"`
-		Province     string `json:"province"`
-		ZipCode      string `json:"zip_code"`
-		CreatedBy    string `json:"created_by"`
-		CreatedAt    string `json:"created_at"`
+		ID                string `json:"id"`
+		Name              string `json:"name"`
+		SerialNumber      string `json:"serial_number"`
+		Email             string `json:"email"`
+		Tag               string `json:"tag"`
+		Description       string `json:"description"`
+		Address           string `json:"address"`
+		Building          string `json:"building"`
+		City              string `json:"city"`
+		Province          string `json:"province"`
+		ZipCode           string `json:"zip_code"`
+		CompanyName       string `json:"company_name"`
+		CompanyPic        string `json:"company_pic"`
+		CompanyTelp       string `json:"company_telp"`
+		CompanyEmail      string `json:"company_email"`
+		BankName          string `json:"bank_name"`
+		BankBranch        string `json:"bank_branch"`
+		BankAccountNumber string `json:"bank_account_number"`
+		BankAccountHolder string `json:"bank_account_holder"`
+		CreatedBy         string `json:"created_by"`
+		CreatedAt         string `json:"created_at"`
 	}
 	PartnerResponseDetails []PartnerResponse
 	PartnerResponse        struct {
@@ -225,7 +231,7 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
-	fmt.Println("Update")
+
 	if CheckAPIRole(a, apiName) {
 		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
 
@@ -239,11 +245,11 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	var email string
 
 	if rd.SerialNumber != "" {
-		serial = sql.NullString{rd.SerialNumber, true}
+		serial = sql.NullString{String: rd.SerialNumber, Valid: true}
 	}
 
 	if rd.Description != "" {
-		desc = sql.NullString{rd.Description, true}
+		desc = sql.NullString{String: rd.Description, Valid: true}
 	}
 
 	if rd.Email != "" {
@@ -251,24 +257,28 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if rd.Tag != "" {
-		tag = sql.NullString{rd.Tag, true}
+		tag = sql.NullString{String: rd.Tag, Valid: true}
 	}
 
-	bank := model.BankAccount{
-		Id: rd.BankAccount,
-	}
 	partner := model.PartnerUpdateRequest{
-		Id:           id,
-		SerialNumber: serial.String,
-		Email:        email,
-		Description:  desc.String,
-		Building:     rd.Building,
-		Address:      rd.Address,
-		City:         rd.City,
-		Province:     rd.Province,
-		ZipCode:      rd.ZipCode,
-		BankAccount:  bank.Id,
-		Tag:          tag.String,
+		Id:                id,
+		SerialNumber:      serial.String,
+		Email:             email,
+		Description:       desc.String,
+		Building:          rd.Building,
+		Address:           rd.Address,
+		City:              rd.City,
+		Province:          rd.Province,
+		ZipCode:           rd.ZipCode,
+		Tag:               tag.String,
+		BankName:          rd.BankName,
+		BankBranch:        rd.BankBranch,
+		BankAccountNumber: rd.BankAccountNumber,
+		BankAccountHolder: rd.BankAccountHolder,
+		CompanyName:       rd.CompanyName,
+		CompanyEmail:      rd.CompanyEmail,
+		CompanyTelp:       rd.CompanyTelp,
+		CompanyPic:        rd.CompanyPic,
 	}
 
 	err := model.UpdatePartner(partner, a.User.ID)
@@ -388,12 +398,19 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 			String: rd.Description,
 			Valid:  true,
 		},
-		BankAccount: model.BankAccount{Id: rd.BankAccount},
-		Building:    rd.Building,
-		Address:     rd.Address,
-		City:        rd.City,
-		Province:    rd.Province,
-		ZipCode:     rd.ZipCode,
+		Building:          rd.Building,
+		Address:           rd.Address,
+		City:              rd.City,
+		Province:          rd.Province,
+		ZipCode:           rd.ZipCode,
+		CompanyName:       rd.CompanyName,
+		CompanyPic:        rd.CompanyPic,
+		CompanyTelp:       rd.CompanyTelp,
+		CompanyEmail:      rd.CompanyEmail,
+		BankName:          rd.BankName,
+		BankBranch:        rd.BankBranch,
+		BankAccountHolder: rd.BankAccountHolder,
+		BankAccountNumber: rd.BankAccountNumber,
 	}
 	err := model.InsertPartner(param)
 	if err != nil {

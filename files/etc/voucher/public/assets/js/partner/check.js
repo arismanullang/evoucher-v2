@@ -115,7 +115,7 @@ function getPartner(id) {
 			$("#serial-number").html(arrData.serial_number.String);
 			$("#tag").html(arrData.tag.String);
 			$("#desciption").html(arrData.description.String);
-			$('#bank-account').html(arrData.bank_account.company_name + ", " + arrData.bank_account.bank_name + " - " + arrData.bank_account.bank_account_number);
+			$('#bank-account').html(arrData.company_name + ", " + arrData.bank_name + " - " + arrData.bank_account_number);
 		}
 	});
 }

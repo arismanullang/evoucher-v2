@@ -11,38 +11,53 @@ import (
 
 type (
 	Partner struct {
-		Id           string         `db:"id" json:"id"`
-		AccountId    string         `db:"account_id" json:"acccount_id"`
-		Name         string         `db:"name" json:"name"`
-		Email        string         `db:"email" json:"email"`
-		SerialNumber sql.NullString `db:"serial_number" json:"serial_number"`
-		CreatedBy    sql.NullString `db:"created_by" json:"created_by"`
-		ProgramID    string         `db:"program_id" json:"program_id"`
-		Tag          sql.NullString `db:"tag" json:"tag"`
-		Description  sql.NullString `db:"description" json:"description"`
-		BankAccount  BankAccount    `db:"-" json:"bank_account"`
-		Address      string         `db:"address" json:"address"`
-		City         string         `db:"city" json:"city"`
-		Province     string         `db:"province" json:"province"`
-		Building     string         `db:"building" json:"building"`
-		ZipCode      string         `db:"zip_code" json:"zip_code"`
+		Id                string         `db:"id" json:"id"`
+		AccountId         string         `db:"account_id" json:"acccount_id"`
+		Name              string         `db:"name" json:"name"`
+		Email             string         `db:"email" json:"email"`
+		SerialNumber      sql.NullString `db:"serial_number" json:"serial_number"`
+		CreatedBy         sql.NullString `db:"created_by" json:"created_by"`
+		ProgramID         string         `db:"program_id" json:"program_id"`
+		Tag               sql.NullString `db:"tag" json:"tag"`
+		Description       sql.NullString `db:"description" json:"description"`
+		BankAccount       BankAccount    `db:"-" json:"bank_account"`
+		Address           string         `db:"address" json:"address"`
+		City              string         `db:"city" json:"city"`
+		Province          string         `db:"province" json:"province"`
+		Building          string         `db:"building" json:"building"`
+		ZipCode           string         `db:"zip_code" json:"zip_code"`
+		CompanyName       string         `db:"company_name" json:"company_name"`
+		CompanyPic        string         `db:"company_pic" json:"company_pic"`
+		CompanyTelp       string         `db:"company_telp" json:"company_telp"`
+		CompanyEmail      string         `db:"company_email" json:"company_email"`
+		BankName          string         `db:"bank_name" json:"bank_name"`
+		BankBranch        string         `db:"bank_branch" json:"bank_branch"`
+		BankAccountNumber string         `db:"bank_account_number" json:"bank_account_number"`
+		BankAccountHolder string         `db:"bank_account_holder" json:"bank_account_holder"`
 	}
 	PartnerUpdateRequest struct {
-		Id           string `db:"id" json:"id"`
-		AccountId    string `db:"account_id" json:"acccount_id"`
-		Name         string `db:"name" json:"name"`
-		Email        string `db:"email" json:"email"`
-		SerialNumber string `db:"serial_number" json:"serial_number"`
-		CreatedBy    string `db:"created_by" json:"created_by"`
-		ProgramID    string `db:"program_id" json:"program_id"`
-		Tag          string `db:"tag" json:"tag"`
-		Description  string `db:"description" json:"description"`
-		BankAccount  string `db:"-" json:"bank_account_id"`
-		Address      string `db:"address" json:"address"`
-		City         string `db:"city" json:"city"`
-		Province     string `db:"province" json:"province"`
-		Building     string `db:"building" json:"building"`
-		ZipCode      string `db:"zip_code" json:"zip_code"`
+		Id                string `db:"id" json:"id"`
+		AccountId         string `db:"account_id" json:"acccount_id"`
+		Name              string `db:"name" json:"name"`
+		Email             string `db:"email" json:"email"`
+		SerialNumber      string `db:"serial_number" json:"serial_number"`
+		CreatedBy         string `db:"created_by" json:"created_by"`
+		ProgramID         string `db:"program_id" json:"program_id"`
+		Tag               string `db:"tag" json:"tag"`
+		Description       string `db:"description" json:"description"`
+		Address           string `db:"address" json:"address"`
+		City              string `db:"city" json:"city"`
+		Province          string `db:"province" json:"province"`
+		Building          string `db:"building" json:"building"`
+		ZipCode           string `db:"zip_code" json:"zip_code"`
+		CompanyName       string `db:"company_name" json:"company_name"`
+		CompanyPic        string `db:"company_pic" json:"company_pic"`
+		CompanyTelp       string `db:"company_telp" json:"company_telp"`
+		CompanyEmail      string `db:"company_email" json:"company_email"`
+		BankName          string `db:"bank_name" json:"bank_name"`
+		BankBranch        string `db:"bank_branch" json:"bank_branch"`
+		BankAccountNumber string `db:"bank_account_number" json:"bank_account_number"`
+		BankAccountHolder string `db:"bank_account_holder" json:"bank_account_holder"`
 	}
 	PartnerProgramSummary struct {
 		Id                string         `db:"id" json:"id"`
@@ -96,23 +111,29 @@ func InsertPartner(p Partner) error {
 			, email
 			, tag
 			, description
-			, bank_account_id
 			, building
 			, address
 			, city
 			, province
 			, zip_code
+			, company_name
+			, company_pic
+			, company_telp
+			, company_email
+			, bank_name
+			, bank_branch
+			, bank_account_number
+			, bank_account_holder
 			, created_by
-			, created_at
 			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,? ,? ,? ,?)
 		RETURNING
 			id
 	`
 
 	var res []string
-	err = tx.Select(&res, tx.Rebind(q), p.Name, p.AccountId, p.SerialNumber, p.Email, p.Tag.String, p.Description, p.BankAccount.Id, p.Building, p.Address, p.City, p.Province, p.ZipCode, p.CreatedBy.String, timeNow(), StatusCreated)
+	err = tx.Select(&res, tx.Rebind(q), p.Name, p.AccountId, p.SerialNumber, p.Email, p.Tag.String, p.Description, p.Building, p.Address, p.City, p.Province, p.ZipCode, p.CompanyName, p.CompanyPic, p.CompanyTelp, p.CompanyEmail, p.BankName, p.BankBranch, p.BankAccountNumber, p.BankAccountHolder, p.CreatedBy.String, StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
@@ -175,6 +196,14 @@ func FindPartners(param map[string]string) ([]Partner, error) {
 			, city
 			, province
 			, zip_code
+			, bank_name
+			, bank_branch
+			, bank_account_number
+			, bank_account_holder
+			, company_name
+			, company_pic
+			, company_telp
+			, company_email
 		FROM partners
 		WHERE status = ?
 	`
@@ -195,18 +224,6 @@ func FindPartners(param map[string]string) ([]Partner, error) {
 		return []Partner{}, ErrResourceNotFound
 	}
 
-	for i := 0; i < len(resv); i++ {
-		tempBank, err := FindBankAccountByPartner(resv[i].AccountId, resv[i].Id)
-		if err != nil {
-			fmt.Println(err.Error())
-			return []Partner{}, ErrServerInternal
-		}
-		if len(resv) < 1 {
-			return []Partner{}, ErrResourceNotFound
-		}
-
-		resv[i].BankAccount = tempBank
-	}
 	return resv, nil
 }
 
@@ -273,11 +290,9 @@ func FindPartnerByIdUpdateRequest(param string) (PartnerUpdateRequest, error) {
 		return PartnerUpdateRequest{}, ErrResourceNotFound
 	}
 
-	bank, _ := FindBankAccountByPartner(resv[0].AccountId, resv[0].Id)
 	result := PartnerUpdateRequest{
 		Id:           resv[0].Id,
 		AccountId:    resv[0].AccountId,
-		BankAccount:  bank.Id,
 		Name:         resv[0].Name,
 		SerialNumber: resv[0].SerialNumber.String,
 		Email:        resv[0].Email,
@@ -302,6 +317,9 @@ func FindAllPartners(accountId string) ([]Partner, error) {
 			, serial_number
 			, tag
 			, description
+			, bank_name
+			, company_name
+			, bank_account_number
 		FROM partners
 		WHERE status = ?
 		AND account_id = ?
@@ -316,15 +334,6 @@ func FindAllPartners(accountId string) ([]Partner, error) {
 		return []Partner{}, ErrResourceNotFound
 	}
 
-	for i := 0; i < len(resv); i++ {
-		tempBank, err := FindBankAccountByPartner(resv[i].AccountId, resv[i].Id)
-		if err != nil {
-			fmt.Println(err.Error())
-			return []Partner{}, ErrServerInternal
-		}
-
-		resv[i].BankAccount = tempBank
-	}
 	return resv, nil
 }
 

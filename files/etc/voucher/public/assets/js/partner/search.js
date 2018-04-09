@@ -19,7 +19,7 @@ function getPartner() {
 
 	  var tempArray = [
 		arrData[i].name
-		, arrData[i].bank_account.company_name + ", " + arrData[i].bank_account.bank_name + " - " + arrData[i].bank_account.bank_account_number
+		, arrData[i].company_name + ", " + arrData[i].bank_name + " - " + arrData[i].bank_account_number
 		, arrData[i].tag.String
 		, button
 	  ];
