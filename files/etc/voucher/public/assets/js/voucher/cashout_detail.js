@@ -14,7 +14,7 @@ $( document ).ready(function() {
 	$('#partner-list').change(function () {
 		getTransactionByPartner(this.value);
 	});
-	$("#transactionAll").change(function () {
+	$("#transaction-all").change(function () {
 		var _this = $(this);
 		$('#list-transaction').find("input.transaction").prop('checked', _this.prop('checked'));
 

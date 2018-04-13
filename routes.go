@@ -63,6 +63,7 @@ func setRoutes() http.Handler {
 
 	//cashout
 	r.PostFunc("/v1/ui/cashout", controller.CashoutTransactions)
+	r.GetFunc("/v1/ui/cashout", controller.GetReimburseHistory)
 	r.GetFunc("/v1/ui/cashout/print", controller.PrintCashoutTransaction)
 	r.GetFunc("/v1/ui/voucher/partner", controller.GetVouchersByPartner)
 	r.GetFunc("/v1/ui/voucher/daily/partner", controller.GetTodayVouchersByPartner)
@@ -410,8 +411,8 @@ func viewReport(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "report/program.html", nil)
 	} else if page == "transaction" {
 		render.FileInLayout(w, "layout.html", "report/transaction.html", nil)
-	} else if page == "" || page == "index" {
-		render.FileInLayout(w, "layout.html", "report/test.html", nil)
+	} else if page == "cashout" {
+		render.FileInLayout(w, "layout.html", "report/cashout.html", nil)
 	} else {
 		render.File(w, "notfound.html", nil, 404)
 	}

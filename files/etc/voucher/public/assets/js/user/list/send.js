@@ -2,6 +2,7 @@ $(document).ready(function () {
 	var id = findGetParameter("id");
 	$("#program-id").val(id);
 	getUser();
+	localStorage.removeItem('list-email-id');
 });
 
 function getUser() {
