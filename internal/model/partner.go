@@ -214,6 +214,7 @@ func FindPartners(param map[string]string) ([]Partner, error) {
 			q += ` AND ` + key + ` ILIKE '%` + value + `%'`
 		}
 	}
+	q += ` ORDER BY name`
 
 	var resv []Partner
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
@@ -323,6 +324,7 @@ func FindAllPartners(accountId string) ([]Partner, error) {
 		FROM partners
 		WHERE status = ?
 		AND account_id = ?
+		ORDER BY name
 	`
 
 	var resv []Partner
