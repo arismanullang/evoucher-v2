@@ -651,7 +651,7 @@ func GetListEmailUserByIds(id []string, accountId string) ([]ListEmailUser, erro
 		WHERE
 			account_id = ?
 			AND status = ?
-			OR (
+			AND (
 	`
 
 	q += ` id LIKE '%` + id[0] + `%'`

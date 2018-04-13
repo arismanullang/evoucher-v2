@@ -451,6 +451,10 @@ function getPartner() {
 }
 
 function getPartnerByTag(param) {
+	if(param == "All"){
+		getPartner();
+		return;
+	}
 	$.ajax({
 		url: '/v1/ui/partner?tag='+param+'&token=' + token,
 		type: 'get',

@@ -165,3 +165,46 @@ func PrintCashoutTransaction(w http.ResponseWriter, r *http.Request) {
 
 	render.JSON(w, res, status)
 }
+
+func GetReimburseHistory(w http.ResponseWriter, r *http.Request) {
+	apiName := "report_cashout"
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
+	status := http.StatusOK
+	res := NewResponse(nil)
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	if CheckAPIRole(a, apiName) {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	cashout, err := model.FindAllReimburse(a.User.Account.Id, a.User.ID)
+	if err != nil {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrServerInternal.Error(), err.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	status = http.StatusOK
+	res = NewResponse(cashout)
+	logger.SetStatus(status).Log("response :", model.ProgramType)
+	render.JSON(w, res, status)
+}

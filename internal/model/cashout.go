@@ -286,3 +286,53 @@ func PrintCashout(accountId string, cashoutCode string) (Cashout, error) {
 
 	return res[0], nil
 }
+
+func FindAllReimburse(accountId, user string) ([]Cashout, error) {
+	q := `
+		SELECT
+			c.id
+			, p.name as partner_id
+			, c.cashout_code
+			, c.bank_account
+			, c.total_cashout
+			, c.bank_account_number
+			, c.bank_account_ref_number
+			, c.bank_account_company
+			, c.created_at
+		FROM
+			cashouts AS c
+		JOIN
+			partners AS p
+		ON
+			c.partner_id = p.id
+		WHERE
+			c.status = ?
+			AND c.account_id = ?
+		ORDER BY
+		 	c.created_at desc
+		`
+	var res []Cashout
+	if err := db.Select(&res, db.Rebind(q), StatusCreated, accountId); err != nil {
+		return []Cashout{}, err
+	}
+	if len(res) < 1 {
+		return []Cashout{}, ErrResourceNotFound
+	}
+
+	log := Log{
+		TableName:   "cashouts",
+		TableNameId: accountId,
+		ColumnName:  ColumnChangeLogSelect,
+		Action:      ActionChangeLogSelect,
+		Old:         ValueChangeLogNone,
+		New:         ValueChangeLogNone,
+		CreatedBy:   user,
+	}
+
+	err := addLog(log)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	return res, nil
+}
