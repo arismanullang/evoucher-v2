@@ -67,6 +67,9 @@ function getPartner(id) {
 			$("#company-telp").val(arrData.company_telp);
 			$("#company-name").val(arrData.company_name);
 			$("#company-pic").val(arrData.company_pic);
+			var tags = arrData.tag.String.split('#');
+			$("#tags").select2().val(tags);
+			$("#tags").select2().trigger('change');
 		}
 	});
 }

@@ -442,8 +442,7 @@ func UpdateProgram(d Program) error {
 			tempString := strings.Replace(value, "<", "", -1)
 			tempString = strings.Replace(tempString, ">", "", -1)
 			tempStringArr := strings.Split(tempString, " ")
-			fmt.Println(v)
-			fmt.Println(v.Type())
+
 			if tempStringArr[0] == "int" {
 				value = strconv.FormatInt(v.Int(), 10)
 			} else if tempStringArr[0] == "float64" {

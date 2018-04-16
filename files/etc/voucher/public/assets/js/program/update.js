@@ -83,6 +83,8 @@ function searchById(id) {
 			$("#voucher-valid-to").val(program.valid_voucher_end);
 			$("#all-tenant").prop("checked", false);
 			$("#image-preview").attr("src", program.image_url);
+			$("#format").val(program.voucher_format);
+			$("#visibility").val(program.visibility);
 
 			$("#program-type").attr("disabled", "");
 			$("#voucher-price").attr("disabled", "");
@@ -199,6 +201,8 @@ function send() {
 	var endHour = $("#end-hour").val();
 	var voucherValue = parseInt($("#voucher-value").val());
 	var programDescription = $("#program-description").val();
+	var visibility = $("#visibility").val();
+	var format = $("#format").val();
 
 	var listDay = "";
 	if ($("#redeem-validity-type").val() == "all") {
@@ -312,7 +316,9 @@ function send() {
 					validity_days: listDay,
 					valid_voucher_start: periodStart,
 					valid_voucher_end: periodEnd,
-					voucher_lifetime: lifetime
+					voucher_lifetime: lifetime,
+					visibility: visibility,
+					voucher_format: format
 				};
 
 				console.log(program);
@@ -384,7 +390,9 @@ function send() {
 			validity_days: listDay,
 			valid_voucher_start: periodStart,
 			valid_voucher_end: periodEnd,
-			voucher_lifetime: lifetime
+			voucher_lifetime: lifetime,
+			visibility: visibility,
+			voucher_format: format
 		};
 
 		$.ajax({
