@@ -221,9 +221,13 @@ function getProgram(id, voucher, used, paid) {
 
 			$("#visibility").val(result.visibility);
 			if(result.visibility == true){
+				$("#button-visibility").attr("class","btn btn-md btn-warning");
 				$("#label-visibility").html("Show");
+				$("#label-visibility").attr("class","alert-success");
 			}else{
+				$("#button-visibility").attr("class","btn btn-md btn-success");
 				$("#label-visibility").html("Hidden");
+				$("#label-visibility").attr("class","alert-danger");
 			}
 
 			// Program

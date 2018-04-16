@@ -59,6 +59,14 @@ function getFeatureDetail(id) {
 }
 
 function update() {
+	var uiElems = $("#list-ui-features").find("input[class=feature]:checked");
+	var uis = [];
+
+	for(var i = 0; i < uiElems.length; i++){
+		uis.push($(uiElems[i]).attr("feature"));
+	}
+	localStorage.removeItem("ui");
+	localStorage.setItem("ui", uis);
 
 	var listFeatures = [];
 	var li = $( "input[class=feature]:checked" );
@@ -106,7 +114,6 @@ function update() {
 }
 
 function generateElem(param, targetElem){
-	console.log(param);
 	var categories = [];
 	for(i = 0; i < param.length; i++){
 		if(i == 0){
@@ -138,7 +145,7 @@ function generateElem(param, targetElem){
 				html +="<div class='col-sm-6'>"
 				+ "<div class='checkbox c-checkbox'>"
 				+ "<label class='text-thin font-size-12px'>"
-				+ "<input id='" + param[y].id + "' value='" + param[y].id + "' type='checkbox' class='feature'><span class='ion-checkmark-round'></span>" + param[y].detail
+				+ "<input id='" + param[y].id + "' value='" + param[y].id + "' type='checkbox' class='feature' feature='/"+categories[ii]+"/"+param[y].detail+"'><span class='ion-checkmark-round'></span>" + param[y].detail
 				+ "</label>"
 				+ "</div>"
 				+ "</div>";
@@ -159,7 +166,7 @@ function generateElem(param, targetElem){
 					html +="<div class='col-sm-6'>"
 					+ "<div class='checkbox c-checkbox'>"
 					+ "<label class='text-thin font-size-12px'>"
-					+ "<input id='" + param[y].id + "' value='" + param[y].id + "' type='checkbox' class='feature'><span class='ion-checkmark-round'></span>" + param[y].detail
+					+ "<input id='" + param[y].id + "' value='" + param[y].id + "' type='checkbox' class='feature' feature='/"+categories[ii+1]+"/"+param[y].detail+"'><span class='ion-checkmark-round'></span>" + param[y].detail
 					+ "</label>"
 					+ "</div>"
 					+ "</div>";

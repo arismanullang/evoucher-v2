@@ -437,7 +437,7 @@ func viewPublic(w http.ResponseWriter, r *http.Request) {
 }
 
 func viewUnauthorize(w http.ResponseWriter, r *http.Request) {
-	render.File(w, "notfound.html", nil, 401)
+	render.File(w, "unauthorize.html", nil, 401)
 }
 
 func viewNotFound(w http.ResponseWriter, r *http.Request) {

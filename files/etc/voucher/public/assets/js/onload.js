@@ -54,11 +54,11 @@ function getSession() {
 			type: 'get',
 			success: function (data) {
 				if(data.data == false){
-					logOut();
+					window.location = '/unauthorize';
 				}
 			},
 			error:function (data) {
-				logOut();
+                window.location = '/unauthorize';
 			}
 		});
 	}

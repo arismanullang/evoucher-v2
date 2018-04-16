@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -48,6 +49,32 @@ type (
 		Description        string    `json:"description"`
 		ValidPartners      []string  `json:"valid_partners"`
 		Visibility         string    `json:"visibility"`
+	}
+	UpdateProgramRequest struct {
+		Name               string   `json:"name"`
+		Type               string   `json:"type"`
+		VoucherFormat      string   `json:"voucher_format"`
+		VoucherType        string   `json:"voucher_type"`
+		VoucherPrice       float64  `json:"voucher_price"`
+		AllowAccumulative  bool     `json:"allow_accumulative"`
+		StartDate          string   `json:"start_date"`
+		EndDate            string   `json:"end_date"`
+		StartHour          string   `json:"start_hour"`
+		EndHour            string   `json:"end_hour"`
+		ValidVoucherStart  string   `json:"valid_voucher_start"`
+		ValidVoucherEnd    string   `json:"valid_voucher_end"`
+		VoucherLifetime    int      `json:"voucher_lifetime"`
+		ValidityDays       string   `json:"validity_days"`
+		VoucherValue       float64  `json:"voucher_value"`
+		MaxQuantityVoucher float64  `json:"max_quantity_voucher"`
+		MaxGenerateVoucher float64  `json:"max_generate_voucher"`
+		MaxRedeemVoucher   float64  `json:"max_redeem_voucher"`
+		RedemptionMethod   string   `json:"redemption_method"`
+		ImgUrl             string   `json:"image_url"`
+		Tnc                string   `json:"tnc"`
+		Description        string   `json:"description"`
+		ValidPartners      []string `json:"valid_partners"`
+		Visibility         string   `json:"visibility"`
 	}
 	ProgramDetailResponse struct {
 		Id                 string  `json:"id"`
@@ -715,7 +742,7 @@ func UpdateProgram(w http.ResponseWriter, r *http.Request, logger *model.LogFiel
 	res := NewResponse(nil)
 	status := http.StatusOK
 
-	var rd Program
+	var rd UpdateProgramRequest
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&rd); err != nil {
 		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
@@ -741,6 +768,11 @@ func UpdateProgram(w http.ResponseWriter, r *http.Request, logger *model.LogFiel
 	}
 	tve = time.Date(tve.Year(), tve.Month(), tve.Day(), 23, 59, 59, 0, time.Local)
 
+	bo, err := strconv.ParseBool(rd.Visibility)
+	if err != nil {
+		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
+	}
+
 	vr := model.Program{
 		Id:                 id,
 		Name:               rd.Name,
@@ -765,6 +797,8 @@ func UpdateProgram(w http.ResponseWriter, r *http.Request, logger *model.LogFiel
 		Tnc:                rd.Tnc,
 		Description:        rd.Description,
 		CreatedBy:          a.User.ID,
+		VoucherFormat:      sti(rd.VoucherFormat),
+		Visibility:         bo,
 	}
 	err = model.UpdateProgram(vr)
 	if err != nil {

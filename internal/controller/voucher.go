@@ -403,6 +403,7 @@ func GetVoucherOfProgramDetails(w http.ResponseWriter, r *http.Request) {
 		d.Voucher[j].VoucherID = vd.ID
 		d.Voucher[j].VoucherNo = vd.VoucherCode
 		d.Voucher[j].State = vd.State
+		d.Voucher[j].ExpiredAt = vd.ExpiredAt
 	}
 
 	fmt.Println(d)
