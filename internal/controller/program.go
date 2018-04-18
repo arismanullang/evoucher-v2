@@ -620,7 +620,6 @@ func CreateProgram(w http.ResponseWriter, r *http.Request) {
 		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
 		render.JSON(w, res, status)
 		return
-
 	}
 
 	var rd Program
