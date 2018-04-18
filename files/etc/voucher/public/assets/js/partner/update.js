@@ -7,8 +7,6 @@ $(document).ready(function () {
 		tags: true
 	});
 	getTag();
-	var id = findGetParameter("id");
-	getPartner(id);
 
 	$('#update-partner').validate({
 		errorPlacement: errorPlacementInput,
@@ -40,6 +38,9 @@ function getTag() {
 				var li = $("<option></option>").html(arrData[i]);
 				li.appendTo('#tags');
 			}
+
+			var id = findGetParameter("id");
+			getPartner(id);
 		}
 	});
 }

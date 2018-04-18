@@ -68,3 +68,7 @@ function getCashout() {
 		}
 	});
 }
+
+function detail(id){
+	window.location = "/report/cashout-detail?id="+id;
+}

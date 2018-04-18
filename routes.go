@@ -413,6 +413,8 @@ func viewReport(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "report/transaction.html", nil)
 	} else if page == "cashout" {
 		render.FileInLayout(w, "layout.html", "report/cashout.html", nil)
+	} else if page == "cashout-detail" {
+		render.FileInLayout(w, "layout.html", "report/cashout_detail.html", nil)
 	} else {
 		render.File(w, "notfound.html", nil, 404)
 	}
