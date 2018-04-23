@@ -130,16 +130,16 @@ function onChangeElem(){
 
 	$("#voucher-validity-type").change(function () {
 		if (this.value == "lifetime") {
-			$("#validity-tifetime").attr("style", "display:block");
+			$("#validity-lifetime").attr("style", "display:block");
 			$("#validity-date").attr("style", "display:none");
 			$("#voucher-valid-from").val("");
 			$("#voucher-valid-to").val("");
 		} else if (this.value == "period") {
-			$("#validity-tifetime").attr("style", "display:none");
+			$("#validity-lifetime").attr("style", "display:none");
 			$("#validity-date").attr("style", "display:block");
 			$("#voucher-lifetime").val("");
 		} else {
-			$("#validity-tifetime").attr("style", "display:none");
+			$("#validity-lifetime").attr("style", "display:none");
 			$("#validity-date").attr("style", "display:none");
 			$("#voucher-valid-from").val("");
 			$("#voucher-valid-to").val("");
