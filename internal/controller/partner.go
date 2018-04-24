@@ -469,7 +469,6 @@ func GetProgramsPartner(w http.ResponseWriter, r *http.Request) {
 			render.JSON(w, res, status)
 			return
 		}
-
 	}
 
 	res = NewResponse(programs)
@@ -524,13 +523,10 @@ func GetPerformancePartner(w http.ResponseWriter, r *http.Request) {
 		result.TransactionValue = 0
 		result.Customer = 0
 	} else {
-		result.TransactionCode = len(transactions)
-
 		var trValue float32
 		for _, v := range transactions {
 			trValue += v.VoucherValue
 		}
-		result.TransactionValue = trValue
 
 		var nameList []string
 		for _, v := range transactions {
@@ -548,6 +544,8 @@ func GetPerformancePartner(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		result.Customer = len(nameList)
+		result.TransactionCode = len(transactions)
+		result.TransactionValue = trValue
 	}
 
 	programs, err := model.FindProgramsPartner(id, a.User.Account.Id)

@@ -4,7 +4,6 @@ $(document).ready(function () {
 	getPerformance(id, 'all');
 	getVoucher(id, 'all');
 	getProgram(id);
-	makeQRCode(id);
 
 	$("#performanceType").change(function () {
 		var type = this.value;
@@ -17,83 +16,68 @@ $(document).ready(function () {
 
 function getVoucher(id, type) {
 	var arrData = [];
-	if(type == 'all'){
-		$.ajax({
-			url: '/v1/ui/voucher/partner?id=' + id + '&token=' + token,
-			type: 'get',
-			success: function (data) {
-				var i;
-				var arrData = data.data;
-				var limit = arrData.length;
+	$.ajax({
+		url: '/v1/ui/voucher/partner?id=' + id + '&token=' + token,
+		type: 'get',
+		success: function (data) {
+			var i;
+			var arrData = data.data;
+			var limit = arrData.length;
 
-				var dataSet = [];
-				for (i = 0; i < limit; i++) {
-					console.log(arrData[i].updated_at.Time);
-					var dateValid = new Date(arrData[i].updated_at.Time);
-					var voucherState = '';
-					if(arrData[i].state == 'used'){
-						voucherState = 'used';
-					}else if(arrData[i].state == 'created'){
-						voucherState = 'redeemed';
-					}else{
-						voucherState = 'paid';
-					}
-					var button = "<button type='button' onclick='detail(\"" + arrData[i].id + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"
-					dataSet[i] = [
-						arrData[i].program_name.toUpperCase()
-						, arrData[i].voucher_code
-						, arrData[i].holder_description.String.toUpperCase()
-						, dateValid.toDateString().toUpperCase()
-						, voucherState.toUpperCase()
-						, button
-					];
+			var dataSet = [];
+			for (i = 0; i < limit; i++) {
+				var dateValid = new Date(arrData[i].updated_at.Time);
+				if(arrData[i].updated_at.Time == "0001-01-01T00:00:00Z"){
+					dateValid = new Date(arrData[i].created_at);
 				}
-
-				initGraphReport(dataSet);
-			},
-			error: function(data){
-				$('#tableVoucher').attr("style", "display:none");
-			}
-		});
-	} else if(type == 'today') {
-		$.ajax({
-			url: '/v1/ui/voucher/daily/partner?id=' + id + '&token=' + token,
-			type: 'get',
-			success: function (data) {
-				var i;
-				var arrData = data.data;
-				var limit = arrData.length;
-
-				var dataSet = [];
-				for (i = 0; i < limit; i++) {
-					var dateValid = new Date(arrData[i].updated_at);
-					var voucherState = 'issued';
-					if(arrData[i].state == 'used'){
-						voucherState = 'redeemed'
-					}
-					var button = "<button type='button' onclick='detail(\"" + arrData[i].id + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"
-					dataSet[i] = [
-						arrData[i].program_name.toUpperCase()
-						, arrData[i].voucher_code
-						, arrData[i].holder_description.toUpperCase()
-						, dateValid.toDateString().toUpperCase()
-						, voucherState.toUpperCase()
-						, button
-					];
+				var voucherState = '';
+				if(arrData[i].state == 'used'){
+					voucherState = 'used';
+				}else if(arrData[i].state == 'created'){
+					voucherState = 'redeemed';
+				}else{
+					voucherState = 'paid';
 				}
-
-				initGraphReport(dataSet);
-			},
-			error: function(data){
-				$('#tableVoucher').attr("style", "display:none");
+				var button = "<button type='button' onclick='detail(\"" + arrData[i].id + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"
+				dataSet[i] = [
+					arrData[i].program_name.toUpperCase()
+					, arrData[i].voucher_code
+					, arrData[i].holder_description.String.toUpperCase()
+					, dateValid.toDateString().toUpperCase()
+					, voucherState.toUpperCase()
+					, button
+				];
 			}
-		});
-	}
+
+			$("#totalValidVoucher").html(limit);
+			initGraphReport(dataSet);
+		},
+		error: function(data){
+			$('#tableVoucher').attr("style", "display:none");
+		}
+	});
 }
 
-function makeQRCode(id) {
+function getPerformance(id, type) {
+	var arrData = [];
+	$.ajax({
+		url: '/v1/ui/partner/performance?id=' + id + '&token=' + token,
+		type: 'get',
+		success: function (data) {
+			var i;
+			var arrData = data.data;
+			$("#totalProgram").html(arrData.program);
+			$("#totalTransaction").html(arrData.transaction_code);
+			$("#totalVoucherValue").html("Rp. " + addDecimalPoints(arrData.transaction_value));
+			$("#totalUsedVoucher").html(arrData.voucher_used);
+			$("#totalCustomer").html(arrData.customer);
+		}
+	});
+}
+
+function makeQRCode(id, name) {
 	var qrcode = new QRCode("qrcode", {
-		text: id,
+		text: name,
 		width: 150,
 		height: 150,
 		colorDark: "#000000",
@@ -116,6 +100,8 @@ function getPartner(id) {
 			$("#tag").html(arrData.tag.String);
 			$("#desciption").html(arrData.description.String);
 			$('#bank-account').html(arrData.company_name + ", " + arrData.bank_name + " - " + arrData.bank_account_number);
+
+			makeQRCode(id, arrData.name);
 		}
 	});
 }
@@ -149,41 +135,6 @@ function getProgram(id) {
 			initProgramReport(dataSet);
 		}
 	});
-}
-
-function getPerformance(id, type) {
-	var arrData = [];
-	if(type == 'all'){
-		$.ajax({
-			url: '/v1/ui/partner/performance?id=' + id + '&token=' + token,
-			type: 'get',
-			success: function (data) {
-				var i;
-				var arrData = data.data;
-				$("#totalProgram").html(arrData.program);
-				$("#totalTransaction").html(arrData.transaction_code);
-				$("#totalVoucherValue").html("Rp. " + addDecimalPoints(arrData.transaction_value) + ",00");
-				$("#totalValidVoucher").html(arrData.voucher_generated);
-				$("#totalUsedVoucher").html(arrData.voucher_used);
-				$("#totalCustomer").html(arrData.customer);
-			}
-		});
-	} else if(type == 'today'){
-		$.ajax({
-			url: '/v1/ui/partner/daily/performance?id=' + id + '&token=' + token,
-			type: 'get',
-			success: function (data) {
-				var i;
-				var arrData = data.data;
-				// $("#totalProgram").html(arrData.program);
-				$("#totalTransaction").html(arrData.transaction_code);
-				$("#totalVoucherValue").html("Rp. " + addDecimalPoints(arrData.transaction_value) + ",00");
-				$("#totalValidVoucher").html(arrData.voucher_generated);
-				$("#totalUsedVoucher").html(arrData.voucher_used);
-				$("#totalCustomer").html(arrData.customer);
-			}
-		});
-	}
 }
 
 function detail(id) {

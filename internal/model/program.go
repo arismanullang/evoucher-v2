@@ -1334,47 +1334,72 @@ func FindProgramDetailsCustomParam(param map[string]string) ([]Program, error) {
 	return resv, nil
 }
 
-func FindProgramsPartner(parterId, accountId string) ([]SearchProgram, error) {
+func FindProgramsPartner(partnerId, accountId string) ([]SearchProgram, error) {
 	q := `
 		SELECT
-			va.id
-			, va.account_id
-			, va.name
-			, va.type
-			, va.voucher_type
-			, va.voucher_price
-			, va.voucher_value
-			, va.max_quantity_voucher
-			, va.img_url
-			, va.start_date
-			, va.end_date
-			, count (DISTINCT vo.id) as voucher
+			DISTINCT
+			p.id
+			, p.account_id
+			, p.name
+			, p.type
+			, p.voucher_type
+			, p.voucher_price
+			, p.voucher_value
+			, p.max_quantity_voucher
+			, p.img_url
+			, p.start_date
+			, p.end_date
 		FROM
-			programs as va
-		LEFT JOIN
-			vouchers as vo
-		ON
-			va.id = vo.program_id
+			programs as p
 		JOIN
-			program_partners as vp
+			program_partners as pp
 		ON
-			va.id = vp.program_id
+			p.id = pp.program_id
 		WHERE
-			vp.partner_id = ?
-			AND va.account_id = ?
-			AND va.status = ?
-		GROUP BY
-			va.id
-		ORDER BY
-			va.start_date DESC
+			p.account_id = ?
+			AND pp.partner_id = ?
+			AND p.status = ?
 	`
 
 	var resv []SearchProgram
-	if err := db.Select(&resv, db.Rebind(q), parterId, accountId, StatusCreated); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), accountId, partnerId, StatusCreated); err != nil {
 		return []SearchProgram{}, err
 	}
 	if len(resv) < 1 {
 		return []SearchProgram{}, ErrResourceNotFound
+	}
+
+	for i, v := range resv {
+		q = `
+			SELECT
+				count (DISTINCT td.voucher_id) as voucher
+			FROM
+				transactions as t
+			JOIN
+				transaction_details as td
+			ON
+				t.id = td.transaction_id
+			JOIN
+				vouchers as v
+			ON
+				v.id = td.voucher_id
+			JOIN
+				programs as pr
+			ON
+				pr.id = v.program_id
+			WHERE
+				t.partner_id = ?
+				AND pr.id = ?
+				AND pr.account_id = ?
+				AND pr.status = ?
+		`
+
+		var vo []string
+		if err := db.Select(&vo, db.Rebind(q), partnerId, v.Id, accountId, StatusCreated); err != nil {
+			return []SearchProgram{}, err
+		}
+
+		resv[i].Voucher = vo[0]
 	}
 
 	return resv, nil
