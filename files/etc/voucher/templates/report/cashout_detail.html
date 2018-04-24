@@ -1,0 +1,74 @@
+{{ template "layout" . }}
+
+{{ define "title" }}Reimburse Detail{{ end }}
+{{ define "header-title" }}Reimburse Detail{{ end }}
+
+{{ define "content" }}
+<!-- Page content-->
+<section>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Left column-->
+      <div class="col-md-12 col-lg-12">
+        <form editable-form="" id="profileForm" method="post" action="/v1/ui/voucher/link" name="user.profileForm" class="card">
+          <div class="card-body">
+            <div id="myTabContent" class="tab-content">
+              <div id="detail" role="tabpanel" aria-labelledby="detailTab" class="tab-pane fade in active">
+                <table id="dvData" class="table table-striped">
+                  <tbody>
+                    <tr>
+                      <td class="col-lg-4"><em class="icon-fw mr"></em>Reimburse Code</td>
+                      <td id="reimburse-code" class="col-lg-8"></td>
+                    </tr>
+                      <tr>
+                        <td class="col-lg-4"><em class="icon-fw mr"></em>Bank Transfer Ref. Number</td>
+                        <td id="ref-number" class="col-lg-8"></td>
+                      </tr>
+                    <tr>
+                      <td class="col-lg-4"><em class="icon-fw mr"></em>Partner</td>
+                      <td id="partner-name" class="col-lg-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="col-lg-4"><em class="icon-fw mr"></em>Total Transaction</td>
+                      <td id="total-transaction" class="col-lg-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="col-lg-4"><em class="icon-fw mr"></em>Total Reimburse</td>
+                      <td id="total-reimburse" class="col-lg-8"></td>
+                    </tr>
+                    <tr>
+                      <td class="col-lg-4"><em class="icon-fw mr"></em>Reimburse Date</td>
+                      <td id="reimburse-date" class="col-lg-8"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{{ end }}
+
+{{ define "scripts" }}
+<script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/jquery.dataTables.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.flash.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/jszip.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/pdfmake.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/vfs_fonts.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.html5.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.print.min.js"></script>
+<script type="text/javascript" src="/assets/vendor/nouislider/distribute/nouislider.js"></script>
+<script type="text/javascript" src="/assets/js/report/cashout_detail.js"></script>
+{{ end }}
+
+{{ define "stylesheets" }}
+<link rel="stylesheet" href="/assets/vendor/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css">
+<link rel="stylesheet" href="/assets/vendor/datatables/media/css/jquery.dataTables.css">
+<link rel="stylesheet" href="/assets/vendor/datatables/media/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="/assets/vendor/select2/dist/css/select2.css">
+{{ end }}
