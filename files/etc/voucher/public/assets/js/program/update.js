@@ -103,11 +103,17 @@ function searchById(id) {
 				$("#voucher-lifetime").val(program.voucher_lifetime);
 				$("#validity-lifetime").attr("style", "display:block");
 				$("#validity-date").attr("style", "display:none");
-				$("#voucher-valid-from").val("");
-				$("#voucher-validTo").val("");
 				$("#voucher-validity-type").selectedIndex = 1;
 				$("#voucher-validity-type").val("lifetime");
+			} else {
+				$("#voucher-lifetime").attr("style", "display:none");
+				$("#validity-date").attr("disabled", "disabled");
+				$("#voucher-valid-from").val(convertToDate(program.valid_voucher_start));
+				$("#voucher-valid-to").val(convertToDate(program.valid_voucher_end));
+				$("#voucher-validity-type").selectedIndex = 2;
+				$("#voucher-validity-type").val("period");
 			}
+
 			if ($("#voucher-validity-type").val() == "lifetime") {
 				$("#validity-lifetime").attr("style", "display:block");
 				$("#validity-date").attr("style", "display:none");
@@ -245,8 +251,8 @@ function send() {
 		periodEnd = $("#voucher-valid-to").val();
 	} else if ($("#voucher-validity-type").val() == "lifetime") {
 		lifetime = parseInt($("#voucher-lifetime").val());
-		periodStart = "1001-01-01T00:00:00Z";
-		periodEnd = "1001-01-01T00:00:00Z";
+		periodStart = "01/01/1001";
+		periodEnd = "01/01/1001";
 	}
 
 	var maxRedeem = parseInt($("#max-redeem-voucher").val());
