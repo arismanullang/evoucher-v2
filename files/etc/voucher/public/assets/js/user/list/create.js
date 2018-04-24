@@ -9,11 +9,6 @@ $(window).ready(function () {
 		}
 	});
 
-	$(".badge-remove").on('click', function (e) {
-		var _this = $(this);
-		_this.closest('.chosen').remove();
-	});
-
 	$('#createListEmail').validate({
 		errorPlacement: errorPlacementInput,
 		// Form rules
@@ -28,20 +23,23 @@ $(window).ready(function () {
 });
 
 function onChangeElem(){
-	$("#all-chosen-email").change(function () {
+	$("#all-email").change(function () {
 		var _this = $(this);
-		_this.closest('#chosen-list').find("input.chosen").prop('checked', _this.prop('checked'));
+		_this.closest('#email-list').find("input.email").prop('checked', _this.prop('checked'));
 	});
 }
 
 function send() {
-	if(!$('#createListEmail').valid()){
+	if($("#name").val() == ''){
+	    var errors = { name: "List Email Cannot be Empty." };
+        /* Show errors on the form */
+        $("#createListEmail").validate().showErrors(errors);
 		$(".error").focus();
 		return;
 	}
 
 	var listEmail = [];
-	var li = $(".chosen");
+	var li = $("input[class=email]:checked");
 
 	$.each( li, function (i, val) {
 		listEmail.push(val.getAttribute("value"));
@@ -52,6 +50,7 @@ function send() {
 		email_users: listEmail
 	};
 
+	console.log(userReq);
 	$.ajax({
 		url: '/v1/ui/user/list/create?token=' + token,
 		type: 'post',
@@ -73,9 +72,7 @@ function send() {
 		},
 		error: function (data) {
 			var a = JSON.parse(data.responseText);
-			if (a.errors.detail == "Duplicate Entry.") {
-				swal("Username already used.");
-			}
+			swal(a.errors.detail);
 		}
 	});
 }
@@ -85,84 +82,38 @@ function searchEmail(param) {
 		url: '/v1/ui/user/email?token='+token+'&email='+param,
 		type: 'get',
 		success: function (data) {
+			var liChecked = $("input[class=email]:checked");
+			var liNotChecked = $("input[class=email]:not(:checked)");
+
+			$.each( liNotChecked, function (i, val) {
+				$(val).parent().closest('.col-sm-4').remove();
+			});
+
 			var arrData = [];
 			arrData = data.data;
-
 			var i;
 			for (i = 0; i < arrData.length; i++) {
-				var li = $("<div class='col-sm-12'></div>");
-				var html = "<label class='checkbox-inline c-checkbox'>"
-					+ "<input type='checkbox' class='search' name='search' value='" + arrData[i].id + "' text='" + arrData[i].email + "'>"
-					+ "<span class='ion-checkmark-round'></span>" + arrData[i].email
-					+ "</label>";
-				li.html(html);
+				var tf = true;
+				for(var y = 0; y < liChecked.length;y++){
+					if($(liChecked[y]).val() == arrData[i].id){
+						tf = false;
+					}
+				}
 
-				var td = checkCheckBox(arrData[i].id);
-				if(td){
-					$('#box-list').attr('style', 'display:block');
-					li.appendTo('#search-list');
+				if(tf){
+					var li = $("<div class='col-sm-4'></div>");
+					var html = "<label class='checkbox-inline c-checkbox'>"
+						+ "<input type='checkbox' name='email' class='email' value='" + arrData[i].id + "'>"
+						+ "<span class='ion-checkmark-round'></span>" + arrData[i].email
+						+ "</label>";
+					li.html(html);
+					li.appendTo('#email-list');
 				}
 			}
-
-			$(".search").change(function () {
-				var _this = $(this);
-				addCheckBox(_this.val(), _this.attr('text'), 'chosen', 'chosen', 'chosen-list');
-				_this.parent().closest('.col-sm-12').remove();
-
-				var tf = checkSearch();
-				if(!tf){
-					$('#box-list').attr('style', 'display:none');
-				}
-			});
 		},
 		error: function (data) {
 			var a = JSON.parse(data.responseText);
 			swal("Error", a.errors.detail);
 		}
-	});
-}
-
-function checkSearch(){
-	var tf = false;
-	var li = $("input[class=search]");
-
-	if(li.length > 0){
-		tf = true;
-	}
-	return tf;
-}
-
-function checkCheckBox(param){
-	var li = $(".chosen");
-	var tf = true;
-
-	$.each( li, function (i, val) {
-		if(val.getAttribute("value") == param){
-			tf = false;
-		}
-	});
-
-	return tf;
-}
-
-function removeCheckBox(param){
-	var li = $("input[class="+param+"]:checked");
-
-	$.each( li, function (i, val) {
-		$(val).parent().closest('.col-sm-12').remove();
-	});
-}
-
-function addCheckBox(id, email, classElem, nameElem, listElem){
-	var li = $("<span class='d-inline p-2 bg-divo m-sm p box "+classElem+"' name='"+nameElem+"' value='"+id+"'></span>");
-	var html = "<span class='badge bg-white-grey mr-sm badge-remove'>X</span>"
-		+ email;
-
-	li.html(html);
-	li.appendTo("#"+listElem);
-
-	$(".badge-remove").on('click', function (e) {
-		var _this = $(this);
-		_this.closest('.chosen').remove();
 	});
 }
