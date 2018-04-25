@@ -757,11 +757,11 @@ func UpdateProgram(w http.ResponseWriter, r *http.Request, logger *model.LogFiel
 	}
 	te = time.Date(te.Year(), te.Month(), te.Day(), 23, 59, 59, 0, time.Local)
 
-	tvs, err := time.Parse("2006-01-02T00:00:00Z", rd.ValidVoucherStart)
+	tvs, err := time.Parse("01/02/2006", rd.ValidVoucherStart)
 	if err != nil {
 		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 	}
-	tve, err := time.Parse("2006-01-02T00:00:00Z", rd.ValidVoucherEnd)
+	tve, err := time.Parse("01/02/2006", rd.ValidVoucherEnd)
 	if err != nil {
 		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 	}
@@ -783,13 +783,13 @@ func UpdateProgram(w http.ResponseWriter, r *http.Request, logger *model.LogFiel
 		MaxRedeemVoucher:   rd.MaxRedeemVoucher,
 		RedemptionMethod:   rd.RedemptionMethod,
 		VoucherValue:       rd.VoucherValue,
-		StartDate:          ts.Format("2006-01-02T15:04:05+07:00"),
-		EndDate:            te.Format("2006-01-02T15:04:05+07:00"),
+		StartDate:          ts.Format("2006-01-02 15:04:05.000"),
+		EndDate:            te.Format("2006-01-02 15:04:05.000"),
 		StartHour:          rd.StartHour,
 		EndHour:            rd.EndHour,
 		AllowAccumulative:  rd.AllowAccumulative,
-		ValidVoucherStart:  tvs.Format("2006-01-02T15:04:05Z"),
-		ValidVoucherEnd:    tve.Format("2006-01-02T15:04:05Z"),
+		ValidVoucherStart:  tvs.Format("2006-01-02 15:04:05.000"),
+		ValidVoucherEnd:    tve.Format("2006-01-02 15:04:05.000"),
 		VoucherLifetime:    rd.VoucherLifetime,
 		ValidityDays:       rd.ValidityDays,
 		ImgUrl:             rd.ImgUrl,
