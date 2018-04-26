@@ -73,7 +73,9 @@ type (
 		TransactionValues float32        `db:"-" json:"transaction_values"`
 	}
 	Tag struct {
-		Value string `db:"value" json:"value"`
+		ID        string `db:"id" json:"id"`
+		Value     string `db:"value" json:"value"`
+		AccountID string `db:"account_id" json:"account_id"`
 	}
 )
 
@@ -97,7 +99,7 @@ func InsertPartner(p Partner) error {
 	}
 
 	tags := strings.Split(p.Tag.String, "#")
-	err = CheckAndInsertTag(tags, p.CreatedBy.String)
+	err = CheckAndInsertTag(tags, p.CreatedBy.String, p.AccountId)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
@@ -339,7 +341,7 @@ func FindAllPartners(accountId string) ([]Partner, error) {
 	return resv, nil
 }
 
-func UpdatePartner(partner PartnerUpdateRequest, user string) error {
+func UpdatePartner(partner PartnerUpdateRequest, user, account string) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -348,7 +350,7 @@ func UpdatePartner(partner PartnerUpdateRequest, user string) error {
 	defer tx.Rollback()
 
 	tags := strings.Split(partner.Tag, "#")
-	err = CheckAndInsertTag(tags, user)
+	err = CheckAndInsertTag(tags, user, account)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
@@ -652,16 +654,17 @@ func FindProgramPartnerSummary(accountId, programId string) ([]PartnerProgramSum
 // ------------------------------------------------------------------------------
 // Tag
 
-func FindAllTags() ([]string, error) {
+func FindAllTags(account string) ([]string, error) {
 	q := `
 		SELECT
 			value
 		FROM tags
 		WHERE status = ?
+			AND account_id = ?
 	`
 
 	var resv []string
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, account); err != nil {
 		fmt.Println(err.Error())
 		return []string{}, ErrServerInternal
 	}
@@ -672,7 +675,7 @@ func FindAllTags() ([]string, error) {
 	return resv, nil
 }
 
-func CheckAndInsertTag(tags []string, user string) error {
+func CheckAndInsertTag(tags []string, user, account string) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -701,13 +704,14 @@ func CheckAndInsertTag(tags []string, user string) error {
 			q := `
 				INSERT INTO tags(
 					value
+					, account_id
 					, created_by
 					, status
 				)
-				VALUES (?, ?, ?)
+				VALUES (?, ?, ?, ?)
 			`
 
-			_, err := tx.Exec(tx.Rebind(q), v, user, StatusCreated)
+			_, err := tx.Exec(tx.Rebind(q), v, account, user, StatusCreated)
 			if err != nil {
 				fmt.Println(err.Error())
 				return ErrServerInternal
@@ -739,7 +743,7 @@ func CheckAndInsertTag(tags []string, user string) error {
 	return nil
 }
 
-func InsertTag(tag, user string) error {
+func InsertTag(tag, user, account string) error {
 	fmt.Println("Add")
 	tx, err := db.Beginx()
 	if err != nil {
@@ -751,13 +755,14 @@ func InsertTag(tag, user string) error {
 	q := `
 		INSERT INTO tags(
 			value
+			, account_id
 			, created_by
 			, status
 		)
-		VALUES (?, ?, ?)
+		VALUES (?, ?, ?, ?)
 	`
 
-	_, err = tx.Exec(tx.Rebind(q), tag, user, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), tag, account, user, StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
