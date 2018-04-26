@@ -53,9 +53,7 @@ $(document).ready(function () {
 				digits: true
 			},
 			'voucher-value': {
-				required: true,
-				digits: true,
-				min: 5000
+				required: true
 			},
 			'voucher-quantity': {
 				required: true,

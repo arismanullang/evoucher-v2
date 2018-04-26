@@ -17,6 +17,14 @@ $( window ).ready(function() {
     }
   });
 
+  $( 'input[digit="true"]' ).keyup(function () {
+	  var tempVal = $(this).val().trim();
+	  console.log("A : " + tempVal);
+	  tempVal = tempVal.replace(/\./g, "");
+	  console.log("B : " + tempVal);
+	  $(this).val(addDecimalPoints(tempVal));
+  });
+
   $( 'input' ).attr("autocomplete","off");
   $( '#token' ).val(token);
 

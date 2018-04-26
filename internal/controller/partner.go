@@ -281,7 +281,7 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 		CompanyPic:        rd.CompanyPic,
 	}
 
-	err := model.UpdatePartner(partner, a.User.ID)
+	err := model.UpdatePartner(partner, a.User.ID, a.User.Account.Id)
 	if err != nil {
 		status = http.StatusInternalServerError
 		errorTitle := model.ErrCodeInternalError
@@ -735,7 +735,16 @@ func GetAllTags(w http.ResponseWriter, r *http.Request) {
 
 	status := http.StatusOK
 	res := NewResponse(nil)
-	tag, err := model.FindAllTags()
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	tag, err := model.FindAllTags(a.User.Account.Id)
 	res = NewResponse(tag)
 	if err != nil {
 		status = http.StatusInternalServerError
@@ -786,7 +795,7 @@ func AddTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := model.InsertTag(rd.Value, a.User.ID)
+	err := model.InsertTag(rd.Value, a.User.ID, a.User.Account.Id)
 	if err != nil {
 		status = http.StatusInternalServerError
 		errorTitle := model.ErrCodeInternalError
