@@ -107,7 +107,7 @@ function update() {
 						localStorage.setItem("ui", uis);
 					}
 
-					// window.location = "/role/search";
+					window.location = "/role/search";
 				});
 		},
 		error: function (data) {
