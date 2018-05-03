@@ -1,6 +1,7 @@
 $( document ).ready(function() {
 	id = findGetParameter("id");
 	getFeature(id);
+	$("#role-id").val(id);
 
 	$("#all-ui-feature").change(function() {
 		var _this = $(this);
@@ -45,10 +46,11 @@ function getFeatureDetail(id) {
 		type: 'get',
 		success: function (data) {
 			var arrData = data.data;
-			$("#role-id").val(arrData.id);
 			$("#role-detail").html(arrData.detail);
-			for (i = 0; i < arrData.features.length; i++){
-				$("#features").find("input[id="+arrData.features[i]+"]").prop('checked', true);
+			if(arrData.features != null){
+				for (i = 0; i < arrData.features.length; i++){
+					$("#features").find("input[id="+arrData.features[i]+"]").prop('checked', true);
+				}
 			}
 		},
 		error: function (data) {

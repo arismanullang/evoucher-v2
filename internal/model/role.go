@@ -235,9 +235,6 @@ func GetRoleDetail(id string) (Role, error) {
 	if err := db.Select(&res, db.Rebind(q), StatusCreated, id); err != nil {
 		return Role{}, ErrServerInternal
 	}
-	if len(res) < 1 {
-		return Role{}, ErrResourceNotFound
-	}
 
 	resv[0].Features = res
 
