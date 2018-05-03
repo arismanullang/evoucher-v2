@@ -13,11 +13,11 @@ $(document).ready(function () {
 		function(value, element, params) {
 
 			if (!/Invalid|NaN/.test(new Date(value))) {
-				return new Date(value) > new Date($(params).val());
+				return new Date(value) >= new Date($(params).val());
 			}
 
 			return isNaN(value) && isNaN($(params).val())
-				|| (Number(value) > Number($(params).val()));
+				|| (Number(value) >= Number($(params).val()));
 		},'Must be greater than {0}.');
 
 	jQuery.validator.addMethod("lowerThan",
@@ -442,7 +442,9 @@ function getPartner() {
 					+ "<span class='ion-checkmark-round'></span>" + arrData[i].name
 					+ "</label>";
 				li.html(html);
-				li.appendTo('#partner-list');
+				if(checkPartner(arrData[i].id)){
+					li.appendTo('#partner-list');
+				}
 			}
 		}
 	});
@@ -468,7 +470,9 @@ function getPartnerByTag(param) {
 					+ "<span class='ion-checkmark-round'></span>" + arrData[i].name
 					+ "</label>";
 				li.html(html);
-				li.appendTo('#partner-list');
+				if(checkPartner(arrData[i].id)){
+					li.appendTo('#partner-list');
+				}
 			}
 		}
 	});
@@ -515,6 +519,17 @@ function getType() {
 			}
 		}
 	});
+}
+
+function checkPartner(id){
+	var checked = $("input[class=partner]:checked");
+	for(var i = 0; i < checked.length; i++){
+		if(checked[i].value == id){
+			return false;
+		}
+	}
+
+	return true;
 }
 
 (function () {
