@@ -61,15 +61,6 @@ function getFeatureDetail(id) {
 }
 
 function update() {
-	var uiElems = $("#list-ui-features").find("input[class=feature]:checked");
-	var uis = [];
-
-	for(var i = 0; i < uiElems.length; i++){
-		uis.push($(uiElems[i]).attr("feature"));
-	}
-	localStorage.removeItem("ui");
-	localStorage.setItem("ui", uis);
-
 	var listFeatures = [];
 	var li = $( "input[class=feature]:checked" );
 
@@ -105,7 +96,18 @@ function update() {
 					closeOnConfirm: false
 				},
 				function() {
-					window.location = "/role/search";
+					if($("#role-id").val() == localStorage.getItem("r").replace(",","")){
+						var uiElems = $("#list-ui-features").find("input[class=feature]:checked");
+						var uis = [];
+
+						for(var i = 0; i < uiElems.length; i++){
+							uis.push($(uiElems[i]).attr("feature"));
+						}
+						localStorage.removeItem("ui");
+						localStorage.setItem("ui", uis);
+					}
+
+					// window.location = "/role/search";
 				});
 		},
 		error: function (data) {
