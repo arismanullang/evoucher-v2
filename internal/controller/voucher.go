@@ -322,7 +322,7 @@ func GetVoucherOfProgramDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	voucher, err := model.FindVoucher(param)
+	voucher, err := model.FindAvailableVoucher(a.User.Account.Id, param)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidHolder, logger.TraceID)

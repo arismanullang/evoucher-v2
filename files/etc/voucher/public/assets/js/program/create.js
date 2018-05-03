@@ -190,7 +190,7 @@ function send() {
 	var programValidTo = $("#program-valid-to").val();
 	var startHour = $("#start-hour").val();
 	var endHour = $("#end-hour").val();
-	var voucherValue = parseInt($("#voucher-value").val());
+	var voucherValue = parseInt($("#voucher-value").val().replace(".", ""));
 	var programDescription = $("#program-description").val();
 
 	if(startHour == '00:00'){
