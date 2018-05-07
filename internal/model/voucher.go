@@ -263,6 +263,51 @@ func FindVouchersState(param []string) ([]VoucherState, error) {
 	return resd, nil
 }
 
+func FindVouchersByPartner(partnerId string) ([]Voucher, error) {
+	q := `
+		SELECT
+			v.id
+			, v.voucher_code
+			, v.reference_no
+			, v.holder
+			, v.holder_phone
+			, v.holder_email
+			, v.holder_description
+			, v.program_id
+			, p.name as program_name
+			, v.valid_at
+			, v.expired_at
+			, v.voucher_value
+			, v.state
+			, v.created_by
+			, v.created_at
+			, v.updated_by
+			, v.updated_at
+			, v.deleted_by
+			, v.deleted_at
+			, v.status
+		FROM
+			vouchers as v
+		JOIN transaction_details as td ON v.id = td.voucher_id
+		JOIN transactions as t ON td.transaction_id = t.id
+		JOIN programs as p ON v.program_id = p.id
+		WHERE
+			v.status = ?
+		AND 	t.partner_id = ?
+		ORDER BY state DESC
+	`
+
+	var resd []Voucher
+	if err := db.Select(&resd, db.Rebind(q), StatusCreated, partnerId); err != nil {
+		return []Voucher{}, err
+	}
+	if len(resd) < 1 {
+		return []Voucher{}, ErrResourceNotFound
+	}
+
+	return resd, nil
+}
+
 func FindVouchers(param map[string]string) (VoucherResponse, error) {
 	q := `
 		SELECT DISTINCT

@@ -511,38 +511,26 @@ func GetVouchersByPartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	param := getUrlParam(r.URL.String())
-	param["pa.id"] = id
-	delete(param, "token")
-	delete(param, "id")
+	voucher, err = model.FindVouchersByPartner(id)
 
-	if len(param) > 0 {
-		voucher, err = model.FindsVouchers(param)
-	} else {
-		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeMissingOrderItem, model.ErrMessageMissingOrderItem, logger.TraceID)
-		logger.SetStatus(status).Log("param :", param, "response :", res.Errors.ToString())
-		render.JSON(w, res, status)
-		return
-	}
 	// fmt.Println(voucher, err)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, logger.TraceID)
-		logger.SetStatus(status).Log("param :", param, "response :", res.Errors.ToString())
+		logger.SetStatus(status).Log("response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	} else if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
-		logger.SetStatus(status).Log("param :", param, "response :", res.Errors.ToString())
+		logger.SetStatus(status).Log("response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
 
 	status = http.StatusOK
 	res = NewResponse(voucher)
-	logger.SetStatus(status).Log("param :", param, "response :", voucher)
+	logger.SetStatus(status).Log("response :", voucher)
 	render.JSON(w, res, status)
 }
 
