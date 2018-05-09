@@ -67,7 +67,7 @@ func main() {
 	model.PublicApiKey = config.Mailgun.MailgunPublicKey
 	model.RootTemplate = config.Mailgun.RootTemplate
 	model.Email = config.Mailgun.Email
-	model.RootUrl = config.Mailgun.RootUrl
+	model.RootURL = config.Mailgun.RootURL
 
 	model.GetProgramTypes()
 
@@ -91,7 +91,6 @@ func main() {
 	m.Use(negroni.NewStatic(http.Dir(config.Server.PublicDirectory)))
 	m.UseHandler(router)
 
-	log.Printf("Server is listening on %q\n", config.Server.Host)
 	log.Fatal(server.ListenAndServe(m))
 }
 

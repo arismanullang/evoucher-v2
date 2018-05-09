@@ -12,16 +12,15 @@ var config Config
 
 type Config struct {
 	Server struct {
-		Host              string
 		PublicDirectory   string `yaml:"public_directory"`
 		TemplateDirectory string `yaml:"template_directory"`
 	}
 
 	Database struct {
 		Endpoint string
-		Redis struct{
-			Endpoint 	string
-			TokenLifetime 	int 	`yaml:"token_lifetime"`
+		Redis    struct {
+			Endpoint      string
+			TokenLifetime int `yaml:"token_lifetime"`
 		}
 	}
 
@@ -30,7 +29,7 @@ type Config struct {
 		MailgunKey       string `yaml:"mailgun_key"`
 		MailgunPublicKey string `yaml:"mailgun_public_key"`
 		RootTemplate     string `yaml:"root_mail_template"`
-		RootUrl          string `yaml:"root_url"`
+		RootURL          string `yaml:"root_url"`
 		Email            string `yaml:"email"`
 	}
 
