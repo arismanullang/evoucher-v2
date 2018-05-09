@@ -491,7 +491,7 @@ func InsertCampaignV2(request ProgramCampaignV2, user string) (string, error) {
 		q := `
 			UPDATE program_campaigns
 			SET
-				, email_template = ?
+				email_template = ?
 				, email_subject = ?
 				, email_sender = ?
 				, email_content = ?
