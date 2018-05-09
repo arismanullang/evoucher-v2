@@ -16,7 +16,7 @@ var (
 	ApiKey       string
 	PublicApiKey string
 	RootTemplate string
-	RootUrl      string
+	RootURL      string
 	Email        string
 )
 
@@ -111,7 +111,7 @@ func makeMessageForgotPassword(id string) string {
 		return ""
 	}
 
-	url := "https://" + RootUrl + "/user/recover?key=" + tok.Token
+	url := "https://" + RootURL + "/user/recover?key=" + tok.Token
 	//element := "<a href='"+url+"'>"+url+"</a>"
 	result := string(str) + url
 	return result
@@ -497,7 +497,7 @@ func InsertCampaignV2(request ProgramCampaignV2, user string) (string, error) {
 		q := `
 			UPDATE program_campaigns
 			SET
-				, email_template = ?
+				email_template = ?
 				, email_subject = ?
 				, email_sender = ?
 				, email_content = ?

@@ -6,14 +6,13 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
 
-	"fmt"
-
 	"github.com/gilkor/evoucher/internal/controller"
 )
 
-func setRoutes() http.Handler {
+var router http.Handler
+
+func init() {
 	r := bone.New()
-	// http.ListenAndServe(":8888", nil)
 	r.NotFoundFunc(errorHandler)
 	r.GetFunc("/ping", ping)
 
@@ -186,11 +185,10 @@ func setRoutes() http.Handler {
 	r.PostFunc("/file/upload", controller.UploadFile)
 	r.GetFunc("/file/delete", controller.DeleteFile)
 
-	return r
+	router = r
 }
 
 func ping(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("ping")
 	w.Write([]byte("ping"))
 }
 
