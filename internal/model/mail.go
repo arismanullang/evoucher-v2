@@ -16,7 +16,7 @@ var (
 	ApiKey       string
 	PublicApiKey string
 	RootTemplate string
-	RootUrl      string
+	RootURL      string
 	Email        string
 )
 
@@ -111,7 +111,7 @@ func makeMessageForgotPassword(id string) string {
 		return ""
 	}
 
-	url := "https://" + RootUrl + "/user/recover?key=" + tok.Token
+	url := "https://" + RootURL + "/user/recover?key=" + tok.Token
 	//element := "<a href='"+url+"'>"+url+"</a>"
 	result := string(str) + url
 	return result
