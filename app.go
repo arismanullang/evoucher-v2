@@ -7,26 +7,21 @@ import (
 	"net/http"
 	"os"
 
-	"google.golang.org/appengine"
-
 	"github.com/pkg/profile"
 	"github.com/ruizu/render"
 	"github.com/urfave/negroni"
 
 	"github.com/gilkor/evoucher/internal/controller"
 	"github.com/gilkor/evoucher/internal/model"
+	"github.com/gilkor/evoucher/lib/server"
 )
 
-//var Session *redis.Client
-
 var (
-	name        = "voucher"
-	version     = "unversioned"
-	token       = name + "/" + version
-	path_config = os.Getenv("EVOUCHER_CONFIG")
+	name    = "voucher"
+	version = "unversioned"
+	token   = name + "/" + version
 
 	fversion = flag.Bool("version", false, "print the version.")
-	// fconfig  = flag.String("config", path_config, "set the config file path.")
 	fconfig  = flag.String("config", "files/etc/voucher/config.yml", "set the config file path.")
 	fprofile = flag.String("profile", "", "enable profiler, value either one of [cpu, mem, block].")
 
@@ -34,25 +29,11 @@ var (
 )
 
 func init() {
-
 	flag.Parse()
 
 	if *fversion {
 		printVersion()
 	}
-
-	/*
-		// init redist
-		Session = redis.NewClient(&redis.Options{
-			Addr:         ":8889",
-			DialTimeout:  10 * time.Second,
-			ReadTimeout:  30 * time.Second,
-			WriteTimeout: 30 * time.Second,
-			PoolSize:     10,
-			PoolTimeout:  30 * time.Second,
-		})
-		Session.FlushDb()
-	*/
 }
 
 func main() {
@@ -86,7 +67,7 @@ func main() {
 	model.PublicApiKey = config.Mailgun.MailgunPublicKey
 	model.RootTemplate = config.Mailgun.RootTemplate
 	model.Email = config.Mailgun.Email
-	model.RootUrl = config.Mailgun.RootUrl
+	model.RootURL = config.Mailgun.RootURL
 
 	model.GetProgramTypes()
 
@@ -105,18 +86,12 @@ func main() {
 
 	model.TOKENLIFE = config.Database.Redis.TokenLifetime
 
-	negroni.NewLogger()
-	r := setRoutes()
 	m := negroni.New()
-	m.Use(negroni.NewRecovery())
 	m.Use(controller.LoggerMiddleware())
 	m.Use(negroni.NewStatic(http.Dir(config.Server.PublicDirectory)))
-	m.UseHandler(r)
+	m.UseHandler(router)
 
-	log.Printf("Server is listening on %q\n", config.Server.Host)
-	http.ListenAndServe(config.Server.Host, m)
-	//google app engine
-	appengine.Main()
+	log.Fatal(server.ListenAndServe(m))
 }
 
 func printVersion() {
@@ -134,8 +109,6 @@ func getUiRole() map[string][]string {
 		}
 
 	}
-	//fmt.Print("Role ui : ")
-	//fmt.Println(m)
 	return m
 }
 
@@ -149,8 +122,6 @@ func getApiRole() map[string][]string {
 		}
 
 	}
-	//fmt.Print("Role api : ")
-	//fmt.Println(m)
 	return m
 }
 
@@ -175,7 +146,5 @@ func getConfig() map[string]map[string]string {
 	}
 	m[lastId] = mTemp
 
-	//fmt.Print("Config : ")
-	//fmt.Println(m["WU6ieOt_"])
 	return m
 }

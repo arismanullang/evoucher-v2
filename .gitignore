@@ -1,5 +1,6 @@
-# Generated files
-/voucher
+# Development files
+.env
+/evoucher
 
 # Dependencies
 vendor/*
@@ -24,9 +25,8 @@ _cgo_defun.c
 _cgo_gotypes.go
 _cgo_export.*
 
-*.swp
 _testmain.go
-*.log
+
 *.exe
 *.test
 *.prof
@@ -35,7 +35,7 @@ _testmain.go
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
 
 # Thumbnails
 ._*
@@ -79,16 +79,3 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-
-dump.rdb
-
-#binary file
-evoucher*
-generate
-
-#config file
-files/etc/voucher/config.yml
-
-#IDE config
-.idea/*
-vendor/vendor.json
