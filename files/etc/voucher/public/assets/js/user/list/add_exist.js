@@ -171,9 +171,11 @@ function checkCheckBox(param){
 
 function checkArr(param){
 	tf = false;
-	for(var i = 0; i < emailArr.length; i++){
-		if(emailArr[i].id == param){
-			tf = true;
+	if(emailArr != null){
+		for(var i = 0; i < emailArr.length; i++){
+			if(emailArr[i].id == param){
+				tf = true;
+			}
 		}
 	}
 
