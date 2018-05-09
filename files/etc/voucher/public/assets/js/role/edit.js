@@ -1,6 +1,7 @@
 $( document ).ready(function() {
 	id = findGetParameter("id");
 	getFeature(id);
+	$("#role-id").val(id);
 
 	$("#all-ui-feature").change(function() {
 		var _this = $(this);
@@ -45,10 +46,11 @@ function getFeatureDetail(id) {
 		type: 'get',
 		success: function (data) {
 			var arrData = data.data;
-			$("#role-id").val(arrData.id);
 			$("#role-detail").html(arrData.detail);
-			for (i = 0; i < arrData.features.length; i++){
-				$("#features").find("input[id="+arrData.features[i]+"]").prop('checked', true);
+			if(arrData.features != null){
+				for (i = 0; i < arrData.features.length; i++){
+					$("#features").find("input[id="+arrData.features[i]+"]").prop('checked', true);
+				}
 			}
 		},
 		error: function (data) {
@@ -59,15 +61,6 @@ function getFeatureDetail(id) {
 }
 
 function update() {
-	var uiElems = $("#list-ui-features").find("input[class=feature]:checked");
-	var uis = [];
-
-	for(var i = 0; i < uiElems.length; i++){
-		uis.push($(uiElems[i]).attr("feature"));
-	}
-	localStorage.removeItem("ui");
-	localStorage.setItem("ui", uis);
-
 	var listFeatures = [];
 	var li = $( "input[class=feature]:checked" );
 
@@ -103,6 +96,17 @@ function update() {
 					closeOnConfirm: false
 				},
 				function() {
+					if($("#role-id").val() == localStorage.getItem("r").replace(",","")){
+						var uiElems = $("#list-ui-features").find("input[class=feature]:checked");
+						var uis = [];
+
+						for(var i = 0; i < uiElems.length; i++){
+							uis.push($(uiElems[i]).attr("feature"));
+						}
+						localStorage.removeItem("ui");
+						localStorage.setItem("ui", uis);
+					}
+
 					window.location = "/role/search";
 				});
 		},

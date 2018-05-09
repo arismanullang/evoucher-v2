@@ -27,7 +27,7 @@ $(document).ready(function () {
 
 function getTag() {
 	$.ajax({
-		url: '/v1/ui/tag/all',
+		url: '/v1/ui/tag/all?token='+token,
 		type: 'get',
 		success: function (data) {
 			var arrData = [];
