@@ -155,40 +155,45 @@ function getProgram(id) {
 	});
 }
 
+
 function upload() {
 	$('.sendButton').attr("disabled","disabled");
 	id = findGetParameter("id");
-	var headerImage = null;
-	var voucherImage = null;
-	var footerImage = null;
 
-	var headerImageUrl = "";
-	var voucherImageUrl = "";
-	var footerImageUrl = "";
+	var imgObj = new Object();
+	imgObj.headerImage = null;
+	imgObj.voucherImage = null;
+	imgObj.footerImage = null;
 
 	files.forEach(function (file) {
 		switch(file.key){
 			case "dropzone-header":
-				headerImage = file.value;
+				imgObj['headerImage'] = file.value;
 				break;
 			case "dropzone-voucher":
-				voucherImage = file.value;
+				imgObj['voucherImage'] = file.value;
 				break;
 			case "dropzone-footer":
-				footerImage = file.value;
+				imgObj['footerImage'] = file.value;
 				break;
 		}
 	});
 
-	var n = "header";
-	var interval = setInterval(function () {
-		switch (n){
-			case "header":
-				console.log(headerImage);
+	uploadHeaderImage(imgObj);
+
+}
+
+function uploadHeaderImage(imgObj){
+	var imgUrlObj = new Object();
+	imgUrlObj.headerImageUrl = "";
+	imgUrlObj.voucherImageUrl = "";
+	imgUrlObj.footerImageUrl = "";
+
+	console.log(imgObj.headerImage);
 				$('#modal-loader').modal('hide');
-				if (headerImage != null) {
+				if (imgObj.headerImage != null) {
 					var formData = new FormData();
-					formData.append('image-url', headerImage);
+					formData.append('image-url', imgObj.headerImage);
 
 					$('#image-header-modal').modal({backdrop: 'static',keyboard: false}, 'show');
 
@@ -199,103 +204,113 @@ function upload() {
 						contentType: false,
 						data: formData,
 						success: function (data) {
-							headerImageUrl = data.data;
+							imgUrlObj['headerImageUrl'] = data.data;
+						},
+						complete: function(data){
+							uploadVoucherImage(imgObj, imgUrlObj);
 						}
 					});
+				} else {
+					uploadVoucherImage(imgObj, imgUrlObj);
 				}
-				n = "voucher";
-				break;
-			case "voucher":
-				console.log(voucherImage);
+}
 
-				$('#image-header-modal').modal('hide');
-				if (voucherImage != null) {
-					var formData = new FormData();
-					formData.append('image-url', voucherImage);
-					$('#image-voucher-modal').modal({backdrop: 'static',keyboard: false}, 'show');
+function uploadVoucherImage(imgObj, imgUrlObj){
+	console.log(imgObj.voucherImage);
 
-					jQuery.ajax({
-						url: '/file/upload',
-						type: "POST",
-						processData: false,
-						contentType: false,
-						data: formData,
-						success: function (data) {
-							voucherImageUrl = data.data;
-						}
-					});
-				}
-				n = "footer";
-				break;
-			case "footer":
-				console.log(footerImage);
+	$('#image-header-modal').modal('hide');
+	if (imgObj.voucherImage != null) {
+		var formData = new FormData();
+		formData.append('image-url', imgObj.voucherImage);
+		$('#image-voucher-modal').modal({backdrop: 'static',keyboard: false}, 'show');
 
-				$('#image-voucher-modal').modal('hide');
-				if (footerImage != null) {
-					var formData = new FormData();
-					$('#image-footer-modal').modal({backdrop: 'static',keyboard: false}, 'show');
+		jQuery.ajax({
+			url: '/file/upload',
+			type: "POST",
+			processData: false,
+			contentType: false,
+			data: formData,
+			success: function (data) {
+				imgUrlObj['voucherImageUrl'] = data.data;
+			},
+			complete: function (data) {
+				uploadFooterImage(imgObj, imgUrlObj);
+			}
+		});
+	} else {
+		uploadFooterImage(imgObj, imgUrlObj);
+	}
+}
 
-					formData.append('image-url', footerImage);
+function uploadFooterImage(imgObj, imgUrlObj){
+	console.log(imgObj.footerImage);
 
-					jQuery.ajax({
-						url: '/file/upload',
-						type: "POST",
-						processData: false,
-						contentType: false,
-						data: formData,
-						success: function (data) {
-							footerImageUrl = data.data;
-						}
-					});
-				}
-				n = "lalala";
-				break;
-			default:
-				clearInterval(interval);
-				console.log(headerImageUrl);
-				console.log(voucherImageUrl);
-				console.log(footerImageUrl);
+	$('#image-voucher-modal').modal('hide');
+	if (imgObj.footerImage != null) {
+		var formData = new FormData();
+		$('#image-footer-modal').modal({backdrop: 'static',keyboard: false}, 'show');
 
-				var campaign = {
-					program_id: id,
-					email_subject: $("#subject-email").val(),
-					email_sender: $("#sender-email").val(),
-					email_content: $("#content").summernote('code'),
-					image_header: headerImageUrl,
-					image_voucher: voucherImageUrl,
-					image_footer: footerImageUrl,
-				};
+		formData.append('image-url', imgObj.footerImage);
 
-				$.ajax({
-					url: '/v2/ui/campaign/create?token='+token,
-					type: 'post',
-					dataType: 'json',
-					contentType: "application/json",
-					data: JSON.stringify(campaign),
-					success: function () {
-						$('#image-footer-modal').modal('hide');
-						swal({
-								title: 'Success',
-								text: 'Campaign Created',
-								type: 'success',
-								showCancelButton: false,
-								confirmButtonText: 'Ok',
-								// closeOnConfirm: false
-								closeOnConfirm: true
-							},
-							function() {
-								window.location = "/program/check?id="+id;
-							});
-					},
-					error: function (data) {
-						var a = JSON.parse(data.responseText);
-						swal("Error", a.errors.detail);
-					}
+		jQuery.ajax({
+			url: '/file/upload',
+			type: "POST",
+			processData: false,
+			contentType: false,
+			data: formData,
+			success: function (data) {
+				imgUrlObj['footerImageUrl'] = data.data;
+			},
+			complete: function (data) {
+				createCampaign(imgUrlObj);
+			}
+		});
+	}else {
+		createCampaign(imgUrlObj);
+	}
+}
+
+function createCampaign(imgUrlObj){
+	console.log(imgUrlObj.headerImageUrl);
+	console.log(imgUrlObj.voucherImageUrl);
+	console.log(imgUrlObj.footerImageUrl);
+
+	var campaign = {
+		program_id: id,
+		email_subject: $("#subject-email").val(),
+		email_sender: $("#sender-email").val(),
+		email_content: $("#content").summernote('code'),
+		image_header: imgUrlObj.headerImageUrl,
+		image_voucher: imgUrlObj.voucherImageUrl,
+		image_footer: imgUrlObj.footerImageUrl,
+	};
+
+	$.ajax({
+		url: '/v2/ui/campaign/create?token='+token,
+		type: 'post',
+		dataType: 'json',
+		contentType: "application/json",
+		data: JSON.stringify(campaign),
+		success: function () {
+			$('#image-footer-modal').modal('hide');
+			swal({
+					title: 'Success',
+					text: 'Campaign Created',
+					type: 'success',
+					showCancelButton: false,
+					confirmButtonText: 'Ok',
+					// closeOnConfirm: false
+					closeOnConfirm: true
+				},
+				function() {
+					window.location = "/program/check?id="+id;
 				});
-				break;
+		},
+		error: function (data) {
+			var a = JSON.parse(data.responseText);
+			swal("Error", a.errors.detail);
 		}
-	}, 2000);
-
+	});
 }
 
 // function generateVoucher() {
