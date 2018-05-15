@@ -1,0 +1,15 @@
+server:
+  host: ":8889"
+  public_directory: "files/etc/voucher/public"
+  template_directory: "files/etc/voucher/templates"
+
+database:
+    endpoint: "postgres://evoucher:IuA0Ayj8F0p6Iuwg@35.185.131.77
+:5432/evoucher?sslmode=disable"
+    redis: "127.0.0.1:6379"
+
+mailgun:
+  domain: "sedayuone.com"
+  mailgun_key: "key-7uktwep6lt-ma6emewjgcwx8bjjkrke8"
+  mailgun_public_key: "pubkey-2slaf2guxlloalnpb3qtkruac9beajd9"
+  root_mail_template: "files/etc/voucher/public/assets/mail/"

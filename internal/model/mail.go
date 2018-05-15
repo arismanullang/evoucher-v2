@@ -16,7 +16,7 @@ var (
 	ApiKey       string
 	PublicApiKey string
 	RootTemplate string
-	RootUrl      string
+	RootURL      string
 	Email        string
 )
 
@@ -111,7 +111,7 @@ func makeMessageForgotPassword(id string) string {
 		return ""
 	}
 
-	url := "https://" + RootUrl + "/user/recover?key=" + tok.Token
+	url := "https://" + RootURL + "/user/recover?key=" + tok.Token
 	//element := "<a href='"+url+"'>"+url+"</a>"
 	result := string(str) + url
 	return result
@@ -276,17 +276,22 @@ func SendConfirmationEmail(domain, apiKey, publicApiKey, subject string, target 
 	mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
 
 	for _, v := range target.ListEmail {
-		message := mailgun.NewMessage(
-			Email,
-			subject,
-			subject,
-			v)
-		message.SetHtml(makeMessageConfirmationEmail(accountId, target))
-		resp, id, err := mg.Send(message)
-		if err != nil {
-			return err
+		fmt.Println(v)
+		if v != ""{
+			message := mailgun.NewMessage(
+				Email,
+				subject,
+				subject,
+				v)
+			message.SetHtml(makeMessageConfirmationEmail(accountId, target))
+			resp, id, err := mg.Send(message)
+			if err != nil {
+				fmt.Println(message)
+				fmt.Println(err.Error())
+				return err
+			}
+			fmt.Printf("ID: %s Resp: %s\n", id, resp)
 		}
-		fmt.Printf("ID: %s Resp: %s\n", id, resp)
 	}
 
 	return nil
@@ -318,6 +323,7 @@ func makeMessageConfirmationEmail(accountId string, target ConfirmationEmailRequ
 	result = strings.Replace(result, "%%transaction-date%%", target.TransactionDate, 1)
 	result = strings.Replace(result, "%%program-name%%", target.ProgramName, 1)
 	result = strings.Replace(result, "%%voucher-code%%", voucher, 1)
+	
 	return result
 }
 

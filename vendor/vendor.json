@@ -55,6 +55,12 @@
 			"revisionTime": "2017-10-17T21:51:04Z"
 		},
 		{
+			"checksumSHA1": "SFEUVZGy7+SVOuATNCrt8lzVxTE=",
+			"path": "cloud.google.com/go/storage",
+			"revision": "1ec09e65be459e9a0c9014ff8e4591d8c2f1bed6",
+			"revisionTime": "2017-04-14T20:50:12Z"
+		},
+		{
 			"checksumSHA1": "GolWgaeH85qHHadPx9D7NiSV+Jg=",
 			"path": "github.com/asaskevich/govalidator",
 			"revision": "ca5f9e638c83bac66bfac70ded5bded1503135a7",
@@ -587,12 +593,6 @@
 			"path": "gopkg.in/mailgun/mailgun-go.v1",
 			"revision": "a4002e2df2e8ca2da6a6fbb4a72871b504e49f50",
 			"revisionTime": "2017-02-13T15:09:30Z"
-		},
-		{
-			"checksumSHA1": "RDJpJQwkF012L6m/2BJizyOksNw=",
-			"path": "gopkg.in/yaml.v2",
-			"revision": "eb3733d160e74a9c7e442f435eb3bea458e1d19f",
-			"revisionTime": "2017-08-12T16:00:11Z"
 		}
 	],
 	"rootPath": "github.com/gilkor/evoucher"

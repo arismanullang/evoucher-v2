@@ -607,7 +607,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		ListEmail:       listEmail,
 		ListVoucher:     listVoucher,
 	}
-
+	fmt.Println(partner.AccountId)
 	if err := model.SendConfirmationEmail(model.Domain, model.ApiKey, model.PublicApiKey, "Sedayu One Voucher Confirmation", req, partner.AccountId); err != nil {
 		res := NewResponse(nil)
 		status := http.StatusInternalServerError
