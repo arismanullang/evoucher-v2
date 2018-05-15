@@ -1,13 +1,11 @@
 package main
 
 import (
-	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
-	"github.com/pkg/profile"
 	"github.com/ruizu/render"
 	"github.com/urfave/negroni"
 
@@ -16,87 +14,47 @@ import (
 	"github.com/gilkor/evoucher/lib/server"
 )
 
-var (
-	name    = "voucher"
-	version = "unversioned"
-	token   = name + "/" + version
-
-	fversion = flag.Bool("version", false, "print the version.")
-	fconfig  = flag.String("config", "files/etc/voucher/config.yml", "set the config file path.")
-	fprofile = flag.String("profile", "", "enable profiler, value either one of [cpu, mem, block].")
-
-	configDir = ""
-)
-
-func init() {
-	flag.Parse()
-
-	if *fversion {
-		printVersion()
-	}
-}
-
 func main() {
-	switch *fprofile {
-	case "cpu":
-		defer profile.Start(profile.CPUProfile).Stop()
-	case "mem":
-		defer profile.Start(profile.MemProfile).Stop()
-	case "block":
-		defer profile.Start(profile.BlockProfile).Stop()
+	if err := model.ConnectDB(os.Getenv("DB")); err != nil {
+		log.Fatal(err)
 	}
-
-	if err := ReadConfig(*fconfig, &config); err != nil {
+	if err := model.OpenRedisPool(os.Getenv("REDIS")); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := model.ConnectDB(config.Database.Endpoint); err != nil {
-		log.Fatal(err)
-	}
-	if err := model.OpenRedisPool(config.Database.Redis.Endpoint); err != nil {
-		log.Fatal(err)
-	}
-
-	render.SetPath(config.Server.TemplateDirectory)
+	render.SetPath(os.Getenv("TEMPLATE_DIR"))
 
 	model.UiFeatures = getUiRole()
 	model.ApiFeatures = getApiRole()
 	model.Config = getConfig()
-	model.Domain = config.Mailgun.Domain
-	model.ApiKey = config.Mailgun.MailgunKey
-	model.PublicApiKey = config.Mailgun.MailgunPublicKey
-	model.RootTemplate = config.Mailgun.RootTemplate
-	model.Email = config.Mailgun.Email
-	model.RootURL = config.Mailgun.RootURL
+	model.Domain = os.Getenv("MAILGUN_DOMAIN")
+	model.ApiKey = os.Getenv("MAILGUN_KEY")
+	model.PublicApiKey = os.Getenv("MAILGUN_PUBLIC_KEY")
+	model.RootTemplate = os.Getenv("MAILGUN_TEMPLATE_DIR")
+	model.Email = os.Getenv("MAILGUN_FROM")
+	model.RootURL = os.Getenv("MAILGUN_ROOT_URL")
 
 	model.GetProgramTypes()
 
 	//logger config
-	model.Path = config.Logger.Path
-	model.FileName = config.Logger.FileName
+	model.Path = os.Getenv("LOGGER_PATH")
+	model.FileName = os.Getenv("LOGGER_FILENAME")
 	//voucher config
-	model.VOUCHER_URL = config.Voucher.Link
+	model.VOUCHER_URL = os.Getenv("VOUCHER_LINK")
 	//GCS
-	model.GCS_BUCKET = config.Gcs.Bucket
-	model.GCS_PROJECT_ID = config.Gcs.ProjectID
-	model.PUBLIC_URL = config.Gcs.PublicURL
-	//OCRA
-	model.OCRA_EVOUCHER_APPS_KEY = config.Ocra.AppsKey
-	model.OCRA_URL = config.Ocra.Endpoint
+	model.GCS_BUCKET = os.Getenv("GCS_BUCKET")
+	model.GCS_PROJECT_ID = os.Getenv("GCLOUD_PROJECT")
+	model.PUBLIC_URL = os.Getenv("GCS_PUBLIC_URL")
 
-	model.TOKENLIFE = config.Database.Redis.TokenLifetime
+	tokenTTL, _ := strconv.Atoi(os.Getenv("TOKEN_TTL"))
+	model.TOKENLIFE = tokenTTL
 
 	m := negroni.New()
 	m.Use(controller.LoggerMiddleware())
-	m.Use(negroni.NewStatic(http.Dir(config.Server.PublicDirectory)))
+	m.Use(negroni.NewStatic(http.Dir(os.Getenv("PUBLIC_DIR"))))
 	m.UseHandler(router)
 
 	log.Fatal(server.ListenAndServe(m))
-}
-
-func printVersion() {
-	fmt.Println(token)
-	os.Exit(0)
 }
 
 func getUiRole() map[string][]string {
