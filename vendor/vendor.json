@@ -55,6 +55,12 @@
 			"revisionTime": "2017-10-17T21:51:04Z"
 		},
 		{
+			"checksumSHA1": "SFEUVZGy7+SVOuATNCrt8lzVxTE=",
+			"path": "cloud.google.com/go/storage",
+			"revision": "1ec09e65be459e9a0c9014ff8e4591d8c2f1bed6",
+			"revisionTime": "2017-04-14T20:50:12Z"
+		},
+		{
 			"checksumSHA1": "GolWgaeH85qHHadPx9D7NiSV+Jg=",
 			"path": "github.com/asaskevich/govalidator",
 			"revision": "ca5f9e638c83bac66bfac70ded5bded1503135a7",
