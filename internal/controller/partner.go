@@ -242,7 +242,7 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var serial, desc, tag sql.NullString
-	var email string
+	var email, name string
 
 	if rd.SerialNumber != "" {
 		serial = sql.NullString{String: rd.SerialNumber, Valid: true}
@@ -256,12 +256,17 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 		email = rd.Email
 	}
 
+	if rd.Name != "" {
+		name = rd.Name
+	}
+
 	if rd.Tag != "" {
 		tag = sql.NullString{String: rd.Tag, Valid: true}
 	}
 
 	partner := model.PartnerUpdateRequest{
 		Id:                id,
+		Name:              name,
 		SerialNumber:      serial.String,
 		Email:             email,
 		Description:       desc.String,
