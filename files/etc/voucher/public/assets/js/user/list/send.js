@@ -16,11 +16,15 @@ function getUser() {
 			var dataSet = [];
 
 			for(var i = 0; i < arrData.length; i++){
+				var emailUsers = 0;
+				if(arrData[i].email_users != null){
+					emailUsers = arrData[i].email_users.length;
+				}
 				var body = "<td class='col-lg-1 checkbox c-checkbox'><label>"
 					+ "<input type='checkbox' name='email' class='email' value='"+arrData[i].id+"'><span class='ion-checkmark-round'></span>"
 					+ "</label></td>"
 					+ "<td class='text-ellipsis'>"+arrData[i].name+"</td>"
-					+ "<td class='text-ellipsis'>"+arrData[i].email_users.length+"</td>"
+					+ "<td class='text-ellipsis'>"+emailUsers+"</td>"
 				var li = $("<tr></tr>");
 				li.html(body);
 				li.appendTo('#list-email');
