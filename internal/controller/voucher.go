@@ -1112,10 +1112,6 @@ func (vr *GenerateVoucherRequest) generateVoucher(v *model.Program) ([]model.Vou
 		rd.HolderEmail = sql.NullString{String: vr.Holder.Email, Valid: true}
 		rd.HolderDescription = sql.NullString{String: vr.Holder.Description, Valid: true}
 
-		if err := rd.InsertVc(); err != nil {
-			log.Panic(err)
-		}
-		// fmt.Println(i)
 		ret[i] = rd
 	}
 	return ret, nil
