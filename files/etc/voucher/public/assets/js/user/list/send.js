@@ -19,9 +19,10 @@ function getUser() {
 				var emailUsers = 0;
 				if(arrData[i].email_users != null){
 					emailUsers = arrData[i].email_users.length;
-				}
+        }
+        var disabled = (emailUsers == 0?'disabled' : '');
 				var body = "<td class='col-lg-1 checkbox c-checkbox'><label>"
-					+ "<input type='checkbox' name='email' class='email' value='"+arrData[i].id+"'><span class='ion-checkmark-round'></span>"
+					+ "<input type='checkbox' name='email' class='email' value='"+arrData[i].id+"' " + disabled +"><span class='ion-checkmark-round'></span>"
 					+ "</label></td>"
 					+ "<td class='text-ellipsis'>"+arrData[i].name+"</td>"
 					+ "<td class='text-ellipsis'>"+emailUsers+"</td>"
