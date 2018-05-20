@@ -3,7 +3,6 @@ package model
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 
 	"strings"
 	"time"
@@ -26,7 +25,6 @@ type (
 		HolderEmail string
 		HolderName  string
 		VoucherUrl  string
-		VoucherObj  Voucher
 	}
 
 	ProgramCampaign struct {
@@ -227,7 +225,7 @@ func makeMessageVoucherEmail(program ProgramCampaign, target TargetEmail) string
 func SendVoucherMailV2(domain, apiKey, publicApiKey string, program ProgramCampaignV2, targetEmail []TargetEmail) error {
 	mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
 
-	for k, v := range targetEmail {
+	for _, v := range targetEmail {
 		message := mailgun.NewMessage(
 			program.EmailSender,
 			program.EmailSubject,
@@ -235,16 +233,8 @@ func SendVoucherMailV2(domain, apiKey, publicApiKey string, program ProgramCampa
 			v.HolderEmail)
 		message.SetHtml(makeMessageVoucherEmailV2(program, v))
 		resp, id, err := mg.Send(message)
-
-		fmt.Println(k)
-
 		if err != nil {
 			return err
-		}
-
-		//insert voucher to target user
-		if err := targetEmail[k].VoucherObj.InsertVc(); err != nil {
-			log.Panic(err)
 		}
 		fmt.Printf("ID: %s Resp: %s\n", id, resp)
 	}
@@ -287,7 +277,7 @@ func SendConfirmationEmail(domain, apiKey, publicApiKey, subject string, target 
 
 	for _, v := range target.ListEmail {
 		fmt.Println(v)
-		if v != "" {
+		if v != ""{
 			message := mailgun.NewMessage(
 				Email,
 				subject,
@@ -333,7 +323,7 @@ func makeMessageConfirmationEmail(accountId string, target ConfirmationEmailRequ
 	result = strings.Replace(result, "%%transaction-date%%", target.TransactionDate, 1)
 	result = strings.Replace(result, "%%program-name%%", target.ProgramName, 1)
 	result = strings.Replace(result, "%%voucher-code%%", voucher, 1)
-
+	
 	return result
 }
 
