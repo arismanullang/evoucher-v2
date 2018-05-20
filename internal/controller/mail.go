@@ -188,7 +188,6 @@ func SendEmailCampaign(w http.ResponseWriter, r *http.Request) {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
 		logger.SetStatus(status).Info("param :", rd.ProgramID, "response :", res.Errors)
-		return
 	}
 
 	user, err := model.GetEmailUserByIDs(rd.EmailUsers)
@@ -205,67 +204,25 @@ func SendEmailCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	voucher := model.CountVoucher(rd.ProgramID)
+	gvr := GenerateVoucherRequest{
+		AccountID:   a.User.Account.Id,
+		ProgramID:   rd.ProgramID,
+		Quantity:    1,
+		CreatedBy:   a.User.ID,
+		ReferenceNo: rd.ProgramID,
+	}
 
-	var availableVoucher = int(program.MaxQuantityVoucher) - voucher
-	if availableVoucher >= len(user) {
-		gvr := GenerateVoucherRequest{
-			AccountID:   a.User.Account.Id,
-			ProgramID:   rd.ProgramID,
-			Quantity:    1,
-			CreatedBy:   a.User.ID,
-			ReferenceNo: rd.ProgramID,
-		}
+	target := []model.TargetEmail{}
+	for _, v := range user {
+		gvr.Holder.Key = v.Email
+		gvr.Holder.Email = v.Email
+		gvr.Holder.Description = v.Name
 
-		target := []model.TargetEmail{}
-		for _, v := range user {
-			gvr.Holder.Key = v.Email
-			gvr.Holder.Email = v.Email
-			gvr.Holder.Description = v.Name
-
-			vo, err := gvr.generateVoucher(&program)
-			if err != nil {
-				fmt.Println(err)
-				model.RollbackVoucher(vo[0].ID, a.User.Account.Id)
-
-				status = http.StatusInternalServerError
-				res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
-				logger.SetStatus(status).Log("param :", rd.ProgramID, "response :", res.Errors.ToString())
-				render.JSON(w, res, status)
-				return
-			}
-
-			tempTarget := model.TargetEmail{
-				HolderEmail: v.Email,
-				HolderName:  v.Name,
-				VoucherUrl:  generateLink(vo[0].ID),
-				VoucherObj:  vo[0],
-			}
-			target = append(target, tempTarget)
-		}
-
-		if err := model.SendVoucherMailV2(model.Domain, model.ApiKey, model.PublicApiKey, campaign, target); err != nil {
-			res := NewResponse(nil)
-			status := http.StatusInternalServerError
-			errTitle := model.ErrCodeInternalError
-			if err == model.ErrResourceNotFound {
-				status = http.StatusNotFound
-				errTitle = model.ErrCodeResourceNotFound
-			}
+		vo, err := gvr.generateVoucher(&program)
+		if err != nil {
 			fmt.Println(err)
+			model.RollbackVoucher(vo[0].ID, a.User.Account.Id)
 
-			res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
-			logger.SetStatus(status).Info("param :", campaign, "response :", err.Error())
-			render.JSON(w, res, status)
-			return
-		}
-
-		insertCampaign := model.InsertCampaignUserRequest{
-			CampaignID: campaign.ID,
-			EmailUsers: rd.EmailUsers,
-			CreatedBy:  a.User.ID,
-		}
-		if err := model.InsertCampaignUser(insertCampaign); err != nil {
 			status = http.StatusInternalServerError
 			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
 			logger.SetStatus(status).Log("param :", rd.ProgramID, "response :", res.Errors.ToString())
@@ -273,16 +230,44 @@ func SendEmailCampaign(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		res = NewResponse("")
-		render.JSON(w, res, status)
-	} else {
-		status = http.StatusBadRequest
-		res.AddError(its(status), model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, logger.TraceID)
-		logger.SetStatus(status).Log("param :", rd.ProgramID, "response :", res.Errors)
+		tempTarget := model.TargetEmail{
+			HolderEmail: v.Email,
+			HolderName:  v.Name,
+			VoucherUrl:  generateLink(vo[0].ID),
+		}
+		target = append(target, tempTarget)
+	}
+
+	if err := model.SendVoucherMailV2(model.Domain, model.ApiKey, model.PublicApiKey, campaign, target); err != nil {
+		res := NewResponse(nil)
+		status := http.StatusInternalServerError
+		errTitle := model.ErrCodeInternalError
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			errTitle = model.ErrCodeResourceNotFound
+		}
+
+		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", campaign, "response :", err.Error())
 		render.JSON(w, res, status)
 		return
 	}
 
+	insertCampaign := model.InsertCampaignUserRequest{
+		CampaignID: campaign.ID,
+		EmailUsers: rd.EmailUsers,
+		CreatedBy:  a.User.ID,
+	}
+	if err := model.InsertCampaignUser(insertCampaign); err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd.ProgramID, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+
+	res = NewResponse("")
+	render.JSON(w, res, status)
 }
 
 func SendForgotPasswordMail(w http.ResponseWriter, r *http.Request) {

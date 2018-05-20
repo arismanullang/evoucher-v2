@@ -138,7 +138,7 @@ function send(){
 			localStorage.setItem("public_error_message", "");
 			localStorage.setItem("public_error_message", a.errors.detail);
 
-//			window.location = '/public/fail';
+			window.location = '/public/fail';
 		}
 	});
 }
