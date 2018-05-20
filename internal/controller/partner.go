@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/go-zoo/bone"
 	"github.com/ruizu/render"
@@ -242,7 +243,7 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var serial, desc, tag sql.NullString
-	var email string
+	var email, name string
 
 	if rd.SerialNumber != "" {
 		serial = sql.NullString{String: rd.SerialNumber, Valid: true}
@@ -253,7 +254,11 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if rd.Email != "" {
-		email = rd.Email
+		email = strings.Trim(rd.Email, ";")
+	}
+
+	if rd.Name != "" {
+		name = rd.Name
 	}
 
 	if rd.Tag != "" {
@@ -262,6 +267,7 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 
 	partner := model.PartnerUpdateRequest{
 		Id:                id,
+		Name:              name,
 		SerialNumber:      serial.String,
 		Email:             email,
 		Description:       desc.String,
@@ -385,7 +391,7 @@ func AddPartner(w http.ResponseWriter, r *http.Request) {
 			String: rd.SerialNumber,
 			Valid:  true,
 		},
-		Email: rd.Email,
+		Email: strings.Trim(rd.Email, ";"),
 		CreatedBy: sql.NullString{
 			String: a.User.ID,
 			Valid:  true,
