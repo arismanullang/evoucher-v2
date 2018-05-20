@@ -333,6 +333,7 @@ func GetEmailUserByListIDs(id []string) ([]EmailUser, error) {
 			eu.id = lu.email_user_id
 		WHERE
 			eu.status = ?
+			AND lu.status = ?
 			AND (lu.list_email_user_id = ?
 	`
 	if len(id) > 1 {
@@ -343,7 +344,7 @@ func GetEmailUserByListIDs(id []string) ([]EmailUser, error) {
 	q += `)`
 
 	var res []EmailUser
-	if err := db.Select(&res, db.Rebind(q), StatusCreated, id[0]); err != nil {
+	if err := db.Select(&res, db.Rebind(q), StatusCreated, StatusCreated, id[0]); err != nil {
 		fmt.Println(err)
 		return []EmailUser{}, ErrServerInternal
 	}
