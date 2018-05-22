@@ -458,12 +458,13 @@ function getPartner(id) {
 			for (i = 0; i < arrData.length; i++) {
 				var li = $("<div class='col-sm-4'></div>");
 				var html = "<label class='checkbox-inline c-checkbox'>"
-					+ "<input type='checkbox' class='partner' value='" + arrData[i].id + "' text='" + arrData[i].name + "'>"
+					+ "<input type='checkbox' id='chk_partner" + i +"' class='partner'>"
 					+ "<span class='ion-checkmark-round'></span>" + arrData[i].name
 					+ "</label>";
 				li.html(html);
-				li.appendTo('#partner-list');
-			}
+        li.appendTo('#partner-list');
+        $('#chk_partner'+i).val(arrData[i].id);
+      }
 
 			$.ajax({
 				url: '/v1/ui/partner/program?program_id=' + id + '&token=' + token,
@@ -471,14 +472,14 @@ function getPartner(id) {
 				success: function (data) {
 					var i;
 					var y;
-					var li = $("input[type=checkbox]");
+					var inputPartner = $(".partner");
 
-					for (i = 0; i < li.length; i++) {
-						var tempElem = li[i];
+					for (i = 0; i < inputPartner.length; i++) {
+						var tempElem = inputPartner[i];
 						var arrData = data.data;
 						var limit = arrData.length;
 						for (y = 0; y < limit; y++) {
-							if (tempElem.getAttribute("text") == arrData[y].name) {
+							if (tempElem.value == arrData[y].id) {
 								tempElem.checked = true;
 							}
 						}
