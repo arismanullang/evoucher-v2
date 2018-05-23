@@ -175,6 +175,11 @@ type (
 		VoucherID   string `json:"voucher_id"`
 		VoucherCode string `json:"voucher_code"`
 	}
+
+	VoucherTransactionResponse struct {
+		VoucherID   string `json:"voucher_id"`
+		VoucherCode string `json:"voucher_code"`
+	}
 )
 
 // ## API ##//

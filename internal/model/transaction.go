@@ -70,10 +70,10 @@ type (
 	}
 )
 
-func InsertTransaction(d Transaction) (string, error) {
+func InsertTransaction(d Transaction) (Transaction, error) {
 	tx, err := db.Beginx()
 	if err != nil {
-		return "", err
+		return d, err
 	}
 	defer tx.Rollback()
 
@@ -89,14 +89,16 @@ func InsertTransaction(d Transaction) (string, error) {
 			, status
 		)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-		RETURNING
-			id
+		RETURNING id, account_id, partner_id, token, transaction_code, discount_value,
+		created_at, created_by
+
 	`
-	var res []string //[]Transaction
+	var res []Transaction //[]Transaction
 	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.PartnerId, d.TransactionCode, d.DiscountValue, d.Token, d.User, time.Now(), StatusCreated); err != nil {
-		return "", err
+		return d, err
 	}
-	d.Id = res[0]
+	fmt.Println("insert transaction response :", res)
+	d.Id = res[0].Id
 
 	logs := []Log{}
 	tempLog := Log{
@@ -124,7 +126,7 @@ func InsertTransaction(d Transaction) (string, error) {
 
 		_, err := tx.Exec(tx.Rebind(q), d.Id, v, d.User, time.Now(), StatusCreated)
 		if err != nil {
-			return "", err
+			return d, err
 		}
 
 		tempLog := Log{
@@ -140,7 +142,7 @@ func InsertTransaction(d Transaction) (string, error) {
 	}
 
 	if err := tx.Commit(); err != nil {
-		return "", err
+		return d, err
 	}
 
 	err = addLogs(logs)
@@ -148,7 +150,7 @@ func InsertTransaction(d Transaction) (string, error) {
 		fmt.Println(err.Error())
 	}
 
-	return d.Id, nil
+	return res[0], nil
 }
 
 func (d *DeleteTransactionRequest) Delete() error {

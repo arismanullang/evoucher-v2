@@ -34,8 +34,13 @@ type (
 		End   string `json:"end"`
 	}
 	TransactionResponse struct {
-		TransactionCode string   `json:"transaction_code"`
-		Vouchers        []string `json:"vouchers"`
+		TransactionID   string                       `json:"id"`
+		TransactionCode string                       `json:"transaction_code"`
+		DiscountValue   float64                      `json:"discount_value"`
+		Created_at      time.Time                    `json:"created_at"`
+		Vouchers        []string                     `json:"vouchers"`
+		Voucher         []VoucherTransactionResponse `json:"voucher"`
+		Partner         PartnerTransactionResponse   `json:"partner"`
 	}
 	TransactionCodeBulk struct {
 		TransactionCode []string `json:"transaction_code"`
@@ -216,8 +221,9 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		User:            a.User.ID,
 		VoucherIds:      rd.Vouchers,
 	}
+
 	//fmt.Println(d)
-	tId, err := model.InsertTransaction(d)
+	transaction, err := model.InsertTransaction(d)
 	if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
@@ -249,7 +255,8 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	// get list email
 	listEmail := []string{}
-	emails, err := model.GetEmail(tId)
+	fmt.Println("transaction Id :", transaction.Id)
+	emails, err := model.GetEmail(transaction.Id)
 
 	if strings.Contains(emails.EmailAccount, ";") {
 		tempEmailAccount := strings.Split(emails.EmailAccount, ";")
@@ -278,6 +285,8 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		listEmail = append(listEmail, emails.EmailMember)
 	}
 
+	fmt.Println("List emails :", listEmail)
+
 	// voucher detail
 	voucherDetail, err := model.FindVouchersById(rd.Vouchers)
 	if err != nil {
@@ -288,9 +297,11 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	voucher := []VoucherTransactionResponse{}
 	listVoucher := []string{}
 	for _, v := range voucherDetail.VoucherData {
 		listVoucher = append(listVoucher, v.VoucherCode)
+		voucher = append(voucher, VoucherTransactionResponse{v.ID, v.VoucherCode})
 	}
 
 	// partner detail
@@ -307,8 +318,8 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		Holder:          voucherDetail.VoucherData[0].HolderDescription.String,
 		ProgramName:     voucherDetail.VoucherData[0].ProgramName,
 		PartnerName:     partner.Name,
-		TransactionCode: txCode,
-		TransactionDate: time.Now().Format("2006-01-02 15:04:05"),
+		TransactionCode: transaction.TransactionCode,
+		TransactionDate: transaction.CreatedAt.Format("2006-01-02 15:04:05"),
 		ListEmail:       listEmail,
 		ListVoucher:     listVoucher,
 	}
@@ -328,7 +339,15 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res = NewResponse(TransactionResponse{TransactionCode: txCode, Vouchers: listVoucher})
+	res = NewResponse(TransactionResponse{
+		TransactionID:   transaction.Id,
+		TransactionCode: transaction.TransactionCode,
+		DiscountValue:   transaction.DiscountValue,
+		Created_at:      transaction.CreatedAt,
+		Vouchers:        listVoucher,
+		Voucher:         voucher,
+		Partner:         PartnerTransactionResponse{partner.Id, partner.Name}})
+
 	logger.SetStatus(status).Log("param :", rd, "response :", res)
 	render.JSON(w, res, status)
 }
@@ -512,7 +531,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		VoucherIds:      rd.Vouchers,
 	}
 
-	tId, err := model.InsertTransaction(d)
+	transaction, err := model.InsertTransaction(d)
 	if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
@@ -544,7 +563,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	listEmail := []string{}
-	emails, err := model.GetEmail(tId)
+	emails, err := model.GetEmail(transaction.Id)
 
 	if strings.Contains(emails.EmailAccount, ";") {
 		tempEmailAccount := strings.Split(emails.EmailAccount, ";")
@@ -603,7 +622,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		ProgramName:     voucherDetail.VoucherData[0].ProgramName,
 		PartnerName:     partner.Name,
 		TransactionCode: txCode,
-		TransactionDate: time.Now().Format("2006-01-02 15:04:05"),
+		TransactionDate: transaction.CreatedAt.Format("2006-01-02 15:04:05"),
 		ListEmail:       listEmail,
 		ListVoucher:     listVoucher,
 	}

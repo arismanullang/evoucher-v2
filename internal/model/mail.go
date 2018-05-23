@@ -277,7 +277,7 @@ func SendConfirmationEmail(domain, apiKey, publicApiKey, subject string, target 
 
 	for _, v := range target.ListEmail {
 		fmt.Println(v)
-		if v != ""{
+		if v != "" {
 			message := mailgun.NewMessage(
 				Email,
 				subject,
@@ -323,7 +323,7 @@ func makeMessageConfirmationEmail(accountId string, target ConfirmationEmailRequ
 	result = strings.Replace(result, "%%transaction-date%%", target.TransactionDate, 1)
 	result = strings.Replace(result, "%%program-name%%", target.ProgramName, 1)
 	result = strings.Replace(result, "%%voucher-code%%", voucher, 1)
-	
+
 	return result
 }
 
