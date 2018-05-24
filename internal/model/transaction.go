@@ -124,7 +124,7 @@ func InsertTransaction(d Transaction) (Transaction, error) {
 			VALUES (?, ?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q), d.Id, v, d.User, time.Now(), StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q), d.Id, v, d.User, res[0].CreatedAt, StatusCreated)
 		if err != nil {
 			return d, err
 		}
