@@ -60,8 +60,8 @@ type (
 		Customer         int     `json:"customer"`
 	}
 
-	PartnerTransactionResponse struct {
-		Id   string `json:"id"`
+	MobilePartnerObj struct {
+		ID   string `json:"id"`
 		Name string `json:"name"`
 	}
 )

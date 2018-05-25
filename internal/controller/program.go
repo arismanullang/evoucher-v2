@@ -185,6 +185,15 @@ type (
 	UserDataSpin struct {
 		Score int `json:"score"`
 	}
+
+	//MobileProgramObj return for mobile
+	MobileProgramObj struct {
+		ID        string `json:"id"`
+		Name      string `json:"name"`
+		ImgUrl    string `json:"image_url"`
+		StartDate string `json:"start_date"`
+		EndDate   string `json:"end_date"`
+	}
 )
 
 func CustomQuery(w http.ResponseWriter, r *http.Request) {

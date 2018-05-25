@@ -164,6 +164,8 @@ func init() {
 	r.GetFunc("/v1/voucher/generate/single/:id/rollback", controller.RollbackVoucher)
 	r.PostFunc("/v1/voucher/generate/single", controller.GenerateVoucherOnDemand)
 	r.PostFunc("/v1/transaction/redeem", controller.MobileCreateTransaction)
+	r.GetFunc("/v1/transaction/history", controller.TransactionHistory)
+	// r.GetFunc("/v1/transaction/history/:id", controller.TransactionHistoryDetail)
 
 	//public API
 	r.GetFunc("/v1/public/challenge", controller.GetChallenge)
