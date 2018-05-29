@@ -61,6 +61,17 @@ type (
 		CreatedAt       time.Time        `json:"created_at"`
 		Partner         MobilePartnerObj `json:"partner"`
 	}
+
+	TransactionHistoryDetailResponse struct {
+		VoucherID         string           `json:"id"`
+		VoucherCode       string           `json:"transaction_code"`
+		Holder            string           `json:"holder"`
+		HolderEmail       string           `json:"holder_email"`
+		HolderPhone       string           `json:"holder_phone,omitempty"`
+		HolderDescription string           `json:"holder_description,omitempty"`
+		VoucherValue      string           `json:"voucher_value"`
+		Program           MobileProgramObj `json:"program"`
+	}
 )
 
 func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
@@ -959,5 +970,60 @@ func TransactionHistory(w http.ResponseWriter, r *http.Request) {
 	status = http.StatusOK
 	res = NewResponse(d)
 	logger.SetStatus(status).Log("param :", param, "response :", d)
+	render.JSON(w, res, status)
+}
+
+func TransactionHistoryDetail(w http.ResponseWriter, r *http.Request) {
+	res := NewResponse(nil)
+	var status int
+
+	a := AuthToken(w, r)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("transaction_history_detail")
+
+	transactionID := bone.GetValue(r, "id")
+
+	listTransactionHistoryDetail, err := model.GetVoucherByTransaction(transactionID)
+	if err != nil && err != model.ErrResourceNotFound {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", transactionID, "response :", res.Errors)
+		render.JSON(w, res, status)
+		return
+	}
+
+	d := []TransactionHistoryDetailResponse{}
+	for _, transactionHistoryDetail := range listTransactionHistoryDetail {
+
+		tempProgram := MobileProgramObj{
+			ID:        transactionHistoryDetail.ProgramID,
+			Name:      transactionHistoryDetail.ProgramName,
+			ImgUrl:    transactionHistoryDetail.ProgramImgUrl,
+			StartDate: transactionHistoryDetail.ProgramStartDate,
+			EndDate:   transactionHistoryDetail.ProgramEndDate}
+
+		transactionHistoryDetailResponse := TransactionHistoryDetailResponse{}
+		transactionHistoryDetailResponse.VoucherID = transactionHistoryDetail.VoucherID
+		transactionHistoryDetailResponse.VoucherCode = transactionHistoryDetail.VoucherCode
+		transactionHistoryDetailResponse.VoucherValue = transactionHistoryDetail.VoucherValue
+		transactionHistoryDetailResponse.Holder = transactionHistoryDetail.Holder
+		transactionHistoryDetailResponse.HolderEmail = transactionHistoryDetail.HolderEmail
+		transactionHistoryDetailResponse.HolderPhone = transactionHistoryDetail.HolderPhone
+		transactionHistoryDetailResponse.HolderDescription = transactionHistoryDetail.HolderDescription
+		transactionHistoryDetailResponse.Program = tempProgram
+		d = append(d, transactionHistoryDetailResponse)
+	}
+
+	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
+	status = http.StatusOK
+	res = NewResponse(d)
+	logger.SetStatus(status).Log("param :", transactionID, "response :", d)
 	render.JSON(w, res, status)
 }

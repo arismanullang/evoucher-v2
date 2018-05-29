@@ -78,6 +78,21 @@ type (
 		PartnerID       string    `db:"partner_id" json:"partner_id"`
 		PartnerName     string    `db:"partner_name" json:"partner_name"`
 	}
+
+	TransactionHistoryDetail struct {
+		VoucherID         string `db:"id" json:"id"`
+		VoucherCode       string `db:"voucher_code" json:"voucher_code"`
+		Holder            string `db:"holder" json:"holder"`
+		HolderEmail       string `db:"holder_email" json:"holder_email"`
+		HolderPhone       string `db:"holder_phone" json:"holder_phone"`
+		HolderDescription string `db:"holder_description" json:"holder_description"`
+		VoucherValue      string `db:"voucher_value" json:"voucher_value"`
+		ProgramID         string `db:"program_id" json:"program_id"`
+		ProgramName       string `db:"program_name" json:"program_name"`
+		ProgramStartDate  string `db:"program_start_date" json:"program_start_date"`
+		ProgramEndDate    string `db:"program_end_date" json:"program_end_date"`
+		ProgramImgUrl     string `db:"program_img_url" json:"program_img_url"`
+	}
 )
 
 func InsertTransaction(d Transaction) (Transaction, error) {
@@ -1057,5 +1072,42 @@ func GetTransactionListByHolder(holder string) ([]TransactionHistoryList, error)
 	}
 
 	return listTransactionHistory, nil
+}
 
+//GetVoucherByTransaction Get Transaction History Detail
+func GetVoucherByTransaction(transactionID string) ([]TransactionHistoryDetail, error) {
+	q := `
+	SELECT
+		v.id,
+		v.voucher_code,
+		v.holder,
+		v.holder_email,
+		v.holder_phone,
+		v.holder_description,
+		v.voucher_value,
+		p.id as program_id,
+		p.name as program_name,
+		p.start_date as program_start_date,
+		p.end_date as program_end_date,
+		p.img_url as program_img_url
+	FROM transaction_details as td
+	JOIN
+		vouchers as v ON td.voucher_id = v.id
+	JOIN
+		programs as p ON v.program_id = p.id
+	WHERE
+		td.status = ?
+		AND td.transaction_id = ?
+	ORDER BY v.voucher_code DESC`
+
+	var transactionHistoryDetail []TransactionHistoryDetail
+	if err := db.Select(&transactionHistoryDetail, db.Rebind(q), StatusCreated, transactionID); err != nil {
+		fmt.Println(err.Error())
+		return transactionHistoryDetail, err
+	}
+	if len(transactionHistoryDetail) < 1 {
+		return transactionHistoryDetail, ErrResourceNotFound
+	}
+
+	return transactionHistoryDetail, nil
 }
