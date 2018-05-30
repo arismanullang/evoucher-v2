@@ -24,6 +24,7 @@ type (
 		Response      string   `json:"response" valid:"numeric,optional"`
 		DiscountValue string   `json:"discount_value" valid:"required"`
 		Vouchers      []string `json:"vouchers" valid:"required"`
+		Holder        string   `json:"holder"`
 		CreatedBy     string   `json:"created_by" valid:"optional"`
 	}
 	DeleteTransactionRequest struct {
@@ -34,11 +35,42 @@ type (
 		End   string `json:"end"`
 	}
 	TransactionResponse struct {
-		TransactionCode string   `json:"transaction_code"`
-		Vouchers        []string `json:"vouchers"`
+		TransactionID   string             `json:"id"`
+		TransactionCode string             `json:"transaction_code"`
+		DiscountValue   float64            `json:"discount_value"`
+		Created_at      time.Time          `json:"created_at"`
+		Vouchers        []string           `json:"vouchers"`
+		Voucher         []MobileVoucherObj `json:"voucher"`
+		Partner         MobilePartnerObj   `json:"partner"`
 	}
 	TransactionCodeBulk struct {
 		TransactionCode []string `json:"transaction_code"`
+	}
+
+	//MobileTransactionObj object wrapper for mobile
+	MobileTransactionObj struct {
+		ID            string  `json:"id"`
+		Code          string  `json:"transaction_code"`
+		DiscountValue float64 `json:"discount_value"`
+	}
+
+	TransactionHistoryListResponse struct {
+		TransactionID   string           `json:"id"`
+		TransactionCode string           `json:"transaction_code"`
+		DiscountValue   float64          `json:"discount_value"`
+		CreatedAt       time.Time        `json:"created_at"`
+		Partner         MobilePartnerObj `json:"partner"`
+	}
+
+	TransactionHistoryDetailResponse struct {
+		VoucherID         string           `json:"id"`
+		VoucherCode       string           `json:"transaction_code"`
+		Holder            string           `json:"holder"`
+		HolderEmail       string           `json:"holder_email"`
+		HolderPhone       string           `json:"holder_phone,omitempty"`
+		HolderDescription string           `json:"holder_description,omitempty"`
+		VoucherValue      string           `json:"voucher_value"`
+		Program           MobileProgramObj `json:"program"`
 	}
 )
 
@@ -168,7 +200,8 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	// check validation all voucher & program
 	for _, v := range rd.Vouchers {
-		if ok, err := rd.CheckVoucherRedemption(v); !ok {
+		ok, holder, err := rd.CheckVoucherRedemption(v)
+		if !ok {
 			switch err.Error() {
 			case model.ErrCodeVoucherNotActive:
 				status = http.StatusBadRequest
@@ -202,6 +235,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
+		rd.Holder = holder
 	}
 
 	seedCode := randStr(model.DEFAULT_TRANSACTION_LENGTH, model.DEFAULT_TRANSACTION_SEED)
@@ -210,14 +244,16 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	d := model.Transaction{
 		AccountId:       a.User.Account.Id,
 		PartnerId:       rd.Partner,
+		Holder:          rd.Holder,
 		TransactionCode: txCode,
 		DiscountValue:   stf(rd.DiscountValue) * float64(len(rd.Vouchers)),
 		Token:           rd.Response,
 		User:            a.User.ID,
 		VoucherIds:      rd.Vouchers,
 	}
+
 	//fmt.Println(d)
-	tId, err := model.InsertTransaction(d)
+	transaction, err := model.InsertTransaction(d)
 	if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
@@ -249,7 +285,8 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	// get list email
 	listEmail := []string{}
-	emails, err := model.GetEmail(tId)
+	fmt.Println("transaction Id :", transaction.Id)
+	emails, err := model.GetEmail(transaction.Id)
 
 	if strings.Contains(emails.EmailAccount, ";") {
 		tempEmailAccount := strings.Split(emails.EmailAccount, ";")
@@ -278,6 +315,8 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		listEmail = append(listEmail, emails.EmailMember)
 	}
 
+	fmt.Println("List emails :", listEmail)
+
 	// voucher detail
 	voucherDetail, err := model.FindVouchersById(rd.Vouchers)
 	if err != nil {
@@ -288,9 +327,11 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	voucher := []MobileVoucherObj{}
 	listVoucher := []string{}
 	for _, v := range voucherDetail.VoucherData {
 		listVoucher = append(listVoucher, v.VoucherCode)
+		voucher = append(voucher, MobileVoucherObj{VoucherID: v.ID, VoucherCode: v.VoucherCode})
 	}
 
 	// partner detail
@@ -307,8 +348,8 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		Holder:          voucherDetail.VoucherData[0].HolderDescription.String,
 		ProgramName:     voucherDetail.VoucherData[0].ProgramName,
 		PartnerName:     partner.Name,
-		TransactionCode: txCode,
-		TransactionDate: time.Now().Format("2006-01-02 15:04:05"),
+		TransactionCode: transaction.TransactionCode,
+		TransactionDate: transaction.CreatedAt.Format("2006-01-02 15:04:05"),
 		ListEmail:       listEmail,
 		ListVoucher:     listVoucher,
 	}
@@ -328,7 +369,15 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res = NewResponse(TransactionResponse{TransactionCode: txCode, Vouchers: listVoucher})
+	res = NewResponse(TransactionResponse{
+		TransactionID:   transaction.Id,
+		TransactionCode: transaction.TransactionCode,
+		DiscountValue:   transaction.DiscountValue,
+		Created_at:      transaction.CreatedAt,
+		Vouchers:        listVoucher,
+		Voucher:         voucher,
+		Partner:         MobilePartnerObj{partner.Id, partner.Name}})
+
 	logger.SetStatus(status).Log("param :", rd, "response :", res)
 	render.JSON(w, res, status)
 }
@@ -451,7 +500,8 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	// check validation all voucher & program
 	for _, v := range rd.Vouchers {
-		if ok, err := rd.CheckVoucherRedemption(v); !ok {
+		ok, holder, err := rd.CheckVoucherRedemption(v)
+		if !ok {
 			switch err.Error() {
 			case model.ErrCodeVoucherNotActive:
 				status = http.StatusBadRequest
@@ -486,6 +536,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
+		rd.Holder = holder
 	}
 
 	program, _ := model.FindProgramDetailsById(rd.ProgramID)
@@ -505,6 +556,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	d := model.Transaction{
 		AccountId:       program.AccountId,
 		PartnerId:       rd.Partner,
+		Holder:          rd.Holder,
 		TransactionCode: txCode,
 		DiscountValue:   stf(rd.DiscountValue),
 		Token:           rd.Response,
@@ -512,7 +564,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		VoucherIds:      rd.Vouchers,
 	}
 
-	tId, err := model.InsertTransaction(d)
+	transaction, err := model.InsertTransaction(d)
 	if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
@@ -544,7 +596,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	listEmail := []string{}
-	emails, err := model.GetEmail(tId)
+	emails, err := model.GetEmail(transaction.Id)
 
 	if strings.Contains(emails.EmailAccount, ";") {
 		tempEmailAccount := strings.Split(emails.EmailAccount, ";")
@@ -603,7 +655,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		ProgramName:     voucherDetail.VoucherData[0].ProgramName,
 		PartnerName:     partner.Name,
 		TransactionCode: txCode,
-		TransactionDate: time.Now().Format("2006-01-02 15:04:05"),
+		TransactionDate: transaction.CreatedAt.Format("2006-01-02 15:04:05"),
 		ListEmail:       listEmail,
 		ListVoucher:     listVoucher,
 	}
@@ -867,5 +919,111 @@ func PublicCashoutTransactionDetails(w http.ResponseWriter, r *http.Request) {
 		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
 	}
 
+	render.JSON(w, res, status)
+}
+
+//Get transaction history by holder
+func TransactionHistory(w http.ResponseWriter, r *http.Request) {
+	res := NewResponse(nil)
+	var status int
+
+	a := AuthToken(w, r)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("transaction_history")
+
+	param := getUrlParam(r.URL.String())
+	holder := param["holder"]
+
+	listTransactionHistory, err := model.GetTransactionListByHolder(holder)
+	if err != nil && err != model.ErrResourceNotFound {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", param, "response :", res.Errors)
+		render.JSON(w, res, status)
+		return
+	}
+
+	d := []TransactionHistoryListResponse{}
+	for _, transactionHistory := range listTransactionHistory {
+
+		tempPartner := MobilePartnerObj{
+			ID:   transactionHistory.PartnerID,
+			Name: transactionHistory.PartnerName}
+
+		tempTransactionHistoryResponse := TransactionHistoryListResponse{}
+		tempTransactionHistoryResponse.TransactionID = transactionHistory.TransactionID
+		tempTransactionHistoryResponse.TransactionCode = transactionHistory.TransactionCode
+		tempTransactionHistoryResponse.DiscountValue = transactionHistory.DiscountValue
+		tempTransactionHistoryResponse.Partner = tempPartner
+		tempTransactionHistoryResponse.CreatedAt = transactionHistory.CreatedAt
+		d = append(d, tempTransactionHistoryResponse)
+	}
+
+	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
+	status = http.StatusOK
+	res = NewResponse(d)
+	logger.SetStatus(status).Log("param :", param, "response :", d)
+	render.JSON(w, res, status)
+}
+
+func TransactionHistoryDetail(w http.ResponseWriter, r *http.Request) {
+	res := NewResponse(nil)
+	var status int
+
+	a := AuthToken(w, r)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("transaction_history_detail")
+
+	transactionID := bone.GetValue(r, "id")
+
+	listTransactionHistoryDetail, err := model.GetVoucherByTransaction(transactionID)
+	if err != nil && err != model.ErrResourceNotFound {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", transactionID, "response :", res.Errors)
+		render.JSON(w, res, status)
+		return
+	}
+
+	d := []TransactionHistoryDetailResponse{}
+	for _, transactionHistoryDetail := range listTransactionHistoryDetail {
+
+		tempProgram := MobileProgramObj{
+			ID:        transactionHistoryDetail.ProgramID,
+			Name:      transactionHistoryDetail.ProgramName,
+			ImgUrl:    transactionHistoryDetail.ProgramImgUrl,
+			StartDate: transactionHistoryDetail.ProgramStartDate,
+			EndDate:   transactionHistoryDetail.ProgramEndDate}
+
+		transactionHistoryDetailResponse := TransactionHistoryDetailResponse{}
+		transactionHistoryDetailResponse.VoucherID = transactionHistoryDetail.VoucherID
+		transactionHistoryDetailResponse.VoucherCode = transactionHistoryDetail.VoucherCode
+		transactionHistoryDetailResponse.VoucherValue = transactionHistoryDetail.VoucherValue
+		transactionHistoryDetailResponse.Holder = transactionHistoryDetail.Holder
+		transactionHistoryDetailResponse.HolderEmail = transactionHistoryDetail.HolderEmail
+		transactionHistoryDetailResponse.HolderPhone = transactionHistoryDetail.HolderPhone
+		transactionHistoryDetailResponse.HolderDescription = transactionHistoryDetail.HolderDescription
+		transactionHistoryDetailResponse.Program = tempProgram
+		d = append(d, transactionHistoryDetailResponse)
+	}
+
+	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
+	status = http.StatusOK
+	res = NewResponse(d)
+	logger.SetStatus(status).Log("param :", transactionID, "response :", d)
 	render.JSON(w, res, status)
 }
