@@ -59,6 +59,11 @@ type (
 		VoucherUsed      int     `json:"voucher_used"`
 		Customer         int     `json:"customer"`
 	}
+
+	MobilePartnerObj struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+	}
 )
 
 func GetProgramPartners(w http.ResponseWriter, r *http.Request) {

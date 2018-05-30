@@ -175,6 +175,16 @@ type (
 		VoucherID   string `json:"voucher_id"`
 		VoucherCode string `json:"voucher_code"`
 	}
+
+	//MobileVoucherObj used for mobile response
+	MobileVoucherObj struct {
+		VoucherID   string `json:"voucher_id"`
+		VoucherCode string `json:"voucher_code"`
+		Holder      string `json:"holder,omitempty"`
+		HolderDesc  string `json:"holder_description,omitempty"`
+		ProgramID   string `json:"program_id,omitempty"`
+		State       string `json:"state,omitempty"`
+	}
 )
 
 // ## API ##//
@@ -1027,22 +1037,22 @@ func GetCsvSample(w http.ResponseWriter, r *http.Request) {
 // ## ### ##//
 
 //CheckVoucherRedemption validation
-func (r *TransactionRequest) CheckVoucherRedemption(voucherID string) (bool, error) {
+func (r *TransactionRequest) CheckVoucherRedemption(voucherID string) (bool, string, error) {
 
 	voucher, err := model.FindVoucher(map[string]string{"id": voucherID})
 
 	if err != nil {
-		return false, err
+		return false, "", err
 	} else if voucher.VoucherData[0].State == model.VoucherStateUsed {
-		return false, errors.New(model.ErrMessageVoucherAlreadyUsed)
+		return false, "", errors.New(model.ErrMessageVoucherAlreadyUsed)
 	} else if voucher.VoucherData[0].State == model.VoucherStatePaid {
-		return false, errors.New(model.ErrMessageVoucherAlreadyPaid)
+		return false, "", errors.New(model.ErrMessageVoucherAlreadyPaid)
 	} else if !voucher.VoucherData[0].ExpiredAt.After(time.Now()) {
 		fmt.Println("expired date : ", voucher.VoucherData[0].ExpiredAt, voucher.VoucherData[0].ID)
-		return false, errors.New(model.ErrMessageVoucherExpired)
+		return false, "", errors.New(model.ErrMessageVoucherExpired)
 	}
 
-	return true, nil
+	return true, voucher.VoucherData[0].Holder.String, nil
 }
 
 //UpdateVoucher redeem

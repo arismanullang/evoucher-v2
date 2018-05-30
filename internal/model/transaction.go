@@ -13,6 +13,7 @@ type (
 		AccountId       string    `db:"account_id" json:"account_id"`
 		PartnerId       string    `db:"partner_id" json:"partner_id"`
 		PartnerName     string    `db:"partner_name" json:"partner_name"`
+		Holder          string    `db:"holder" json:"holder"`
 		Token           string    `db:"token" json:"token"`
 		TransactionCode string    `db:"transaction_code" json:"transaction_code"`
 		DiscountValue   float64   `db:"discount_value" json:"discount_value"`
@@ -68,12 +69,36 @@ type (
 		Username        sql.NullString `db:"username" json:"username"`
 		State           string         `db:"state" json:"state"`
 	}
+
+	TransactionHistoryList struct {
+		TransactionID   string    `db:"id" json:"transaction_id"`
+		CreatedAt       time.Time `db:"created_at" json "created_at`
+		TransactionCode string    `db:"transaction_code" json:"transaction_code"`
+		DiscountValue   float64   `db:"discount_value" json:"discount_value"`
+		PartnerID       string    `db:"partner_id" json:"partner_id"`
+		PartnerName     string    `db:"partner_name" json:"partner_name"`
+	}
+
+	TransactionHistoryDetail struct {
+		VoucherID         string `db:"id" json:"id"`
+		VoucherCode       string `db:"voucher_code" json:"voucher_code"`
+		Holder            string `db:"holder" json:"holder"`
+		HolderEmail       string `db:"holder_email" json:"holder_email"`
+		HolderPhone       string `db:"holder_phone" json:"holder_phone"`
+		HolderDescription string `db:"holder_description" json:"holder_description"`
+		VoucherValue      string `db:"voucher_value" json:"voucher_value"`
+		ProgramID         string `db:"program_id" json:"program_id"`
+		ProgramName       string `db:"program_name" json:"program_name"`
+		ProgramStartDate  string `db:"program_start_date" json:"program_start_date"`
+		ProgramEndDate    string `db:"program_end_date" json:"program_end_date"`
+		ProgramImgUrl     string `db:"program_img_url" json:"program_img_url"`
+	}
 )
 
-func InsertTransaction(d Transaction) (string, error) {
+func InsertTransaction(d Transaction) (Transaction, error) {
 	tx, err := db.Beginx()
 	if err != nil {
-		return "", err
+		return d, err
 	}
 	defer tx.Rollback()
 
@@ -81,6 +106,7 @@ func InsertTransaction(d Transaction) (string, error) {
 		INSERT INTO transactions(
 			account_id
 			, partner_id
+			, holder
 			, transaction_code
 			, discount_value
 			, token
@@ -88,15 +114,17 @@ func InsertTransaction(d Transaction) (string, error) {
 			, created_at
 			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-		RETURNING
-			id
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		RETURNING id, account_id, partner_id, token, transaction_code, discount_value,
+		created_at, created_by
+
 	`
-	var res []string //[]Transaction
-	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.PartnerId, d.TransactionCode, d.DiscountValue, d.Token, d.User, time.Now(), StatusCreated); err != nil {
-		return "", err
+	var res []Transaction //[]Transaction
+	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.PartnerId, d.Holder, d.TransactionCode, d.DiscountValue, d.Token, d.User, time.Now(), StatusCreated); err != nil {
+		return d, err
 	}
-	d.Id = res[0]
+	fmt.Println("insert transaction response :", res)
+	d.Id = res[0].Id
 
 	logs := []Log{}
 	tempLog := Log{
@@ -122,9 +150,9 @@ func InsertTransaction(d Transaction) (string, error) {
 			VALUES (?, ?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q), d.Id, v, d.User, time.Now(), StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q), d.Id, v, d.User, res[0].CreatedAt, StatusCreated)
 		if err != nil {
-			return "", err
+			return d, err
 		}
 
 		tempLog := Log{
@@ -140,7 +168,7 @@ func InsertTransaction(d Transaction) (string, error) {
 	}
 
 	if err := tx.Commit(); err != nil {
-		return "", err
+		return d, err
 	}
 
 	err = addLogs(logs)
@@ -148,7 +176,7 @@ func InsertTransaction(d Transaction) (string, error) {
 		fmt.Println(err.Error())
 	}
 
-	return d.Id, nil
+	return res[0], nil
 }
 
 func (d *DeleteTransactionRequest) Delete() error {
@@ -1015,4 +1043,71 @@ func UpdateCashoutTransaction(transactionCode, user string) error {
 	}
 
 	return nil
+}
+
+//GetTransactionListByHolder get list of transaction ids by holder
+func GetTransactionListByHolder(holder string) ([]TransactionHistoryList, error) {
+	q := `
+		SELECT DISTINCT
+			t.id,
+			t.created_at,
+			t.discount_value,
+			t.transaction_code,
+			pt.id as partner_id,
+			pt.name	as partner_name
+		FROM transactions as t
+		JOIN partners as pt
+			ON t.partner_id = pt.id
+		WHERE t.status = ?
+		AND t.holder = ?
+		ORDER BY t.created_at DESC`
+
+	var listTransactionHistory []TransactionHistoryList
+	if err := db.Select(&listTransactionHistory, db.Rebind(q), StatusCreated, holder); err != nil {
+		fmt.Println(err.Error())
+		return listTransactionHistory, err
+	}
+	if len(listTransactionHistory) < 1 {
+		return listTransactionHistory, ErrResourceNotFound
+	}
+
+	return listTransactionHistory, nil
+}
+
+//GetVoucherByTransaction Get Transaction History Detail
+func GetVoucherByTransaction(transactionID string) ([]TransactionHistoryDetail, error) {
+	q := `
+	SELECT
+		v.id,
+		v.voucher_code,
+		v.holder,
+		v.holder_email,
+		v.holder_phone,
+		v.holder_description,
+		v.voucher_value,
+		p.id as program_id,
+		p.name as program_name,
+		p.start_date as program_start_date,
+		p.end_date as program_end_date,
+		p.img_url as program_img_url
+	FROM transaction_details as td
+	JOIN
+		vouchers as v ON td.voucher_id = v.id
+	JOIN
+		programs as p ON v.program_id = p.id
+	WHERE
+		td.status = ?
+		AND td.transaction_id = ?
+	ORDER BY v.voucher_code DESC`
+
+	var transactionHistoryDetail []TransactionHistoryDetail
+	if err := db.Select(&transactionHistoryDetail, db.Rebind(q), StatusCreated, transactionID); err != nil {
+		fmt.Println(err.Error())
+		return transactionHistoryDetail, err
+	}
+	if len(transactionHistoryDetail) < 1 {
+		return transactionHistoryDetail, ErrResourceNotFound
+	}
+
+	return transactionHistoryDetail, nil
 }
