@@ -64,7 +64,7 @@ type (
 
 	TransactionHistoryDetailResponse struct {
 		VoucherID         string           `json:"id"`
-		VoucherCode       string           `json:"transaction_code"`
+		VoucherCode       string           `json:"voucher_code"`
 		Holder            string           `json:"holder"`
 		HolderEmail       string           `json:"holder_email"`
 		HolderPhone       string           `json:"holder_phone,omitempty"`
