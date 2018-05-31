@@ -373,7 +373,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		TransactionID:   transaction.Id,
 		TransactionCode: transaction.TransactionCode,
 		DiscountValue:   transaction.DiscountValue,
-		Created_at:      transaction.CreatedAt,
+		Created_at:      model.TimeToTimeJakarta(transaction.CreatedAt),
 		Vouchers:        listVoucher,
 		Voucher:         voucher,
 		Partner:         MobilePartnerObj{partner.Id, partner.Name}})
@@ -962,7 +962,7 @@ func TransactionHistory(w http.ResponseWriter, r *http.Request) {
 		tempTransactionHistoryResponse.TransactionCode = transactionHistory.TransactionCode
 		tempTransactionHistoryResponse.DiscountValue = transactionHistory.DiscountValue
 		tempTransactionHistoryResponse.Partner = tempPartner
-		tempTransactionHistoryResponse.CreatedAt = transactionHistory.CreatedAt
+		tempTransactionHistoryResponse.CreatedAt = model.TimeToTimeJakarta(transactionHistory.CreatedAt)
 		d = append(d, tempTransactionHistoryResponse)
 	}
 
