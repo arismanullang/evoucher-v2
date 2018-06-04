@@ -273,13 +273,19 @@ function uploadFooterImage(imgObj, imgUrlObj){
 function createCampaign(imgUrlObj){
 	console.log(imgUrlObj.headerImageUrl);
 	console.log(imgUrlObj.voucherImageUrl);
-	console.log(imgUrlObj.footerImageUrl);
+  console.log(imgUrlObj.footerImageUrl);
+
+  var content  = $("#content-email").summernote('code');
+	console.log("Content : "+ content);
+	if(content == "" || content == "<p><br></p>" || content == "<br>"){
+		content  = 'Nantikan program-program Digital Voucher menarik lainnya.'
+	}
 
 	var campaign = {
 		program_id: id,
 		email_subject: $("#subject-email").val(),
-		email_sender: $("#sender-email").val(),
-		email_content: $("#content").summernote('code'),
+    email_sender: $("#sender-email").val(),
+		email_content: content,
 		image_header: imgUrlObj.headerImageUrl,
 		image_voucher: imgUrlObj.voucherImageUrl,
 		image_footer: imgUrlObj.footerImageUrl,

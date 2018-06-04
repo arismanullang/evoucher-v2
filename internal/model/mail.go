@@ -266,6 +266,7 @@ func makeMessageVoucherEmailV2(program ProgramCampaignV2, target TargetEmail) st
 	result = strings.Replace(result, "%%full-name%%", target.HolderName, 1)
 	result = strings.Replace(result, "%%link-voucher%%", target.VoucherUrl, 1)
 	result = strings.Replace(result, "%%program-name%%", program.ProgramName, 1)
+	result = strings.Replace(result, "%%content-email%%", program.EmailContent, 1)
 	result = strings.Replace(result, "%%image-header%%", imageHeader, 1)
 	result = strings.Replace(result, "%%image-voucher%%", imageVoucher, 1)
 	result = strings.Replace(result, "%%image-footer%%", imageFooter, 1)

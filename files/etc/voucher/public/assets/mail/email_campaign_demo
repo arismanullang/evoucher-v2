@@ -45,7 +45,9 @@
                                         <p><span style="font-size: small;"><span>Selamat anda mendapatkan Digital Voucher untuk promo :</span></span></p>
                                         <p><span style="font-size: small;"><i id="modal-program-name">%%program-name%%</i></span></p>
                                         <a style="color: #fff !important; background-color:#448AFF; color: #448AFF; text-align: center; display: inline-block; padding: 6px 12px" href="%%link-voucher%%">Use Voucher</a>
-                                        <p style="color: black;"><span style="font-size: small; color: black;"><br \>Nantikan program-program Digital Voucher menarik lainnya.</span></p>
+                                        <br \>
+                                        <span style="font-size: small;"><span style="color: black">%%content-email%%</span></span>
+                                        <br \>
                                       </td>
                                     </tr>
                                     </tbody>
