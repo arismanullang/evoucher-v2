@@ -25,6 +25,7 @@ type (
 		HolderEmail string
 		HolderName  string
 		VoucherUrl  string
+		VoucherObj  Voucher
 	}
 
 	ProgramCampaign struct {
@@ -222,10 +223,10 @@ func makeMessageVoucherEmail(program ProgramCampaign, target TargetEmail) string
 	return result
 }
 
-func SendVoucherMailV2(domain, apiKey, publicApiKey string, program ProgramCampaignV2, targetEmail []TargetEmail) error {
+func SendVoucherMailV2(domain, apiKey, publicApiKey string, program ProgramCampaignV2, targetEmail []TargetEmail) (int, error) {
 	mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
 
-	for _, v := range targetEmail {
+	for idx, v := range targetEmail {
 		message := mailgun.NewMessage(
 			program.EmailSender,
 			program.EmailSubject,
@@ -234,12 +235,12 @@ func SendVoucherMailV2(domain, apiKey, publicApiKey string, program ProgramCampa
 		message.SetHtml(makeMessageVoucherEmailV2(program, v))
 		resp, id, err := mg.Send(message)
 		if err != nil {
-			return err
+			return idx, err
 		}
 		fmt.Printf("ID: %s Resp: %s\n", id, resp)
 	}
 
-	return nil
+	return len(targetEmail), nil
 }
 func makeMessageVoucherEmailV2(program ProgramCampaignV2, target TargetEmail) string {
 	str, err := ioutil.ReadFile(RootTemplate + program.Template)
