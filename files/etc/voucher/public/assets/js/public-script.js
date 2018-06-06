@@ -77,7 +77,12 @@ function getProfile(x){
 			$("#programId").val(data.data.program_id);
 			$("#discountValue").val(data.data.voucher_value);
 			$("#voucher").val(data.data.vouchers[0].voucher_id);
-			$("#tnc").html(data.data.program_tnc);
+      $("#tnc").html(data.data.program_tnc);
+      var arrPartners = data.data.partners;
+      for(i =0; i< arrPartners.length; i++){
+          var partnerName = $("<div class='col-md-4'>"+arrPartners[i].name+"</div>");
+          partnerName.appendTo("#stores");
+      }
 		}
 	});
 }
