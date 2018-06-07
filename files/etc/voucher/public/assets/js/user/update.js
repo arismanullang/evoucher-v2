@@ -55,7 +55,7 @@ function getUserDetails(id, type) {
 					var tempElem = li[i];
 					var limit = arrData.role.length;
 					for (y = 0; y < limit; y++) {
-						if (tempElem.getAttribute("text") == arrData.role[y].role_detail) {
+						if (tempElem.value == arrData.role[y].id) {
 							tempElem.checked = true;
 						}
 					}
@@ -80,7 +80,7 @@ function getRole() {
 
 			var i;
 			for (i = 0; i < arrData.length; i++) {
-				var li = $("<div class='col-sm-4'></div>");
+				var li = $("<div class='col-sm-4 checkbox-add-padding'></div>");
 				var html = "<label class='checkbox-inline c-checkbox'>"
 					+ "<input type='checkbox' name='role[]' value='" + arrData[i].id + "' text='" + arrData[i].detail + "'>"
 					+ "<span class='ion-checkmark-round'></span>" + arrData[i].detail

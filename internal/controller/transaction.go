@@ -999,7 +999,7 @@ func TransactionHistoryDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	d := []TransactionHistoryDetailResponse{}
+	d := TransactionHistoryDetailResponse{}
 	for _, transactionHistoryDetail := range listTransactionHistoryDetail {
 
 		tempProgram := MobileProgramObj{
@@ -1018,7 +1018,7 @@ func TransactionHistoryDetail(w http.ResponseWriter, r *http.Request) {
 		transactionHistoryDetailResponse.HolderPhone = transactionHistoryDetail.HolderPhone
 		transactionHistoryDetailResponse.HolderDescription = transactionHistoryDetail.HolderDescription
 		transactionHistoryDetailResponse.Program = tempProgram
-		d = append(d, transactionHistoryDetailResponse)
+		d = transactionHistoryDetailResponse
 	}
 
 	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))

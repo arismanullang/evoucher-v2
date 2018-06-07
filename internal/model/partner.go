@@ -560,6 +560,8 @@ func FindProgramPartner(param map[string]string) ([]Partner, error) {
 		q += ` AND ` + table + `.` + k + ` = '` + v + `'`
 
 	}
+	q += ` ORDER BY b.name`
+
 	var resv []Partner
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
 		return []Partner{}, err
