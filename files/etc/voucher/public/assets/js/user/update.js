@@ -55,7 +55,7 @@ function getUserDetails(id, type) {
 					var tempElem = li[i];
 					var limit = arrData.role.length;
 					for (y = 0; y < limit; y++) {
-						if (tempElem.getAttribute("text") == arrData.role[y].role_detail) {
+						if (tempElem.value == arrData.role[y].id) {
 							tempElem.checked = true;
 						}
 					}
