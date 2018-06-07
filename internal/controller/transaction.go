@@ -373,7 +373,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		TransactionID:   transaction.Id,
 		TransactionCode: transaction.TransactionCode,
 		DiscountValue:   transaction.DiscountValue,
-		Created_at:      model.TimeToTimeJakarta(transaction.CreatedAt),
+		Created_at:      transaction.CreatedAt,
 		Vouchers:        listVoucher,
 		Voucher:         voucher,
 		Partner:         MobilePartnerObj{partner.Id, partner.Name}})
