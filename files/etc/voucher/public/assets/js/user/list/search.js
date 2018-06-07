@@ -13,7 +13,7 @@ function getUser() {
 			var dataSet = [];
 			for (i = 0; i < arrData.length; i++) {
 				var button = "<button type='button' onclick='detail(\"" + arrData[i].id + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>" +
-				"<button value='" + arrData[i].id + "' type='button' class='btn btn-flat btn-sm btn-danger swal-demo-delete'><em class='ion-trash-a'></em></button>";
+				"<button onclick='confirmDeleteList(\"" + arrData[i].id + "\")'type='button' class='btn btn-flat btn-sm btn-danger swal-demo-delete'><em class='ion-trash-a'></em></button>";
 				var length = 0;
 				if(arrData[i].email_users != null){
 					length = arrData[i].email_users.length;
@@ -95,28 +95,21 @@ function deleteUser(id) {
 	});
 }
 
-(function () {
-	'use strict';
-
-	$(runSweetAlert);
-
-	function runSweetAlert() {
-		$(document).on('click', '.swal-demo-delete', function (e) {
-			e.preventDefault();
-			swal({
-					title: 'Are you sure?',
-					text: 'Do you want delete this list?',
-					type: 'warning',
-					showCancelButton: true,
-					confirmButtonColor: '#DD6B55',
-					confirmButtonText: 'Delete',
-					closeOnConfirm: false
-				},
-				function () {
-					 deleteUser(e.target.value);
-				});
-
+function confirmDeleteList(id){
+	$(document).on('click', '.swal-demo-delete', function (e) {
+		e.preventDefault();
+		swal({
+				title: 'Are you sure?',
+				text: 'Do you want delete this list?',
+				type: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#DD6B55',
+				confirmButtonText: 'Delete',
+				closeOnConfirm: false
+			},
+			function () {
+				deleteUser(id);
 		});
-	}
+	});
+}
 
-})();

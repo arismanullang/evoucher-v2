@@ -42,7 +42,8 @@ function getPartner(id) {
 			$('#partner').html(result.name);
 			$('#bank-account-company').html(result.company_name);
 			$('#bank-account').html(result.bank_name);
-			$('#bank-account-number').html(result.bank_account_number);
+      $('#bank-account-number').html(result.bank_account_number);
+			$('#bank-account-holder').html(result.bank_account_holder);
 		},
 		error: function (data) {
 		}

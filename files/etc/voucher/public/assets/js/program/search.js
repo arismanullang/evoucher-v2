@@ -61,7 +61,7 @@ function getProgram() {
 
 				if (arrData[i].status = 'created') {
 					var dateStart = new Date(date1[0], date1[1] - 1, date1[2]);
-					var dateEnd = new Date(date2[0], date2[1] - 1, date2[2]);
+					var dateEnd = new Date(date2[0], date2[1] - 1, date2[2], 23, 59, 59);
 					if (Date.now() < dateStart.getTime()) {
 						dataStatus.push("Not Active");
 					} else if (Date.now() > dateStart.getTime() && Date.now() < dateEnd.getTime()) {
