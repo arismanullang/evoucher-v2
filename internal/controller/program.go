@@ -188,12 +188,12 @@ type (
 
 	//MobileProgramObj return for mobile
 	MobileProgramObj struct {
-		ID           string `json:"id"`
-		Name         string `json:"name"`
-		VoucherValue string `json:"voucher_value"`
-		ImgUrl       string `json:"image_url"`
-		StartDate    string `json:"start_date"`
-		EndDate      string `json:"end_date"`
+		ID           string  `json:"id"`
+		Name         string  `json:"name"`
+		VoucherValue float64 `json:"voucher_value"`
+		ImgUrl       string  `json:"image_url"`
+		StartDate    string  `json:"start_date"`
+		EndDate      string  `json:"end_date"`
 	}
 )
 
