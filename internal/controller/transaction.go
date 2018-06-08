@@ -957,7 +957,7 @@ func TransactionHistory(w http.ResponseWriter, r *http.Request) {
 		tempTransactionHistoryResponse.TransactionCode = transactionHistory.TransactionCode
 		tempTransactionHistoryResponse.DiscountValue = transactionHistory.DiscountValue
 		tempTransactionHistoryResponse.Partner = tempPartner
-		tempTransactionHistoryResponse.CreatedAt = model.TimeToTimeJakarta(transactionHistory.CreatedAt)
+		tempTransactionHistoryResponse.CreatedAt = transactionHistory.CreatedAt
 		d = append(d, tempTransactionHistoryResponse)
 	}
 
