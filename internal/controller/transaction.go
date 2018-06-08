@@ -63,14 +63,9 @@ type (
 	}
 
 	TransactionHistoryDetailResponse struct {
-		VoucherID         string           `json:"id"`
-		VoucherCode       string           `json:"voucher_code"`
-		Holder            string           `json:"holder"`
-		HolderEmail       string           `json:"holder_email"`
-		HolderPhone       string           `json:"holder_phone,omitempty"`
-		HolderDescription string           `json:"holder_description,omitempty"`
-		VoucherValue      string           `json:"voucher_value"`
-		Program           MobileProgramObj `json:"program"`
+		VoucherID   string           `json:"id"`
+		VoucherCode string           `json:"voucher_code"`
+		Program     MobileProgramObj `json:"program"`
 	}
 )
 
@@ -373,7 +368,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		TransactionID:   transaction.Id,
 		TransactionCode: transaction.TransactionCode,
 		DiscountValue:   transaction.DiscountValue,
-		Created_at:      model.TimeToTimeJakarta(transaction.CreatedAt),
+		Created_at:      transaction.CreatedAt,
 		Vouchers:        listVoucher,
 		Voucher:         voucher,
 		Partner:         MobilePartnerObj{partner.Id, partner.Name}})
@@ -999,26 +994,22 @@ func TransactionHistoryDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	d := TransactionHistoryDetailResponse{}
+	d := []TransactionHistoryDetailResponse{}
 	for _, transactionHistoryDetail := range listTransactionHistoryDetail {
 
 		tempProgram := MobileProgramObj{
-			ID:        transactionHistoryDetail.ProgramID,
-			Name:      transactionHistoryDetail.ProgramName,
-			ImgUrl:    transactionHistoryDetail.ProgramImgUrl,
-			StartDate: transactionHistoryDetail.ProgramStartDate,
-			EndDate:   transactionHistoryDetail.ProgramEndDate}
+			ID:           transactionHistoryDetail.ProgramID,
+			Name:         transactionHistoryDetail.ProgramName,
+			ImgUrl:       transactionHistoryDetail.ProgramImgUrl,
+			VoucherValue: transactionHistoryDetail.VoucherValue,
+			StartDate:    transactionHistoryDetail.ProgramStartDate,
+			EndDate:      transactionHistoryDetail.ProgramEndDate}
 
 		transactionHistoryDetailResponse := TransactionHistoryDetailResponse{}
 		transactionHistoryDetailResponse.VoucherID = transactionHistoryDetail.VoucherID
 		transactionHistoryDetailResponse.VoucherCode = transactionHistoryDetail.VoucherCode
-		transactionHistoryDetailResponse.VoucherValue = transactionHistoryDetail.VoucherValue
-		transactionHistoryDetailResponse.Holder = transactionHistoryDetail.Holder
-		transactionHistoryDetailResponse.HolderEmail = transactionHistoryDetail.HolderEmail
-		transactionHistoryDetailResponse.HolderPhone = transactionHistoryDetail.HolderPhone
-		transactionHistoryDetailResponse.HolderDescription = transactionHistoryDetail.HolderDescription
 		transactionHistoryDetailResponse.Program = tempProgram
-		d = transactionHistoryDetailResponse
+		d = append(d, transactionHistoryDetailResponse)
 	}
 
 	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
