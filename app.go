@@ -18,9 +18,6 @@ func main() {
 	if err := model.ConnectDB(os.Getenv("DB")); err != nil {
 		log.Fatal(err)
 	}
-	if err := model.OpenRedisPool(os.Getenv("REDIS")); err != nil {
-		log.Fatal(err)
-	}
 
 	render.SetPath(os.Getenv("TEMPLATE_DIR"))
 
