@@ -60,6 +60,7 @@ function getVoucher(id) {
 					voucherState = "paid";
 				}
 
+        var dateRedeemed = new Date(arrData[i].created_at);
 				var dateValid = new Date(arrData[i].valid_at);
 				var dateExpired = new Date(arrData[i].expired_at);
 
@@ -67,7 +68,7 @@ function getVoucher(id) {
 				dataSet[i] = [
 					arrData[i].voucher_code
 					, arrData[i].holder_description.toUpperCase()
-					, dateValid.toDateString().toUpperCase()
+					, dateRedeemed.toDateString().toUpperCase()
 					, dateExpired.toDateString().toUpperCase()
 					, voucherState.toUpperCase()
 					, button
