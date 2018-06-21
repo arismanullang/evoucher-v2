@@ -96,6 +96,11 @@ func AuthToken(w http.ResponseWriter, r *http.Request) Auth {
 		}
 		logger.SetStatus(http.StatusUnauthorized).Log("token :"+token+" # response :", res.Errors)
 		return Auth{User: model.User{}, res: res, Valid: false}
+	} else if !model.IsExistToken(token) {
+		res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, logger.TraceID)
+		logger.SetStatus(http.StatusUnauthorized).Log("token :"+token+" # response :", res.Errors)
+		//render.JSON(w, res, http.StatusUnauthorized)
+		return Auth{User: model.User{}, res: res, Valid: false}
 	}
 
 	logger.SetStatus(http.StatusUnauthorized).Log("token :" + token + " # response : Authentication success")
@@ -122,6 +127,11 @@ func AuthTokenWithLogger(w http.ResponseWriter, r *http.Request, logger *model.L
 			res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, logger.TraceID)
 		}
 		logger.SetStatus(http.StatusUnauthorized).Log("token :"+token+" # response :", res.Errors)
+		return Auth{User: model.User{}, res: res, Valid: false}
+	} else if !model.IsExistToken(token) {
+		res.AddError(its(http.StatusUnauthorized), model.ErrCodeInvalidToken, model.ErrMessageTokenExpired, logger.TraceID)
+		logger.SetStatus(http.StatusUnauthorized).Log("token :"+token+" # response :", res.Errors)
+		//render.JSON(w, res, http.StatusUnauthorized)
 		return Auth{User: model.User{}, res: res, Valid: false}
 	}
 
