@@ -148,8 +148,6 @@ const (
 	DEFAULT_TXCODE   string = "Numerals"
 	DEFAULT_TXLENGTH int    = 5
 
-	// Redis token life time
-
 	//Challenge code config
 	CHALLENGE_FORMAT string = "Numerals"
 	CHALLENGE_LENGTH int    = 4
