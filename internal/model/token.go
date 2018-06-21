@@ -29,7 +29,7 @@ func GenerateToken(u User) Token {
 		Issuer:    "voucher",
 		Subject:   u.ID,
 	})
-	tokenString, err := token.SignedString(os.Getenv("AUTH_SECRET_KEY"))
+	tokenString, err := token.SignedString([]byte(os.Getenv("AUTH_SECRET_KEY")))
 	if err != nil {
 		log.Panic(err)
 	}
