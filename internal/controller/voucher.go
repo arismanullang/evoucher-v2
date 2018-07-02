@@ -67,19 +67,19 @@ type (
 
 	GetVoucherOfVariatList []GetVoucherOfVariatdata
 	GetVoucherOfVariatdata struct {
-		ProgramID         string  `json:"program_id"`
-		AccountId         string  `json:"account_id"`
-		ProgramName       string  `json:"program_name"`
-		ProgramType       string  `json:"program_type"`
-		VoucherType       string  `json:"voucher_type"`
-		VoucherPrice      float64 `json:"voucher_price"`
-		VoucherValue      float64 `json:"voucher_value"`
-		AllowAccumulative bool    `json:"allow_accumulative"`
-		MaxQty            float64 `json:"max_quantity_voucher"`
-		ImgUrl            string  `json:"image_url"`
-		StartDate         string  `json:"start_date"`
-		EndDate           string  `json:"end_date"`
-		Used              int     `json:"used"`
+		ProgramID         string    `json:"program_id"`
+		AccountId         string    `json:"account_id"`
+		ProgramName       string    `json:"program_name"`
+		ProgramType       string    `json:"program_type"`
+		VoucherType       string    `json:"voucher_type"`
+		VoucherPrice      float64   `json:"voucher_price"`
+		VoucherValue      float64   `json:"voucher_value"`
+		AllowAccumulative bool      `json:"allow_accumulative"`
+		MaxQty            float64   `json:"max_quantity_voucher"`
+		ImgUrl            string    `json:"image_url"`
+		StartDate         time.Time `json:"start_date"`
+		EndDate           time.Time `json:"end_date"`
+		Used              int       `json:"used"`
 	}
 
 	GetVoucherOfVariatListDetails struct {
@@ -91,8 +91,8 @@ type (
 		VoucherType        string           `json:"voucher_type"`
 		VoucherPrice       float64          `json:"voucher_price"`
 		AllowAccumulative  bool             `json:"allow_accumulative"`
-		StartDate          string           `json:"start_date"`
-		EndDate            string           `json:"end_date"`
+		StartDate          time.Time        `json:"start_date"`
+		EndDate            time.Time        `json:"end_date"`
 		VoucherValue       float64          `json:"voucher_value"`
 		MaxQuantityVoucher float64          `json:"max_quantity_voucher"`
 		MaxGenerateVoucher float64          `json:"max_generate_voucher"`
@@ -102,7 +102,7 @@ type (
 		ProgramTnc         string           `json:"program_tnc"`
 		ProgramDescription string           `json:"program_description"`
 		CreatedBy          string           `json:"created_by"`
-		CreatedAt          string           `json:"created_at"`
+		CreatedAt          time.Time        `json:"created_at"`
 		Used               int              `json:"used"`
 		State              string           `json:"state"`
 		Holder             string           `json:"holder"`
@@ -779,8 +779,8 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
-	sd, err := time.Parse(time.RFC3339Nano, dt.StartDate)
-	ed, err := time.Parse(time.RFC3339Nano, dt.EndDate)
+	sd := dt.StartDate
+	ed := dt.EndDate
 	if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageParsingError, logger.TraceID)
@@ -1089,15 +1089,9 @@ func (vr *GenerateVoucherRequest) generateVoucher(v *model.Program) ([]model.Vou
 		tsd = time.Now()
 		ted = time.Date(end.Year(), end.Month(), end.Day(), 23, 59, 59, 0, time.Local)
 	} else {
-		tsd, err = time.Parse(time.RFC3339Nano, v.ValidVoucherStart)
-		if err != nil {
-			log.Panic(err)
-		}
+		tsd = v.ValidVoucherStart
 
-		end, err := time.Parse(time.RFC3339Nano, v.ValidVoucherEnd)
-		if err != nil {
-			log.Panic(err)
-		}
+		end := v.ValidVoucherEnd
 		ted = time.Date(end.Year(), end.Month(), end.Day(), 23, 59, 59, 0, time.Local)
 	}
 
@@ -1146,15 +1140,9 @@ func generateVoucher(v *model.Program, vr GenerateEmailVoucherRequest) ([]model.
 		tsd = time.Now()
 		ted = time.Date(end.Year(), end.Month(), end.Day(), 23, 59, 59, 0, time.Local)
 	} else {
-		tsd, err = time.Parse(time.RFC3339Nano, v.ValidVoucherStart)
-		if err != nil {
-			log.Panic(err)
-		}
+		tsd = v.ValidVoucherStart
 
-		end, err := time.Parse(time.RFC3339Nano, v.ValidVoucherEnd)
-		if err != nil {
-			log.Panic(err)
-		}
+		end := v.ValidVoucherEnd
 		ted = time.Date(end.Year(), end.Month(), end.Day(), 23, 59, 59, 0, time.Local)
 	}
 
@@ -1285,8 +1273,8 @@ func GenerateSingleVoucherEmail(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
-	sd, err := time.Parse(time.RFC3339Nano, dt.StartDate)
-	ed, err := time.Parse(time.RFC3339Nano, dt.EndDate)
+	sd := dt.StartDate
+	ed := dt.EndDate
 	if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageParsingError, logger.TraceID)

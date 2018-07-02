@@ -80,14 +80,14 @@ type (
 	}
 
 	TransactionHistoryDetail struct {
-		VoucherID        string  `db:"id" json:"id"`
-		VoucherCode      string  `db:"voucher_code" json:"voucher_code"`
-		ProgramID        string  `db:"program_id" json:"program_id"`
-		ProgramName      string  `db:"program_name" json:"program_name"`
-		VoucherValue     float64 `db:"voucher_value" json:"voucher_value"`
-		ProgramStartDate string  `db:"program_start_date" json:"program_start_date"`
-		ProgramEndDate   string  `db:"program_end_date" json:"program_end_date"`
-		ProgramImgUrl    string  `db:"program_img_url" json:"program_img_url"`
+		VoucherID        string    `db:"id" json:"id"`
+		VoucherCode      string    `db:"voucher_code" json:"voucher_code"`
+		ProgramID        string    `db:"program_id" json:"program_id"`
+		ProgramName      string    `db:"program_name" json:"program_name"`
+		VoucherValue     float64   `db:"voucher_value" json:"voucher_value"`
+		ProgramStartDate time.Time `db:"program_start_date" json:"program_start_date"`
+		ProgramEndDate   time.Time `db:"program_end_date" json:"program_end_date"`
+		ProgramImgUrl    string    `db:"program_img_url" json:"program_img_url"`
 	}
 )
 

@@ -280,7 +280,26 @@ function send() {
 			digits: true,
 			min: 1
 		});
-	}
+  }
+
+  var programEndDate = new Date(programValidTo);
+  programEndDate.setHours(23);
+  programEndDate.setMinutes(59);
+  programEndDate.setSeconds(59);
+
+  var voucherEndDate = new Date(periodEnd);
+  if(periodEnd != "01/01/1970"){
+    voucherEndDate.setHours(23);
+    voucherEndDate.setMinutes(59);
+    voucherEndDate.setSeconds(59);
+  }
+  var today = dateFormat(new Date(), 'isoUtcDateTime');
+  startHour = startHour + ':00' + today.substr(19);
+  endHour = endHour + ':00' + today.substr(19);
+
+  //2018-06-29T09:07:51Z
+  console.log(startHour);
+  console.log(endHour);
 
 	var formData = new FormData();
 	var img = $('#image-url-default').val();
@@ -311,8 +330,8 @@ function send() {
 					max_generate_voucher: maxGenerate,
 					allow_accumulative: allowAccumulative,
 					redemption_method: redeem,
-					start_date: programValidFrom,
-					end_date: programValidTo,
+					start_date: dateFormat(new Date(programValidFrom), 'isoUtcDateTime'),
+					end_date: dateFormat(programEndDate, 'isoUtcDateTime'),
 					start_hour: startHour,
 					end_hour: endHour,
 					voucher_value: voucherValue,
@@ -320,8 +339,8 @@ function send() {
 					tnc: tnc,
 					description: programDescription,
 					validity_days: listDay,
-					valid_voucher_start: periodStart,
-					valid_voucher_end: periodEnd,
+					valid_voucher_start: dateFormat(new Date(periodStart), 'isoUtcDateTime'),
+					valid_voucher_end: dateFormat(voucherEndDate, 'isoUtcDateTime'),
 					voucher_lifetime: lifetime,
 					visibility: visibility,
 					voucher_format: format
@@ -385,8 +404,8 @@ function send() {
 			max_generate_voucher: maxGenerate,
 			allow_accumulative: allowAccumulative,
 			redemption_method: redeem,
-			start_date: programValidFrom,
-			end_date: programValidTo,
+			start_date: dateFormat(new Date(programValidFrom), 'isoUtcDateTime'),
+			end_date: dateFormat(programEndDate, 'isoUtcDateTime'),
 			start_hour: startHour,
 			end_hour: endHour,
 			voucher_value: voucherValue,
@@ -394,8 +413,8 @@ function send() {
 			tnc: tnc,
 			description: programDescription,
 			validity_days: listDay,
-			valid_voucher_start: periodStart,
-			valid_voucher_end: periodEnd,
+			valid_voucher_start: dateFormat(new Date(periodStart), 'isoUtcDateTime'),
+			valid_voucher_end: dateFormat(voucherEndDate, 'isoUtcDateTime'),
 			voucher_lifetime: lifetime,
 			visibility: visibility,
 			voucher_format: format

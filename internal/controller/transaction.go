@@ -344,7 +344,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		ProgramName:     voucherDetail.VoucherData[0].ProgramName,
 		PartnerName:     partner.Name,
 		TransactionCode: transaction.TransactionCode,
-		TransactionDate: transaction.CreatedAt.Format("2006-01-02 15:04:05"),
+		TransactionDate: transaction.CreatedAt,
 		ListEmail:       listEmail,
 		ListVoucher:     listVoucher,
 	}
@@ -650,7 +650,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		ProgramName:     voucherDetail.VoucherData[0].ProgramName,
 		PartnerName:     partner.Name,
 		TransactionCode: txCode,
-		TransactionDate: transaction.CreatedAt.Format("2006-01-02 15:04:05"),
+		TransactionDate: transaction.CreatedAt,
 		ListEmail:       listEmail,
 		ListVoucher:     listVoucher,
 	}

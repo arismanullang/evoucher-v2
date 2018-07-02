@@ -186,19 +186,24 @@ function send() {
 	var voucherPrice = parseInt($("#voucher-price").val());
 	var maxQuantityVoucher = parseInt($("#voucher-quantity").val());
 	var redemptionMethod = $("#redemption-method").find(":selected").val();
-	var programValidFrom = $("#program-valid-from").val();
+  var programValidFrom = $("#program-valid-from").val();
 	var programValidTo = $("#program-valid-to").val();
 	var startHour = $("#start-hour").val();
 	var endHour = $("#end-hour").val();
 	var voucherValue = parseInt($("#voucher-value").val().replace(".", ""));
-	var programDescription = $("#program-description").val();
+  var programDescription = $("#program-description").val();
+
+  var today = dateFormat(new Date(), 'isoUtcDateTime');
 
 	if(startHour == '00:00'){
 		startHour = '00:01';
-	}
+  }
 	if(endHour == '00:00'){
 		endHour = '23:59';
-	}
+  }
+
+  startHour = startHour + ':00' + today.substr(19);
+  endHour = endHour + ':00' + today.substr(19);
 
 	// valid days
 	var listDay = "";
@@ -237,7 +242,7 @@ function send() {
 	// expired
 	var lifetime = 0;
 	var periodStart = "";
-	var periodEnd = "";
+  var periodEnd = "";
 
 	if ($("#voucher-validity-type").val() == "period") {
 		lifetime = 0;
@@ -253,8 +258,8 @@ function send() {
 
 		lifetime = parseInt($("#voucher-lifetime").val());
 
-		periodStart = "01/01/0001";
-		periodEnd = "01/01/0001";
+		periodStart = "01/01/1970";
+		periodEnd = "01/01/1970";
 	}
 
 	// voucher format
@@ -295,7 +300,20 @@ function send() {
 
 	if(!$("#create-program").valid()) {
 		return
-	}
+  }
+
+  var programEndDate = new Date(programValidTo);
+  programEndDate.setHours(23);
+  programEndDate.setMinutes(59);
+  programEndDate.setSeconds(59);
+
+  var voucherEndDate = new Date(periodEnd);
+  if(periodEnd != "01/01/1970"){
+    voucherEndDate.setHours(23);
+    voucherEndDate.setMinutes(59);
+    voucherEndDate.setSeconds(59);
+  }
+
 
 	// image
 	var formData = new FormData();
@@ -323,8 +341,8 @@ function send() {
 					max_generate_voucher: maxGenerate,
 					allow_accumulative: allowAccumulative,
 					redemption_method: redemptionMethod,
-					start_date: programValidFrom,
-					end_date: programValidTo,
+					start_date: dateFormat(new Date(programValidFrom), 'isoUtcDateTime'),
+					end_date: dateFormat(programEndDate, 'isoUtcDateTime'),
 					start_hour: startHour,
 					end_hour: endHour,
 					voucher_value: voucherValue,
@@ -333,8 +351,8 @@ function send() {
 					description: programDescription,
 					validity_days: listDay,
 					valid_partners: listPartner,
-					valid_voucher_start: periodStart,
-					valid_voucher_end: periodEnd,
+					valid_voucher_start: dateFormat(new Date(periodStart), 'isoUtcDateTime'),
+					valid_voucher_end: dateFormat(voucherEndDate, 'isoUtcDateTime'),
 					voucher_lifetime: lifetime
 				};
 
@@ -382,8 +400,8 @@ function send() {
 			max_generate_voucher: maxGenerate,
 			allow_accumulative: allowAccumulative,
 			redemption_method: redemptionMethod,
-			start_date: programValidFrom,
-			end_date: programValidTo,
+			start_date: dateFormat(new Date(programValidFrom), 'isoUtcDateTime'),
+			end_date: dateFormat(programEndDate, 'isoUtcDateTime'),
 			start_hour: startHour,
 			end_hour: endHour,
 			voucher_value: voucherValue,
@@ -392,8 +410,8 @@ function send() {
 			description: programDescription,
 			validity_days: listDay,
 			valid_partners: listPartner,
-			valid_voucher_start: periodStart,
-			valid_voucher_end: periodEnd,
+			valid_voucher_start: dateFormat(new Date(periodStart), 'isoUtcDateTime'),
+			valid_voucher_end: dateFormat(voucherEndDate, 'isoUtcDateTime'),
 			voucher_lifetime: lifetime
 		};
 
@@ -540,12 +558,11 @@ function checkPartner(id){
 	function formAdvanced() {
 		$(".select2").select2();
 		$('.datepicker-program-from').datepicker({
-			container: '#datepicker-program-from',
 			autoclose: true,
 			startDate: 'd',
-			setDate: new Date()
+      setDate: new Date()
 		}).on('changeDate', function (selected) {
-			var minDate = new Date(selected.date.valueOf());
+      var minDate = new Date(selected.date.valueOf());
 			$('.datepicker-program-to').datepicker('setStartDate', minDate);
 			$('.datepicker-voucher-from').datepicker('setStartDate', minDate);
 		});

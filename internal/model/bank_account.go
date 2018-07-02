@@ -21,7 +21,7 @@ type (
 		BankAccountNumber string         `db:"bank_account_number" json:"bank_account_number"`
 		BankAccountHolder string         `db:"bank_account_holder" json:"bank_account_holder"`
 		AccountId         string         `db:"account_id" json:"account_id"`
-		CreatedAt         string         `db:"created_at" json:"created_at"`
+		CreatedAt         time.Time      `db:"created_at" json:"created_at"`
 		CreatedBy         string         `db:"created_by" json:"created_by"`
 		UpdatedAt         sql.NullString `db:"updated_at" json:"updated_at"`
 		UpdatedBy         sql.NullString `db:"updated_by" json:"updated_by"`

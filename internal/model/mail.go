@@ -29,31 +29,31 @@ type (
 	}
 
 	ProgramCampaign struct {
-		Id           string `db:"id" json:"id"`
-		ProgramID    string `db:"program_id" json:"program_id"`
-		ProgramName  string `db:"program_name" json:"program_name"`
-		AccountID    string `db:"account_id" json:"account_id"`
-		ImageHeader  string `db:"header_image" json:"header_image"`
-		ImageVoucher string `db:"voucher_image" json:"voucher_image"`
-		ImageFooter  string `db:"footer_image" json:"footer_image"`
-		CreatedBy    string `db:"created_by" json:"created_by"`
-		CreatedAt    string `db:"created_at" json:"craeted_at"`
+		Id           string    `db:"id" json:"id"`
+		ProgramID    string    `db:"program_id" json:"program_id"`
+		ProgramName  string    `db:"program_name" json:"program_name"`
+		AccountID    string    `db:"account_id" json:"account_id"`
+		ImageHeader  string    `db:"header_image" json:"header_image"`
+		ImageVoucher string    `db:"voucher_image" json:"voucher_image"`
+		ImageFooter  string    `db:"footer_image" json:"footer_image"`
+		CreatedBy    string    `db:"created_by" json:"created_by"`
+		CreatedAt    time.Time `db:"created_at" json:"created_at"`
 	}
 
 	ProgramCampaignV2 struct {
-		ID           string `db:"id" json:"id"`
-		ProgramID    string `db:"program_id" json:"program_id"`
-		ProgramName  string `db:"program_name" json:"program_name"`
-		AccountID    string `db:"account_id" json:"account_id"`
-		Template     string `db:"email_template" json:"email_template"`
-		EmailSubject string `db:"email_subject" json:"email_subject"`
-		EmailSender  string `db:"email_sender" json:"email_sender"`
-		EmailContent string `db:"email_content" json:"email_content"`
-		ImageHeader  string `db:"header_image" json:"header_image"`
-		ImageVoucher string `db:"voucher_image" json:"voucher_image"`
-		ImageFooter  string `db:"footer_image" json:"footer_image"`
-		CreatedBy    string `db:"created_by" json:"created_by"`
-		CreatedAt    string `db:"created_at" json:"created_at"`
+		ID           string    `db:"id" json:"id"`
+		ProgramID    string    `db:"program_id" json:"program_id"`
+		ProgramName  string    `db:"program_name" json:"program_name"`
+		AccountID    string    `db:"account_id" json:"account_id"`
+		Template     string    `db:"email_template" json:"email_template"`
+		EmailSubject string    `db:"email_subject" json:"email_subject"`
+		EmailSender  string    `db:"email_sender" json:"email_sender"`
+		EmailContent string    `db:"email_content" json:"email_content"`
+		ImageHeader  string    `db:"header_image" json:"header_image"`
+		ImageVoucher string    `db:"voucher_image" json:"voucher_image"`
+		ImageFooter  string    `db:"footer_image" json:"footer_image"`
+		CreatedBy    string    `db:"created_by" json:"created_by"`
+		CreatedAt    time.Time `db:"created_at" json:"created_at"`
 	}
 
 	ConfirmationEmail struct {
@@ -66,7 +66,7 @@ type (
 		Holder          string
 		ProgramName     string
 		TransactionCode string
-		TransactionDate string
+		TransactionDate time.Time
 		PartnerName     string
 		ListEmail       []string
 		ListVoucher     []string
@@ -322,7 +322,7 @@ func makeMessageConfirmationEmail(accountId string, target ConfirmationEmailRequ
 	result := string(str)
 	result = strings.Replace(result, "%%full-name%%", target.Holder, 1)
 	result = strings.Replace(result, "%%transaction-code%%", target.TransactionCode, 1)
-	result = strings.Replace(result, "%%transaction-date%%", target.TransactionDate, 1)
+	result = strings.Replace(result, "%%transaction-date%%", target.TransactionDate.Format("2006-01-02 15:04:05"), 1)
 	result = strings.Replace(result, "%%program-name%%", target.ProgramName, 1)
 	result = strings.Replace(result, "%%voucher-code%%", voucher, 1)
 
