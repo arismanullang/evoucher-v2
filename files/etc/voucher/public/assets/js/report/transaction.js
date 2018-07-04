@@ -1,6 +1,14 @@
 $(document).ready(function () {
 	getTransactionByPartner("");
-	getPartner();
+  getPartner();
+  $(document).ajaxStart(function(){
+    // Show image container
+    $(".cssload-loader").show();
+   });
+   $(document).ajaxComplete(function(){
+    // Hide image container
+    $(".cssload-loader").hide();
+   });
 });
 
 function getPartner() {
