@@ -1204,6 +1204,7 @@ func FindProgramDetailsById(id string) (Program, error) {
 			, img_url
 			, tnc
 			, description
+			, visibility
 			, created_by
 			, created_at
 		FROM

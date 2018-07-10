@@ -822,6 +822,12 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		logger.SetStatus(status).Log("param :", gvd, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
+	} else if !dt.Visibility {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, logger.TraceID)
+		logger.SetStatus(status).Log("param :", gvd, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
 	}
 
 	gvd.AccountID = dt.AccountId
