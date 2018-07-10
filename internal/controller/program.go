@@ -1153,17 +1153,26 @@ func validdays(s string) bool {
 }
 
 func validhours(s, e string) bool {
-	tnow := model.TimeToTimeJakarta(time.Now())
-	dateNow := tnow.Format("2006-01-02")
+	now := time.Now()
 
-	st, err := time.Parse(time.RFC3339, dateNow+"T"+s+":00+07:00")
+	st, err := time.Parse(time.RFC3339, "1970-01-01T"+s)
 	if err != nil {
 		return false
 	}
-	en, err := time.Parse(time.RFC3339, dateNow+"T"+e+":00+07:00")
+	en, err := time.Parse(time.RFC3339, "1970-01-01T"+e)
 	if err != nil {
 		return false
 	}
 
-	return tnow.Before(en) && tnow.After(st)
+	//parse time to UTC
+	nowUTC := now.In(time.UTC)
+	stUTC := st.In(time.UTC)
+	enUTC := en.In(time.UTC)
+
+	//set hour and minute on the same date
+	finalNow := time.Date(1970, 1, 1, nowUTC.Hour(), nowUTC.Minute(), 0, 0, time.UTC)
+	finalST := time.Date(1970, 1, 1, stUTC.Hour(), stUTC.Minute(), 0, 0, time.UTC)
+	finalEN := time.Date(1970, 1, 1, enUTC.Hour(), enUTC.Minute(), 0, 0, time.UTC)
+
+	return finalNow.Before(finalEN) && finalNow.After(finalST)
 }

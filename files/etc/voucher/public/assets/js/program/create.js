@@ -193,7 +193,8 @@ function send() {
 	var voucherValue = parseInt($("#voucher-value").val().replace(".", ""));
   var programDescription = $("#program-description").val();
 
-  var today = dateFormat(new Date(), 'isoUtcDateTime');
+  var today = dateFormat(new Date(), 'isoDateTime');
+  var timezone = today.substr(19, 3) + ":" + today.substr(22,2)
 
 	if(startHour == '00:00'){
 		startHour = '00:01';
@@ -202,8 +203,8 @@ function send() {
 		endHour = '23:59';
   }
 
-  startHour = startHour + ':00' + today.substr(19);
-  endHour = endHour + ':00' + today.substr(19);
+  startHour = startHour + ':00' + timezone;
+  endHour = endHour + ':00' + timezone;
 
 	// valid days
 	var listDay = "";
