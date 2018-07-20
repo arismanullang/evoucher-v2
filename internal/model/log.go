@@ -1,11 +1,5 @@
 package model
 
-import "time"
-
-//"database/sql"
-//"fmt"
-//"time"
-
 type (
 	Log struct {
 		Id          string `db:"id" json:"id"`
@@ -22,73 +16,9 @@ type (
 )
 
 func addLog(a Log) error {
-	tx, err := db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	q := `
-		INSERT INTO changes_log(
-			table_name
-			, table_name_id
-			, column_name
-			, action
-			, old
-			, new
-			, created_by
-			, created_at
-			, status
-		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-		RETURNING
-			id
-	`
-
-	var res []string
-	if err := tx.Select(&res, tx.Rebind(q), a.TableName, a.TableNameId, a.ColumnName, a.Action, a.Old, a.New, a.CreatedBy, time.Now(), StatusCreated); err != nil {
-		return err
-	}
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-
 	return nil
 }
 
 func addLogs(logs []Log) error {
-	tx, err := db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	for _, a := range logs {
-		q := `
-			INSERT INTO changes_log(
-				table_name
-				, table_name_id
-				, column_name
-				, action
-				, old
-				, new
-				, created_by
-				, created_at
-				, status
-			)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-			RETURNING
-				id
-		`
-
-		var res []string
-		if err := tx.Select(&res, tx.Rebind(q), a.TableName, a.TableNameId, a.ColumnName, a.Action, a.Old, a.New, a.CreatedBy, time.Now(), StatusCreated); err != nil {
-			return err
-		}
-	}
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-
 	return nil
 }
