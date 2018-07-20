@@ -33,9 +33,6 @@ func main() {
 
 	model.GetProgramTypes()
 
-	//logger config
-	model.Path = os.Getenv("LOGGER_PATH")
-	model.FileName = os.Getenv("LOGGER_FILENAME")
 	//voucher config
 	model.VOUCHER_URL = os.Getenv("VOUCHER_LINK")
 	//GCS

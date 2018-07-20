@@ -22,11 +22,7 @@ type (
 	}
 )
 
-var (
-	l        = logrus.New()
-	Path     string
-	FileName string
-)
+var l = logrus.New()
 
 func NewLog() *LogField {
 	return &LogField{
@@ -112,13 +108,6 @@ func GetTraceID() string {
 		result[i] = chars[rand.Intn(len(chars))]
 	}
 	return string(result)
-}
-
-func getFileName(ext string) string {
-	t := time.Now()
-	periode := t.Format("20060102")
-	filename := FileName + "-" + periode + "." + ext
-	return Path + filename
 }
 
 func (d *LogField) SetService(service string) *LogField {
