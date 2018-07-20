@@ -122,33 +122,6 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			render.JSON(w, res, status)
 			return
 		}
-	case model.RedemptionMethodToken:
-		//to-do validate token
-		par := map[string]string{"program_id": rd.ProgramID, "id": rd.Partner}
-		if p, err := model.FindProgramPartner(par); err == model.ErrResourceNotFound {
-			status = http.StatusBadRequest
-			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidPaerner, logger.TraceID)
-			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
-			render.JSON(w, res, status)
-			return
-		} else if err != nil {
-			status = http.StatusInternalServerError
-			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
-			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
-			render.JSON(w, res, status)
-			return
-		} else {
-			fmt.Println("panrner data : ", p[0].SerialNumber.String)
-
-			if !OTPAuth(p[0].SerialNumber.String, rd.Challenge, rd.Response) {
-				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, logger.TraceID)
-				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
-				render.JSON(w, res, status)
-				return
-			}
-		}
-
 	}
 
 	if ok, err := CheckProgram(rd.RedeemMethod, rd.ProgramID, len(rd.Vouchers)); !ok {
@@ -423,32 +396,6 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			render.JSON(w, res, status)
 			return
 		}
-	case model.RedemptionMethodToken:
-		//to-do validate token
-		par := map[string]string{"program_id": rd.ProgramID, "id": rd.Partner}
-		if p, err := model.FindProgramPartner(par); err == model.ErrResourceNotFound {
-			status = http.StatusBadRequest
-			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidQr, "partner")
-			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
-			render.JSON(w, res, status)
-			return
-		} else if err != nil {
-			status = http.StatusInternalServerError
-			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "partner")
-			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
-			render.JSON(w, res, status)
-			return
-		} else {
-			fmt.Println("panrner data : ", p[0].SerialNumber.String)
-			if !OTPAuth(p[0].SerialNumber.String, rd.Challenge, rd.Response) {
-				status = http.StatusBadRequest
-				res.AddError(its(status), model.ErrCodeOTPFailed, model.ErrMessageOTPFailed, logger.TraceID)
-				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
-				render.JSON(w, res, status)
-				return
-			}
-		}
-
 	}
 
 	if ok, err := CheckProgram(rd.RedeemMethod, rd.ProgramID, len(rd.Vouchers)); !ok {
