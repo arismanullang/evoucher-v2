@@ -29,10 +29,6 @@ var (
 	GCS_PROJECT_ID string
 	PUBLIC_URL     string
 
-	//OCRA config
-	OCRA_URL               string
-	OCRA_EVOUCHER_APPS_KEY string
-
 	//voucher config
 	VOUCHER_URL string
 
