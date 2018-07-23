@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -220,7 +219,6 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		VoucherIds:      rd.Vouchers,
 	}
 
-	//fmt.Println(d)
 	transaction, err := model.InsertTransaction(d)
 	if err != nil {
 		status = http.StatusInternalServerError
@@ -235,7 +233,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		State:     model.VoucherStateUsed,
 		Vouchers:  rd.Vouchers,
 	}
-	fmt.Println("List valid voucher :", rv.Vouchers)
+
 	// update voucher state "Used"
 	if ok, err := rv.UpdateVoucher(); !ok {
 		status = http.StatusInternalServerError
@@ -253,7 +251,6 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	// get list email
 	listEmail := []string{}
-	fmt.Println("transaction Id :", transaction.Id)
 	emails, err := model.GetEmail(transaction.Id)
 
 	if strings.Contains(emails.EmailAccount, ";") {
@@ -282,8 +279,6 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	} else {
 		listEmail = append(listEmail, emails.EmailMember)
 	}
-
-	fmt.Println("List emails :", listEmail)
 
 	// voucher detail
 	voucherDetail, err := model.FindVouchersById(rd.Vouchers)
@@ -601,7 +596,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		ListEmail:       listEmail,
 		ListVoucher:     listVoucher,
 	}
-	fmt.Println(partner.AccountId)
+
 	if err := model.SendConfirmationEmail(model.Domain, model.ApiKey, model.PublicApiKey, "Sedayu One Voucher Confirmation", req, partner.AccountId); err != nil {
 		res := NewResponse(nil)
 		status := http.StatusInternalServerError

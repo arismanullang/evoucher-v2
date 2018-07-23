@@ -61,18 +61,6 @@ func AddRole(r Role, user string) error {
 		return ErrServerInternal
 	}
 
-	logs := []Log{}
-	tempLog := Log{
-		TableName:   "roles",
-		TableNameId: ValueChangeLogNone,
-		ColumnName:  ColumnChangeLogInsert,
-		Action:      ActionChangeLogInsert,
-		Old:         ValueChangeLogNone,
-		New:         res[0],
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
 	for _, v := range r.Features {
 		q := `
 			INSERT INTO role_features(
@@ -89,27 +77,11 @@ func AddRole(r Role, user string) error {
 			fmt.Println(err)
 			return ErrServerInternal
 		}
-
-		tempLog := Log{
-			TableName:   "role_features",
-			TableNameId: res[0],
-			ColumnName:  ColumnChangeLogInsert,
-			Action:      ActionChangeLogInsert,
-			Old:         ValueChangeLogNone,
-			New:         v,
-			CreatedBy:   user,
-		}
-		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err)
 		return ErrServerInternal
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
@@ -139,18 +111,6 @@ func AddAdmin(account, user string) error {
 		return ErrServerInternal
 	}
 
-	logs := []Log{}
-	tempLog := Log{
-		TableName:   "roles",
-		TableNameId: ValueChangeLogNone,
-		ColumnName:  ColumnChangeLogInsert,
-		Action:      ActionChangeLogInsert,
-		Old:         ValueChangeLogNone,
-		New:         res[0],
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
 	features, err := GetAllFeatures()
 	if err != nil {
 		fmt.Println(err)
@@ -173,27 +133,11 @@ func AddAdmin(account, user string) error {
 			fmt.Println(err)
 			return ErrServerInternal
 		}
-
-		tempLog := Log{
-			TableName:   "role_features",
-			TableNameId: res[0],
-			ColumnName:  ColumnChangeLogInsert,
-			Action:      ActionChangeLogInsert,
-			Old:         ValueChangeLogNone,
-			New:         v.Id,
-			CreatedBy:   user,
-		}
-		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err)
 		return ErrServerInternal
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
@@ -266,40 +210,6 @@ func UpdateRole(r Role, user string) error {
 		return ErrServerInternal
 	}
 
-	logs := []Log{}
-	tempLog := Log{
-		TableName:   "role_features",
-		TableNameId: r.Id,
-		ColumnName:  "updated_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         user,
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "role_features",
-		TableNameId: r.Id,
-		ColumnName:  "updated_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "role_features",
-		TableNameId: r.Id,
-		ColumnName:  "status",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         StatusDeleted,
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
 	for _, v := range r.Features {
 		q := `
 				INSERT INTO role_features(
@@ -316,27 +226,11 @@ func UpdateRole(r Role, user string) error {
 			fmt.Println(err)
 			return ErrServerInternal
 		}
-
-		tempLog = Log{
-			TableName:   "role_features",
-			TableNameId: r.Id,
-			ColumnName:  "status",
-			Action:      ActionChangeLogInsert,
-			Old:         ValueChangeLogNone,
-			New:         v,
-			CreatedBy:   user,
-		}
-		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
