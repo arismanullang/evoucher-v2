@@ -146,21 +146,6 @@ func InsertPartner(p Partner) error {
 		return ErrServerInternal
 	}
 
-	log := Log{
-		TableName:   "partners",
-		TableNameId: ValueChangeLogNone,
-		ColumnName:  ColumnChangeLogInsert,
-		Action:      ActionChangeLogInsert,
-		Old:         ValueChangeLogNone,
-		New:         res[0],
-		CreatedBy:   p.CreatedBy.String,
-	}
-
-	err = addLog(log)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
 	return nil
 }
 
@@ -381,32 +366,8 @@ func UpdatePartner(partner PartnerUpdateRequest, user, account string) error {
 	dataParam := reflect.Indirect(reflectParam)
 
 	reflectDb := reflect.ValueOf(&partnerDetail).Elem()
-	dataDb := reflect.Indirect(reflectDb)
 
 	updates := getUpdate(dataParam, reflectDb)
-
-	logs := []Log{}
-	tempLog := Log{
-		TableName:   "partners",
-		TableNameId: partner.Id,
-		ColumnName:  "updated_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         user,
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "partners",
-		TableNameId: partner.Id,
-		ColumnName:  "updated_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
 
 	for k, v := range updates {
 		var value = v.String()
@@ -438,27 +399,11 @@ func UpdatePartner(partner PartnerUpdateRequest, user, account string) error {
 			fmt.Println(q)
 			return ErrServerInternal
 		}
-
-		tempLog = Log{
-			TableName:   "partners",
-			TableNameId: partner.Id,
-			ColumnName:  keys[1],
-			Action:      ActionChangeLogUpdate,
-			Old:         dataDb.FieldByName(keys[0]).Interface().(string),
-			New:         value,
-			CreatedBy:   user,
-		}
-		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return err
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
@@ -490,45 +435,6 @@ func DeletePartner(partner, user string) error {
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
-	}
-
-	logs := []Log{}
-	tempLog := Log{
-		TableName:   "partners",
-		TableNameId: partner,
-		ColumnName:  "updated_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         user,
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "partners",
-		TableNameId: partner,
-		ColumnName:  "updated_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "partners",
-		TableNameId: partner,
-		ColumnName:  "status",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         StatusDeleted,
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
@@ -685,15 +591,15 @@ func CheckAndInsertTag(tags []string, user, account string) error {
 	}
 	defer tx.Rollback()
 
-	logs := []Log{}
-
 	for _, v := range tags {
 		q := `
-		SELECT
-			id
-		FROM tags
-		WHERE status = ?
-		AND value = ?
+			SELECT
+				id
+			FROM
+				tags
+			WHERE
+				status = ?
+				AND value = ?
 		`
 
 		var resv []string
@@ -718,28 +624,12 @@ func CheckAndInsertTag(tags []string, user, account string) error {
 				fmt.Println(err.Error())
 				return ErrServerInternal
 			}
-
-			tempLog := Log{
-				TableName:   "tags",
-				TableNameId: ValueChangeLogNone,
-				ColumnName:  ColumnChangeLogInsert,
-				Action:      ActionChangeLogInsert,
-				Old:         ValueChangeLogNone,
-				New:         v,
-				CreatedBy:   user,
-			}
-			logs = append(logs, tempLog)
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
@@ -775,21 +665,6 @@ func InsertTag(tag, user, account string) error {
 		return ErrServerInternal
 	}
 
-	log := Log{
-		TableName:   "tags",
-		TableNameId: ValueChangeLogNone,
-		ColumnName:  ColumnChangeLogInsert,
-		Action:      ActionChangeLogInsert,
-		Old:         ValueChangeLogNone,
-		New:         tag,
-		CreatedBy:   user,
-	}
-
-	err = addLog(log)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
 	return nil
 }
 
@@ -821,45 +696,6 @@ func DeleteTag(value, user string) error {
 		return ErrServerInternal
 	}
 
-	logs := []Log{}
-	tempLog := Log{
-		TableName:   "tags",
-		TableNameId: value,
-		ColumnName:  "updated_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         user,
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "tags",
-		TableNameId: value,
-		ColumnName:  "updated_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "tags",
-		TableNameId: value,
-		ColumnName:  "status",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         StatusDeleted,
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
 	return nil
 }
 
@@ -871,7 +707,6 @@ func DeleteTagBulk(tagValue []string, user string) error {
 	}
 	defer tx.Rollback()
 
-	logs := []Log{}
 	q := `
 		UPDATE tags
 		SET
@@ -883,39 +718,6 @@ func DeleteTagBulk(tagValue []string, user string) error {
 	`
 	for i := 1; i < len(tagValue); i++ {
 		q += " OR value = '" + tagValue[i] + "'"
-
-		tempLog := Log{
-			TableName:   "tags",
-			TableNameId: tagValue[i],
-			ColumnName:  "updated_by",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         user,
-			CreatedBy:   user,
-		}
-		logs = append(logs, tempLog)
-
-		tempLog = Log{
-			TableName:   "tags",
-			TableNameId: tagValue[i],
-			ColumnName:  "updated_at",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         time.Now().String(),
-			CreatedBy:   user,
-		}
-		logs = append(logs, tempLog)
-
-		tempLog = Log{
-			TableName:   "tags",
-			TableNameId: tagValue[i],
-			ColumnName:  "status",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         StatusDeleted,
-			CreatedBy:   user,
-		}
-		logs = append(logs, tempLog)
 	}
 
 	_, err = tx.Exec(tx.Rebind(q), user, time.Now(), StatusDeleted, tagValue[0])
@@ -927,11 +729,6 @@ func DeleteTagBulk(tagValue []string, user string) error {
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil

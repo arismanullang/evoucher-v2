@@ -2,7 +2,6 @@ package model
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"time"
 
@@ -519,46 +518,44 @@ func (d *Voucher) InsertVc() error {
 	defer vc.Rollback()
 
 	q := `
-	      INSERT INTO
-	      	vouchers (
-			      voucher_code
-			      , reference_no
-			      , holder
-			      , holder_phone
-			      , holder_email
-			      , holder_description
-			      , program_id
-			      , valid_at
-			      , expired_at
-			      , voucher_value
-			      , state
-			      , created_by
-			      , created_at
-	      		)
-	      	 VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	      RETURNING
-			      id
-			      , voucher_code
-			      , reference_no
-			      , holder
-			      , holder_phone
-			      , holder_email
-			      , holder_description
-			      , program_id
-			      , valid_at
-			      , expired_at
-			      , voucher_value
-			      , state
-			      , created_by
-			      , created_at
-			      , updated_by
-			      , updated_at
-			      , deleted_by
-			      , deleted_at
-			      , status
-      `
+		INSERT INTO vouchers (
+			voucher_code
+			, reference_no
+			, holder
+			, holder_phone
+			, holder_email
+			, holder_description
+			, program_id
+			, valid_at
+			, expired_at
+			, voucher_value
+			, state
+			, created_by
+			, created_at
+		)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		RETURNING
+			id
+			, voucher_code
+			, reference_no
+			, holder
+			, holder_phone
+			, holder_email
+			, holder_description
+			, program_id
+			, valid_at
+			, expired_at
+			, voucher_value
+			, state
+			, created_by
+			, created_at
+			, updated_by
+			, updated_at
+			, deleted_by
+			, deleted_at
+			, status
+	`
 	var res []Voucher
-	// fmt.Println("insert data =>", d)
 	if err := vc.Select(&res, vc.Rebind(q), d.VoucherCode, d.ReferenceNo, d.Holder, d.HolderPhone, d.HolderEmail, d.HolderDescription, d.ProgramID, d.ValidAt, d.ExpiredAt, d.VoucherValue, VoucherStateCreated, d.CreatedBy, time.Now()); err != nil {
 		return err
 	}
@@ -567,21 +564,6 @@ func (d *Voucher) InsertVc() error {
 
 	if err := vc.Commit(); err != nil {
 		return err
-	}
-
-	log := Log{
-		TableName:   "vouchers",
-		TableNameId: ValueChangeLogNone,
-		ColumnName:  ColumnChangeLogInsert,
-		Action:      ActionChangeLogInsert,
-		Old:         ValueChangeLogNone,
-		New:         res[0].ID,
-		CreatedBy:   d.CreatedBy,
-	}
-
-	err = addLog(log)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
@@ -605,7 +587,7 @@ func (d *UpdateDeleteRequest) DeleteVc() error {
 			id = ?
 		AND status = ?
 		RETURNING id
-      `
+	`
 	var result []string
 	if err := vc.Select(&result, vc.Rebind(q), d.State, StatusDeleted, d.User, time.Now(), d.ID, StatusCreated); err != nil {
 		return err
@@ -617,56 +599,6 @@ func (d *UpdateDeleteRequest) DeleteVc() error {
 
 	if err := vc.Commit(); err != nil {
 		return err
-	}
-
-	logs := []Log{}
-	log := Log{
-		TableName:   "vouchers",
-		TableNameId: d.ID,
-		ColumnName:  "state",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         d.State,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "vouchers",
-		TableNameId: d.ID,
-		ColumnName:  "status",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         StatusDeleted,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "vouchers",
-		TableNameId: d.ID,
-		ColumnName:  "deleted_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         d.User,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "vouchers",
-		TableNameId: d.ID,
-		ColumnName:  "deleted_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, log)
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
@@ -810,7 +742,7 @@ func HardDelete(program string) error {
 		AND
 			status = ?
 		RETURNING id
-      `
+	`
 	var result []string
 	if err := vc.Select(&result, vc.Rebind(q), program, StatusCreated); err != nil {
 		return err
@@ -844,7 +776,7 @@ func RollbackVoucher(vcid, user string) error {
 		AND
 			status = ?
 		RETURNING id
-      `
+	`
 	var result []string
 	if err := vc.Select(&result, vc.Rebind(q), VoucherStateRollback, StatusDeleted, vcid, StatusCreated); err != nil {
 		return err
@@ -856,34 +788,6 @@ func RollbackVoucher(vcid, user string) error {
 
 	if err := vc.Commit(); err != nil {
 		return err
-	}
-
-	logs := []Log{}
-	log := Log{
-		TableName:   "vouchers",
-		TableNameId: vcid,
-		ColumnName:  "state",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         VoucherStateRollback,
-		CreatedBy:   user,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "vouchers",
-		TableNameId: vcid,
-		ColumnName:  "status",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         StatusDeleted,
-		CreatedBy:   user,
-	}
-	logs = append(logs, log)
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
