@@ -21,7 +21,7 @@ type SessionData struct {
 
 func GenerateToken(u User) Token {
 	now := time.Now()
-	exp := time.Now().Add(1 * time.Hour)
+	exp := time.Now().Add(24 * time.Hour)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		ExpiresAt: exp.Unix(),
 		IssuedAt:  now.Unix(),

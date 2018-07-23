@@ -1,12 +1,21 @@
 $(document).ready(function () {
-	getProgram();
+  getProgram();
+  $(document).ajaxStart(function(){
+    // Show image container
+    $(".cssload-loader").show();
+   });
+   $(document).ajaxComplete(function(){
+    // Hide image container
+    $(".cssload-loader").hide();
+   });
 });
 
 function getProgram() {
 	var arrData = [];
 	$.ajax({
 		url: '/v1/ui/program/all?token=' + token,
-		type: 'get',
+    type: 'get',
+    processing: true,
 		success: function (data) {
 			arrData = data.data;
 			var i;
@@ -120,7 +129,7 @@ function getProgram() {
 
 			var table = $('#datatable1').dataTable({
 				data: dataSet,
-				dom: 'lBrtip',
+        dom: 'lBrtip',
 				buttons: [
 					'copy', 'csv', 'excel', 'pdf', 'print'
 				],

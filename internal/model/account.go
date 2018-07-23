@@ -27,7 +27,7 @@ type (
 		Province  string         `db:"province" json:"province"`
 		Building  string         `db:"building" json:"building"`
 		ZipCode   string         `db:"zip_code" json:"zip_code"`
-		CreatedAt string         `db:"created_at" json:"created_at"`
+		CreatedAt time.Time      `db:"created_at" json:"created_at"`
 		CreatedBy string         `db:"created_by" json:"created_by"`
 		UpdatedAt sql.NullString `db:"updated_at" json:"updated_at"`
 		UpdatedBy sql.NullString `db:"updated_by" json:"updated_by"`

@@ -1,5 +1,13 @@
 $(document).ready(function () {
-	getCashout();
+  getCashout();
+  $(document).ajaxStart(function(){
+    // Show image container
+    $(".cssload-loader").show();
+   });
+   $(document).ajaxComplete(function(){
+    // Hide image container
+    $(".cssload-loader").hide();
+   });
 });
 
 function getCashout() {

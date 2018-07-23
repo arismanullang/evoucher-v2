@@ -22,10 +22,10 @@ type (
 		Transactions         []CashoutTransaction `db:"-" json:"transactions"`
 	}
 	CashoutTransaction struct {
-		TransactionId string `db:"transaction_id" json:"transaction_id"`
-		VoucherId     string `db:"voucher_id" json:"voucher_id"`
-		VoucherValue  string `db:"voucher_value" json:"voucher_value"`
-		CreatedAt     string `db:"created_at" json:"created_at"`
+		TransactionId string    `db:"transaction_id" json:"transaction_id"`
+		VoucherId     string    `db:"voucher_id" json:"voucher_id"`
+		VoucherValue  string    `db:"voucher_value" json:"voucher_value"`
+		CreatedAt     time.Time `db:"created_at" json:"created_at"`
 	}
 )
 
