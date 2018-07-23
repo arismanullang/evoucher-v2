@@ -61,18 +61,6 @@ func InsertCashout(d Cashout) (string, error) {
 	}
 	d.Id = res[0]
 
-	logs := []Log{}
-	tempLog := Log{
-		TableName:   "cashouts",
-		TableNameId: ValueChangeLogNone,
-		ColumnName:  ColumnChangeLogInsert,
-		Action:      ActionChangeLogInsert,
-		Old:         ValueChangeLogNone,
-		New:         d.Id,
-		CreatedBy:   d.CreatedBy,
-	}
-	logs = append(logs, tempLog)
-
 	for _, v := range d.Transactions {
 		q := `
 			INSERT INTO cashout_details(
@@ -92,26 +80,10 @@ func InsertCashout(d Cashout) (string, error) {
 		if err != nil {
 			return "", err
 		}
-
-		tempLog = Log{
-			TableName:   "cashout_details",
-			TableNameId: d.Id,
-			ColumnName:  ColumnChangeLogInsert,
-			Action:      ActionChangeLogInsert,
-			Old:         ValueChangeLogNone,
-			New:         res1[0],
-			CreatedBy:   d.CreatedBy,
-		}
-		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		return "", err
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return d.Id, nil
@@ -154,7 +126,6 @@ func UpdateCashoutTransactions(transactionId []string, user string) error {
 		return ErrResourceNotFound
 	}
 
-	logs := []Log{}
 	q = `
 		UPDATE vouchers
 		SET
@@ -170,42 +141,8 @@ func UpdateCashoutTransactions(transactionId []string, user string) error {
 			q += ` OR `
 		}
 		q += `id = '` + v + `'`
-
-		tempLog := Log{
-			TableName:   "vouchers",
-			TableNameId: v,
-			ColumnName:  "updated_by",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         user,
-			CreatedBy:   user,
-		}
-		logs = append(logs, tempLog)
-
-		tempLog = Log{
-			TableName:   "vouchers",
-			TableNameId: v,
-			ColumnName:  "updated_at",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         time.Now().String(),
-			CreatedBy:   user,
-		}
-		logs = append(logs, tempLog)
-
-		tempLog = Log{
-			TableName:   "vouchers",
-			TableNameId: v,
-			ColumnName:  "state",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         VoucherStatePaid,
-			CreatedBy:   user,
-		}
-		logs = append(logs, tempLog)
 	}
 	q += `)`
-	//fmt.Println(q)
 	_, err = tx.Exec(tx.Rebind(q), VoucherStatePaid, user, time.Now(), StatusCreated)
 	if err != nil {
 		return err
@@ -213,11 +150,6 @@ func UpdateCashoutTransactions(transactionId []string, user string) error {
 
 	if err := tx.Commit(); err != nil {
 		return err
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
@@ -269,21 +201,6 @@ func PrintCashout(accountId string, cashoutCode string) (Cashout, error) {
 
 	res[0].Transactions = rest
 
-	log := Log{
-		TableName:   "cashouts",
-		TableNameId: cashoutCode,
-		ColumnName:  ColumnChangeLogSelect,
-		Action:      ActionChangeLogSelect,
-		Old:         ValueChangeLogNone,
-		New:         ValueChangeLogNone,
-		CreatedBy:   accountId,
-	}
-
-	err := addLog(log)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
 	return res[0], nil
 }
 
@@ -317,21 +234,6 @@ func FindAllReimburse(accountId, user string) ([]Cashout, error) {
 	}
 	if len(res) < 1 {
 		return []Cashout{}, ErrResourceNotFound
-	}
-
-	log := Log{
-		TableName:   "cashouts",
-		TableNameId: accountId,
-		ColumnName:  ColumnChangeLogSelect,
-		Action:      ActionChangeLogSelect,
-		Old:         ValueChangeLogNone,
-		New:         ValueChangeLogNone,
-		CreatedBy:   user,
-	}
-
-	err := addLog(log)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return res, nil

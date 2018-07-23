@@ -99,45 +99,6 @@ func UpdateBroadcastUserState(programId, email, user string) error {
 		return ErrServerInternal
 	}
 
-	logs := []Log{}
-	log := Log{
-		TableName:   "broadcast_users",
-		TableNameId: programId,
-		ColumnName:  "state",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         EmailSend,
-		CreatedBy:   user,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "broadcast_users",
-		TableNameId: programId,
-		ColumnName:  "updated_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         user,
-		CreatedBy:   user,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "broadcast_users",
-		TableNameId: programId,
-		ColumnName:  "updated_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   user,
-	}
-	logs = append(logs, log)
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
 	return nil
 }
 

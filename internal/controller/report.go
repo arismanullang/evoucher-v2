@@ -37,7 +37,7 @@ func MakeReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Println(result)
+
 	resultVal := []ReportLine{}
 	m := [][2]string{}
 	label := result[0].Creator
@@ -45,7 +45,6 @@ func MakeReport(w http.ResponseWriter, r *http.Request) {
 	indexColor := 0
 	for _, v := range result {
 		if v.Creator != label {
-			fmt.Println("go " + v.Creator)
 			temp := ReportLine{
 				Label: label,
 				Color: color[indexColor%5],
@@ -85,7 +84,7 @@ func MakeReportProgram(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Println(result)
+
 	resultVal := []ReportFlotBar{}
 	m := [][2]string{}
 	label := result[0].Username
@@ -93,7 +92,6 @@ func MakeReportProgram(w http.ResponseWriter, r *http.Request) {
 	indexColor := 0
 	for _, v := range result {
 		if v.Username != label {
-			fmt.Println("go " + v.Username)
 			bars := FlotBar{
 				Order:     indexColor,
 				FillColor: color[indexColor%5],
@@ -142,7 +140,7 @@ func MakeCompleteReportVoucherByUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Println(result)
+
 	resultVal := []ReportFlotBar{}
 	quota := make(map[string]int)
 
@@ -152,8 +150,6 @@ func MakeCompleteReportVoucherByUser(w http.ResponseWriter, r *http.Request) {
 	indexColor := 0
 	for _, v := range result {
 		if v.State != label {
-			fmt.Println("go " + v.Creator)
-
 			bars := FlotBar{
 				Order:     indexColor,
 				FillColor: color[indexColor%5],
@@ -192,9 +188,6 @@ func MakeCompleteReportVoucherByUser(w http.ResponseWriter, r *http.Request) {
 
 	m = [][2]string{}
 	for k, v := range quota {
-		fmt.Println(k)
-		fmt.Println(v)
-
 		mm := [2]string{}
 		mm[0] = k
 		mm[1] = strconv.Itoa(v)
@@ -226,7 +219,7 @@ func MakeReportVoucherByUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Println(result)
+
 	resultVal := []ReportLine{}
 	color := [5]string{"#CEE7FB", "#F4D989", "#FF5722", "#42f44b", "#ff0000"}
 	indexColor := 0
@@ -275,7 +268,7 @@ func MakeReportLine(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Println(result)
+
 	resultVal := []ReportLine{}
 	m := [][2]string{}
 	label := result[0].Creator
@@ -283,7 +276,6 @@ func MakeReportLine(w http.ResponseWriter, r *http.Request) {
 	indexColor := 0
 	for _, v := range result {
 		if v.Creator != label {
-			fmt.Println("go " + v.Creator)
 			temp := ReportLine{
 				Label: label,
 				Color: color[indexColor%5],

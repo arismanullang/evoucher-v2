@@ -11,8 +11,9 @@ import (
 	"github.com/gilkor/evoucher/internal/model"
 	"github.com/ruizu/render"
 
-	"cloud.google.com/go/storage"
 	"strings"
+
+	"cloud.google.com/go/storage"
 )
 
 func UploadFile(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +27,6 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 	}
 
-	fmt.Println(imgURL)
 	res = NewResponse(imgURL)
 	render.JSON(w, res, status)
 }

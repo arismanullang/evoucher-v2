@@ -115,24 +115,12 @@ func InsertTransaction(d Transaction) (Transaction, error) {
 		created_at, created_by
 
 	`
-	var res []Transaction //[]Transaction
+	var res []Transaction
 	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.PartnerId, d.Holder, d.TransactionCode, d.DiscountValue, d.Token, d.User, time.Now(), StatusCreated); err != nil {
 		return d, err
 	}
 	fmt.Println("insert transaction response :", res)
 	d.Id = res[0].Id
-
-	logs := []Log{}
-	tempLog := Log{
-		TableName:   "transactions",
-		TableNameId: ValueChangeLogNone,
-		ColumnName:  ColumnChangeLogInsert,
-		Action:      ActionChangeLogInsert,
-		Old:         ValueChangeLogNone,
-		New:         d.Id,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, tempLog)
 
 	for _, v := range d.VoucherIds {
 		q := `
@@ -150,26 +138,10 @@ func InsertTransaction(d Transaction) (Transaction, error) {
 		if err != nil {
 			return d, err
 		}
-
-		tempLog := Log{
-			TableName:   "transaction_details",
-			TableNameId: d.Id,
-			ColumnName:  ColumnChangeLogInsert,
-			Action:      ActionChangeLogInsert,
-			Old:         ValueChangeLogNone,
-			New:         v,
-			CreatedBy:   d.User,
-		}
-		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		return d, err
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return res[0], nil
@@ -198,40 +170,6 @@ func (d *DeleteTransactionRequest) Delete() error {
 		return err
 	}
 
-	logs := []Log{}
-	tempLog := Log{
-		TableName:   "transactions",
-		TableNameId: d.Id,
-		ColumnName:  "deleted_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         d.User,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "transactions",
-		TableNameId: d.Id,
-		ColumnName:  "deleted_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "transactions",
-		TableNameId: d.Id,
-		ColumnName:  "status",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         StatusDeleted,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, tempLog)
-
 	q = `
 		UPDATE transaction_details
 		SET
@@ -247,46 +185,8 @@ func (d *DeleteTransactionRequest) Delete() error {
 		return err
 	}
 
-	tempLog = Log{
-		TableName:   "transaction_details",
-		TableNameId: d.Id,
-		ColumnName:  "deleted_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         d.User,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "transaction_details",
-		TableNameId: d.Id,
-		ColumnName:  "deleted_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "transaction_details",
-		TableNameId: d.Id,
-		ColumnName:  "status",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         StatusDeleted,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, tempLog)
-
 	if err := tx.Commit(); err != nil {
 		return err
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
@@ -997,45 +897,6 @@ func UpdateCashoutTransaction(transactionCode, user string) error {
 
 	if err := tx.Commit(); err != nil {
 		return err
-	}
-
-	logs := []Log{}
-	tempLog := Log{
-		TableName:   "vouchers",
-		TableNameId: transactionCode,
-		ColumnName:  "updated_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         user,
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "vouchers",
-		TableNameId: transactionCode,
-		ColumnName:  "updated_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "vouchers",
-		TableNameId: transactionCode,
-		ColumnName:  "status",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         VoucherStatePaid,
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil

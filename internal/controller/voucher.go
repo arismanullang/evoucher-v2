@@ -220,7 +220,6 @@ func GetVoucherOfProgram(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
-	// fmt.Println(voucher, err)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, logger.TraceID)
@@ -234,7 +233,6 @@ func GetVoucherOfProgram(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
-	// fmt.Println(voucher.VoucherData)
 
 	distinctProgram := []string{}
 	for _, v := range voucher.VoucherData {
@@ -242,7 +240,6 @@ func GetVoucherOfProgram(w http.ResponseWriter, r *http.Request) {
 			distinctProgram = append(distinctProgram, v.ProgramID)
 		}
 	}
-	// fmt.Println(distinctProgram)
 	d := []GetVoucherOfVariatListDetails{}
 	for _, v := range distinctProgram {
 		tempVoucherResponse := []VoucerResponse{}
@@ -375,7 +372,6 @@ func GetVoucherOfProgramDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(dt)
 	d := GetVoucherOfVariatListDetails{}
 	d.ProgramID = dt.Id
 	d.AccountId = dt.AccountId
@@ -416,8 +412,6 @@ func GetVoucherOfProgramDetails(w http.ResponseWriter, r *http.Request) {
 		d.Voucher[j].ExpiredAt = vd.ExpiredAt
 	}
 
-	fmt.Println(d)
-	// d.Vouchers = make([]VoucerResponse, len(voucher.VoucherData))
 	status = http.StatusOK
 	res = NewResponse(d)
 	logger.SetStatus(status).Log("param :", param, "response :", d)
@@ -455,7 +449,7 @@ func GetVoucherList(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
-	// fmt.Println(voucher, err)
+
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, logger.TraceID)
@@ -523,7 +517,6 @@ func GetVouchersByPartner(w http.ResponseWriter, r *http.Request) {
 
 	voucher, err = model.FindVouchersByPartner(id)
 
-	// fmt.Println(voucher, err)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, logger.TraceID)
@@ -577,7 +570,6 @@ func GetTodayVouchersByPartner(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, res, status)
 		return
 	}
-	// fmt.Println(voucher, err)
 	if err == model.ErrResourceNotFound {
 		status = http.StatusNotFound
 		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, logger.TraceID)
@@ -820,7 +812,6 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	gvd.Quantity = 1
 	gvd.CreatedBy = a.User.ID
 
-	// fmt.Println("request data =>", gvd.Holder)
 	var voucher []model.Voucher
 	voucher, err = gvd.generateVoucher(&dt)
 	if err != nil {
@@ -851,7 +842,6 @@ func GenerateVoucherBulk(w http.ResponseWriter, r *http.Request) {
 	var status int
 	res := NewResponse(nil)
 	vrID := r.FormValue("program")
-	fmt.Println("program id = ", vrID)
 
 	logger := model.NewLog()
 	logger.SetService("API").
@@ -1048,7 +1038,6 @@ func (r *TransactionRequest) CheckVoucherRedemption(voucherID string) (bool, str
 	} else if voucher.VoucherData[0].State == model.VoucherStatePaid {
 		return false, "", errors.New(model.ErrMessageVoucherAlreadyPaid)
 	} else if !voucher.VoucherData[0].ExpiredAt.After(time.Now()) {
-		fmt.Println("expired date : ", voucher.VoucherData[0].ExpiredAt, voucher.VoucherData[0].ID)
 		return false, "", errors.New(model.ErrMessageVoucherExpired)
 	}
 
@@ -1065,7 +1054,6 @@ func (r *RedeemVoucherRequest) UpdateVoucher() (bool, error) {
 
 	for _, v := range r.Vouchers {
 		d.ID = v
-		fmt.Println("update voucher :", d.ID)
 		if _, err := d.UpdateVc(); err != nil {
 			return false, err
 		}
@@ -1099,7 +1087,6 @@ func (vr *GenerateVoucherRequest) generateVoucher(v *model.Program) ([]model.Vou
 
 		code = append(code, voucherCode(vcf, v.VoucherFormat))
 
-		// fmt.Println("generate data =>", vr.Holder)
 		rd := model.Voucher{
 			VoucherCode:  code[i],
 			ReferenceNo:  vr.ReferenceNo,
@@ -1119,7 +1106,6 @@ func (vr *GenerateVoucherRequest) generateVoucher(v *model.Program) ([]model.Vou
 		if err := rd.InsertVc(); err != nil {
 			log.Panic(err)
 		}
-		// fmt.Println(i)
 		ret[i] = rd
 	}
 	return ret, nil
@@ -1150,7 +1136,6 @@ func generateVoucher(v *model.Program, vr GenerateEmailVoucherRequest) ([]model.
 
 		code = append(code, voucherCode(vcf, v.VoucherFormat))
 
-		// fmt.Println("generate data =>", vr.Holder)
 		rd := model.Voucher{
 			VoucherCode:  code[i],
 			ReferenceNo:  vr.ReferenceNo,
@@ -1170,7 +1155,6 @@ func generateVoucher(v *model.Program, vr GenerateEmailVoucherRequest) ([]model.
 		if err := rd.InsertVc(); err != nil {
 			log.Panic(err)
 		}
-		// fmt.Println(i)
 		ret[i] = rd
 	}
 	return ret, nil
@@ -1314,7 +1298,6 @@ func GenerateSingleVoucherEmail(w http.ResponseWriter, r *http.Request) {
 	gvd.Quantity = 1
 	gvd.CreatedBy = a.User.ID
 
-	// fmt.Println("request data =>", gvd.Holder)
 	var voucher []model.Voucher
 	voucher, err = generateVoucher(&dt, gvd)
 	if err != nil {

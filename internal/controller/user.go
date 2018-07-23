@@ -88,13 +88,11 @@ func InsertBroadcastUser(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		fmt.Println(record)
 		if len(record) > 0 {
 			listTarget = append(listTarget, strings.Replace(record[1], "'", "", -1))
 			listDescription = append(listDescription, strings.Replace(record[2], "'", "", -1))
 		} else {
 			for value := range record {
-				fmt.Println(record[value])
 				temp := strings.Split(record[value], ";")
 				listTarget = append(listTarget, strings.Replace(temp[1], "'", "", -1))
 				listDescription = append(listDescription, strings.Replace(temp[2], "'", "", -1))
