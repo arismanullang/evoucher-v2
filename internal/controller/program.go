@@ -1170,9 +1170,7 @@ func validhours(s, e string) bool {
 	enUTC := en.In(time.UTC)
 
 	//set hour and minute on the same date
-	finalNow := time.Date(1970, 1, 1, nowUTC.Hour(), nowUTC.Minute(), 0, 0, time.UTC)
-	finalST := time.Date(1970, 1, 1, stUTC.Hour(), stUTC.Minute(), 0, 0, time.UTC)
-	finalEN := time.Date(1970, 1, 1, enUTC.Hour(), enUTC.Minute(), 0, 0, time.UTC)
+	finalNow := time.Date(1970, 1, 1, nowUTC.Hour(), nowUTC.Minute(), nowUTC.Second(), 0, time.UTC)
 
-	return finalNow.Before(finalEN) && finalNow.After(finalST)
+	return finalNow.Before(enUTC) && finalNow.After(stUTC)
 }
