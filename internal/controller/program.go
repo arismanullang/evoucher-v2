@@ -1157,22 +1157,33 @@ func validhours(s, e string) bool {
 
 	st, err := time.Parse(time.RFC3339, "1970-01-01T"+s)
 	if err != nil {
+		fmt.Println(err)
 		return false
 	}
 	en, err := time.Parse(time.RFC3339, "1970-01-01T"+e)
 	if err != nil {
+		fmt.Println(err)
 		return false
 	}
+
+	fmt.Println("now", now)
+	fmt.Println("st", st)
+	fmt.Println("en", en)
 
 	//parse time to UTC
 	nowUTC := now.In(time.UTC)
 	stUTC := st.In(time.UTC)
 	enUTC := en.In(time.UTC)
+	fmt.Println("nowUTC", nowUTC)
+	fmt.Println("stUTC", stUTC)
+	fmt.Println("enUTC", enUTC)
 
 	//set hour and minute on the same date
-	finalNow := time.Date(1970, 1, 1, nowUTC.Hour(), nowUTC.Minute(), 0, 0, time.UTC)
-	finalST := time.Date(1970, 1, 1, stUTC.Hour(), stUTC.Minute(), 0, 0, time.UTC)
-	finalEN := time.Date(1970, 1, 1, enUTC.Hour(), enUTC.Minute(), 0, 0, time.UTC)
+	finalNow := time.Date(1970, 1, 1, nowUTC.Hour(), nowUTC.Minute(), nowUTC.Second(), 0, time.UTC)
+	// finalST := time.Date(1970, 1, 1, stUTC.Hour(), stUTC.Minute(), 0, 0, time.UTC)
+	// finalEN := time.Date(1970, 1, 1, enUTC.Hour(), enUTC.Minute(), 0, 0, time.UTC)
 
-	return finalNow.Before(finalEN) && finalNow.After(finalST)
+	fmt.Println("finalNow", finalNow)
+
+	return finalNow.Before(enUTC) && finalNow.After(stUTC)
 }
