@@ -1164,6 +1164,7 @@ func validhours(startTime, endTime string) bool {
 	et = et.In(st.Location())
 
 	nt := time.Now()
+	nt = nt.In(st.Location())
 	nt = time.Date(0, 1, 1, nt.Hour(), nt.Minute(), nt.Second(), 0, nt.Location())
 
 	return nt.After(st) && nt.Before(et)
