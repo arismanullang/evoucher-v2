@@ -1152,25 +1152,19 @@ func validdays(s string) bool {
 	return ret
 }
 
-func validhours(s, e string) bool {
-	now := time.Now()
-
-	st, err := time.Parse(time.RFC3339, "1970-01-01T"+s)
+func validhours(startTime, endTime string) bool {
+	st, err := time.Parse("15:04:05Z07:00", startTime)
 	if err != nil {
-		return false
+	    return false
 	}
-	en, err := time.Parse(time.RFC3339, "1970-01-01T"+e)
+	et, err := time.Parse("15:04:05Z07:00", endTime)
 	if err != nil {
-		return false
+	    return false
 	}
-
-	//parse time to UTC
-	nowUTC := now.In(time.UTC)
-	stUTC := st.In(time.UTC)
-	enUTC := en.In(time.UTC)
-
-	//set hour and minute on the same date
-	finalNow := time.Date(1970, 1, 1, nowUTC.Hour(), nowUTC.Minute(), nowUTC.Second(), 0, time.UTC)
-
-	return finalNow.Before(enUTC) && finalNow.After(stUTC)
-}
+	et = et.In(st.Location())
+	
+	nt := time.Now()
+	nt = time.Date(0, 1, 1, nt.Hour(), nt.Minute(), nt.Second(), 0, nt.Location())
+	
+	return nt.After(st) && nt.Before(et)
+    }
