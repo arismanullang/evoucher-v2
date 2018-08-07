@@ -1155,16 +1155,16 @@ func validdays(s string) bool {
 func validhours(startTime, endTime string) bool {
 	st, err := time.Parse("15:04:05Z07:00", startTime)
 	if err != nil {
-	    return false
+		return false
 	}
 	et, err := time.Parse("15:04:05Z07:00", endTime)
 	if err != nil {
-	    return false
+		return false
 	}
 	et = et.In(st.Location())
-	
+
 	nt := time.Now()
 	nt = time.Date(0, 1, 1, nt.Hour(), nt.Minute(), nt.Second(), 0, nt.Location())
-	
+
 	return nt.After(st) && nt.Before(et)
-    }
+}
