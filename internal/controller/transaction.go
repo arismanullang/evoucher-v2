@@ -76,7 +76,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	//Token Authentocation
 	a := AuthToken(w, r)
 	if !a.Valid {
-		render.JSON(w, a.res, status)
+		render.JSON(w, a.res, http.StatusUnauthorized)
 		return
 	}
 
