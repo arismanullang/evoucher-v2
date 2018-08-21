@@ -47,7 +47,8 @@ function getProgram() {
           dataType.push("privilege");
 				} else {
 					dataType.push("email blast");
-				}
+        }
+
 				dataStart.push(date1[2] + " " + months[parseInt(date1[1]) - 1] + " " + date1[0]);
 				dataEnd.push(date2[2] + " " + months[parseInt(date2[1]) - 1] + " " + date2[0]);
 				dataName.push(arrData[i].name);
@@ -124,9 +125,27 @@ function getProgram() {
 					, avail
 					, Math.round(redemptionRate) + "%"
 					, button
-				];
+        ];
 
-				dataSet.push(tempArray);
+        var privilegeArray = [
+          dataName[i].toUpperCase()
+					, dataType[i].toUpperCase()
+					, "-"
+					, dataStatus[i].toUpperCase()
+					, dataStart[i].toUpperCase()
+					, dataEnd[i].toUpperCase()
+					, dataModified[i].toUpperCase()
+					, "-"
+					, "-"
+					, "-"
+					, button
+        ];
+
+        if(dataType[i] == "privilege"){
+          dataSet.push(privilegeArray);
+        } else {
+          dataSet.push(tempArray);
+        }
 			}
 
 			if ($.fn.DataTable.isDataTable("#datatable1")) {
