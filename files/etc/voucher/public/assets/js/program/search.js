@@ -38,13 +38,15 @@ function getProgram() {
 				var date2 = arrData[i].end_date.substring(0, 10).split("-");
 				var date3 = arrData[i].created_at.substring(0, 10).split("-");
 				var date4 = arrData[i].updated_at.String.substring(0, 10).split("-");
-				dataId.push(arrData[i].id);
+        dataId.push(arrData[i].id);
 				if (arrData[i].type == "on-demand") {
-					dataType.push("Mobile App");
+					dataType.push("mobile app");
 				} else if (arrData[i].type == "gift") {
-					dataType.push("Gift Voucher");
+					dataType.push("gift voucher");
+				} else if (arrData[i].type == "privilege") {
+          dataType.push("privilege");
 				} else {
-					dataType.push("Email Blast");
+					dataType.push("email blast");
 				}
 				dataStart.push(date1[2] + " " + months[parseInt(date1[1]) - 1] + " " + date1[0]);
 				dataEnd.push(date2[2] + " " + months[parseInt(date2[1]) - 1] + " " + date2[0]);
@@ -68,7 +70,7 @@ function getProgram() {
 				dataVoucher.push(created);
 				dataRedeem.push(redeem);
 
-				if (arrData[i].status = 'created') {
+				if (arrData[i].status = "created") {
 					var dateStart = new Date(date1[0], date1[1] - 1, date1[2]);
 					var dateEnd = new Date(date2[0], date2[1] - 1, date2[2], 23, 59, 59);
 					if (Date.now() < dateStart.getTime()) {
@@ -78,7 +80,7 @@ function getProgram() {
 					} else if (Date.now() > dateEnd.getTime()) {
 						dataStatus.push("End");
 					}
-				} else if (arrData[i].status = 'deleted') {
+				} else if (arrData[i].status = "deleted") {
 					dataStatus.push("Disabled");
 				}
 
@@ -93,7 +95,11 @@ function getProgram() {
 			for (i = 0; i < dataId.length; i++) {
 				var button = "<button type='button' onclick='detail(\"" + dataId[i] + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>" +
 					"<button type='button' onclick='edit(\"" + dataId[i] + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>" +
-					"<button type='button' value=\"" + dataId[i] + "\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>"
+          "<button type='button' value=\"" + dataId[i] + "\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>"
+
+          if(dataType[i] == "privilege"){
+            button = "<button type='button' onclick='detail(\"" + dataId[i] + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"
+          }
 
 				var avail = 0;
 				var redemptionRate = 0;
