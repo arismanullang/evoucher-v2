@@ -114,7 +114,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if program.VoucherType == "privilege" {
+	if program.VoucherType == model.ProgramTypePrivilege {
 		isPrivilege = true
 	}
 

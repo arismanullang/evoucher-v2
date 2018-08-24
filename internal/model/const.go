@@ -115,10 +115,11 @@ const (
 	VoucherTypediscount string = "discount"
 	VoucherTypePromo    string = "promo"
 
-	ProgramTypeOnDemand string = "on-demand"
-	ProgramTypeGift     string = "gift"
-	ProgramTypeBulk     string = "bulk"
-	ProgramTypeStock    string = "stock"
+	ProgramTypePrivilege string = "privilege"
+	ProgramTypeOnDemand  string = "on-demand"
+	ProgramTypeGift      string = "gift"
+	ProgramTypeBulk      string = "bulk"
+	ProgramTypeStock     string = "stock"
 
 	VoucherStatePrivilege string = "privilege"
 	VoucherStateCreated   string = "created"
