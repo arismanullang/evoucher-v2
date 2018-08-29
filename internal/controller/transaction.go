@@ -683,6 +683,57 @@ func GetTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, status)
 }
 
+func GetTransactionsPrivilege(w http.ResponseWriter, r *http.Request) {
+	apiName := "report_privilege"
+	dateFrom := r.FormValue("dateFrom")
+	dateTo := r.FormValue("dateTo")
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
+	status := http.StatusOK
+	res := NewResponse(nil)
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	if CheckAPIRole(a, apiName) {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	timeDateFrom, err := time.Parse(time.RFC3339, dateFrom)
+	if err != nil {
+		logger.SetStatus(status).Panic("param :", dateFrom, "response :", err.Error())
+	}
+
+	timeDateTo, err := time.Parse(time.RFC3339, dateTo)
+	if err != nil {
+		logger.SetStatus(status).Panic("param :", dateTo, "response :", err.Error())
+	}
+
+	transaction, err := model.FindTransactionsPrivilege(a.User.Account.Id, timeDateFrom, timeDateTo)
+	res = NewResponse(transaction)
+	if err != nil && err != model.ErrResourceNotFound {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
+		logger.SetStatus(status).Info("param :", a.User.Account.Id+" || "+timeDateFrom.String()+" || "+timeDateTo.String(), "response :", res.Errors)
+	}
+
+	render.JSON(w, res, status)
+}
+
 func GetTransactionsByDate(w http.ResponseWriter, r *http.Request) {
 	apiName := "report_transaction"
 	date := r.FormValue("date")
