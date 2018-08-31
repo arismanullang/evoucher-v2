@@ -475,6 +475,7 @@ func FindTransactionsByPartner(accountId, partnerId string) ([]TransactionList, 
 		WHERE
 			t.status = ?
 			AND t.account_id = ?
+			AND t.created_at >= current_date - 30
 	`
 	q += `AND p.id LIKE '%` + partnerId + `%' `
 	q += `ORDER BY t.created_at DESC;`
