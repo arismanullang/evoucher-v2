@@ -781,7 +781,16 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if int(dt.MaxGenerateVoucher) <= model.CountHolderVoucher(gvd.ProgramID, gvd.Holder.Key) {
+	redeemedVoucher := model.CountVoucher(dt.Id)
+	var availableVoucher = int(dt.MaxQuantityVoucher) - redeemedVoucher
+
+	if availableVoucher <= 0 {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, logger.TraceID)
+		logger.SetStatus(status).Log("param :", gvd, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	} else if int(dt.MaxGenerateVoucher) <= model.CountHolderVoucher(gvd.ProgramID, gvd.Holder.Key) {
 		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, logger.TraceID)
 		logger.SetStatus(status).Log("param :", gvd, "response :", res.Errors.ToString())
@@ -802,6 +811,12 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	} else if !ed.After(time.Now()) {
 		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeVoucherExpired, model.ErrMessageVoucherExpired, logger.TraceID)
+		logger.SetStatus(status).Log("param :", gvd, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	} else if !dt.Visibility {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, logger.TraceID)
 		logger.SetStatus(status).Log("param :", gvd, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
