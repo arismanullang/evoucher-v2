@@ -18,13 +18,14 @@ import (
 
 func ListenAndServe(h http.Handler) error {
 	r := http.NewServeMux()
+	r.HandleFunc("/.well-known/acme-challenge/", redirectToSSLManager)
 	r.HandleFunc("/debug/ping", ping)
 	r.HandleFunc("/debug/pprof/", pprof.Index)
 	r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 	r.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	r.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 	r.HandleFunc("/debug/pprof/trace", pprof.Trace)
-	r.Handle("/", h)
+	r.Handle("/", redirectToHTTPS(h))
 
 	host := os.Getenv("HOST")
 	if host == "" {
@@ -32,10 +33,6 @@ func ListenAndServe(h http.Handler) error {
 	}
 	log.Printf("Server is listening on port %q\n", host)
 	return http.ListenAndServe(host, recoveryHandler(r))
-}
-
-func ping(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "pong")
 }
 
 var panicHTMLTemplate = template.Must(template.New("_panicHTML").Parse(`
