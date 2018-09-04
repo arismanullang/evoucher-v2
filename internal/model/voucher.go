@@ -93,7 +93,11 @@ func FindAvailableVoucher(accountId string, param map[string]string) (VoucherRes
 	for key, value := range param {
 		q += ` AND v.` + key + ` = '` + value + `'`
 	}
-	q += ` ORDER BY v.expired_at ASC`
+	q += ` ORDER BY
+		CASE p.voucher_type
+			WHEN 'privilege' THEN 1
+			ELSE 2
+		END, v.expired_at ASC`
 
 	var resd []Voucher
 	if err := db.Select(&resd, db.Rebind(q), StatusCreated, accountId); err != nil {

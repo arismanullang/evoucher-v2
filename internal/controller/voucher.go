@@ -1063,7 +1063,6 @@ func (r *TransactionRequest) CheckVoucherRedemption(voucherID string) (bool, str
 func (r *RedeemVoucherRequest) UpdateVoucher() (bool, error) {
 	var d model.UpdateDeleteRequest
 
-	d.State = model.VoucherStateUsed
 	d.User = r.User
 	d.State = r.State
 
