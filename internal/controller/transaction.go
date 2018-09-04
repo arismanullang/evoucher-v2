@@ -647,14 +647,19 @@ func GetTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 	}
 
 	transaction, err := model.FindTransactionsByPartner(a.User.Account.Id, partnerId)
-	res = NewResponse(transaction)
-	if err != nil {
+	if err == model.ErrResourceNotFound {
+		transaction = []model.TransactionList{}
+	} else if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
 		logger.SetStatus(status).Info("param :", a.User.Account.Id+" || "+partnerId, "response :", res.Errors)
+		render.JSON(w, res, status)
+		return
 	}
 
+	res = NewResponse(transaction)
 	render.JSON(w, res, status)
+
 }
 
 func GetTransactionsByDate(w http.ResponseWriter, r *http.Request) {
