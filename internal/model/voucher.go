@@ -88,7 +88,7 @@ func FindAvailableVoucher(accountId string, param map[string]string) (VoucherRes
 			AND p.account_id = ?
 			AND v.expired_at > now()
 			AND v.valid_at < now()
-			AND v.state = 'created'
+			AND (v.state = 'created' OR v.state = 'privilege')
 	`
 	for key, value := range param {
 		q += ` AND v.` + key + ` = '` + value + `'`
