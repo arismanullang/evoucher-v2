@@ -65,9 +65,10 @@ func main() {
 	m.Use(negroni.NewStatic(http.Dir(os.Getenv("PUBLIC_DIR"))))
 	m.UseHandler(router)
 
+	go assignTenantPrivilegeVoucher()
+
 	log.Fatal(server.ListenAndServe(m))
 
-	go assignTenantPrivilegeVoucher()
 }
 
 type PubSubAccount struct {

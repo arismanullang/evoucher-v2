@@ -569,11 +569,11 @@ func (d *GeneratePrivilegeRequest) InsertPrivilegeVc() error {
 			AND end_date > current_timestamp
 			AND status = 'created'
 			AND id NOT IN (
-			SELECT program_id
-			FROM
-				vouchers
-			WHERE
-				holder = ?
+				SELECT program_id
+				FROM
+					vouchers
+				WHERE
+					holder = ?
 			)
 		RETURNING id
 	`
