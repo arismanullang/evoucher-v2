@@ -53,6 +53,12 @@ type (
 		ID    string `db:"id"`
 		State string `db:"state"`
 	}
+
+	GeneratePrivilegeRequest struct {
+		CompanyID  string `json:"company_id"`
+		MemberID   string `json:"member_id"`
+		MemberName string `json:"member_name"`
+	}
 )
 
 func FindAvailableVoucher(accountId string, param map[string]string) (VoucherResponse, error) {
@@ -512,6 +518,75 @@ func FindTodayVouchers(param map[string]string) ([]Voucher, error) {
 	}
 
 	return resd, nil
+}
+
+func (d *GeneratePrivilegeRequest) InsertPrivilegeVc() error {
+	vc, err := db.Beginx()
+	if err != nil {
+		return err
+	}
+	defer vc.Rollback()
+
+	q := `
+		INSERT INTO vouchers(
+			voucher_code
+			, reference_no
+			, holder
+			, holder_email
+			, holder_phone
+			, holder_description
+			, program_id
+			, valid_at
+			, expired_at
+			, voucher_value
+			, state
+			, created_by
+			, created_at
+			, status
+		)
+		SELECT
+			'PRIVILEGE'
+			, 'privilege'
+			, ?
+			, ''
+			, ''
+			, ?
+			, id
+			, start_date
+			, end_date
+			, 0
+			, 'privilege'
+			, 'system'
+			, ?
+			, 'created'
+		FROM
+			programs
+		WHERE
+			account_id = ?
+			AND type = 'privilege'
+			AND voucher_type = 'privilege'
+			AND start_date< current_timestamp
+			AND end_date > current_timestamp
+			AND status = 'created'
+			AND id NOT IN (
+			SELECT program_id
+			FROM
+				vouchers
+			WHERE
+				holder = ?
+			)
+		RETURNING id
+	`
+	var res string
+	if err := vc.Select(&res, vc.Rebind(q), d.MemberID, d.MemberName, time.Now(), d.CompanyID, d.MemberID); err != nil {
+		return err
+	}
+
+	if err := vc.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (d *Voucher) InsertVc() error {
