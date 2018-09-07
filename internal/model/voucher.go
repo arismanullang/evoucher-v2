@@ -562,7 +562,7 @@ func (d *GeneratePrivilegeRequest) InsertPrivilegeVc() error {
 		FROM
 			programs
 		WHERE
-			account_id = ?
+			account_id = (SELECT id FROM accounts WHERE company_id = ?)
 			AND type = 'privilege'
 			AND voucher_type = 'privilege'
 			AND start_date< current_timestamp

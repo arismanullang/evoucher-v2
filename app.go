@@ -74,7 +74,7 @@ func main() {
 
 type PubSubAccount struct {
 	Action string `json:"action"`
-	Data struct {
+	Data   struct {
 		Id                 string      `json:"id"`
 		Name               string      `json:"name"`
 		CompanyId          string      `json:"company_id"`
@@ -135,7 +135,8 @@ func assignTenantPrivilegeVoucher() {
 
 		err := gpr.InsertPrivilegeVc()
 		if err != nil {
-			msg.Ack()
+			log.Println(err)
+			msg.Nack()
 			return
 		}
 
