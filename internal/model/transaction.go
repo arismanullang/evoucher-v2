@@ -486,7 +486,7 @@ func FindTransactionsPrivilege(accountId string, startDate time.Time, endDate ti
 		t.status = ?
 		AND t.account_id = ?
 		AND t.created_at BETWEEN ? AND ?
-		AND vo.state = 'privilege'
+		AND va.voucher_type = 'privilege'
 `
 	q += `ORDER BY t.created_at DESC;`
 	//fmt.Println(q)

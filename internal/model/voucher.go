@@ -94,7 +94,7 @@ func FindAvailableVoucher(accountId string, param map[string]string) (VoucherRes
 			AND p.account_id = ?
 			AND v.expired_at > now()
 			AND v.valid_at < now()
-			AND (v.state = 'created' OR v.state = 'privilege')
+			AND v.state = 'created'
 	`
 	for key, value := range param {
 		q += ` AND v.` + key + ` = '` + value + `'`
@@ -555,7 +555,7 @@ func (d *GeneratePrivilegeRequest) InsertPrivilegeVc() error {
 			, start_date
 			, end_date
 			, 0
-			, 'privilege'
+			, 'created'
 			, 'system'
 			, ?
 			, 'created'

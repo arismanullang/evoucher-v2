@@ -244,35 +244,28 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rv := RedeemVoucherRequest{
-		AccountID: a.User.Account.Id,
-		User:      a.User.ID,
-		State:     model.VoucherStateUsed,
-		Vouchers:  rd.Vouchers,
-	}
-
-	if isPrivilege {
-		rv = RedeemVoucherRequest{
+	if !isPrivilege {
+		rv := RedeemVoucherRequest{
 			AccountID: a.User.Account.Id,
 			User:      a.User.ID,
-			State:     model.VoucherStatePrivilege,
+			State:     model.VoucherStateUsed,
 			Vouchers:  rd.Vouchers,
 		}
-	}
 
-	// update voucher state "Used"
-	if ok, err := rv.UpdateVoucher(); !ok {
-		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
-		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
-		render.JSON(w, res, status)
-		return
-	} else if err != nil {
-		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
-		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
-		render.JSON(w, res, status)
-		return
+		// update voucher state "Used"
+		if ok, err := rv.UpdateVoucher(); !ok {
+			status = http.StatusInternalServerError
+			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
+			render.JSON(w, res, status)
+			return
+		} else if err != nil {
+			status = http.StatusInternalServerError
+			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+			logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
+			render.JSON(w, res, status)
+			return
+		}
 	}
 
 	// get list email
