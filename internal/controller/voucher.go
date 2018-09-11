@@ -35,6 +35,15 @@ type (
 		VoucherCode string `json:"voucher_code"`
 		AccountID   string `json:"account_id"`
 	}
+
+	// GenerateGiftRequest represent a Request of VoucherGift Request
+	GenerateGiftRequest struct {
+		AccountID string `json:"account_id" valid:"-"`
+		ProgramID string `json:"program_id" valid:"required"`
+		Quantity  int    `json:"quantity" valid:"required"`
+		CreatedBy string `json:"user" valid:"-"`
+	}
+
 	// GenerateVoucherRequest represent a Request of GenerateVoucher
 	GenerateVoucherRequest struct {
 		AccountID string `json:"account_id" valid:"-"`
@@ -714,6 +723,243 @@ func RollbackVoucher(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func AssignGift(w http.ResponseWriter, r *http.Request) {
+	var agr model.AssignGiftRequest
+	var status int
+	res := NewResponse(nil)
+
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&agr); err != nil {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+
+	_, err := govalidator.ValidateStruct(agr)
+	if err != nil {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", "transaction")
+		render.JSON(w, res, status)
+		return
+	}
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Assign-Gift")
+
+	//Token Authentocation
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
+
+	agr.User = a.User.ID
+
+	_, err = govalidator.ValidateStruct(agr)
+	if err != nil {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+
+	for idx, assignData := range agr.Data {
+		var tsd, ted time.Time
+
+		dt, err := model.FindProgramDetailsById(assignData.ProgramID)
+		if err == model.ErrResourceNotFound {
+			status = http.StatusNotFound
+			res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidProgram, logger.TraceID)
+			logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())
+			render.JSON(w, res, status)
+			return
+		} else if err != nil {
+			status = http.StatusInternalServerError
+			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInvalidProgram+"("+err.Error()+")", logger.TraceID)
+			logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())
+			render.JSON(w, res, status)
+			return
+		}
+		sd := dt.StartDate
+		ed := dt.EndDate
+		if err != nil {
+			status = http.StatusInternalServerError
+			res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageParsingError, logger.TraceID)
+			logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())
+			render.JSON(w, res, status)
+			return
+		}
+
+		if dt.VoucherLifetime > 0 {
+			end := time.Now().AddDate(0, 0, dt.VoucherLifetime)
+			tsd = time.Now()
+			ted = time.Date(end.Year(), end.Month(), end.Day(), 23, 59, 59, 0, time.Local)
+		} else {
+			tsd = dt.ValidVoucherStart
+
+			end := dt.ValidVoucherEnd
+			ted = time.Date(end.Year(), end.Month(), end.Day(), 23, 59, 59, 0, time.Local)
+		}
+
+		agr.Data[idx].ValidAt = tsd
+		agr.Data[idx].ExpiredAt = ted
+
+		holderVoucher := model.CountHolderVoucher(assignData.ProgramID, agr.HolderID)
+		requestVoucher := len(assignData.VoucherIDs)
+
+		if int(dt.MaxGenerateVoucher) < (holderVoucher + requestVoucher) {
+			status = http.StatusBadRequest
+			res.AddError(its(status), model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, logger.TraceID)
+			logger.SetStatus(status).Log("param :", assignData, "response :", res.Errors.ToString())
+			render.JSON(w, res, status)
+			return
+		} else if !(dt.Type == model.ProgramTypeGift) {
+			status = http.StatusBadRequest
+			res.AddError(its(status), model.ErrCodeInvalidProgramType, model.ErrMessageInvalidProgramType, logger.TraceID)
+			logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())
+			render.JSON(w, res, status)
+			return
+		} else if !sd.Before(time.Now()) {
+			status = http.StatusBadRequest
+			res.AddError(its(status), model.ErrCodeVoucherNotActive, model.ErrMessageVoucherNotActive, logger.TraceID)
+			logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())
+			render.JSON(w, res, status)
+			return
+		} else if !ed.After(time.Now()) {
+			status = http.StatusBadRequest
+			res.AddError(its(status), model.ErrCodeVoucherExpired, model.ErrMessageVoucherExpired, logger.TraceID)
+			logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())
+			render.JSON(w, res, status)
+			return
+		}
+	}
+
+	log.Println(agr)
+
+	err = agr.AssignVoucher()
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"( failed to assign Voucher :"+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+
+	status = http.StatusOK
+	res = NewResponse("Success")
+	logger.SetStatus(status).Log("param :", agr, "response : ok")
+	render.JSON(w, res, status)
+	return
+}
+
+func GenerateGift(w http.ResponseWriter, r *http.Request) {
+	var ggr GenerateGiftRequest
+	var status int
+	res := NewResponse(nil)
+
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&ggr); err != nil {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", "voucher")
+		render.JSON(w, res, status)
+		return
+	}
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag("Generate-Gift")
+
+	//Token Authentocation
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		render.JSON(w, a.res, http.StatusUnauthorized)
+		return
+	}
+
+	_, err := govalidator.ValidateStruct(ggr)
+	if err != nil {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeValidationError, model.ErrMessageValidationError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", ggr, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+
+	dt, err := model.FindProgramDetailsById(ggr.ProgramID)
+	if err == model.ErrResourceNotFound {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageInvalidProgram, logger.TraceID)
+		logger.SetStatus(status).Log("param :", ggr, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	} else if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInvalidProgram+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", ggr, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+
+	ed := dt.EndDate
+	generatedVoucher := model.CountVoucher(dt.Id)
+	var availableVoucher = int(dt.MaxQuantityVoucher) - generatedVoucher
+	if availableVoucher == 0 {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, logger.TraceID)
+		logger.SetStatus(status).Log("param :", ggr, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	} else if !(dt.Type == model.ProgramTypeGift) {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeInvalidProgramType, model.ErrMessageInvalidProgramType, logger.TraceID)
+		logger.SetStatus(status).Log("param :", ggr, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	} else if !ed.After(time.Now()) {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeVoucherExpired, model.ErrMessageVoucherExpired, logger.TraceID)
+		logger.SetStatus(status).Log("param :", ggr, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+
+	ggr.AccountID = dt.AccountId
+	ggr.ProgramID = dt.Id
+	ggr.CreatedBy = a.User.ID
+
+	var voucher []model.Voucher
+	voucher, err = ggr.generateGift(&dt)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"( failed Genarate Voucher :"+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", ggr, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+
+	//need to return array
+	var generatedVouchers []VoucerResponse
+	for _, v := range voucher {
+		gvr := VoucerResponse{
+			VoucherID: v.ID,
+			VoucherNo: v.VoucherCode,
+			ExpiredAt: v.ExpiredAt,
+		}
+		generatedVouchers = append(generatedVouchers, gvr)
+	}
+
+	status = http.StatusCreated
+	res = NewResponse(generatedVouchers)
+	logger.SetStatus(status).Log("param :", ggr, "response :", generatedVouchers)
+	render.JSON(w, res, status)
+	return
+}
+
 //GenerateVoucherOnDemand Generate singgle voucher request
 func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	var gvd GenerateVoucherRequest
@@ -1060,6 +1306,38 @@ func (r *RedeemVoucherRequest) UpdateVoucher() (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (ggr *GenerateGiftRequest) generateGift(v *model.Program) ([]model.Voucher, error) {
+	ret := make([]model.Voucher, ggr.Quantity)
+	var code []string
+	var vcf model.VoucherCodeFormat
+
+	vcf, err := model.GetVoucherCodeFormat(v.VoucherFormat)
+	if err != nil {
+		return ret, err
+	}
+
+	for i := 0; i <= ggr.Quantity-1; i++ {
+
+		code = append(code, voucherCode(vcf, v.VoucherFormat))
+
+		rd := model.Voucher{
+			VoucherCode:  code[i],
+			ProgramID:    ggr.ProgramID,
+			VoucherValue: v.VoucherValue,
+			State:        model.VoucherStateCreated,
+			CreatedBy:    ggr.CreatedBy, //note harus nya by user
+			CreatedAt:    time.Now(),
+		}
+		rd.Holder = sql.NullString{String: "", Valid: true}
+
+		if err := rd.InsertVc(); err != nil {
+			log.Panic(err)
+		}
+		ret[i] = rd
+	}
+	return ret, nil
 }
 
 func (vr *GenerateVoucherRequest) generateVoucher(v *model.Program) ([]model.Voucher, error) {
