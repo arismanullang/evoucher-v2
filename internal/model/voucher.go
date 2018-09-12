@@ -521,11 +521,11 @@ func FindTodayVouchers(param map[string]string) ([]Voucher, error) {
 }
 
 func (d *GeneratePrivilegeRequest) InsertPrivilegeVc() error {
-	vc, err := db.Beginx()
+	tx, err := db.Beginx()
 	if err != nil {
 		return err
 	}
-	defer vc.Rollback()
+	defer tx.Rollback()
 
 	q := `
 		INSERT INTO vouchers(
@@ -575,14 +575,13 @@ func (d *GeneratePrivilegeRequest) InsertPrivilegeVc() error {
 				WHERE
 					holder = ?
 			)
-		RETURNING id
 	`
-	var res string
-	if err := vc.Select(&res, vc.Rebind(q), d.MemberID, d.MemberName, time.Now(), d.CompanyID, d.MemberID); err != nil {
+
+	if _, err := tx.Exec(tx.Rebind(q), d.MemberID, d.MemberName, time.Now(), d.CompanyID, d.MemberID); err != nil {
 		return err
 	}
 
-	if err := vc.Commit(); err != nil {
+	if err := tx.Commit(); err != nil {
 		return err
 	}
 
