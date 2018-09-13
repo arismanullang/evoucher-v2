@@ -926,6 +926,12 @@ func GenerateGift(w http.ResponseWriter, r *http.Request) {
 		logger.SetStatus(status).Log("param :", ggr, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
+	} else if ggr.Quantity < 0 {
+		status = http.StatusBadRequest
+		res.AddError(its(status), model.ErrCodeVoucherQtyMin, model.ErrMessageVoucherQtyMin, logger.TraceID)
+		logger.SetStatus(status).Log("param :", ggr, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
 	}
 
 	ggr.AccountID = dt.AccountId
