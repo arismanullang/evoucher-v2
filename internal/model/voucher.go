@@ -472,6 +472,48 @@ func FindsVouchers(param map[string]string) ([]Voucher, error) {
 	return resd, nil
 }
 
+func GetGiftVouchers(giftType string, programID string) ([]Voucher, error) {
+	q := `
+		SELECT
+			v.id
+			, v.voucher_code
+			, v.reference_no
+			, v.holder
+			, v.holder_phone
+			, v.holder_email
+			, v.holder_description
+			, v.valid_at
+			, v.expired_at
+			, v.voucher_value
+			, v.state
+			, v.created_by
+			, v.created_at
+			, v.updated_by
+			, v.updated_at
+			, v.status
+		FROM vouchers v
+		WHERE program_id = ?
+			AND status = ?
+	`
+	if giftType == VouchersGiftAssigned {
+		q += `AND holder != ''`
+	} else if giftType == VouchersGiftUnassigned {
+		q += `AND holder = ''`
+	}
+
+	q += ` ORDER BY updated_at DESC`
+
+	var resd []Voucher
+	if err := db.Select(&resd, db.Rebind(q), programID, StatusCreated); err != nil {
+		return []Voucher{}, err
+	}
+	if len(resd) < 1 {
+		return []Voucher{}, ErrResourceNotFound
+	}
+
+	return resd, nil
+}
+
 func FindTodayVouchers(param map[string]string) ([]Voucher, error) {
 	q := `
 		SELECT DISTINCT

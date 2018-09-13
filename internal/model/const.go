@@ -132,6 +132,9 @@ const (
 	VoucherStateRollback  string = "rollback"
 	VoucherStateSend      string = "send"
 
+	VouchersGiftAssigned   string = "assigned"
+	VouchersGiftUnassigned string = "unassigned"
+
 	ALPHABET     = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 	NUMERALS     = "1234567890"
 	ALPHANUMERIC = ALPHABET + NUMERALS
