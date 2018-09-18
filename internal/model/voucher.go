@@ -862,22 +862,62 @@ func CountHolderVoucher(programId, holder string) int {
 	}
 	defer vc.Rollback()
 
-	q := `
+	var limitRedeemBy []string
+
+	q0 := `
 		SELECT
-			count(1)
+			limit_redeem_by
 		FROM
-			vouchers
+			programs
 		WHERE
-			program_id = ?
-			AND holder = ?
-			AND status = ?
+			id = ?
 	`
-	var resd []int
-	if err := db.Select(&resd, db.Rebind(q), programId, holder, StatusCreated); err != nil {
+
+	if err := db.Select(&limitRedeemBy, db.Rebind(q0), programId); err != nil {
 		log.Panic(err)
 		return 0
 	}
-	return resd[0]
+
+	var resd []int
+
+	if limitRedeemBy[0] == LimitRedeemByDay {
+		q := `
+			SELECT
+				count(1)
+			FROM
+				vouchers
+			WHERE
+				created_at BETWEEN ?
+				AND ?
+				AND program_id = ?
+				AND holder = ?
+				AND status = ?
+			`
+		if err := db.Select(&resd, db.Rebind(q), time.Now().AddDate(0, 0, -1), time.Now(), programId, holder, StatusCreated); err != nil {
+			log.Panic(err)
+			return 0
+		}
+
+		return resd[0]
+	} else {
+		q := `
+			SELECT
+				count(1)
+			FROM
+				vouchers
+			WHERE
+				program_id = ?
+				AND holder = ?
+				AND status = ?
+			`
+		if err := db.Select(&resd, db.Rebind(q), programId, holder, StatusCreated); err != nil {
+			log.Panic(err)
+			return 0
+		}
+
+		return resd[0]
+	}
+
 }
 
 func HardDelete(program string) error {
