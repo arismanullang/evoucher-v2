@@ -781,6 +781,20 @@ func AssignGift(w http.ResponseWriter, r *http.Request) {
 	for idx, assignData := range agr.Data {
 		var tsd, ted time.Time
 
+		if assignData.ProgramID == "" {
+			status = http.StatusBadRequest
+			res.AddError(its(status), model.ErrCodeMissingParameter, model.ErrMessageMissingParameter+" program_id", logger.TraceID)
+			logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())
+			render.JSON(w, res, status)
+			return
+		} else if len(assignData.VoucherIDs) <= 0 {
+			status = http.StatusBadRequest
+			res.AddError(its(status), model.ErrCodeMissingParameter, model.ErrMessageMissingParameter+" voucher_ids", logger.TraceID)
+			logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())
+			render.JSON(w, res, status)
+			return
+		}
+
 		dt, err := model.FindProgramDetailsById(assignData.ProgramID)
 		if err == model.ErrResourceNotFound {
 			status = http.StatusNotFound
@@ -851,8 +865,14 @@ func AssignGift(w http.ResponseWriter, r *http.Request) {
 
 	log.Println(agr)
 
-	err = agr.AssignVoucher()
-	if err != nil {
+	msg, err := agr.AssignVoucher()
+	if err == model.ErrResourceNotFound {
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, msg+model.ErrMessageInvalidVoucher, logger.TraceID)
+		logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	} else if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"( failed to assign Voucher :"+err.Error()+")", logger.TraceID)
 		logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())

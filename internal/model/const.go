@@ -49,6 +49,7 @@ const (
 	ErrCodeAllowAccumulativeDisable string = "accumulation_is_not_allowed"
 	ErrCodeInvalidRedeemMethod      string = "invalid_redeem_method"
 	ErrCodeResourceNotFound         string = "resource_not_found"
+	ErrCodeMissingParameter         string = "missing_parameter"
 	ErrCodeRouteNotFound            string = "route_not_found"
 	ErrCodeInternalError            string = "internal_error"
 	ErrCodeVoucherNotActive         string = "voucher_not_active"
@@ -76,6 +77,7 @@ const (
 
 	ErrMessageAllowAccumulativeDisable string = "Accumulation is not allowed"
 	ErrMessageResourceNotFound         string = "Resource not found"
+	ErrMessageMissingParameter         string = "Missing parameter"
 	ErrMessageInternalError            string = "Internal error "
 	ErrMessageVoucherNotActive         string = "Voucher is not active yet (before start date)"
 	ErrMessageVoucherDisabled          string = "Voucher has been disabled (has already been used or paid)"

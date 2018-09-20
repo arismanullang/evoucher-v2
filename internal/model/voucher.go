@@ -44,18 +44,18 @@ type (
 	}
 
 	AssignGiftRequest struct {
-		HolderID          string           `json:"holder_id"`
-		HolderEmail       string           `json:"holder_email"`
-		HolderPhone       string           `json:"holder_phone"`
-		HolderDescription string           `json:"holder_description"`
-		ReferenceNo       string           `json:"reference_no"`
-		Data              []AssignGiftData `json:"data"`
+		HolderID          string           `json:"holder_id" valid:"required"`
+		HolderEmail       string           `json:"holder_email" valid:"required"`
+		HolderPhone       string           `json:"holder_phone" valid:"required"`
+		HolderDescription string           `json:"holder_description" valid:"required"`
+		ReferenceNo       string           `json:"reference_no" valid:"required"`
+		Data              []AssignGiftData `json:"data" valid:"required"`
 		User              string           `json:"updated_by"`
 	}
 
 	AssignGiftData struct {
-		ProgramID  string    `json:"program_id"`
-		VoucherIDs []string  `json:"voucher_ids"`
+		ProgramID  string    `json:"program_id" valid:"required`
+		VoucherIDs []string  `json:"voucher_ids" valid:"required`
 		ValidAt    time.Time `json:"valid_at"`
 		ExpiredAt  time.Time `json:"expired_at"`
 	}
@@ -580,10 +580,10 @@ func FindTodayVouchers(param map[string]string) ([]Voucher, error) {
 	return resd, nil
 }
 
-func (d *AssignGiftRequest) AssignVoucher() error {
+func (d *AssignGiftRequest) AssignVoucher() (string, error) {
 	tx, err := db.Beginx()
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer tx.Rollback()
 
@@ -615,26 +615,27 @@ func (d *AssignGiftRequest) AssignVoucher() error {
 			//add voucherID to list voucherIDs
 			voucherIDs = append(voucherIDs, voucherID)
 			if err := tx.Select(&result, tx.Rebind(q), assignData.ValidAt, assignData.ExpiredAt, d.User, time.Now(), voucherID, assignData.ProgramID); err != nil {
-				return err
+				return "", err
 			}
 
 			//add result to finalResult for checking purpose
 			if len(result) > 0 {
 				finalResult = append(finalResult, result[0])
+			} else if len(result) == 0 {
+				return voucherID + "-", ErrResourceNotFound
 			}
 		}
 	}
 
-	//if all return query != all list voucherIDs return err
 	if len(finalResult) != len(voucherIDs) {
-		return ErrNotModified
+		return "", ErrNotModified
 	}
 
 	if err := tx.Commit(); err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return "", nil
 }
 
 func (d *GeneratePrivilegeRequest) InsertPrivilegeVc() error {
