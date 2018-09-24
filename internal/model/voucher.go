@@ -44,18 +44,18 @@ type (
 	}
 
 	AssignGiftRequest struct {
-		HolderID          string           `json:"holder_id" valid:"required"`
-		HolderEmail       string           `json:"holder_email" valid:"required"`
-		HolderPhone       string           `json:"holder_phone" valid:"required"`
-		HolderDescription string           `json:"holder_description" valid:"required"`
-		ReferenceNo       string           `json:"reference_no" valid:"required"`
-		Data              []AssignGiftData `json:"data" valid:"required"`
+		HolderID          string           `json:"holder_id" valid:"required~holder_id is required"`
+		HolderEmail       string           `json:"holder_email" valid:"required~holder_email is required"`
+		HolderPhone       string           `json:"holder_phone" valid:"required~holder_phone is required"`
+		HolderDescription string           `json:"holder_description" valid:"required~holder_description is required"`
+		ReferenceNo       string           `json:"reference_no" valid:"required~reference_no is required"`
+		Data              []AssignGiftData `json:"data" valid:"required~data is required"`
 		User              string           `json:"updated_by"`
 	}
 
 	AssignGiftData struct {
-		ProgramID  string    `json:"program_id" valid:"required`
-		VoucherIDs []string  `json:"voucher_ids" valid:"required`
+		ProgramID  string    `json:"program_id" valid:"required~program_id is required`
+		VoucherIDs []string  `json:"voucher_ids" valid:"required~voucher_ids is required`
 		ValidAt    time.Time `json:"valid_at"`
 		ExpiredAt  time.Time `json:"expired_at"`
 	}
