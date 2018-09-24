@@ -53,6 +53,10 @@ type (
 		User              string           `json:"updated_by"`
 	}
 
+	UnassignGiftRequest struct {
+		VoucherID string `json:"voucher_id"`
+	}
+
 	AssignGiftData struct {
 		ProgramID  string    `json:"program_id" valid:"required~program_id is required`
 		VoucherIDs []string  `json:"voucher_ids" valid:"required~voucher_ids is required`
@@ -578,6 +582,48 @@ func FindTodayVouchers(param map[string]string) ([]Voucher, error) {
 	}
 
 	return resd, nil
+}
+
+func UnassignVoucher(user, voucherID string) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	q :=
+		`
+		UPDATE vouchers
+		SET
+			holder = ''
+			, holder_email =  ''
+			, holder_phone =  ''
+			, holder_description =  ''
+			, reference_no =  ''
+			, valid_at = '0001-01-01 00:00:00+00:00'
+			, expired_at = '0001-01-01 00:00:00+00:00'
+			, updated_by = ?
+			, updated_at = ?
+		WHERE
+			id = ?
+			AND state = 'created'
+		RETURNING id
+	`
+
+	var result []string
+	if err := tx.Select(&result, tx.Rebind(q), user, time.Now(), voucherID); err != nil {
+		return err
+	}
+
+	if len(result) == 0 {
+		return ErrResourceNotFound
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (d *AssignGiftRequest) AssignVoucher() (string, error) {
