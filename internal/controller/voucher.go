@@ -1044,7 +1044,7 @@ func GetCsvSample(w http.ResponseWriter, r *http.Request) {
 //CheckVoucherRedemption validation
 func (r *TransactionRequest) CheckVoucherRedemption(voucherID string) (bool, string, error) {
 
-	voucher, err := model.FindVoucher(map[string]string{"id": voucherID})
+	voucher, err := model.FindVoucher(map[string]string{"id": voucherID, "program_id": r.ProgramID})
 
 	if err != nil {
 		return false, "", err
