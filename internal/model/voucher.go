@@ -44,18 +44,22 @@ type (
 	}
 
 	AssignGiftRequest struct {
-		HolderID          string           `json:"holder_id"`
-		HolderEmail       string           `json:"holder_email"`
-		HolderPhone       string           `json:"holder_phone"`
-		HolderDescription string           `json:"holder_description"`
-		ReferenceNo       string           `json:"reference_no"`
-		Data              []AssignGiftData `json:"data"`
+		HolderID          string           `json:"holder_id" valid:"required~holder_id is required"`
+		HolderEmail       string           `json:"holder_email" valid:"required~holder_email is required"`
+		HolderPhone       string           `json:"holder_phone" valid:"required~holder_phone is required"`
+		HolderDescription string           `json:"holder_description" valid:"required~holder_description is required"`
+		ReferenceNo       string           `json:"reference_no" valid:"required~reference_no is required"`
+		Data              []AssignGiftData `json:"data" valid:"required~data is required"`
 		User              string           `json:"updated_by"`
 	}
 
+	UnassignGiftRequest struct {
+		VoucherID string `json:"voucher_id"`
+	}
+
 	AssignGiftData struct {
-		ProgramID  string    `json:"program_id"`
-		VoucherIDs []string  `json:"voucher_ids"`
+		ProgramID  string    `json:"program_id" valid:"required~program_id is required`
+		VoucherIDs []string  `json:"voucher_ids" valid:"required~voucher_ids is required`
 		ValidAt    time.Time `json:"valid_at"`
 		ExpiredAt  time.Time `json:"expired_at"`
 	}
@@ -472,6 +476,48 @@ func FindsVouchers(param map[string]string) ([]Voucher, error) {
 	return resd, nil
 }
 
+func GetGiftVouchers(giftType string, programID string) ([]Voucher, error) {
+	q := `
+		SELECT
+			v.id
+			, v.voucher_code
+			, v.reference_no
+			, v.holder
+			, v.holder_phone
+			, v.holder_email
+			, v.holder_description
+			, v.valid_at
+			, v.expired_at
+			, v.voucher_value
+			, v.state
+			, v.created_by
+			, v.created_at
+			, v.updated_by
+			, v.updated_at
+			, v.status
+		FROM vouchers v
+		WHERE program_id = ?
+			AND status = ?
+	`
+	if giftType == VouchersGiftAssigned {
+		q += `AND holder != ''`
+	} else if giftType == VouchersGiftUnassigned {
+		q += `AND holder = ''`
+	}
+
+	q += ` ORDER BY updated_at DESC`
+
+	var resd []Voucher
+	if err := db.Select(&resd, db.Rebind(q), programID, StatusCreated); err != nil {
+		return []Voucher{}, err
+	}
+	if len(resd) < 1 {
+		return []Voucher{}, ErrResourceNotFound
+	}
+
+	return resd, nil
+}
+
 func FindTodayVouchers(param map[string]string) ([]Voucher, error) {
 	q := `
 		SELECT DISTINCT
@@ -538,10 +584,52 @@ func FindTodayVouchers(param map[string]string) ([]Voucher, error) {
 	return resd, nil
 }
 
-func (d *AssignGiftRequest) AssignVoucher() error {
+func UnassignVoucher(user, voucherID string) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		return err
+	}
+	defer tx.Rollback()
+
+	q :=
+		`
+		UPDATE vouchers
+		SET
+			holder = ''
+			, holder_email =  ''
+			, holder_phone =  ''
+			, holder_description =  ''
+			, reference_no =  ''
+			, valid_at = '0001-01-01 00:00:00+00:00'
+			, expired_at = '0001-01-01 00:00:00+00:00'
+			, updated_by = ?
+			, updated_at = ?
+		WHERE
+			id = ?
+			AND state = 'created'
+		RETURNING id
+	`
+
+	var result []string
+	if err := tx.Select(&result, tx.Rebind(q), user, time.Now(), voucherID); err != nil {
+		return err
+	}
+
+	if len(result) == 0 {
+		return ErrResourceNotFound
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *AssignGiftRequest) AssignVoucher() (string, error) {
+	tx, err := db.Beginx()
+	if err != nil {
+		return "", err
 	}
 	defer tx.Rollback()
 
@@ -573,26 +661,27 @@ func (d *AssignGiftRequest) AssignVoucher() error {
 			//add voucherID to list voucherIDs
 			voucherIDs = append(voucherIDs, voucherID)
 			if err := tx.Select(&result, tx.Rebind(q), assignData.ValidAt, assignData.ExpiredAt, d.User, time.Now(), voucherID, assignData.ProgramID); err != nil {
-				return err
+				return "", err
 			}
 
 			//add result to finalResult for checking purpose
 			if len(result) > 0 {
 				finalResult = append(finalResult, result[0])
+			} else if len(result) == 0 {
+				return voucherID + "-", ErrResourceNotFound
 			}
 		}
 	}
 
-	//if all return query != all list voucherIDs return err
 	if len(finalResult) != len(voucherIDs) {
-		return ErrNotModified
+		return "", ErrNotModified
 	}
 
 	if err := tx.Commit(); err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return "", nil
 }
 
 func (d *GeneratePrivilegeRequest) InsertPrivilegeVc() error {

@@ -169,6 +169,8 @@ func init() {
 	r.GetFunc("/v1/transaction/history/:id", controller.TransactionHistoryDetail)
 
 	//public API
+	r.GetFunc("/v1/voucher/all/gift", controller.GetGiftVouchers)
+	r.PostFunc("/v1/voucher/unassign/gift", controller.UnassignGift)
 	r.PostFunc("/v1/voucher/assign/gift", controller.AssignGift)
 	r.PostFunc("/v1/voucher/generate/gift", controller.GenerateGift)
 	r.GetFunc("/v1/public/challenge", controller.GetChallenge)

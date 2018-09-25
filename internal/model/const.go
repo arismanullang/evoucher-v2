@@ -49,6 +49,7 @@ const (
 	ErrCodeAllowAccumulativeDisable string = "accumulation_is_not_allowed"
 	ErrCodeInvalidRedeemMethod      string = "invalid_redeem_method"
 	ErrCodeResourceNotFound         string = "resource_not_found"
+	ErrCodeMissingParameter         string = "missing_parameter"
 	ErrCodeRouteNotFound            string = "route_not_found"
 	ErrCodeInternalError            string = "internal_error"
 	ErrCodeVoucherNotActive         string = "voucher_not_active"
@@ -59,6 +60,7 @@ const (
 	ErrCodeVoucherRulesViolated     string = "invalid_rules_violated"
 	ErrCodeInvalidProgramType       string = "invalid_program_type"
 	ErrCodeVoucherQtyExceeded       string = "voucher_quantity_exceeded"
+	ErrCodeVoucherQtyMin            string = "voucher_quantity_min"
 	ErrCodeMissingOrderItem         string = "missing_order_items"
 	ErrCodeMissingToken             string = "missing_token"
 	ErrCodeInvalidToken             string = "invalid_token"
@@ -75,6 +77,7 @@ const (
 
 	ErrMessageAllowAccumulativeDisable string = "Accumulation is not allowed"
 	ErrMessageResourceNotFound         string = "Resource not found"
+	ErrMessageMissingParameter         string = "Missing parameter"
 	ErrMessageInternalError            string = "Internal error "
 	ErrMessageVoucherNotActive         string = "Voucher is not active yet (before start date)"
 	ErrMessageVoucherDisabled          string = "Voucher has been disabled (has already been used or paid)"
@@ -83,6 +86,7 @@ const (
 	ErrMessageVoucherAlreadyPaid       string = "Voucher has already paid"
 	ErrMessageInvalidVoucher           string = "Invalid voucher, voucher id not found"
 	ErrMessageVoucherQtyExceeded       string = "Voucher's quantities limit has been exceeded"
+	ErrMessageVoucherQtyMin            string = "Voucher's quantity must be more than 0"
 	ErrMessageVoucherRulesViolated     string = "Order did not match validation rules"
 	ErrMessageInvalidProgramType       string = "Invalid program type"
 	ErrMessageMissingOrderItem         string = "Order items was not specified"
@@ -129,6 +133,9 @@ const (
 	VoucherStateDeleted   string = "deleted"
 	VoucherStateRollback  string = "rollback"
 	VoucherStateSend      string = "send"
+
+	VouchersGiftAssigned   string = "assigned"
+	VouchersGiftUnassigned string = "unassigned"
 
 	ALPHABET     = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 	NUMERALS     = "1234567890"
