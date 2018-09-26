@@ -199,7 +199,21 @@ func FindAllAccounts() ([]AccountRes, error) {
 
 func FindAllAccountsDetail() ([]Account, error) {
 	q := `
-		SELECT *
+		SELECT
+			id
+			, name
+			, billing
+			, alias
+			, email
+			, address
+			, city
+			, province
+			, building
+			, zip_code
+			, created_at
+			, created_by
+			, updated_at
+			, updated_by
 		FROM accounts
 		WHERE NOT name = 'suadmin'
 	`
