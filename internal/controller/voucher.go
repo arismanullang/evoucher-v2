@@ -1011,7 +1011,7 @@ func GenerateGift(w http.ResponseWriter, r *http.Request) {
 	ed := dt.EndDate
 	generatedVoucher := model.CountVoucher(dt.Id)
 	var availableVoucher = int(dt.MaxQuantityVoucher) - generatedVoucher
-	if availableVoucher == 0 {
+	if availableVoucher <= 0 || ggr.Quantity > availableVoucher {
 		status = http.StatusBadRequest
 		res.AddError(its(status), model.ErrCodeVoucherQtyExceeded, model.ErrMessageVoucherQtyExceeded, logger.TraceID)
 		logger.SetStatus(status).Log("param :", ggr, "response :", res.Errors.ToString())
