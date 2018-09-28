@@ -69,7 +69,8 @@ function searchById(id) {
 			$("#voucher-price").val(program.voucher_price);
 			$("#voucher-quantity").val(program.max_quantity_voucher);
 			$("#generate-voucher").val(program.max_generate_voucher);
-			$("#max-redeem-voucher").val(program.max_redeem_voucher);
+      $("#max-redeem-voucher").val(program.max_redeem_voucher);
+			$("#limit-redeem-by").val(program.limit_redeem_by);
 			$("#redemption-method").val(program.redeem_method);
 			$("#program-valid-from").val(convertToDate(program.start_date));
 			$("#program-valid-to").val(convertToDate(program.end_date));
@@ -256,7 +257,9 @@ function send() {
 	}
 
 	var maxRedeem = parseInt($("#max-redeem-voucher").val());
-	var maxGenerate = parseInt($("#generate-voucher").val());
+  var maxGenerate = parseInt($("#generate-voucher").val());
+
+  var limitRedeemBy = $("#limit-redeem-by").find(":selected").val();
 
 	if ($("#program-type").val() == "bulk") {
 		maxGenerate = 1;
@@ -280,7 +283,26 @@ function send() {
 			digits: true,
 			min: 1
 		});
-	}
+  }
+
+  var programEndDate = new Date(programValidTo);
+  programEndDate.setHours(23);
+  programEndDate.setMinutes(59);
+  programEndDate.setSeconds(59);
+
+  var voucherEndDate = new Date(periodEnd);
+  if(periodEnd != "01/01/1970"){
+    voucherEndDate.setHours(23);
+    voucherEndDate.setMinutes(59);
+    voucherEndDate.setSeconds(59);
+  }
+  var today = dateFormat(new Date(), 'isoUtcDateTime');
+  startHour = startHour + ':00' + today.substr(19);
+  endHour = endHour + ':00' + today.substr(19);
+
+  //2018-06-29T09:07:51Z
+  console.log(startHour);
+  console.log(endHour);
 
 	var formData = new FormData();
 	var img = $('#image-url-default').val();
@@ -308,11 +330,12 @@ function send() {
 					voucher_price: voucherPrice,
 					max_quantity_voucher: maxQuantityVoucher,
 					max_redeem_voucher: maxRedeem,
-					max_generate_voucher: maxGenerate,
+          max_generate_voucher: maxGenerate,
+          limit_redeem_by: limitRedeemBy,
 					allow_accumulative: allowAccumulative,
 					redemption_method: redeem,
-					start_date: programValidFrom,
-					end_date: programValidTo,
+					start_date: dateFormat(new Date(programValidFrom), 'isoUtcDateTime'),
+					end_date: dateFormat(programEndDate, 'isoUtcDateTime'),
 					start_hour: startHour,
 					end_hour: endHour,
 					voucher_value: voucherValue,
@@ -320,8 +343,8 @@ function send() {
 					tnc: tnc,
 					description: programDescription,
 					validity_days: listDay,
-					valid_voucher_start: periodStart,
-					valid_voucher_end: periodEnd,
+					valid_voucher_start: dateFormat(new Date(periodStart), 'isoUtcDateTime'),
+					valid_voucher_end: dateFormat(voucherEndDate, 'isoUtcDateTime'),
 					voucher_lifetime: lifetime,
 					visibility: visibility,
 					voucher_format: format
@@ -382,11 +405,12 @@ function send() {
 			voucher_price: voucherPrice,
 			max_quantity_voucher: maxQuantityVoucher,
 			max_redeem_voucher: maxRedeem,
-			max_generate_voucher: maxGenerate,
+      max_generate_voucher: maxGenerate,
+      limit_redeem_by: limitRedeemBy,
 			allow_accumulative: allowAccumulative,
 			redemption_method: redeem,
-			start_date: programValidFrom,
-			end_date: programValidTo,
+			start_date: dateFormat(new Date(programValidFrom), 'isoUtcDateTime'),
+			end_date: dateFormat(programEndDate, 'isoUtcDateTime'),
 			start_hour: startHour,
 			end_hour: endHour,
 			voucher_value: voucherValue,
@@ -394,8 +418,8 @@ function send() {
 			tnc: tnc,
 			description: programDescription,
 			validity_days: listDay,
-			valid_voucher_start: periodStart,
-			valid_voucher_end: periodEnd,
+			valid_voucher_start: dateFormat(new Date(periodStart), 'isoUtcDateTime'),
+			valid_voucher_end: dateFormat(voucherEndDate, 'isoUtcDateTime'),
 			voucher_lifetime: lifetime,
 			visibility: visibility,
 			voucher_format: format

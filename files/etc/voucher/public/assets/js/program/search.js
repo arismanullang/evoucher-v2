@@ -1,12 +1,21 @@
 $(document).ready(function () {
-	getProgram();
+  getProgram();
+  $(document).ajaxStart(function(){
+    // Show image container
+    $(".cssload-loader").show();
+   });
+   $(document).ajaxComplete(function(){
+    // Hide image container
+    $(".cssload-loader").hide();
+   });
 });
 
 function getProgram() {
 	var arrData = [];
 	$.ajax({
 		url: '/v1/ui/program/all?token=' + token,
-		type: 'get',
+    type: 'get',
+    processing: true,
 		success: function (data) {
 			arrData = data.data;
 			var i;
@@ -37,9 +46,11 @@ function getProgram() {
 
 				dataId.push(arrData[i].id);
 				if (arrData[i].type == "on-demand") {
-					dataType.push("Mobile App");
+					dataType.push("mobile app");
 				} else if (arrData[i].type == "gift") {
-					dataType.push("Gift Voucher");
+					dataType.push("gift voucher");
+				} else if (arrData[i].type == "privilege") {
+          dataType.push("privilege");
 				} else {
 					dataType.push("Email Blast");
 				}
@@ -77,7 +88,7 @@ function getProgram() {
 					} else if (Date.now() > dateEnd.getTime()) {
 						dataStatus.push("End");
 					}
-				} else if (arrData[i].status = 'deleted') {
+				} else if (arrData[i].status = "deleted") {
 					dataStatus.push("Disabled");
 				}
 
@@ -92,7 +103,11 @@ function getProgram() {
 			for (i = 0; i < dataId.length; i++) {
 				var button = "<button type='button' onclick='detail(\"" + dataId[i] + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>" +
 					"<button type='button' onclick='edit(\"" + dataId[i] + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>" +
-					"<button type='button' value=\"" + dataId[i] + "\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>"
+          "<button type='button' value=\"" + dataId[i] + "\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>"
+
+          if(dataType[i] == "privilege"){
+            button = "<button type='button' onclick='detail(\"" + dataId[i] + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"
+          }
 
 				var avail = 0;
 				var redemptionRate = 0;
@@ -117,9 +132,27 @@ function getProgram() {
 					, avail
 					, Math.round(redemptionRate) + "%"
 					, button
-				];
+        ];
 
-				dataSet.push(tempArray);
+        var privilegeArray = [
+          dataName[i].toUpperCase()
+					, dataType[i].toUpperCase()
+					, "-"
+					, dataStatus[i].toUpperCase()
+					, dataStart[i].toUpperCase()
+					, dataEnd[i].toUpperCase()
+					, dataModified[i].toUpperCase()
+					, "-"
+					, "-"
+					, "-"
+					, button
+        ];
+
+        if(dataType[i] == "privilege"){
+          dataSet.push(privilegeArray);
+        } else {
+          dataSet.push(tempArray);
+        }
 			}
 
 			if ($.fn.DataTable.isDataTable("#datatable1")) {
@@ -128,7 +161,7 @@ function getProgram() {
 
 			var table = $('#datatable1').dataTable({
 				data: dataSet,
-				dom: 'lBrtip',
+        dom: 'lBrtip',
 				buttons: [
 					'copy', 'csv', 'excel', 'pdf', 'print'
 				],

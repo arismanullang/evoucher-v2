@@ -1,11 +1,10 @@
 package model
 
 import (
-	"github.com/sirupsen/logrus"
-	"log"
 	"math/rand"
-	"os"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type (
@@ -23,37 +22,15 @@ type (
 	}
 )
 
-var (
-	l        = logrus.New()
-	Path     string
-	FileName string
-)
+var l = logrus.New()
 
 func NewLog() *LogField {
-	d := new(LogField)
-	return startNewLog(d)
-}
-
-func startNewLog(f *LogField) *LogField {
 	return &LogField{
 		TraceID: GetTraceID(),
 	}
 }
 
-func initialFile(ext string) *os.File {
-	f, err := os.OpenFile(getFileName(ext), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	if err == nil {
-		l.Out = f
-	} else {
-		log.Panic("Failed to log to file, using default stderr (",err,")")
-	}
-	l.Formatter = new(logrus.JSONFormatter)
-
-	return f
-}
-
 func (d *LogField) Debug(m ...interface{}) {
-	f := initialFile("log")
 	l.WithFields(logrus.Fields{
 		"trace-ID": d.TraceID,
 		"Start":    d.StartTime,
@@ -65,11 +42,9 @@ func (d *LogField) Debug(m ...interface{}) {
 		"method":   d.Method,
 		"result":   d.Status,
 	}).Debug(m)
-	f.Close()
 }
 
 func (d *LogField) Info(m ...interface{}) {
-	f := initialFile("log")
 	l.WithFields(logrus.Fields{
 		"trace-ID": d.TraceID,
 		"Start":    d.StartTime,
@@ -81,11 +56,9 @@ func (d *LogField) Info(m ...interface{}) {
 		"method":   d.Method,
 		"result":   d.Status,
 	}).Info(m)
-	f.Close()
 }
 
 func (d *LogField) Panic(m ...interface{}) {
-	f := initialFile("log")
 	l.WithFields(logrus.Fields{
 		"trace-ID": d.TraceID,
 		"Start":    d.StartTime,
@@ -97,11 +70,9 @@ func (d *LogField) Panic(m ...interface{}) {
 		"method":   d.Method,
 		"result":   d.Status,
 	}).Panic(m)
-	f.Close()
 }
 
 func (d *LogField) Warn(m ...interface{}) {
-	f := initialFile("log")
 	l.WithFields(logrus.Fields{
 		"trace-ID": d.TraceID,
 		"Start":    d.StartTime,
@@ -113,11 +84,9 @@ func (d *LogField) Warn(m ...interface{}) {
 		"method":   d.Method,
 		"result":   d.Status,
 	}).Warn(m)
-	f.Close()
 }
 
 func (d *LogField) Log(m ...interface{}) {
-	f := initialFile("log")
 	l.WithFields(logrus.Fields{
 		"trace-ID": d.TraceID,
 		"Start":    d.StartTime,
@@ -129,7 +98,6 @@ func (d *LogField) Log(m ...interface{}) {
 		"method":   d.Method,
 		"result":   d.Status,
 	}).Info(m)
-	f.Close()
 }
 
 func GetTraceID() string {
@@ -140,13 +108,6 @@ func GetTraceID() string {
 		result[i] = chars[rand.Intn(len(chars))]
 	}
 	return string(result)
-}
-
-func getFileName(ext string) string {
-	t := time.Now()
-	periode := t.Format("20060102")
-	filename := FileName + "-" + periode + "." + ext
-	return Path + filename
 }
 
 func (d *LogField) SetService(service string) *LogField {

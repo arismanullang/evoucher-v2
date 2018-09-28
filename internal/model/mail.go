@@ -29,31 +29,31 @@ type (
 	}
 
 	ProgramCampaign struct {
-		Id           string `db:"id" json:"id"`
-		ProgramID    string `db:"program_id" json:"program_id"`
-		ProgramName  string `db:"program_name" json:"program_name"`
-		AccountID    string `db:"account_id" json:"account_id"`
-		ImageHeader  string `db:"header_image" json:"header_image"`
-		ImageVoucher string `db:"voucher_image" json:"voucher_image"`
-		ImageFooter  string `db:"footer_image" json:"footer_image"`
-		CreatedBy    string `db:"created_by" json:"created_by"`
-		CreatedAt    string `db:"created_at" json:"craeted_at"`
+		Id           string    `db:"id" json:"id"`
+		ProgramID    string    `db:"program_id" json:"program_id"`
+		ProgramName  string    `db:"program_name" json:"program_name"`
+		AccountID    string    `db:"account_id" json:"account_id"`
+		ImageHeader  string    `db:"header_image" json:"header_image"`
+		ImageVoucher string    `db:"voucher_image" json:"voucher_image"`
+		ImageFooter  string    `db:"footer_image" json:"footer_image"`
+		CreatedBy    string    `db:"created_by" json:"created_by"`
+		CreatedAt    time.Time `db:"created_at" json:"created_at"`
 	}
 
 	ProgramCampaignV2 struct {
-		ID           string `db:"id" json:"id"`
-		ProgramID    string `db:"program_id" json:"program_id"`
-		ProgramName  string `db:"program_name" json:"program_name"`
-		AccountID    string `db:"account_id" json:"account_id"`
-		Template     string `db:"email_template" json:"email_template"`
-		EmailSubject string `db:"email_subject" json:"email_subject"`
-		EmailSender  string `db:"email_sender" json:"email_sender"`
-		EmailContent string `db:"email_content" json:"email_content"`
-		ImageHeader  string `db:"header_image" json:"header_image"`
-		ImageVoucher string `db:"voucher_image" json:"voucher_image"`
-		ImageFooter  string `db:"footer_image" json:"footer_image"`
-		CreatedBy    string `db:"created_by" json:"created_by"`
-		CreatedAt    string `db:"created_at" json:"created_at"`
+		ID           string    `db:"id" json:"id"`
+		ProgramID    string    `db:"program_id" json:"program_id"`
+		ProgramName  string    `db:"program_name" json:"program_name"`
+		AccountID    string    `db:"account_id" json:"account_id"`
+		Template     string    `db:"email_template" json:"email_template"`
+		EmailSubject string    `db:"email_subject" json:"email_subject"`
+		EmailSender  string    `db:"email_sender" json:"email_sender"`
+		EmailContent string    `db:"email_content" json:"email_content"`
+		ImageHeader  string    `db:"header_image" json:"header_image"`
+		ImageVoucher string    `db:"voucher_image" json:"voucher_image"`
+		ImageFooter  string    `db:"footer_image" json:"footer_image"`
+		CreatedBy    string    `db:"created_by" json:"created_by"`
+		CreatedAt    time.Time `db:"created_at" json:"created_at"`
 	}
 
 	ConfirmationEmail struct {
@@ -66,7 +66,7 @@ type (
 		Holder          string
 		ProgramName     string
 		TransactionCode string
-		TransactionDate string
+		TransactionDate time.Time
 		PartnerName     string
 		ListEmail       []string
 		ListVoucher     []string
@@ -322,7 +322,7 @@ func makeMessageConfirmationEmail(accountId string, target ConfirmationEmailRequ
 	result := string(str)
 	result = strings.Replace(result, "%%full-name%%", target.Holder, 1)
 	result = strings.Replace(result, "%%transaction-code%%", target.TransactionCode, 1)
-	result = strings.Replace(result, "%%transaction-date%%", target.TransactionDate, 1)
+	result = strings.Replace(result, "%%transaction-date%%", target.TransactionDate.Format("2006-01-02 15:04:05"), 1)
 	result = strings.Replace(result, "%%program-name%%", target.ProgramName, 1)
 	result = strings.Replace(result, "%%voucher-code%%", voucher, 1)
 
@@ -339,9 +339,6 @@ func InsertCampaign(request ProgramCampaign, user string) (string, error) {
 	defer tx.Rollback()
 
 	var res []string
-	logs := []Log{}
-	tempLog := Log{}
-
 	campaign, err := GetCampaign(request.ProgramID)
 	if campaign.ProgramID == "" {
 		q := `
@@ -365,17 +362,6 @@ func InsertCampaign(request ProgramCampaign, user string) (string, error) {
 			fmt.Println(q)
 			return "", ErrServerInternal
 		}
-
-		tempLog = Log{
-			TableName:   "program_campaigns",
-			TableNameId: ValueChangeLogNone,
-			ColumnName:  ColumnChangeLogInsert,
-			Action:      ActionChangeLogInsert,
-			Old:         ValueChangeLogNone,
-			New:         res[0],
-			CreatedBy:   user,
-		}
-		logs = append(logs, tempLog)
 	} else {
 		q := `
 			UPDATE program_campaigns
@@ -397,49 +383,11 @@ func InsertCampaign(request ProgramCampaign, user string) (string, error) {
 			return "", ErrServerInternal
 		}
 		res = append(res, request.ProgramID)
-
-		tempLog = Log{
-			TableName:   "program_campaigns",
-			TableNameId: request.ProgramID,
-			ColumnName:  "header_image",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         request.ImageHeader,
-			CreatedBy:   request.CreatedBy,
-		}
-		logs = append(logs, tempLog)
-
-		tempLog = Log{
-			TableName:   "program_campaigns",
-			TableNameId: request.ProgramID,
-			ColumnName:  "voucher_image",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         request.ImageVoucher,
-			CreatedBy:   request.CreatedBy,
-		}
-		logs = append(logs, tempLog)
-
-		tempLog = Log{
-			TableName:   "program_campaigns",
-			TableNameId: request.ProgramID,
-			ColumnName:  "footer_image",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         request.ImageFooter,
-			CreatedBy:   request.CreatedBy,
-		}
-		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return "", ErrServerInternal
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return res[0], nil
@@ -454,9 +402,6 @@ func InsertCampaignV2(request ProgramCampaignV2, user string) (string, error) {
 	defer tx.Rollback()
 
 	var res []string
-	logs := []Log{}
-	tempLog := Log{}
-
 	campaign, err := GetCampaign(request.ProgramID)
 	if campaign.ProgramID == "" {
 		q := `
@@ -484,17 +429,6 @@ func InsertCampaignV2(request ProgramCampaignV2, user string) (string, error) {
 			fmt.Println(q)
 			return "", ErrServerInternal
 		}
-
-		tempLog = Log{
-			TableName:   "program_campaigns",
-			TableNameId: ValueChangeLogNone,
-			ColumnName:  ColumnChangeLogInsert,
-			Action:      ActionChangeLogInsert,
-			Old:         ValueChangeLogNone,
-			New:         res[0],
-			CreatedBy:   request.CreatedBy,
-		}
-		logs = append(logs, tempLog)
 	} else {
 		q := `
 			UPDATE program_campaigns
@@ -520,93 +454,11 @@ func InsertCampaignV2(request ProgramCampaignV2, user string) (string, error) {
 			return "", ErrServerInternal
 		}
 		res = append(res, request.ProgramID)
-
-		tempLog = Log{
-			TableName:   "program_campaigns",
-			TableNameId: request.ProgramID,
-			ColumnName:  "email_template",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         request.Template,
-			CreatedBy:   request.CreatedBy,
-		}
-		logs = append(logs, tempLog)
-
-		tempLog = Log{
-			TableName:   "program_campaigns",
-			TableNameId: request.ProgramID,
-			ColumnName:  "email_subject",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         request.EmailSubject,
-			CreatedBy:   request.CreatedBy,
-		}
-		logs = append(logs, tempLog)
-
-		tempLog = Log{
-			TableName:   "program_campaigns",
-			TableNameId: request.ProgramID,
-			ColumnName:  "email_sender",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         request.EmailSender,
-			CreatedBy:   request.CreatedBy,
-		}
-		logs = append(logs, tempLog)
-
-		tempLog = Log{
-			TableName:   "program_campaigns",
-			TableNameId: request.ProgramID,
-			ColumnName:  "email_content",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         request.EmailContent,
-			CreatedBy:   request.CreatedBy,
-		}
-		logs = append(logs, tempLog)
-
-		tempLog = Log{
-			TableName:   "program_campaigns",
-			TableNameId: request.ProgramID,
-			ColumnName:  "header_image",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         request.ImageHeader,
-			CreatedBy:   request.CreatedBy,
-		}
-		logs = append(logs, tempLog)
-
-		tempLog = Log{
-			TableName:   "program_campaigns",
-			TableNameId: request.ProgramID,
-			ColumnName:  "voucher_image",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         request.ImageVoucher,
-			CreatedBy:   request.CreatedBy,
-		}
-		logs = append(logs, tempLog)
-
-		tempLog = Log{
-			TableName:   "program_campaigns",
-			TableNameId: request.ProgramID,
-			ColumnName:  "footer_image",
-			Action:      ActionChangeLogUpdate,
-			Old:         ValueChangeLogNone,
-			New:         request.ImageFooter,
-			CreatedBy:   request.CreatedBy,
-		}
-		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return "", ErrServerInternal
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return res[0], nil

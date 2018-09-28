@@ -95,7 +95,22 @@ function getProgram() {
 					+ "<div class='col-lg-2'>Paid : "+tempProgramPaid+"</div>"
 					+ "</div></div></a></h4></div>"
 					+ "<div id='collapse"+i+"' role='tabpanel' aria-labelledby='heading"+i+"' class='panel-collapse collapse' aria-expanded='false' style='height: 0px;'>"
-					+ "<div class='panel-body'>";
+          + "<div class='panel-body'>";
+
+          if(result[i].type == "privilege"){
+              header = "<div id='heading"+i+"'role='tab' class='panel-heading'>"
+            + "<h4 class='panel-title'>"
+            + "<a role='button' data-toggle='collapse' data-parent='#accordion' href='#collapse"+i+"' aria-expanded='false' aria-controls='collapse"+i+"' class='collapsed'>"
+            + "<div class='row'><div class='col-lg-2'>" +result[i].name+"</div>"
+            + "<div class='col-lg-2'>End in : -</div>"
+            + "<div class='col-lg-2'>Stock : -</div>"
+            + "<div class='col-lg-2'>Redeemed : -</div>"
+            + "<div class='col-lg-2'>Used : "+tempProgramRedeemed+"</div>"
+            + "<div class='col-lg-2'>Paid : -</div>"
+            + "</div></div></a></h4></div>"
+            + "<div id='collapse"+i+"' role='tabpanel' aria-labelledby='heading"+i+"' class='panel-collapse collapse' aria-expanded='false' style='height: 0px;'>"
+            + "<div class='panel-body'>";
+          }
 
 				var html = header + eleVoucher;
 				html += "</div></div>";

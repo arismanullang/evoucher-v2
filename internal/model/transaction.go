@@ -80,14 +80,14 @@ type (
 	}
 
 	TransactionHistoryDetail struct {
-		VoucherID        string  `db:"id" json:"id"`
-		VoucherCode      string  `db:"voucher_code" json:"voucher_code"`
-		ProgramID        string  `db:"program_id" json:"program_id"`
-		ProgramName      string  `db:"program_name" json:"program_name"`
-		VoucherValue     float64 `db:"voucher_value" json:"voucher_value"`
-		ProgramStartDate string  `db:"program_start_date" json:"program_start_date"`
-		ProgramEndDate   string  `db:"program_end_date" json:"program_end_date"`
-		ProgramImgUrl    string  `db:"program_img_url" json:"program_img_url"`
+		VoucherID        string    `db:"id" json:"id"`
+		VoucherCode      string    `db:"voucher_code" json:"voucher_code"`
+		ProgramID        string    `db:"program_id" json:"program_id"`
+		ProgramName      string    `db:"program_name" json:"program_name"`
+		VoucherValue     float64   `db:"voucher_value" json:"voucher_value"`
+		ProgramStartDate time.Time `db:"program_start_date" json:"program_start_date"`
+		ProgramEndDate   time.Time `db:"program_end_date" json:"program_end_date"`
+		ProgramImgUrl    string    `db:"program_img_url" json:"program_img_url"`
 	}
 )
 
@@ -115,24 +115,12 @@ func InsertTransaction(d Transaction) (Transaction, error) {
 		created_at, created_by
 
 	`
-	var res []Transaction //[]Transaction
+	var res []Transaction
 	if err := tx.Select(&res, tx.Rebind(q), d.AccountId, d.PartnerId, d.Holder, d.TransactionCode, d.DiscountValue, d.Token, d.User, time.Now(), StatusCreated); err != nil {
 		return d, err
 	}
 	fmt.Println("insert transaction response :", res)
 	d.Id = res[0].Id
-
-	logs := []Log{}
-	tempLog := Log{
-		TableName:   "transactions",
-		TableNameId: ValueChangeLogNone,
-		ColumnName:  ColumnChangeLogInsert,
-		Action:      ActionChangeLogInsert,
-		Old:         ValueChangeLogNone,
-		New:         d.Id,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, tempLog)
 
 	for _, v := range d.VoucherIds {
 		q := `
@@ -150,26 +138,10 @@ func InsertTransaction(d Transaction) (Transaction, error) {
 		if err != nil {
 			return d, err
 		}
-
-		tempLog := Log{
-			TableName:   "transaction_details",
-			TableNameId: d.Id,
-			ColumnName:  ColumnChangeLogInsert,
-			Action:      ActionChangeLogInsert,
-			Old:         ValueChangeLogNone,
-			New:         v,
-			CreatedBy:   d.User,
-		}
-		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		return d, err
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return res[0], nil
@@ -198,40 +170,6 @@ func (d *DeleteTransactionRequest) Delete() error {
 		return err
 	}
 
-	logs := []Log{}
-	tempLog := Log{
-		TableName:   "transactions",
-		TableNameId: d.Id,
-		ColumnName:  "deleted_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         d.User,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "transactions",
-		TableNameId: d.Id,
-		ColumnName:  "deleted_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "transactions",
-		TableNameId: d.Id,
-		ColumnName:  "status",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         StatusDeleted,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, tempLog)
-
 	q = `
 		UPDATE transaction_details
 		SET
@@ -247,46 +185,8 @@ func (d *DeleteTransactionRequest) Delete() error {
 		return err
 	}
 
-	tempLog = Log{
-		TableName:   "transaction_details",
-		TableNameId: d.Id,
-		ColumnName:  "deleted_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         d.User,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "transaction_details",
-		TableNameId: d.Id,
-		ColumnName:  "deleted_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "transaction_details",
-		TableNameId: d.Id,
-		ColumnName:  "status",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         StatusDeleted,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, tempLog)
-
 	if err := tx.Commit(); err != nil {
 		return err
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
@@ -540,6 +440,116 @@ func FindTransactionsByPartner(accountId, partnerId string) ([]TransactionList, 
 			c.status = ?
 			AND ct.transaction_id = ?
 	`
+		//fmt.Println(q)
+		var res []string
+		if err := db.Select(&res, db.Rebind(q), StatusCreated, v.TransactionId); err != nil {
+			return resv, err
+		}
+		resv[i].CashOut.String = ""
+		if len(res) > 0 {
+			resv[i].CashOut.String = res[0]
+		}
+	}
+
+	return resv, nil
+}
+
+func FindTransactionsPrivilege(accountId string, startDate time.Time, endDate time.Time) ([]TransactionList, error) {
+	q := `
+	SELECT DISTINCT
+		 t.id as transaction_id
+		 , p.id as partner_id
+		 , p.name as partner_name
+		 , va.name as program_name
+		 , t.transaction_code
+		 , va.voucher_value
+		 , va.created_at as issued
+		 , t.created_at as redeemed
+		 , u.username
+	FROM transactions as t
+	JOIN transaction_details as dt
+	ON
+		t.id = dt.transaction_id
+	JOIN vouchers as vo
+	ON
+		dt.voucher_id = vo.id
+	JOIN programs as va
+	ON
+		va.id = vo.program_id
+	JOIN partners as p
+	ON
+		p.id = t.partner_id
+	JOIN users as u
+	ON
+		u.id = t.created_by
+	WHERE
+		t.status = ?
+		AND t.account_id = ?
+		AND t.created_at BETWEEN ? AND ?
+		AND va.voucher_type = 'privilege'
+`
+	q += `ORDER BY t.created_at DESC;`
+	//fmt.Println(q)
+	var resv []TransactionList
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId, startDate, endDate); err != nil {
+		fmt.Println(err.Error())
+		return resv, err
+	}
+	if len(resv) < 1 {
+		return resv, ErrResourceNotFound
+	}
+
+	for i, v := range resv {
+		q := `
+	SELECT
+		v.id
+		, v.voucher_code
+		, v.reference_no
+		, v.holder
+		, v.holder_phone
+		, v.holder_email
+		, v.holder_description
+		, v.program_id
+		, v.valid_at
+		, v.expired_at
+		, v.voucher_value
+		, v.state
+		, v.created_by
+		, v.created_at
+		, v.updated_by
+		, v.updated_at
+		, v.deleted_by
+		, v.deleted_at
+		, v.status
+	FROM vouchers as v
+	JOIN transaction_details as dt
+	ON
+		v.id = dt.voucher_id
+	WHERE
+		v.status = ?
+		AND dt.transaction_id = ?
+`
+		//fmt.Println(q)
+		var resv1 []Voucher
+		if err := db.Select(&resv1, db.Rebind(q), StatusCreated, v.TransactionId); err != nil {
+			return resv, err
+		}
+		if len(resv) < 1 {
+			return resv, ErrResourceNotFound
+		}
+		resv[i].Voucher = resv1
+
+		q = `
+	SELECT
+		c.created_at
+	FROM cashouts as c
+	JOIN cashout_details as ct
+	ON
+		c.id = ct.cashout_id
+	WHERE
+		c.status = ?
+		AND ct.transaction_id = ?
+`
 		//fmt.Println(q)
 		var res []string
 		if err := db.Select(&res, db.Rebind(q), StatusCreated, v.TransactionId); err != nil {
@@ -998,45 +1008,6 @@ func UpdateCashoutTransaction(transactionCode, user string) error {
 
 	if err := tx.Commit(); err != nil {
 		return err
-	}
-
-	logs := []Log{}
-	tempLog := Log{
-		TableName:   "vouchers",
-		TableNameId: transactionCode,
-		ColumnName:  "updated_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         user,
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "vouchers",
-		TableNameId: transactionCode,
-		ColumnName:  "updated_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "vouchers",
-		TableNameId: transactionCode,
-		ColumnName:  "status",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         VoucherStatePaid,
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil

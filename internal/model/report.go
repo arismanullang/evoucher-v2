@@ -1,7 +1,5 @@
 package model
 
-import "fmt"
-
 type (
 	TestReport struct {
 		Id      string `db:"id"`
@@ -35,7 +33,6 @@ type (
 )
 
 func MakeReport(id string) ([]TestReport, error) {
-	fmt.Println("Select Program")
 	q := `
 		select va.id as id,
 		va.program_name as name,
@@ -53,7 +50,6 @@ func MakeReport(id string) ([]TestReport, error) {
 
 	var resv []TestReport
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated, id); err != nil {
-		fmt.Println(err.Error())
 		return []TestReport{}, ErrServerInternal
 	}
 	if len(resv) < 1 {
@@ -64,7 +60,6 @@ func MakeReport(id string) ([]TestReport, error) {
 }
 
 func MakeReportProgram() ([]ReportProgram, error) {
-	fmt.Println("Select Program")
 	q := `
 		select to_char(v.start_date,'Mon') as month,
 		EXTRACT(MONTH FROM v.start_date) as month_number,
@@ -81,7 +76,6 @@ func MakeReportProgram() ([]ReportProgram, error) {
 
 	var resv []ReportProgram
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated); err != nil {
-		fmt.Println(err.Error())
 		return []ReportProgram{}, ErrServerInternal
 	}
 	if len(resv) < 1 {
@@ -92,7 +86,6 @@ func MakeReportProgram() ([]ReportProgram, error) {
 }
 
 func MakeCompleteReportVoucherByUser(id string) ([]CompleteReportVoucherByUser, error) {
-	fmt.Println("Select Program")
 	q := `
 		select va.id as id,
 		va.program_name as name,
@@ -114,7 +107,6 @@ func MakeCompleteReportVoucherByUser(id string) ([]CompleteReportVoucherByUser, 
 
 	var resv []CompleteReportVoucherByUser
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated, id); err != nil {
-		fmt.Println(err.Error())
 		return []CompleteReportVoucherByUser{}, ErrServerInternal
 	}
 	if len(resv) < 1 {
@@ -125,7 +117,6 @@ func MakeCompleteReportVoucherByUser(id string) ([]CompleteReportVoucherByUser, 
 }
 
 func MakeReportVoucherByUser(id string) ([]ReportVoucherByUser, error) {
-	fmt.Println("Select Program")
 	q := `
 		select va.id as id,
 		va.program_name as name,
@@ -145,7 +136,6 @@ func MakeReportVoucherByUser(id string) ([]ReportVoucherByUser, error) {
 
 	var resv []ReportVoucherByUser
 	if err := db.Select(&resv, db.Rebind(q), StatusCreated, id); err != nil {
-		fmt.Println(err.Error())
 		return []ReportVoucherByUser{}, ErrServerInternal
 	}
 	if len(resv) < 1 {

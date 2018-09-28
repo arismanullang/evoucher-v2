@@ -31,18 +31,19 @@ type (
 		VoucherType        string    `json:"voucher_type"`
 		VoucherPrice       float64   `json:"voucher_price"`
 		AllowAccumulative  bool      `json:"allow_accumulative"`
-		StartDate          string    `json:"start_date"`
-		EndDate            string    `json:"end_date"`
+		StartDate          time.Time `json:"start_date"`
+		EndDate            time.Time `json:"end_date"`
 		StartHour          string    `json:"start_hour"`
 		EndHour            string    `json:"end_hour"`
-		ValidVoucherStart  string    `json:"valid_voucher_start"`
-		ValidVoucherEnd    string    `json:"valid_voucher_end"`
+		ValidVoucherStart  time.Time `json:"valid_voucher_start"`
+		ValidVoucherEnd    time.Time `json:"valid_voucher_end"`
 		VoucherLifetime    int       `json:"voucher_lifetime"`
 		ValidityDays       string    `json:"validity_days"`
 		VoucherValue       float64   `json:"voucher_value"`
 		MaxQuantityVoucher float64   `json:"max_quantity_voucher"`
 		MaxGenerateVoucher float64   `json:"max_generate_voucher"`
 		MaxRedeemVoucher   float64   `json:"max_redeem_voucher"`
+		LimitRedeemBy      string    `json:"limit_redeem_by"`
 		RedemptionMethod   string    `json:"redemption_method"`
 		ImgUrl             string    `json:"image_url"`
 		Tnc                string    `json:"tnc"`
@@ -51,50 +52,51 @@ type (
 		Visibility         string    `json:"visibility"`
 	}
 	UpdateProgramRequest struct {
-		Name               string   `json:"name"`
-		Type               string   `json:"type"`
-		VoucherFormat      string   `json:"voucher_format"`
-		VoucherType        string   `json:"voucher_type"`
-		VoucherPrice       float64  `json:"voucher_price"`
-		AllowAccumulative  bool     `json:"allow_accumulative"`
-		StartDate          string   `json:"start_date"`
-		EndDate            string   `json:"end_date"`
-		StartHour          string   `json:"start_hour"`
-		EndHour            string   `json:"end_hour"`
-		ValidVoucherStart  string   `json:"valid_voucher_start"`
-		ValidVoucherEnd    string   `json:"valid_voucher_end"`
-		VoucherLifetime    int      `json:"voucher_lifetime"`
-		ValidityDays       string   `json:"validity_days"`
-		VoucherValue       float64  `json:"voucher_value"`
-		MaxQuantityVoucher float64  `json:"max_quantity_voucher"`
-		MaxGenerateVoucher float64  `json:"max_generate_voucher"`
-		MaxRedeemVoucher   float64  `json:"max_redeem_voucher"`
-		RedemptionMethod   string   `json:"redemption_method"`
-		ImgUrl             string   `json:"image_url"`
-		Tnc                string   `json:"tnc"`
-		Description        string   `json:"description"`
-		ValidPartners      []string `json:"valid_partners"`
-		Visibility         string   `json:"visibility"`
+		Name               string    `json:"name"`
+		Type               string    `json:"type"`
+		VoucherFormat      string    `json:"voucher_format"`
+		VoucherType        string    `json:"voucher_type"`
+		VoucherPrice       float64   `json:"voucher_price"`
+		AllowAccumulative  bool      `json:"allow_accumulative"`
+		StartDate          time.Time `json:"start_date"`
+		EndDate            time.Time `json:"end_date"`
+		StartHour          string    `json:"start_hour"`
+		EndHour            string    `json:"end_hour"`
+		ValidVoucherStart  time.Time `json:"valid_voucher_start"`
+		ValidVoucherEnd    time.Time `json:"valid_voucher_end"`
+		VoucherLifetime    int       `json:"voucher_lifetime"`
+		ValidityDays       string    `json:"validity_days"`
+		VoucherValue       float64   `json:"voucher_value"`
+		MaxQuantityVoucher float64   `json:"max_quantity_voucher"`
+		MaxGenerateVoucher float64   `json:"max_generate_voucher"`
+		MaxRedeemVoucher   float64   `json:"max_redeem_voucher"`
+		LimitRedeemBy      string    `json:"limit_redeem_by"`
+		RedemptionMethod   string    `json:"redemption_method"`
+		ImgUrl             string    `json:"image_url"`
+		Tnc                string    `json:"tnc"`
+		Description        string    `json:"description"`
+		ValidPartners      []string  `json:"valid_partners"`
+		Visibility         string    `json:"visibility"`
 	}
 	ProgramDetailResponse struct {
-		Id                 string  `json:"id"`
-		AccountId          string  `json:"account_id"`
-		Name               string  `json:"name"`
-		Type               string  `json:"type"`
-		VoucherFormat      int     `json:"voucher_format"`
-		VoucherType        string  `json:"voucher_type"`
-		VoucherPrice       float64 `json:"voucher_price"`
-		AllowAccumulative  bool    `json:"allow_accumulative"`
-		StartDate          string  `json:"start_date"`
-		EndDate            string  `json:"end_date"`
-		VoucherValue       float64 `json:"voucher_value"`
-		MaxQuantityVoucher float64 `json:"max_quantity_voucher"`
-		MaxGenerateVoucher float64 `json:"max_generate_voucher"`
-		MaxRedeemVoucher   float64 `json:"max_redeem_voucher"`
-		RedemptionMethod   string  `json:"redemption_method"`
-		ImgUrl             string  `json:"image_url"`
-		Tnc                string  `json:"tnc"`
-		Description        string  `json:"description"`
+		Id                 string    `json:"id"`
+		AccountId          string    `json:"account_id"`
+		Name               string    `json:"name"`
+		Type               string    `json:"type"`
+		VoucherFormat      int       `json:"voucher_format"`
+		VoucherType        string    `json:"voucher_type"`
+		VoucherPrice       float64   `json:"voucher_price"`
+		AllowAccumulative  bool      `json:"allow_accumulative"`
+		StartDate          time.Time `json:"start_date"`
+		EndDate            time.Time `json:"end_date"`
+		VoucherValue       float64   `json:"voucher_value"`
+		MaxQuantityVoucher float64   `json:"max_quantity_voucher"`
+		MaxGenerateVoucher float64   `json:"max_generate_voucher"`
+		MaxRedeemVoucher   float64   `json:"max_redeem_voucher"`
+		RedemptionMethod   string    `json:"redemption_method"`
+		ImgUrl             string    `json:"image_url"`
+		Tnc                string    `json:"tnc"`
+		Description        string    `json:"description"`
 	}
 	FormatReq struct {
 		Prefix     string `json:"prefix"`
@@ -125,11 +127,11 @@ type (
 		AllowAccumulative bool                   `json:"allow_accumulative"`
 		MaxVoucher        float64                `json:"max_quantity_voucher"`
 		ImgUrl            string                 `json:"image_url"`
-		StartDate         string                 `json:"start_date"`
-		EndDate           string                 `json:"end_date"`
+		StartDate         time.Time              `json:"start_date"`
+		EndDate           time.Time              `json:"end_date"`
 		Partners          []SearchProgramPartner `json:"partners"`
 		Status            string                 `json:"status"`
-		CreatedAt         string                 `json:"created_at"`
+		CreatedAt         time.Time              `json:"created_at"`
 		UpdatedAt         string                 `json:"updated_at"`
 	}
 	SearchProgramPartner struct {
@@ -188,12 +190,12 @@ type (
 
 	//MobileProgramObj return for mobile
 	MobileProgramObj struct {
-		ID           string  `json:"id"`
-		Name         string  `json:"name"`
-		VoucherValue float64 `json:"voucher_value"`
-		ImgUrl       string  `json:"image_url"`
-		StartDate    string  `json:"start_date"`
-		EndDate      string  `json:"end_date"`
+		ID           string    `json:"id"`
+		Name         string    `json:"name"`
+		VoucherValue float64   `json:"voucher_value"`
+		ImgUrl       string    `json:"image_url"`
+		StartDate    time.Time `json:"start_date"`
+		EndDate      time.Time `json:"end_date"`
 	}
 )
 
@@ -638,24 +640,11 @@ func CreateProgram(w http.ResponseWriter, r *http.Request) {
 		logger.SetStatus(http.StatusBadRequest).Panic("param :", rd, "response :", err.Error())
 	}
 
-	ts, err := time.Parse("01/02/2006", rd.StartDate)
-	if err != nil {
-		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
-	}
-	te, err := time.Parse("01/02/2006", rd.EndDate)
-	if err != nil {
-		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
-	}
-	te = time.Date(te.Year(), te.Month(), te.Day(), 23, 59, 59, 0, time.Local)
-	tvs, err := time.Parse("01/02/2006", rd.ValidVoucherStart)
-	if err != nil {
-		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
-	}
-	tve, err := time.Parse("01/02/2006", rd.ValidVoucherEnd)
-	if err != nil {
-		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
-	}
-	tve = time.Date(tve.Year(), tve.Month(), tve.Day(), 23, 59, 59, 0, time.Local)
+	ts := rd.StartDate
+	te := rd.EndDate
+
+	tvs := rd.ValidVoucherStart
+	tve := rd.ValidVoucherEnd
 
 	vr := model.ProgramReq{
 		AccountId:          a.User.Account.Id,
@@ -668,13 +657,14 @@ func CreateProgram(w http.ResponseWriter, r *http.Request) {
 		MaxGenerateVoucher: rd.MaxGenerateVoucher,
 		AllowAccumulative:  rd.AllowAccumulative,
 		RedemptionMethod:   rd.RedemptionMethod,
+		LimitRedeemBy:      rd.LimitRedeemBy,
 		VoucherValue:       rd.VoucherValue,
-		StartDate:          ts.Format("2006-01-02 15:04:05.000"),
-		EndDate:            te.Format("2006-01-02 15:04:05.000"),
+		StartDate:          ts,
+		EndDate:            te,
 		StartHour:          rd.StartHour,
 		EndHour:            rd.EndHour,
-		ValidVoucherStart:  tvs.Format("2006-01-02 15:04:05.000"),
-		ValidVoucherEnd:    tve.Format("2006-01-02 15:04:05.000"),
+		ValidVoucherStart:  tvs,
+		ValidVoucherEnd:    tve,
 		VoucherLifetime:    rd.VoucherLifetime,
 		ValidityDays:       rd.ValidityDays,
 		ImgUrl:             rd.ImgUrl,
@@ -757,26 +747,6 @@ func UpdateProgram(w http.ResponseWriter, r *http.Request, logger *model.LogFiel
 		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
 	}
 
-	ts, err := time.Parse("01/02/2006", rd.StartDate)
-	if err != nil {
-		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
-	}
-	te, err := time.Parse("01/02/2006", rd.EndDate)
-	if err != nil {
-		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
-	}
-	te = time.Date(te.Year(), te.Month(), te.Day(), 23, 59, 59, 0, time.Local)
-
-	tvs, err := time.Parse("01/02/2006", rd.ValidVoucherStart)
-	if err != nil {
-		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
-	}
-	tve, err := time.Parse("01/02/2006", rd.ValidVoucherEnd)
-	if err != nil {
-		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
-	}
-	tve = time.Date(tve.Year(), tve.Month(), tve.Day(), 23, 59, 59, 0, time.Local)
-
 	bo, err := strconv.ParseBool(rd.Visibility)
 	if err != nil {
 		logger.SetStatus(status).Panic("param :", rd, "response :", err.Error())
@@ -791,15 +761,16 @@ func UpdateProgram(w http.ResponseWriter, r *http.Request, logger *model.LogFiel
 		MaxQuantityVoucher: rd.MaxQuantityVoucher,
 		MaxGenerateVoucher: rd.MaxGenerateVoucher,
 		MaxRedeemVoucher:   rd.MaxRedeemVoucher,
+		LimitRedeemBy:      rd.LimitRedeemBy,
 		RedemptionMethod:   rd.RedemptionMethod,
 		VoucherValue:       rd.VoucherValue,
-		StartDate:          ts.Format("2006-01-02 15:04:05.000"),
-		EndDate:            te.Format("2006-01-02 15:04:05.000"),
+		StartDate:          rd.StartDate,
+		EndDate:            rd.EndDate,
 		StartHour:          rd.StartHour,
 		EndHour:            rd.EndHour,
 		AllowAccumulative:  rd.AllowAccumulative,
-		ValidVoucherStart:  tvs.Format("2006-01-02 15:04:05.000"),
-		ValidVoucherEnd:    tve.Format("2006-01-02 15:04:05.000"),
+		ValidVoucherStart:  rd.ValidVoucherStart,
+		ValidVoucherEnd:    rd.ValidVoucherEnd,
 		VoucherLifetime:    rd.VoucherLifetime,
 		ValidityDays:       rd.ValidityDays,
 		ImgUrl:             rd.ImgUrl,
@@ -972,7 +943,7 @@ func VisibilityProgram(w http.ResponseWriter, r *http.Request) {
 func CheckProgram(rm, id string, qty int) (bool, error) {
 	dt, err := model.FindProgramDetailsById(id)
 
-	sd, err := time.Parse(time.RFC3339Nano, dt.StartDate)
+	sd := dt.StartDate
 	if err != nil {
 		return false, err
 	}
@@ -1185,18 +1156,20 @@ func validdays(s string) bool {
 	return ret
 }
 
-func validhours(s, e string) bool {
-	tnow := model.TimeToTimeJakarta(time.Now())
-	dateNow := tnow.Format("2006-01-02")
-
-	st, err := time.Parse(time.RFC3339, dateNow+"T"+s+":00+07:00")
+func validhours(startTime, endTime string) bool {
+	st, err := time.Parse("15:04:05Z07:00", startTime)
 	if err != nil {
 		return false
 	}
-	en, err := time.Parse(time.RFC3339, dateNow+"T"+e+":00+07:00")
+	et, err := time.Parse("15:04:05Z07:00", endTime)
 	if err != nil {
 		return false
 	}
+	et = et.In(st.Location())
 
-	return tnow.Before(en) && tnow.After(st)
+	nt := time.Now()
+	nt = nt.In(st.Location())
+	nt = time.Date(0, 1, 1, nt.Hour(), nt.Minute(), nt.Second(), 0, nt.Location())
+
+	return nt.After(st) && nt.Before(et)
 }

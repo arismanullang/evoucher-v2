@@ -21,7 +21,7 @@ type (
 		BankAccountNumber string         `db:"bank_account_number" json:"bank_account_number"`
 		BankAccountHolder string         `db:"bank_account_holder" json:"bank_account_holder"`
 		AccountId         string         `db:"account_id" json:"account_id"`
-		CreatedAt         string         `db:"created_at" json:"created_at"`
+		CreatedAt         time.Time      `db:"created_at" json:"created_at"`
 		CreatedBy         string         `db:"created_by" json:"created_by"`
 		UpdatedAt         sql.NullString `db:"updated_at" json:"updated_at"`
 		UpdatedBy         sql.NullString `db:"updated_by" json:"updated_by"`
@@ -69,21 +69,6 @@ func AddBankAccount(a BankAccount, user User) error {
 		return err
 	}
 
-	log := Log{
-		TableName:   "bank_accounts",
-		TableNameId: ValueChangeLogNone,
-		ColumnName:  ColumnChangeLogInsert,
-		Action:      ActionChangeLogInsert,
-		Old:         ValueChangeLogNone,
-		New:         res[0],
-		CreatedBy:   user.ID,
-	}
-
-	err = addLog(log)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
 	return nil
 }
 
@@ -122,7 +107,6 @@ func UpdateBankAccount(account BankAccount, userId string) error {
 	dataParam := reflect.Indirect(reflectParam)
 
 	reflectDb := reflect.ValueOf(&bankAccountDetail).Elem()
-	dataDb := reflect.Indirect(reflectDb)
 
 	updates := getUpdate(dataParam, reflectDb)
 
@@ -140,29 +124,6 @@ func UpdateBankAccount(account BankAccount, userId string) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
-
-	logs := []Log{}
-	tempLog := Log{
-		TableName:   "bank_accounts",
-		TableNameId: account.Id,
-		ColumnName:  "updated_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         userId,
-		CreatedBy:   userId,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "bank_accounts",
-		TableNameId: account.Id,
-		ColumnName:  "updated_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   userId,
-	}
-	logs = append(logs, tempLog)
 
 	for k, v := range updates {
 		var value = v.String()
@@ -194,27 +155,11 @@ func UpdateBankAccount(account BankAccount, userId string) error {
 			fmt.Println(q)
 			return ErrServerInternal
 		}
-
-		tempLog = Log{
-			TableName:   "bank_accounts",
-			TableNameId: account.Id,
-			ColumnName:  keys[1],
-			Action:      ActionChangeLogUpdate,
-			Old:         dataDb.FieldByName(keys[0]).Interface().(string),
-			New:         value,
-			CreatedBy:   userId,
-		}
-		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
