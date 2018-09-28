@@ -34,11 +34,17 @@ function getProgram() {
 			var dataStatus = [];
 			var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 			for (i = 0; i < arrData.length; i++) {
-				var date1 = arrData[i].start_date.substring(0, 10).split("-");
-				var date2 = arrData[i].end_date.substring(0, 10).split("-");
-				var date3 = arrData[i].created_at.substring(0, 10).split("-");
-				var date4 = arrData[i].updated_at.String.substring(0, 10).split("-");
-        dataId.push(arrData[i].id);
+        var startDate = new Date(arrData[i].start_date);
+        var endDate = new Date(arrData[i].end_date);
+        var createdAt = new Date(arrData[i].created_at);
+        var updatedAt = new Date(arrData[i].updated_at.String);
+
+				var date1 = startDate.toString().substring(4, 15).split(" ");
+				var date2 = endDate.toString().substring(4, 15).split(" ");
+				var date3 = createdAt.toString().substring(4, 15).split(" ");
+        var date4 = updatedAt.toString().substring(4, 15).split(" ");
+
+				dataId.push(arrData[i].id);
 				if (arrData[i].type == "on-demand") {
 					dataType.push("mobile app");
 				} else if (arrData[i].type == "gift") {
@@ -46,11 +52,10 @@ function getProgram() {
 				} else if (arrData[i].type == "privilege") {
           dataType.push("privilege");
 				} else {
-					dataType.push("email blast");
-        }
-
-				dataStart.push(date1[2] + " " + months[parseInt(date1[1]) - 1] + " " + date1[0]);
-				dataEnd.push(date2[2] + " " + months[parseInt(date2[1]) - 1] + " " + date2[0]);
+					dataType.push("Email Blast");
+				}
+        dataStart.push(date1[1] + " " + date1[0] + " " + date1[2]);
+				dataEnd.push(date2[1] + " " + date2[0] + " " + date2[2]);
 				dataName.push(arrData[i].name);
 				dataPrice.push(arrData[i].voucher_price);
 				dataValue.push(arrData[i].voucher_value);
@@ -71,9 +76,11 @@ function getProgram() {
 				dataVoucher.push(created);
 				dataRedeem.push(redeem);
 
-				if (arrData[i].status = "created") {
-					var dateStart = new Date(date1[0], date1[1] - 1, date1[2]);
-					var dateEnd = new Date(date2[0], date2[1] - 1, date2[2], 23, 59, 59);
+				if (arrData[i].status = 'created') {
+          // var dateStart = new Date(date1[0], date1[1] - 1, date1[2]);
+					// var dateEnd = new Date(date2[0], date2[1] - 1, date2[2], 23, 59, 59);
+          var dateStart = startDate;
+          var dateEnd = endDate;
 					if (Date.now() < dateStart.getTime()) {
 						dataStatus.push("Not Active");
 					} else if (Date.now() > dateStart.getTime() && Date.now() < dateEnd.getTime()) {
@@ -86,9 +93,9 @@ function getProgram() {
 				}
 
 				if (arrData[i].updated_at.String != "") {
-					dataModified.push(date4[2] + " " + months[parseInt(date4[1]) - 1] + " " + date4[0]);
+					dataModified.push(date4[1] + " " + date4[0] + " " + date4[2]);
 				} else {
-					dataModified.push(date3[2] + " " + months[parseInt(date3[1]) - 1] + " " + date3[0]);
+					dataModified.push(date3[1] + " " + date3[0] + " " + date3[2]);
 				}
 
 			}
