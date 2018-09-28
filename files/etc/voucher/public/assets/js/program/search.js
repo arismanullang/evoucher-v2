@@ -110,7 +110,7 @@ function getProgram() {
 					, dataType[i].toUpperCase()
 					, dataPrice[i] + " /<br> Rp. " + addDecimalPoints(dataValue[i]) + ",00"
 					, dataStatus[i].toUpperCase()
-					, dataStart[i].toString().toUpperCase()
+					, dataStart[i].toUpperCase()
 					, dataEnd[i].toUpperCase()
 					, dataModified[i].toUpperCase()
 					, dataMax[i]
