@@ -180,46 +180,46 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
+	}
 
-		// check validation all voucher & program
-		for _, v := range rd.Vouchers {
-			ok, holder, err := rd.CheckVoucherRedemption(v)
-			if !ok {
-				switch err.Error() {
-				case model.ErrCodeVoucherNotActive:
-					status = http.StatusBadRequest
-					res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, logger.TraceID)
-					logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
-					render.JSON(w, res, status)
-				case model.ErrResourceNotFound.Error():
-					status = http.StatusBadRequest
-					res.AddError(its(status), model.ErrCodeResourceNotFound, err.Error(), logger.TraceID)
-					logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
-					render.JSON(w, res, status)
-				case model.ErrMessageVoucherAlreadyUsed:
-					status = http.StatusBadRequest
-					res.AddError(its(status), model.ErrCodeVoucherDisabled, err.Error(), logger.TraceID)
-					logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
-					render.JSON(w, res, status)
-				case model.ErrMessageVoucherAlreadyPaid:
-					status = http.StatusBadRequest
-					res.AddError(its(status), model.ErrCodeVoucherDisabled, model.ErrMessageVoucherAlreadyUsed, logger.TraceID)
-					logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
-					render.JSON(w, res, status)
-				case model.ErrMessageVoucherExpired:
-					status = http.StatusBadRequest
-					res.AddError(its(status), model.ErrCodeVoucherExpired, err.Error(), logger.TraceID)
-					logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
-					render.JSON(w, res, status)
-				default:
-					status = http.StatusInternalServerError
-					res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
-					render.JSON(w, res, status)
-				}
-				return
+	// check validation all voucher & program
+	for _, v := range rd.Vouchers {
+		ok, holder, err := rd.CheckVoucherRedemption(v)
+		if !ok {
+			switch err.Error() {
+			case model.ErrCodeVoucherNotActive:
+				status = http.StatusBadRequest
+				res.AddError(its(status), err.Error(), model.ErrMessageVoucherNotActive, logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
+				render.JSON(w, res, status)
+			case model.ErrResourceNotFound.Error():
+				status = http.StatusBadRequest
+				res.AddError(its(status), model.ErrCodeResourceNotFound, err.Error(), logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
+				render.JSON(w, res, status)
+			case model.ErrMessageVoucherAlreadyUsed:
+				status = http.StatusBadRequest
+				res.AddError(its(status), model.ErrCodeVoucherDisabled, err.Error(), logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
+				render.JSON(w, res, status)
+			case model.ErrMessageVoucherAlreadyPaid:
+				status = http.StatusBadRequest
+				res.AddError(its(status), model.ErrCodeVoucherDisabled, model.ErrMessageVoucherAlreadyUsed, logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
+				render.JSON(w, res, status)
+			case model.ErrMessageVoucherExpired:
+				status = http.StatusBadRequest
+				res.AddError(its(status), model.ErrCodeVoucherExpired, err.Error(), logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
+				render.JSON(w, res, status)
+			default:
+				status = http.StatusInternalServerError
+				res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+				render.JSON(w, res, status)
 			}
-			rd.Holder = holder
+			return
 		}
+		rd.Holder = holder
 	}
 
 	seedCode := randStr(model.DEFAULT_TRANSACTION_LENGTH, model.DEFAULT_TRANSACTION_SEED)
@@ -482,6 +482,11 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 			case model.ErrMessageVoucherExpired:
 				status = http.StatusBadRequest
 				res.AddError(its(status), model.ErrCodeVoucherExpired, err.Error(), logger.TraceID)
+				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
+				render.JSON(w, res, status)
+			case model.ErrMessageInvalidHolder:
+				status = http.StatusBadRequest
+				res.AddError(its(status), model.ErrCodeInvalidVoucher, err.Error(), logger.TraceID)
 				logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
 				render.JSON(w, res, status)
 			default:
