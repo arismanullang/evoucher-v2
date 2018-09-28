@@ -46,6 +46,9 @@ const (
 	RedemptionMethodQr    string = "qr"
 	RedemptionMethodToken string = "token"
 
+	LimitRedeemByProgram string = "program"
+	LimitRedeemByDay     string = "day"
+
 	ErrCodeAllowAccumulativeDisable string = "accumulation_is_not_allowed"
 	ErrCodeInvalidRedeemMethod      string = "invalid_redeem_method"
 	ErrCodeResourceNotFound         string = "resource_not_found"

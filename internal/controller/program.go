@@ -43,6 +43,7 @@ type (
 		MaxQuantityVoucher float64   `json:"max_quantity_voucher"`
 		MaxGenerateVoucher float64   `json:"max_generate_voucher"`
 		MaxRedeemVoucher   float64   `json:"max_redeem_voucher"`
+		LimitRedeemBy      string    `json:"limit_redeem_by"`
 		RedemptionMethod   string    `json:"redemption_method"`
 		ImgUrl             string    `json:"image_url"`
 		Tnc                string    `json:"tnc"`
@@ -69,6 +70,7 @@ type (
 		MaxQuantityVoucher float64   `json:"max_quantity_voucher"`
 		MaxGenerateVoucher float64   `json:"max_generate_voucher"`
 		MaxRedeemVoucher   float64   `json:"max_redeem_voucher"`
+		LimitRedeemBy      string    `json:"limit_redeem_by"`
 		RedemptionMethod   string    `json:"redemption_method"`
 		ImgUrl             string    `json:"image_url"`
 		Tnc                string    `json:"tnc"`
@@ -655,6 +657,7 @@ func CreateProgram(w http.ResponseWriter, r *http.Request) {
 		MaxGenerateVoucher: rd.MaxGenerateVoucher,
 		AllowAccumulative:  rd.AllowAccumulative,
 		RedemptionMethod:   rd.RedemptionMethod,
+		LimitRedeemBy:      rd.LimitRedeemBy,
 		VoucherValue:       rd.VoucherValue,
 		StartDate:          ts,
 		EndDate:            te,
@@ -758,6 +761,7 @@ func UpdateProgram(w http.ResponseWriter, r *http.Request, logger *model.LogFiel
 		MaxQuantityVoucher: rd.MaxQuantityVoucher,
 		MaxGenerateVoucher: rd.MaxGenerateVoucher,
 		MaxRedeemVoucher:   rd.MaxRedeemVoucher,
+		LimitRedeemBy:      rd.LimitRedeemBy,
 		RedemptionMethod:   rd.RedemptionMethod,
 		VoucherValue:       rd.VoucherValue,
 		StartDate:          rd.StartDate,

@@ -69,7 +69,8 @@ function searchById(id) {
 			$("#voucher-price").val(program.voucher_price);
 			$("#voucher-quantity").val(program.max_quantity_voucher);
 			$("#generate-voucher").val(program.max_generate_voucher);
-			$("#max-redeem-voucher").val(program.max_redeem_voucher);
+      $("#max-redeem-voucher").val(program.max_redeem_voucher);
+			$("#limit-redeem-by").val(program.limit_redeem_by);
 			$("#redemption-method").val(program.redeem_method);
 			$("#program-valid-from").val(convertToDate(program.start_date));
 			$("#program-valid-to").val(convertToDate(program.end_date));
@@ -256,7 +257,9 @@ function send() {
 	}
 
 	var maxRedeem = parseInt($("#max-redeem-voucher").val());
-	var maxGenerate = parseInt($("#generate-voucher").val());
+  var maxGenerate = parseInt($("#generate-voucher").val());
+
+  var limitRedeemBy = $("#limit-redeem-by").find(":selected").val();
 
 	if ($("#program-type").val() == "bulk") {
 		maxGenerate = 1;
@@ -327,7 +330,8 @@ function send() {
 					voucher_price: voucherPrice,
 					max_quantity_voucher: maxQuantityVoucher,
 					max_redeem_voucher: maxRedeem,
-					max_generate_voucher: maxGenerate,
+          max_generate_voucher: maxGenerate,
+          limit_redeem_by: limitRedeemBy,
 					allow_accumulative: allowAccumulative,
 					redemption_method: redeem,
 					start_date: dateFormat(new Date(programValidFrom), 'isoUtcDateTime'),
@@ -401,7 +405,8 @@ function send() {
 			voucher_price: voucherPrice,
 			max_quantity_voucher: maxQuantityVoucher,
 			max_redeem_voucher: maxRedeem,
-			max_generate_voucher: maxGenerate,
+      max_generate_voucher: maxGenerate,
+      limit_redeem_by: limitRedeemBy,
 			allow_accumulative: allowAccumulative,
 			redemption_method: redeem,
 			start_date: dateFormat(new Date(programValidFrom), 'isoUtcDateTime'),

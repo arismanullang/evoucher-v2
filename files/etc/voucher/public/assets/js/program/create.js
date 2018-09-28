@@ -282,7 +282,9 @@ function send() {
 
 	// max generate and redeem
 	var maxGenerate = parseInt($("#generate-voucher").val());
-	var maxRedeem = 1;
+  var maxRedeem = 1;
+
+  var limitRedeemBy = $("limit-redeem-by").find(":selected").val();
 
 	// voucher type
 	var voucherType = "cash";
@@ -339,7 +341,8 @@ function send() {
 					voucher_price: voucherPrice,
 					max_quantity_voucher: maxQuantityVoucher,
 					max_redeem_voucher: maxRedeem,
-					max_generate_voucher: maxGenerate,
+          max_generate_voucher: maxGenerate,
+          limit_redeem_by: limitRedeemBy,
 					allow_accumulative: allowAccumulative,
 					redemption_method: redemptionMethod,
 					start_date: dateFormat(new Date(programValidFrom), 'isoUtcDateTime'),
@@ -398,7 +401,8 @@ function send() {
 			voucher_price: voucherPrice,
 			max_quantity_voucher: maxQuantityVoucher,
 			max_redeem_voucher: maxRedeem,
-			max_generate_voucher: maxGenerate,
+      max_generate_voucher: maxGenerate,
+      limit_redeem_by: limitRedeemBy,
 			allow_accumulative: allowAccumulative,
 			redemption_method: redemptionMethod,
 			start_date: dateFormat(new Date(programValidFrom), 'isoUtcDateTime'),

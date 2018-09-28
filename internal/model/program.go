@@ -37,6 +37,7 @@ type (
 		MaxGenerateVoucher float64   `db:"max_generate_voucher" json:"max_generate_voucher"`
 		MaxRedeemVoucher   float64   `db:"max_redeem_voucher" json:"max_redeem_voucher"`
 		RedemptionMethod   string    `db:"redemption_method" json:"redeem_method"`
+		LimitRedeemBy      string    `db:"limit_redeem_by" json:"limit_redeem_by"`
 		ImgUrl             string    `db:"img_url" json:"image_url"`
 		Tnc                string    `db:"tnc" json:"tnc"`
 		Description        string    `db:"description" json:"description"`
@@ -64,6 +65,7 @@ type (
 		MaxGenerateVoucher float64   `db:"max_generate_voucher"`
 		MaxRedeemVoucher   float64   `db:"max_redeem_voucher"`
 		RedemptionMethod   string    `db:"redemption_method"`
+		LimitRedeemBy      string    `db:"limit_redeem_by"`
 		ImgUrl             string    `db:"img_url"`
 		Tnc                string    `db:"tnc"`
 		Description        string    `db:"description"`
@@ -275,6 +277,7 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 			, max_quantity_voucher
 			, max_redeem_voucher
 			, max_generate_voucher
+			, limit_redeem_by
 			, redemption_method
 			, img_url
 			, tnc
@@ -283,14 +286,14 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 			, created_at
 			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING
 			id
 	`
 	var res2 []string
 	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.Name, vr.Type, res[0],
 		vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative,
-		vr.StartDate, vr.EndDate, vr.StartHour, vr.EndHour, vr.ValidVoucherStart, vr.ValidVoucherEnd, vr.VoucherLifetime, vr.ValidityDays, vr.VoucherValue, vr.MaxQuantityVoucher, vr.MaxRedeemVoucher, vr.MaxGenerateVoucher, vr.RedemptionMethod, vr.ImgUrl, vr.Tnc, vr.Description, user, time.Now(), StatusCreated); err != nil {
+		vr.StartDate, vr.EndDate, vr.StartHour, vr.EndHour, vr.ValidVoucherStart, vr.ValidVoucherEnd, vr.VoucherLifetime, vr.ValidityDays, vr.VoucherValue, vr.MaxQuantityVoucher, vr.MaxRedeemVoucher, vr.MaxGenerateVoucher, vr.LimitRedeemBy, vr.RedemptionMethod, vr.ImgUrl, vr.Tnc, vr.Description, user, time.Now(), StatusCreated); err != nil {
 		fmt.Println(err.Error(), "(insert program)")
 		return "", ErrServerInternal
 	}
@@ -361,6 +364,7 @@ func UpdateProgram(d Program) error {
 			allow_accumulative = ?,
 			max_generate_voucher = ?,
 			max_redeem_voucher = ?,
+			limit_redeem_by = ?,
 			redemption_method = ?,
 			img_url = ?,
 			tnc = ?,
@@ -377,6 +381,7 @@ func UpdateProgram(d Program) error {
 		d.AllowAccumulative,
 		d.MaxGenerateVoucher,
 		d.MaxRedeemVoucher,
+		d.LimitRedeemBy,
 		d.RedemptionMethod,
 		d.ImgUrl,
 		d.Tnc,
@@ -1023,6 +1028,7 @@ func FindProgramDetailsCustomParam(param map[string]string) ([]Program, error) {
 			, max_quantity_voucher
 			, max_redeem_voucher
 			, max_generate_voucher
+			, limit_redeem_by
 			, redemption_method
 			, img_url
 			, tnc
