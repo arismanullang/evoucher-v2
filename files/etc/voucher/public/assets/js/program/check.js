@@ -248,7 +248,7 @@ function getProgram(id, voucher, used, paid) {
       $('#conversionRate').html(result.voucher_price + ' Point');
       $('#voucherValue').html('Rp. ' + addDecimalPoints(result.voucher_value) + ',00');
       $('#period').html(period);
-      $('#programTnc').html(result.tnc);s
+      $('#programTnc').html(result.tnc);
 
       // Voucher
       $('#maxQuantityVoucher').html(result.max_quantity_voucher);
