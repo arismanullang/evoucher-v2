@@ -519,9 +519,19 @@ function getPartner(id) {
 }
 
 function convertToDate(date) {
-	var string1 = date.split("T")[0];
-	var string2 = string1.split("-");
-	var result = string2[1] + "/" + string2[2] + "/" + string2[0];
+  var newDate = new Date(date)
+
+  var dd = newDate.getDate();
+  var mm = newDate.getMonth()+1; //January is 0!
+
+  var yyyy = newDate.getFullYear();
+  if(dd<10){
+      dd='0'+dd;
+  }
+  if(mm<10){
+      mm='0'+mm;
+  }
+	var result = dd + "/" + mm + "/" + yyyy;
 
 	return result;
 }

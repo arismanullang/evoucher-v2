@@ -195,10 +195,13 @@ function getProgram(id, voucher, used, paid) {
     success: function (data) {
       var result = data.data[0];
 
-      var date1 = result.start_date.substring(0, 10).split("-");
-      var date2 = result.end_date.substring(0, 10).split("-");
-      var startDate = date1[2] + " " + months[parseInt(date1[1]) - 1] + " " + date1[0];
-      var endDate = date2[2] + " " + months[parseInt(date2[1]) - 1] + " " + date2[0];
+      var nStartDate = new Date(result.start_date);
+      var nEndDate = new Date(result.end_date);
+
+      var date1 = nStartDate.toString().substring(4, 15).split(" ");
+      var date2 = nEndDate.toString().substring(4, 15).split(" ");
+      var startDate = date1[1] + " " + date1[0] + " " + date1[2];
+      var endDate = date2[1] + " " + date2[0] + " " + date2[2];
 
       var period = startDate + " - " + endDate;
       var programType = "Email Blast"
