@@ -17,21 +17,22 @@ type (
 	}
 	//Account Account object
 	Account struct {
-		Id        string         `db:"id" json:"id"`
-		Name      string         `db:"name" json:"name"`
-		Billing   sql.NullString `db:"billing" json:"billing"`
-		Alias     string         `db:"alias" json:"alias"`
-		Email     string         `db:"email" json:"email"`
-		Address   string         `db:"address" json:"address"`
-		City      string         `db:"city" json:"city"`
-		Province  string         `db:"province" json:"province"`
-		Building  string         `db:"building" json:"building"`
-		ZipCode   string         `db:"zip_code" json:"zip_code"`
-		CreatedAt time.Time      `db:"created_at" json:"created_at"`
-		CreatedBy string         `db:"created_by" json:"created_by"`
-		UpdatedAt sql.NullString `db:"updated_at" json:"updated_at"`
-		UpdatedBy sql.NullString `db:"updated_by" json:"updated_by"`
-		Status    string         `db:"status" json:"status"`
+		Id         string         `db:"id" json:"id"`
+		Name       string         `db:"name" json:"name"`
+		Billing    sql.NullString `db:"billing" json:"billing"`
+		Alias      string         `db:"alias" json:"alias"`
+		Email      string         `db:"email" json:"email"`
+		Address    string         `db:"address" json:"address"`
+		City       string         `db:"city" json:"city"`
+		Province   string         `db:"province" json:"province"`
+		Building   string         `db:"building" json:"building"`
+		ZipCode    string         `db:"zip_code" json:"zip_code"`
+		SenderMail string         `db:"sender_mail" json:"sender_mail"`
+		CreatedAt  time.Time      `db:"created_at" json:"created_at"`
+		CreatedBy  string         `db:"created_by" json:"created_by"`
+		UpdatedAt  sql.NullString `db:"updated_at" json:"updated_at"`
+		UpdatedBy  sql.NullString `db:"updated_by" json:"updated_by"`
+		Status     string         `db:"status" json:"status"`
 	}
 	//AccountConfig Config account
 	AccountConfig struct {
@@ -198,7 +199,21 @@ func FindAllAccounts() ([]AccountRes, error) {
 
 func FindAllAccountsDetail() ([]Account, error) {
 	q := `
-		SELECT *
+		SELECT
+			id
+			, name
+			, billing
+			, alias
+			, email
+			, address
+			, city
+			, province
+			, building
+			, zip_code
+			, created_at
+			, created_by
+			, updated_at
+			, updated_by
 		FROM accounts
 		WHERE NOT name = 'suadmin'
 	`
@@ -269,6 +284,7 @@ func GetAccountDetailByAccountId(accountId string) (Account, error) {
 			, a.name
 			, a.billing
 			, a.alias
+			, a.email
 			, a.created_at
 			, a.address
 			, a.city
@@ -277,10 +293,6 @@ func GetAccountDetailByAccountId(accountId string) (Account, error) {
 			, a.zip_code
 		FROM
 			accounts as a
-		JOIN
-			user_accounts as ua
-		ON
-			a.id = ua.account_id
 		WHERE
 			a.id = ?
 			AND a.status = ?
