@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -35,7 +34,6 @@ func getUrlParam(url string) map[string]string {
 }
 
 func sendPost(url string, param string) []byte {
-	fmt.Println(param)
 	var jsonStr = []byte(param)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
@@ -48,7 +46,6 @@ func sendPost(url string, param string) []byte {
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(body))
 	return body
 }
 
@@ -58,7 +55,6 @@ func getResponseData(param []byte) map[string]interface{} {
 	if err := json.Unmarshal(param, &dat); err != nil {
 		panic(err)
 	}
-	//fmt.Println(string(robots))
 
 	if str, ok := dat["data"].(map[string]interface{}); ok {
 		return str

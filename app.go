@@ -1,24 +1,39 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
+	"time"
 
+	"cloud.google.com/go/pubsub"
 	"github.com/ruizu/render"
 	"github.com/urfave/negroni"
+	"google.golang.org/api/option"
 
 	"github.com/gilkor/evoucher/internal/controller"
 	"github.com/gilkor/evoucher/internal/model"
 	"github.com/gilkor/evoucher/lib/server"
 )
 
-func main() {
-	if err := model.ConnectDB(os.Getenv("DB")); err != nil {
+var psc *pubsub.Client
+
+func init() {
+	var err error
+	ctx := context.Background()
+	psc, err = pubsub.NewClient(ctx, os.Getenv("JUNO_GCLOUD_PROJECT"), option.WithCredentialsFile(os.Getenv("JUNO_GCLOUD_CREDENTIALS")))
+	if err != nil {
 		log.Fatal(err)
 	}
-	if err := model.OpenRedisPool(os.Getenv("REDIS")); err != nil {
+}
+
+func main() {
+
+	if err := model.ConnectDB(os.Getenv("DB")); err != nil {
 		log.Fatal(err)
 	}
 
@@ -36,9 +51,6 @@ func main() {
 
 	model.GetProgramTypes()
 
-	//logger config
-	model.Path = os.Getenv("LOGGER_PATH")
-	model.FileName = os.Getenv("LOGGER_FILENAME")
 	//voucher config
 	model.VOUCHER_URL = os.Getenv("VOUCHER_LINK")
 	//GCS
@@ -54,7 +66,85 @@ func main() {
 	m.Use(negroni.NewStatic(http.Dir(os.Getenv("PUBLIC_DIR"))))
 	m.UseHandler(router)
 
+	go assignTenantPrivilegeVoucher()
+
 	log.Fatal(server.ListenAndServe(m))
+
+}
+
+type PubSubAccount struct {
+	Action string `json:"action"`
+	Data   struct {
+		Id                 string      `json:"id"`
+		Name               string      `json:"name"`
+		CompanyId          string      `json:"company_id"`
+		Gender             string      `json:"gender"`
+		BirthDate          string      `json:"birthdate"`
+		BrithPlace         string      `json:"birthplace"`
+		MaritalStatus      string      `json:"marital_status"`
+		IdentityNo         string      `json:"identity_no"`
+		IdentityType       string      `json:"identity_type"`
+		IdentityIssuedDate string      `json:"identity_issue_date"`
+		OccupationId       string      `json:"occupation_id"`
+		ReligionId         string      `json:"religion_id"`
+		Email              string      `json:"email"`
+		MobileCallingCode  string      `json:"mobile_calling_code"`
+		MobileNo           string      `json:"mobile_no"`
+		Address            string      `json:"address"`
+		CountryCode        string      `json:"country_code"`
+		StateId            string      `json:"state_id"`
+		CityId             string      `json:"city_id"`
+		DistrictId         string      `json:"district_id"`
+		VillageId          string      `json:"village_id"`
+		ZipCode            string      `json:"zip_code"`
+		State              string      `json:"state"`
+		CreatedBy          string      `json:"created_by"`
+		CreatedAt          time.Time   `json:"created_at"`
+		UpdatedBy          string      `json:"updated_by"`
+		UpdatedAt          time.Time   `json:"updated_at"`
+		DeletedBy          string      `json:"deleted_by"`
+		DeletedAt          interface{} `json:"deleted_at"`
+	} `json:"data"`
+}
+
+func assignTenantPrivilegeVoucher() {
+	var mu sync.Mutex
+	sub := psc.Subscription("update-account.privilege-voucher")
+	if err := sub.Receive(context.Background(), func(ctx context.Context, msg *pubsub.Message) {
+		mu.Lock()
+		defer mu.Unlock()
+
+		var msgData PubSubAccount
+		if err := json.Unmarshal(msg.Data, &msgData); err != nil {
+			log.Printf("Unable to process data: %v", err)
+			msg.Ack()
+			return
+		}
+
+		if msgData.Action != "create" {
+			msg.Ack()
+			return
+		}
+
+		data := msgData.Data
+		gpr := model.GeneratePrivilegeRequest{
+			CompanyID:  data.CompanyId,
+			MemberID:   data.Id,
+			MemberName: data.Name,
+		}
+
+		err := gpr.InsertPrivilegeVc()
+		if err != nil {
+			log.Println(err)
+			msg.Nack()
+			return
+		}
+
+		msg.Ack()
+	}); err != nil {
+		log.Fatal(err)
+		return
+	}
 }
 
 func getUiRole() map[string][]string {

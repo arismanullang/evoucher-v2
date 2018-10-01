@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -17,58 +16,60 @@ var (
 
 type (
 	Program struct {
-		Id                 string  `db:"id" json:"id"`
-		AccountId          string  `db:"account_id" json:"account_id"`
-		Name               string  `db:"name" json:"name"`
-		Type               string  `db:"type" json:"type"`
-		VoucherFormat      int     `db:"voucher_format_id" json:"voucher_format"`
-		VoucherType        string  `db:"voucher_type" json:"voucher_type"`
-		VoucherPrice       float64 `db:"voucher_price" json:"voucher_price"`
-		AllowAccumulative  bool    `db:"allow_accumulative" json:"allow_accumulative"`
-		StartDate          string  `db:"start_date" json:"start_date"`
-		EndDate            string  `db:"end_date" json:"end_date"`
-		StartHour          string  `db:"start_hour" json:"start_hour"`
-		EndHour            string  `db:"end_hour" json:"end_hour"`
-		ValidVoucherStart  string  `db:"valid_voucher_start" json:"valid_voucher_start"`
-		ValidVoucherEnd    string  `db:"valid_voucher_end" json:"valid_voucher_end"`
-		VoucherLifetime    int     `db:"voucher_lifetime" json:"voucher_lifetime"`
-		ValidityDays       string  `db:"validity_days" json:"validity_days"`
-		VoucherValue       float64 `db:"voucher_value" json:"voucher_value"`
-		MaxQuantityVoucher float64 `db:"max_quantity_voucher" json:"max_quantity_voucher"`
-		MaxGenerateVoucher float64 `db:"max_generate_voucher" json:"max_generate_voucher"`
-		MaxRedeemVoucher   float64 `db:"max_redeem_voucher" json:"max_redeem_voucher"`
-		RedemptionMethod   string  `db:"redemption_method" json:"redeem_method"`
-		ImgUrl             string  `db:"img_url" json:"image_url"`
-		Tnc                string  `db:"tnc" json:"tnc"`
-		Description        string  `db:"description" json:"description"`
-		Visibility         bool    `db:"visibility" json:"visibility"`
-		CreatedBy          string  `db:"created_by" json:"created_by"`
-		CreatedAt          string  `db:"created_at" json:"created_at"`
+		Id                 string    `db:"id" json:"id"`
+		AccountId          string    `db:"account_id" json:"account_id"`
+		Name               string    `db:"name" json:"name"`
+		Type               string    `db:"type" json:"type"`
+		VoucherFormat      int       `db:"voucher_format_id" json:"voucher_format"`
+		VoucherType        string    `db:"voucher_type" json:"voucher_type"`
+		VoucherPrice       float64   `db:"voucher_price" json:"voucher_price"`
+		AllowAccumulative  bool      `db:"allow_accumulative" json:"allow_accumulative"`
+		StartDate          time.Time `db:"start_date" json:"start_date"`
+		EndDate            time.Time `db:"end_date" json:"end_date"`
+		StartHour          string    `db:"start_hour" json:"start_hour"`
+		EndHour            string    `db:"end_hour" json:"end_hour"`
+		ValidVoucherStart  time.Time `db:"valid_voucher_start" json:"valid_voucher_start"`
+		ValidVoucherEnd    time.Time `db:"valid_voucher_end" json:"valid_voucher_end"`
+		VoucherLifetime    int       `db:"voucher_lifetime" json:"voucher_lifetime"`
+		ValidityDays       string    `db:"validity_days" json:"validity_days"`
+		VoucherValue       float64   `db:"voucher_value" json:"voucher_value"`
+		MaxQuantityVoucher float64   `db:"max_quantity_voucher" json:"max_quantity_voucher"`
+		MaxGenerateVoucher float64   `db:"max_generate_voucher" json:"max_generate_voucher"`
+		MaxRedeemVoucher   float64   `db:"max_redeem_voucher" json:"max_redeem_voucher"`
+		RedemptionMethod   string    `db:"redemption_method" json:"redeem_method"`
+		LimitRedeemBy      string    `db:"limit_redeem_by" json:"limit_redeem_by"`
+		ImgUrl             string    `db:"img_url" json:"image_url"`
+		Tnc                string    `db:"tnc" json:"tnc"`
+		Description        string    `db:"description" json:"description"`
+		Visibility         bool      `db:"visibility" json:"visibility"`
+		CreatedBy          string    `db:"created_by" json:"created_by"`
+		CreatedAt          time.Time `db:"created_at" json:"created_at"`
 	}
 	ProgramReq struct {
-		AccountId          string   `db:"account_id"`
-		Name               string   `db:"name"`
-		Type               string   `db:"type"`
-		VoucherType        string   `db:"voucher_type"`
-		VoucherPrice       float64  `db:"voucher_price"`
-		AllowAccumulative  bool     `db:"allow_accumulative"`
-		StartDate          string   `db:"start_date"`
-		EndDate            string   `db:"end_date"`
-		StartHour          string   `db:"start_hour"`
-		EndHour            string   `db:"end_hour"`
-		ValidVoucherStart  string   `db:"valid_voucher_start"`
-		ValidVoucherEnd    string   `db:"valid_voucher_end"`
-		VoucherLifetime    int      `db:"voucher_lifetime"`
-		ValidityDays       string   `db:"validity_days"`
-		VoucherValue       float64  `db:"voucher_value"`
-		MaxQuantityVoucher float64  `db:"max_quantity_voucher"`
-		MaxGenerateVoucher float64  `db:"max_generate_voucher"`
-		MaxRedeemVoucher   float64  `db:"max_redeem_voucher"`
-		RedemptionMethod   string   `db:"redemption_method"`
-		ImgUrl             string   `db:"img_url"`
-		Tnc                string   `db:"tnc"`
-		Description        string   `db:"description"`
-		ValidPartners      []string `db:"valid_partners"`
+		AccountId          string    `db:"account_id"`
+		Name               string    `db:"name"`
+		Type               string    `db:"type"`
+		VoucherType        string    `db:"voucher_type"`
+		VoucherPrice       float64   `db:"voucher_price"`
+		AllowAccumulative  bool      `db:"allow_accumulative"`
+		StartDate          time.Time `db:"start_date"`
+		EndDate            time.Time `db:"end_date"`
+		StartHour          string    `db:"start_hour"`
+		EndHour            string    `db:"end_hour"`
+		ValidVoucherStart  time.Time `db:"valid_voucher_start"`
+		ValidVoucherEnd    time.Time `db:"valid_voucher_end"`
+		VoucherLifetime    int       `db:"voucher_lifetime"`
+		ValidityDays       string    `db:"validity_days"`
+		VoucherValue       float64   `db:"voucher_value"`
+		MaxQuantityVoucher float64   `db:"max_quantity_voucher"`
+		MaxGenerateVoucher float64   `db:"max_generate_voucher"`
+		MaxRedeemVoucher   float64   `db:"max_redeem_voucher"`
+		RedemptionMethod   string    `db:"redemption_method"`
+		LimitRedeemBy      string    `db:"limit_redeem_by"`
+		ImgUrl             string    `db:"img_url"`
+		Tnc                string    `db:"tnc"`
+		Description        string    `db:"description"`
+		ValidPartners      []string  `db:"valid_partners"`
 	}
 	FormatReq struct {
 		Prefix     string `db:"prefix"`
@@ -93,13 +94,13 @@ type (
 		AllowAccumulative bool                   `db:"allow_accumulative" json:"allow_accumulative"`
 		MaxVoucher        float64                `db:"max_quantity_voucher" json:"max_quantity_voucher"`
 		ImgUrl            string                 `db:"img_url" json:"image_url"`
-		StartDate         string                 `db:"start_date" json:"start_date"`
-		EndDate           string                 `db:"end_date" json:"end_date"`
+		StartDate         time.Time              `db:"start_date" json:"start_date"`
+		EndDate           time.Time              `db:"end_date" json:"end_date"`
 		Vouchers          []SearchProgramVoucher `db:"-" json:"vouchers"`
 		Voucher           string                 `db:"voucher" json:"voucher"`
 		State             sql.NullString         `db:"state" json:"state"`
 		Status            string                 `db:"status" json:"status"`
-		CreatedAt         string                 `db:"created_at" json:"created_at"`
+		CreatedAt         time.Time              `db:"created_at" json:"created_at"`
 		UpdatedAt         sql.NullString         `db:"updated_at" json:"updated_at"`
 	}
 	SearchProgramVoucher struct {
@@ -114,33 +115,33 @@ type (
 		Data      []string `db:"-"`
 	}
 	ProgramUpdateRequest struct {
-		Id                 string `db:"id" json:"id"`
-		AccountId          string `db:"account_id" json:"account_id"`
-		Name               string `db:"name" json:"name"`
-		Type               string `db:"type" json:"type"`
-		VoucherFormat      string `db:"voucher_format_id" json:"voucher_format"`
-		VoucherType        string `db:"voucher_type" json:"voucher_type"`
-		VoucherPrice       string `db:"voucher_price" json:"voucher_price"`
-		AllowAccumulative  string `db:"allow_accumulative" json:"allow_accumulative"`
-		StartDate          string `db:"start_date" json:"start_date"`
-		EndDate            string `db:"end_date" json:"end_date"`
-		StartHour          string `db:"start_hour" json:"start_hour"`
-		EndHour            string `db:"end_hour" json:"end_hour"`
-		ValidVoucherStart  string `db:"valid_voucher_start" json:"valid_voucher_start"`
-		ValidVoucherEnd    string `db:"valid_voucher_end" json:"valid_voucher_end"`
-		VoucherLifetime    string `db:"voucher_lifetime" json:"voucher_lifetime"`
-		ValidityDays       string `db:"validity_days" json:"validity_days"`
-		VoucherValue       string `db:"voucher_value" json:"voucher_value"`
-		MaxQuantityVoucher string `db:"max_quantity_voucher" json:"max_quantity_voucher"`
-		MaxGenerateVoucher string `db:"max_generate_voucher" json:"max_generate_voucher"`
-		MaxRedeemVoucher   string `db:"max_redeem_voucher" json:"max_redeem_voucher"`
-		RedemptionMethod   string `db:"redemption_method" json:"redeem_method"`
-		ImgUrl             string `db:"img_url" json:"image_url"`
-		Tnc                string `db:"tnc" json:"tnc"`
-		Description        string `db:"description" json:"description"`
-		Visibility         string `db:"visibility" json:"visibility"`
-		CreatedBy          string `db:"created_by" json:"created_by"`
-		CreatedAt          string `db:"created_at" json:"created_at"`
+		Id                 string    `db:"id" json:"id"`
+		AccountId          string    `db:"account_id" json:"account_id"`
+		Name               string    `db:"name" json:"name"`
+		Type               string    `db:"type" json:"type"`
+		VoucherFormat      string    `db:"voucher_format_id" json:"voucher_format"`
+		VoucherType        string    `db:"voucher_type" json:"voucher_type"`
+		VoucherPrice       string    `db:"voucher_price" json:"voucher_price"`
+		AllowAccumulative  string    `db:"allow_accumulative" json:"allow_accumulative"`
+		StartDate          time.Time `db:"start_date" json:"start_date"`
+		EndDate            time.Time `db:"end_date" json:"end_date"`
+		StartHour          string    `db:"start_hour" json:"start_hour"`
+		EndHour            string    `db:"end_hour" json:"end_hour"`
+		ValidVoucherStart  time.Time `db:"valid_voucher_start" json:"valid_voucher_start"`
+		ValidVoucherEnd    time.Time `db:"valid_voucher_end" json:"valid_voucher_end"`
+		VoucherLifetime    string    `db:"voucher_lifetime" json:"voucher_lifetime"`
+		ValidityDays       string    `db:"validity_days" json:"validity_days"`
+		VoucherValue       string    `db:"voucher_value" json:"voucher_value"`
+		MaxQuantityVoucher string    `db:"max_quantity_voucher" json:"max_quantity_voucher"`
+		MaxGenerateVoucher string    `db:"max_generate_voucher" json:"max_generate_voucher"`
+		MaxRedeemVoucher   string    `db:"max_redeem_voucher" json:"max_redeem_voucher"`
+		RedemptionMethod   string    `db:"redemption_method" json:"redeem_method"`
+		ImgUrl             string    `db:"img_url" json:"image_url"`
+		Tnc                string    `db:"tnc" json:"tnc"`
+		Description        string    `db:"description" json:"description"`
+		Visibility         string    `db:"visibility" json:"visibility"`
+		CreatedBy          string    `db:"created_by" json:"created_by"`
+		CreatedAt          time.Time `db:"created_at" json:"created_at"`
 	}
 )
 
@@ -276,6 +277,7 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 			, max_quantity_voucher
 			, max_redeem_voucher
 			, max_generate_voucher
+			, limit_redeem_by
 			, redemption_method
 			, img_url
 			, tnc
@@ -284,12 +286,14 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 			, created_at
 			, status
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING
 			id
 	`
 	var res2 []string
-	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.Name, vr.Type, res[0], vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative, vr.StartDate, vr.EndDate, vr.StartHour, vr.EndHour, vr.ValidVoucherStart, vr.ValidVoucherEnd, vr.VoucherLifetime, vr.ValidityDays, vr.VoucherValue, vr.MaxQuantityVoucher, vr.MaxRedeemVoucher, vr.MaxGenerateVoucher, vr.RedemptionMethod, vr.ImgUrl, vr.Tnc, vr.Description, user, time.Now(), StatusCreated); err != nil {
+	if err := tx.Select(&res2, tx.Rebind(q2), vr.AccountId, vr.Name, vr.Type, res[0],
+		vr.VoucherType, vr.VoucherPrice, vr.AllowAccumulative,
+		vr.StartDate, vr.EndDate, vr.StartHour, vr.EndHour, vr.ValidVoucherStart, vr.ValidVoucherEnd, vr.VoucherLifetime, vr.ValidityDays, vr.VoucherValue, vr.MaxQuantityVoucher, vr.MaxRedeemVoucher, vr.MaxGenerateVoucher, vr.LimitRedeemBy, vr.RedemptionMethod, vr.ImgUrl, vr.Tnc, vr.Description, user, time.Now(), StatusCreated); err != nil {
 		fmt.Println(err.Error(), "(insert program)")
 		return "", ErrServerInternal
 	}
@@ -341,46 +345,6 @@ func InsertProgram(vr ProgramReq, fr FormatReq, user string) (string, error) {
 		return "", ErrServerInternal
 	}
 
-	logs := []Log{}
-
-	tempLog := Log{
-		TableName:   "voucher_formats",
-		TableNameId: res2[0],
-		ColumnName:  ColumnChangeLogInsert,
-		Action:      ActionChangeLogInsert,
-		Old:         ValueChangeLogNone,
-		New:         res[0],
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "programs",
-		TableNameId: ValueChangeLogNone,
-		ColumnName:  ColumnChangeLogInsert,
-		Action:      ActionChangeLogInsert,
-		Old:         ValueChangeLogNone,
-		New:         res2[0],
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "program_partners",
-		TableNameId: res2[0],
-		ColumnName:  ColumnChangeLogInsert,
-		Action:      ActionChangeLogInsert,
-		Old:         ValueChangeLogNone,
-		New:         ValueChangeLogAll,
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
 	return res2[0], nil
 }
 
@@ -392,93 +356,43 @@ func UpdateProgram(d Program) error {
 	}
 	defer tx.Rollback()
 
-	logs := []Log{}
-
-	programDetail, err := FindProgramDetailsByIdUpdateRequest(d.Id)
-	if err != nil {
-		fmt.Println(err.Error())
-		return ErrServerInternal
-	}
-
-	reflectParam := reflect.ValueOf(&d)
-	dataParam := reflect.Indirect(reflectParam)
-
-	reflectDb := reflect.ValueOf(&programDetail).Elem()
-	dataDb := reflect.Indirect(reflectDb)
-
-	updates := getUpdate(dataParam, reflectDb)
-
 	q := `
 		UPDATE programs
 		SET
-			updated_by = ?
-		WHERE
-			id = ?
-			AND status = ?;
-		`
-	_, err = tx.Exec(tx.Rebind(q), d.CreatedBy, d.Id, StatusCreated)
-	if err != nil {
-		fmt.Println(err.Error())
-		return ErrServerInternal
-	}
-
-	q = `
-		UPDATE programs
-		SET
+			name = ?,
+			type = ?,
+			allow_accumulative = ?,
+			max_generate_voucher = ?,
+			max_redeem_voucher = ?,
+			limit_redeem_by = ?,
+			redemption_method = ?,
+			img_url = ?,
+			tnc = ?,
+			description = ?,
+			updated_by = ?,
 			updated_at = ?
 		WHERE
 			id = ?
 			AND status = ?;
 		`
-	_, err = tx.Exec(tx.Rebind(q), time.Now(), d.Id, StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q),
+		d.Name,
+		d.Type,
+		d.AllowAccumulative,
+		d.MaxGenerateVoucher,
+		d.MaxRedeemVoucher,
+		d.LimitRedeemBy,
+		d.RedemptionMethod,
+		d.ImgUrl,
+		d.Tnc,
+		d.Description,
+		d.CreatedBy,
+		time.Now(),
+		d.Id,
+		StatusCreated)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
-	}
-
-	for k, v := range updates {
-		var value = v.String()
-		if strings.Contains(value, "<") {
-			tempString := strings.Replace(value, "<", "", -1)
-			tempString = strings.Replace(tempString, ">", "", -1)
-			tempStringArr := strings.Split(tempString, " ")
-
-			if tempStringArr[0] == "int" {
-				value = strconv.FormatInt(v.Int(), 10)
-			} else if tempStringArr[0] == "float64" {
-				value = strconv.FormatFloat(v.Float(), 'f', -1, 64)
-			} else if tempStringArr[0] == "bool" {
-				value = strconv.FormatBool(v.Bool())
-			}
-		}
-
-		keys := strings.Split(k, ";")
-		q = `
-			UPDATE programs
-			SET
-				`
-		q += keys[1] + ` = '` + value + `'`
-		q += `
-			WHERE
-				id = ?
-				AND status = ?;
-		`
-		_, err = tx.Exec(tx.Rebind(q), d.Id, StatusCreated)
-		if err != nil {
-			fmt.Println(err.Error())
-			fmt.Println(q)
-			return ErrServerInternal
-		}
-		tempLog := Log{
-			TableName:   "programs",
-			TableNameId: d.Id,
-			ColumnName:  keys[1],
-			Action:      ActionChangeLogUpdate,
-			Old:         dataDb.FieldByName(keys[0]).Interface().(string),
-			New:         value,
-			CreatedBy:   d.CreatedBy,
-		}
-		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -486,10 +400,6 @@ func UpdateProgram(d Program) error {
 		return ErrServerInternal
 	}
 
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
 	return nil
 }
 
@@ -501,7 +411,7 @@ func UpdateBulkProgram(id, user string, voucher int) error {
 	}
 	defer tx.Rollback()
 
-	old, err := CheckValueProgram("max_quantity_voucher", id)
+	_, err = CheckValueProgram("max_quantity_voucher", id)
 
 	q := `
 		UPDATE programs
@@ -521,20 +431,6 @@ func UpdateBulkProgram(id, user string, voucher int) error {
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
-	}
-
-	log := Log{
-		TableName:   "programs",
-		TableNameId: id,
-		ColumnName:  "max_quantity_voucher",
-		Action:      ActionChangeLogUpdate,
-		Old:         old,
-		New:         strconv.Itoa(voucher),
-		CreatedBy:   user,
-	}
-	err = addLog(log)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
@@ -588,34 +484,6 @@ func UpdateProgramBroadcasts(user UpdateProgramArrayRequest) error {
 		return ErrServerInternal
 	}
 
-	logs := []Log{}
-	log := Log{
-		TableName:   "broadcast_users",
-		TableNameId: user.ProgramId,
-		ColumnName:  ColumnChangeLogDelete,
-		Action:      ActionChangeLogDelete,
-		Old:         ValueChangeLogAll,
-		New:         ValueChangeLogNone,
-		CreatedBy:   user.User,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "broadcast_users",
-		TableNameId: user.ProgramId,
-		ColumnName:  ColumnChangeLogInsert,
-		Action:      ActionChangeLogInsert,
-		Old:         ValueChangeLogNone,
-		New:         ValueChangeLogAll,
-		CreatedBy:   user.User,
-	}
-	logs = append(logs, log)
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
 	return nil
 }
 
@@ -665,34 +533,6 @@ func UpdateProgramPartners(param UpdateProgramArrayRequest) error {
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
-	}
-
-	logs := []Log{}
-	log := Log{
-		TableName:   "program_partners",
-		TableNameId: param.ProgramId,
-		ColumnName:  ColumnChangeLogDelete,
-		Action:      ActionChangeLogDelete,
-		Old:         ValueChangeLogAll,
-		New:         ValueChangeLogNone,
-		CreatedBy:   param.User,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "program_partners",
-		TableNameId: param.ProgramId,
-		ColumnName:  ColumnChangeLogInsert,
-		Action:      ActionChangeLogInsert,
-		Old:         ValueChangeLogNone,
-		New:         ValueChangeLogAll,
-		CreatedBy:   param.User,
-	}
-	logs = append(logs, log)
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
@@ -747,78 +587,6 @@ func (d *DeleteProgramRequest) Delete() error {
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
-	}
-
-	logs := []Log{}
-	log := Log{
-		TableName:   "programs",
-		TableNameId: d.Id,
-		ColumnName:  "deleted_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         d.User,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "programs",
-		TableNameId: d.Id,
-		ColumnName:  "deleted_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "programs",
-		TableNameId: d.Id,
-		ColumnName:  "status",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         StatusDeleted,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "program_partners",
-		TableNameId: d.Id,
-		ColumnName:  "updated_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         d.User,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "program_partners",
-		TableNameId: d.Id,
-		ColumnName:  "updated_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "program_partners",
-		TableNameId: d.Id,
-		ColumnName:  "status",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         StatusDeleted,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, log)
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	q = `
@@ -880,45 +648,6 @@ func VisibilityProgram(d DeleteProgramRequest, status bool) error {
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
-	}
-
-	logs := []Log{}
-	log := Log{
-		TableName:   "programs",
-		TableNameId: d.Id,
-		ColumnName:  "updated_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         d.User,
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "programs",
-		TableNameId: d.Id,
-		ColumnName:  "updated_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "programs",
-		TableNameId: d.Id,
-		ColumnName:  "visibility",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         strconv.FormatBool(status),
-		CreatedBy:   d.User,
-	}
-	logs = append(logs, log)
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
@@ -1299,6 +1028,7 @@ func FindProgramDetailsCustomParam(param map[string]string) ([]Program, error) {
 			, max_quantity_voucher
 			, max_redeem_voucher
 			, max_generate_voucher
+			, limit_redeem_by
 			, redemption_method
 			, img_url
 			, tnc

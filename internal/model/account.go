@@ -17,21 +17,22 @@ type (
 	}
 	//Account Account object
 	Account struct {
-		Id        string         `db:"id" json:"id"`
-		Name      string         `db:"name" json:"name"`
-		Billing   sql.NullString `db:"billing" json:"billing"`
-		Alias     string         `db:"alias" json:"alias"`
-		Email     string         `db:"email" json:"email"`
-		Address   string         `db:"address" json:"address"`
-		City      string         `db:"city" json:"city"`
-		Province  string         `db:"province" json:"province"`
-		Building  string         `db:"building" json:"building"`
-		ZipCode   string         `db:"zip_code" json:"zip_code"`
-		CreatedAt string         `db:"created_at" json:"created_at"`
-		CreatedBy string         `db:"created_by" json:"created_by"`
-		UpdatedAt sql.NullString `db:"updated_at" json:"updated_at"`
-		UpdatedBy sql.NullString `db:"updated_by" json:"updated_by"`
-		Status    string         `db:"status" json:"status"`
+		Id         string         `db:"id" json:"id"`
+		Name       string         `db:"name" json:"name"`
+		Billing    sql.NullString `db:"billing" json:"billing"`
+		Alias      string         `db:"alias" json:"alias"`
+		Email      string         `db:"email" json:"email"`
+		Address    string         `db:"address" json:"address"`
+		City       string         `db:"city" json:"city"`
+		Province   string         `db:"province" json:"province"`
+		Building   string         `db:"building" json:"building"`
+		ZipCode    string         `db:"zip_code" json:"zip_code"`
+		SenderMail string         `db:"sender_mail" json:"sender_mail"`
+		CreatedAt  time.Time      `db:"created_at" json:"created_at"`
+		CreatedBy  string         `db:"created_by" json:"created_by"`
+		UpdatedAt  sql.NullString `db:"updated_at" json:"updated_at"`
+		UpdatedBy  sql.NullString `db:"updated_by" json:"updated_by"`
+		Status     string         `db:"status" json:"status"`
 	}
 	//AccountConfig Config account
 	AccountConfig struct {
@@ -82,20 +83,6 @@ func AddAccount(a Account, user string) error {
 		return err
 	}
 
-	log := Log{
-		TableName:   "accounts",
-		TableNameId: ValueChangeLogNone,
-		ColumnName:  ColumnChangeLogInsert,
-		Action:      ActionChangeLogInsert,
-		Old:         ValueChangeLogNone,
-		New:         res[0],
-		CreatedBy:   user,
-	}
-
-	err = addLog(log)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
 	return nil
 }
 
@@ -134,7 +121,6 @@ func UpdateAccount(account Account, user string) error {
 	dataParam := reflect.Indirect(reflectParam)
 
 	reflectDb := reflect.ValueOf(&accountDetail).Elem()
-	dataDb := reflect.Indirect(reflectDb)
 
 	updates := getUpdate(dataParam, reflectDb)
 
@@ -152,29 +138,6 @@ func UpdateAccount(account Account, user string) error {
 		fmt.Println(err.Error())
 		return ErrServerInternal
 	}
-
-	logs := []Log{}
-	tempLog := Log{
-		TableName:   "accounts",
-		TableNameId: account.Id,
-		ColumnName:  "updated_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         user,
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
-
-	tempLog = Log{
-		TableName:   "accounts",
-		TableNameId: account.Id,
-		ColumnName:  "updated_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   user,
-	}
-	logs = append(logs, tempLog)
 
 	for k, v := range updates {
 		var value = v.String()
@@ -203,30 +166,13 @@ func UpdateAccount(account Account, user string) error {
 		_, err = tx.Exec(tx.Rebind(q), account.Id, StatusCreated)
 		if err != nil {
 			fmt.Println(err.Error())
-			fmt.Println(q)
 			return ErrServerInternal
 		}
-
-		tempLog = Log{
-			TableName:   "accounts",
-			TableNameId: account.Id,
-			ColumnName:  keys[1],
-			Action:      ActionChangeLogUpdate,
-			Old:         dataDb.FieldByName(keys[0]).Interface().(string),
-			New:         value,
-			CreatedBy:   user,
-		}
-		logs = append(logs, tempLog)
 	}
 
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
-	}
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil
@@ -253,7 +199,21 @@ func FindAllAccounts() ([]AccountRes, error) {
 
 func FindAllAccountsDetail() ([]Account, error) {
 	q := `
-		SELECT *
+		SELECT
+			id
+			, name
+			, billing
+			, alias
+			, email
+			, address
+			, city
+			, province
+			, building
+			, zip_code
+			, created_at
+			, created_by
+			, updated_at
+			, updated_by
 		FROM accounts
 		WHERE NOT name = 'suadmin'
 	`
@@ -324,6 +284,7 @@ func GetAccountDetailByAccountId(accountId string) (Account, error) {
 			, a.name
 			, a.billing
 			, a.alias
+			, a.email
 			, a.created_at
 			, a.address
 			, a.city
@@ -332,10 +293,6 @@ func GetAccountDetailByAccountId(accountId string) (Account, error) {
 			, a.zip_code
 		FROM
 			accounts as a
-		JOIN
-			user_accounts as ua
-		ON
-			a.id = ua.account_id
 		WHERE
 			a.id = ?
 			AND a.status = ?
@@ -412,45 +369,6 @@ func BlockAccount(accountId, userId string) error {
 		return ErrServerInternal
 	}
 
-	logs := []Log{}
-	log := Log{
-		TableName:   "accounts",
-		TableNameId: accountId,
-		ColumnName:  "status",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         StatusDeleted,
-		CreatedBy:   userId,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "accounts",
-		TableNameId: accountId,
-		ColumnName:  "updated_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   userId,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "accounts",
-		TableNameId: accountId,
-		ColumnName:  "updated_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         userId,
-		CreatedBy:   userId,
-	}
-	logs = append(logs, log)
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
 	return nil
 }
 
@@ -481,45 +399,6 @@ func ActivateAccount(accountId, userId string) error {
 	if err := tx.Commit(); err != nil {
 		fmt.Println(err.Error())
 		return ErrServerInternal
-	}
-
-	logs := []Log{}
-	log := Log{
-		TableName:   "accounts",
-		TableNameId: accountId,
-		ColumnName:  "status",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         StatusCreated,
-		CreatedBy:   userId,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "accounts",
-		TableNameId: accountId,
-		ColumnName:  "updated_at",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         time.Now().String(),
-		CreatedBy:   userId,
-	}
-	logs = append(logs, log)
-
-	log = Log{
-		TableName:   "accounts",
-		TableNameId: accountId,
-		ColumnName:  "updated_by",
-		Action:      ActionChangeLogUpdate,
-		Old:         ValueChangeLogNone,
-		New:         userId,
-		CreatedBy:   userId,
-	}
-	logs = append(logs, log)
-
-	err = addLogs(logs)
-	if err != nil {
-		fmt.Println(err.Error())
 	}
 
 	return nil

@@ -1,5 +1,13 @@
 $(document).ready(function () {
-	getUser();
+  getUser();
+  $(document).ajaxStart(function(){
+    // Show image container
+    $(".cssload-loader").show();
+   });
+   $(document).ajaxComplete(function(){
+    // Hide image container
+    $(".cssload-loader").hide();
+   });
 });
 
 function getUser() {

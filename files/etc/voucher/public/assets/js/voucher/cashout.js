@@ -13,8 +13,17 @@ $( document ).ready(function() {
 
 	$('#transaction-date').change(function () {
 			getTransactionByDate($('#transaction-date').val());
-	}
-	);
+  });
+
+  $(document).ajaxStart(function(){
+    // Show image container
+    $(".cssload-loader").show();
+   });
+   $(document).ajaxComplete(function(){
+    // Hide image container
+    $(".cssload-loader").hide();
+   });
+
 });
 
 function getTransactionByDate(date) {

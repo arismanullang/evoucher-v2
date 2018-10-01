@@ -78,7 +78,9 @@ function send() {
 			var a = JSON.parse(data.responseText);
 			if (a.errors.detail == "Duplicate Entry.") {
 				swal("Username already used.");
-			}
+      } else {
+        swal("Error", a.errors.detail);
+      }
 		}
 	});
 }

@@ -59,6 +59,7 @@ func init() {
 	r.GetFunc("/v1/ui/transaction/cashout/partner", controller.GetTransactionsCustom)
 	r.GetFunc("/v1/ui/transaction/voucher", controller.GetVoucherTransactionDetails)
 	r.GetFunc("/v1/ui/transaction/cashout", controller.CashoutTransactionDetails)
+	r.GetFunc("/v1/ui/transaction/privilege", controller.GetTransactionsPrivilege)
 
 	//cashout
 	r.PostFunc("/v1/ui/cashout", controller.CashoutTransactions)
@@ -168,6 +169,10 @@ func init() {
 	r.GetFunc("/v1/transaction/history/:id", controller.TransactionHistoryDetail)
 
 	//public API
+	r.GetFunc("/v1/voucher/all/gift", controller.GetGiftVouchers)
+	r.PostFunc("/v1/voucher/unassign/gift", controller.UnassignGift)
+	r.PostFunc("/v1/voucher/assign/gift", controller.AssignGift)
+	r.PostFunc("/v1/voucher/generate/gift", controller.GenerateGift)
 	r.GetFunc("/v1/public/challenge", controller.GetChallenge)
 	r.GetFunc("/v1/public/redeem/profile", controller.GetRedeemData)
 	r.PostFunc("/v1/public/transaction", controller.WebCreateTransaction)
@@ -415,6 +420,8 @@ func viewReport(w http.ResponseWriter, r *http.Request) {
 		render.FileInLayout(w, "layout.html", "report/cashout.html", nil)
 	} else if page == "cashout-detail" {
 		render.FileInLayout(w, "layout.html", "report/cashout_detail.html", nil)
+	} else if page == "privilege" {
+		render.FileInLayout(w, "layout.html", "report/privilege.html", nil)
 	} else {
 		render.File(w, "notfound.html", nil, 404)
 	}
