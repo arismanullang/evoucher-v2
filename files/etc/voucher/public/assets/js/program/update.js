@@ -519,6 +519,9 @@ function getPartner(id) {
 }
 
 function convertToDate(date) {
+  // var string1 = date.split("T")[0];
+	// var string2 = string1.split("-");
+	// var result = string2[1] + "/" + string2[2] + "/" + string2[0];
   var newDate = new Date(date)
 
   var dd = newDate.getDate();
@@ -531,7 +534,7 @@ function convertToDate(date) {
   if(mm<10){
       mm='0'+mm;
   }
-	var result = dd + "/" + mm + "/" + yyyy;
+	var result = mm + "/" + dd + "/" + yyyy;
 
 	return result;
 }
