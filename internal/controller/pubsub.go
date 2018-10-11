@@ -59,7 +59,13 @@ type PubSubAccount struct {
 
 func AssignTenantPrivilegeVoucher() {
 	var mu sync.Mutex
-	sub := pscJuno.Subscription("update-account.privilege-voucher")
+
+	topic := pscJuno.Topic("update-account")
+	sub, err := createSubscriptionIfNotExists(pscJuno, topic, "update-account.privilege-voucher")
+	if err != nil {
+		log.Panic(err)
+	}
+
 	if err := sub.Receive(context.Background(), func(ctx context.Context, msg *pubsub.Message) {
 		mu.Lock()
 		defer mu.Unlock()
@@ -162,5 +168,28 @@ func createTopicIfNotExists(c *pubsub.Client, topic string) (*pubsub.Topic, erro
 	if err != nil {
 		return t, err
 	}
+
 	return t, nil
+}
+
+func createSubscriptionIfNotExists(c *pubsub.Client, topic *pubsub.Topic, subscription string) (*pubsub.Subscription, error) {
+	ctx := context.Background()
+
+	s := c.Subscription(subscription)
+	ok, err := s.Exists(ctx)
+	if err != nil {
+		return s, err
+	}
+	if ok {
+		return s, nil
+	}
+
+	s, err = c.CreateSubscription(ctx, subscription, pubsub.SubscriptionConfig{
+		Topic:       topic,
+		AckDeadline: 20 * time.Second,
+	})
+	if err != nil {
+		return s, err
+	}
+	return s, nil
 }
