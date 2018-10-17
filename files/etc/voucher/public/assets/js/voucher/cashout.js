@@ -1,5 +1,12 @@
 $( document ).ready(function() {
-	var total = 0;
+  var total = 0;
+
+  var last30Date = new Date();
+  last30Date.setDate(last30Date.getDate() - 30);
+
+  $('#trx-from').val(dateFormat(last30Date, "mm/dd/yyyy"));
+  $('#trx-to').val(dateFormat(new Date(), "mm/dd/yyyy"));
+
 	$('#transaction').submit(function(e) {
 		e.preventDefault();
 		addElem();
