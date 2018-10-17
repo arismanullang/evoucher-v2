@@ -4,15 +4,32 @@ $( document ).ready(function() {
 		e.preventDefault();
 		addElem();
 		return false;
-	});
+  });
 
-	$('.datepicker-transaction').datepicker({
-		container: '#datepicker-transaction',
+  $('#datepicker-trx-to').change(function () {
+    var startVal = $('#trx-from').val();
+    var endVal =  $('#trx-to').val();
+
+    if(startVal.length > 0 && endVal.length > 0){
+      var startDate = new Date(startVal);
+      var endDate = new Date(endVal);
+      endDate.setHours(23);
+      endDate.setMinutes(59);
+      endDate.setSeconds(59);
+
+      getTransactionByDate(dateFormat(startDate, 'isoUtcDateTime'), dateFormat(endDate, 'isoUtcDateTime'));
+    }
+
+});
+
+  $('.datepicker-trx-from').datepicker({
+    container: '#datepicker-trx-from',
+    autoclose: true
+  });
+
+	$('.datepicker-trx-to').datepicker({
+		container: '#datepicker-trx-to',
 		autoclose: true
-	});
-
-	$('#transaction-date').change(function () {
-			getTransactionByDate($('#transaction-date').val());
   });
 
   $(document).ajaxStart(function(){
@@ -26,10 +43,10 @@ $( document ).ready(function() {
 
 });
 
-function getTransactionByDate(date) {
+function getTransactionByDate(dateFrom, dateTo) {
 	var arrData = [];
 	$.ajax({
-		url: '/v1/ui/transaction/date?token=' + token + '&date=' + date,
+		url: '/v1/ui/transaction/date?token=' + token + '&start_date=' + dateFrom + '&end_date=' + dateTo,
 		type: 'get',
 		success: function (data) {
 			var result = data.data;
@@ -53,7 +70,7 @@ function getTransactionByDate(date) {
 				var keys = Object.keys(transaction);
 
 				for(var i = 0; i < keys.length; i++){
-					var button = "<button type='button' onclick='detail(\"" + keys[i] + "\",\""+date+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>";
+					var button = "<button type='button' onclick='detail(\"" + keys[i] + "\",\""+dateFrom+"\",\""+dateTo+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>";
 
 					dataSet[i] = [
 						partner[keys[i]]
@@ -93,6 +110,6 @@ function getTransactionByDate(date) {
 	});
 }
 
-function detail(url, date){
-	window.location = "/voucher/cashout-detail?partner="+url+"&date=" + date;
+function detail(url, startDate, endDate){
+	window.location = "/voucher/cashout-detail?partner="+url+"&start_date=" + startDate+"&end_date=" + endDate;
 }

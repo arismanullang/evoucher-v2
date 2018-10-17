@@ -18,9 +18,28 @@
               <div class="col-md-3 col-sm-3">
                 <p>Transaction Date</p>
               </div>
-              <div id="datepicker-transaction" class="col-md-9 col-sm-9">
+              <!-- <div id="datepicker-transaction" class="col-md-9 col-sm-9">
                 <input type="text" id="transaction-date" name="transaction-date" placeholder="Select Date" class="form-control datepicker-transaction">
+              </div> -->
+              <!-- Date Picker -->
+              <div class="col-sm-3">
+                <div class="form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
+                  <div id="datepicker-trx-from" class="form-control no-border">
+                    <input id="trx-from" name="trx-from" placeholder="Select start date" tabindex="0" aria-invalid="false" class="form-control datepicker-trx-from">
+                  </div>
+                </div>
               </div>
+              <div class="col-sm-1" style="text-align: center">
+                <label class="control-label">-</label>
+              </div>
+              <div class="col-sm-3">
+                <div class="form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
+                  <div id="datepicker-trx-to" class="form-control no-border">
+                    <input id="trx-to" name="trx-to" placeholder="Select end date" tabindex="0" aria-invalid="false" class="form-control datepicker-trx-to">
+                  </div>
+                </div>
+              </div>
+              <!-- Date Picker -->
             </div>
             <div class="form-group">
               <table id="datatable1" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
@@ -52,6 +71,7 @@
 {{ end }}
 
 {{ define "scripts" }}
+<script type="text/javascript" src="/assets/js/dateformat.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/jquery.dataTables.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/nouislider/distribute/nouislider.js"></script>

@@ -564,7 +564,7 @@ func FindTransactionsPrivilege(accountId string, startDate time.Time, endDate ti
 	return resv, nil
 }
 
-func FindTransactionsByDate(accountId string, createdAt time.Time) ([]TransactionList, error) {
+func FindTransactionsByDate(accountId string, startDate, endDate time.Time) ([]TransactionList, error) {
 	q := `
 		SELECT DISTINCT
 			 t.id as transaction_id
@@ -601,7 +601,7 @@ func FindTransactionsByDate(accountId string, createdAt time.Time) ([]Transactio
 	q += `ORDER BY t.created_at DESC;`
 	//fmt.Println(q)
 	var resv []TransactionList
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId, createdAt, createdAt.AddDate(0, 0, 1)); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId, startDate, endDate); err != nil {
 		fmt.Println(err.Error())
 		return resv, err
 	}
@@ -674,7 +674,7 @@ func FindTransactionsByDate(accountId string, createdAt time.Time) ([]Transactio
 	return resv, nil
 }
 
-func FindTransactionsByPartnerDate(accountId, partnerId string, createdAt time.Time) ([]TransactionList, error) {
+func FindTransactionsByPartnerDate(accountId, partnerId string, startDate, endDate time.Time) ([]TransactionList, error) {
 	q := `
 		SELECT DISTINCT
 			 t.id as transaction_id
@@ -711,7 +711,7 @@ func FindTransactionsByPartnerDate(accountId, partnerId string, createdAt time.T
 	q += `ORDER BY t.created_at DESC;`
 	//fmt.Println(q)
 	var resv []TransactionList
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId, partnerId, createdAt, createdAt.AddDate(0, 0, 1)); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountId, partnerId, startDate, endDate); err != nil {
 		fmt.Println(err.Error())
 		return resv, err
 	}
