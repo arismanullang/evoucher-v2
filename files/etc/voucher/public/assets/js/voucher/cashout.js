@@ -57,7 +57,8 @@ function getTransactionByDate(dateFrom, dateTo) {
 		type: 'get',
 		success: function (data) {
 			var result = data.data;
-			var partner = {};
+      var partner = {};
+      var transactionId = [];
 			var transaction = {};
 			var transactionValue = {};
 
@@ -65,12 +66,17 @@ function getTransactionByDate(dateFrom, dateTo) {
 			if(result != null){
 				for(var i = 0; i < result.length; i++){
 					if(transaction[result[i].partner_id] == null){
-						partner[result[i].partner_id] = result[i].partner_name;
+            partner[result[i].partner_id] = result[i].partner_name;
+            transactionId.push(result[i].transaction_id);
 						transaction[result[i].partner_id] = 1;
-						transactionValue[result[i].partner_id] = result[i].vouchers.length * result[i].voucher_value;
+						transactionValue[result[i].partner_id] = result[i].voucher_value;
 					}else{
-						transaction[result[i].partner_id]++;
-						transactionValue[result[i].partner_id] = transactionValue[result[i].partner_id] + (result[i].vouchers.length * result[i].voucher_value);
+            if(!transactionId.includes(result[i].transaction_id)){
+              console.log(transactionId + "-" + result[i].transaction_id);
+              transactionId.push(result[i].transaction_id);
+              transaction[result[i].partner_id]++ ;
+            }
+						transactionValue[result[i].partner_id] = transactionValue[result[i].partner_id] + result[i].voucher_value;
 					}
 				}
 
