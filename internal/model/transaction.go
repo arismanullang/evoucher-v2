@@ -564,7 +564,7 @@ func FindTransactionsPrivilege(accountId string, startDate time.Time, endDate ti
 	return resv, nil
 }
 
-func FindTransactionsByDate(accountId string, startDate, endDate time.Time) ([]TransactionList, error) {
+func FindTransactionsByDate(accountId, state string, startDate, endDate time.Time) ([]TransactionList, error) {
 	q := `
 		SELECT DISTINCT
 			 t.id as transaction_id
@@ -595,8 +595,12 @@ func FindTransactionsByDate(accountId string, startDate, endDate time.Time) ([]T
 			t.status = ?
 			AND t.account_id = ?
 			AND t.created_at BETWEEN ? AND ?
-			AND vo.state = 'used'
 	`
+
+	if state != "" {
+		q += `AND vo.state = '` + state + `'`
+	}
+
 	q += `ORDER BY t.created_at DESC;`
 	//fmt.Println(q)
 	var resv []TransactionList

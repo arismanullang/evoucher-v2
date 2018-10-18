@@ -741,6 +741,7 @@ func GetTransactionsByDate(w http.ResponseWriter, r *http.Request) {
 	apiName := "report_transaction"
 	startDate := r.FormValue("start_date")
 	endDate := r.FormValue("end_date")
+	state := r.FormValue("state")
 
 	logger := model.NewLog()
 	logger.SetService("API").
@@ -777,7 +778,7 @@ func GetTransactionsByDate(w http.ResponseWriter, r *http.Request) {
 		logger.SetStatus(status).Panic("param :", endDate, "response :", err.Error())
 	}
 
-	transaction, err := model.FindTransactionsByDate(a.User.Account.Id, timeDateFrom, timeDateTo)
+	transaction, err := model.FindTransactionsByDate(a.User.Account.Id, state, timeDateFrom, timeDateTo)
 	res = NewResponse(transaction)
 	if err != nil && err != model.ErrResourceNotFound {
 		status = http.StatusInternalServerError

@@ -53,7 +53,7 @@ $( document ).ready(function() {
 function getTransactionByDate(dateFrom, dateTo) {
 	var arrData = [];
 	$.ajax({
-		url: '/v1/ui/transaction/date?token=' + token + '&start_date=' + dateFrom + '&end_date=' + dateTo,
+		url: '/v1/ui/transaction/date?token=' + token + '&state=used&start_date=' + dateFrom + '&end_date=' + dateTo,
 		type: 'get',
 		success: function (data) {
 			var result = data.data;
