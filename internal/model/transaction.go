@@ -573,6 +573,7 @@ func FindTransactionsByDate(accountId, state string, startDate, endDate time.Tim
 			 , va.name as program_name
 			 , t.transaction_code
 			 , va.voucher_value
+			 , vo.created_at as issued
 			 , t.created_at as redeemed
 			 , u.username
 		FROM transactions as t

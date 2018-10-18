@@ -5,112 +5,135 @@
 
 {{ define "content" }}
 <section>
-<div class="container-fluid">
-  <div class="card">
-    <div class="card-heading bg-amber-500">
-      <div class="card-title text-center">Transaction Report</div>
-    </div>
-    <div class="card-body">
-      <table id="datatable1" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
-        <thead>
-          <tr>
-            <th>
-              <div class="mda-form-control pt0">
-                <select id="partner-id" name="filter_partner_name" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
-                  <option value="">ALL</option>
-                </select>
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <input type="text" name="filter_transcation_id" placeholder="CODE" class="form-control input-sm datatable_input_col_search">
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <input type="text" name="filter_program_name" placeholder="PROGRAM" class="form-control input-sm datatable_input_col_search">
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <input type="text" name="filter_voucher_code" placeholder="VOUCHER" class="form-control input-sm datatable_input_col_search">
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <input type="text" name="filter_voucher_value" placeholder="VALUE" class="form-control input-sm datatable_input_col_search">
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <input type="text" name="filter_issued_date" placeholder="DATE" class="form-control input-sm datatable_input_col_search">
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <input type="text" name="filter_redeemed_date" placeholder="DATE" class="form-control input-sm datatable_input_col_search">
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <input type="text" name="filter_cashout_date" placeholder="DATE" class="form-control input-sm datatable_input_col_search">
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <select id="username" name="filter_user" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
-                  <option value="">ALL</option>
-                </select>
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-            <th>
-              <div class="mda-form-control pt0">
-                <select name="filter_status" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
-                  <option value="">ALL</option>
-                  <option value="Paid">PAID</option>
-                  <option value="Pending">PENDING</option>
-                </select>
-                <div class="mda-form-control-line"></div>
-              </div>
-            </th>
-          </tr>
-          <tr role="row">
-            <th>PARTNER</th>
-            <th>TRANSACTION CODE</th>
-            <th>PROGRAM</th>
-            <th>VOUCHER</th>
-            <th>VOUCHER VALUE</th>
-            <th>REDEEMED</th>
-            <th>TRANSACTION</th>
-            <th>REIMBURSE</th>
-            <th>USER</th>
-            <th>STATUS</th>
-          </tr>
-        </thead>
-      </table>
-      <div class="cssload-loader">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
+  <div class="container-fluid">
+    <div class="card">
+      <div class="card-heading bg-amber-500">
+        <div class="card-title text-center">Transaction Report</div>
+      </div>
+      <div class="card-body">
+        <div class="col-sm-1">
+          <label class="control-label">Filter Date </label>
+        </div>
+        <!-- Date Picker -->
+        <div class="col-sm-2">
+          <div class="form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
+            <div id="datepicker-trx-from" class="form-control no-border">
+              <input id="trx-from" placeholder="Select start date" tabindex="0" aria-invalid="false" class="form-control datepicker-trx-from">
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-1" style="text-align: center">
+          <label class="control-label">-</label>
+        </div>
+        <div class="col-sm-2">
+          <div class="form-group rel-wrapper ui-datepicker ui-datepicker-popup dp-theme-primary">
+            <div id="datepicker-trx-to" class="form-control no-border">
+              <input id="trx-to" placeholder="Select end date" tabindex="0" aria-invalid="false" class="form-control datepicker-trx-to">
+            </div>
+          </div>
+        </div>
+        <!-- Date Picker -->
+        <table id="datatable1" class="table-datatable table table-striped table-hover mv-lg dataTable" role="grid" aria-describedby="datatable2_info">
+          <thead>
+            <tr>
+              <th>
+                <div class="mda-form-control pt0">
+                  <select id="partner-id" name="filter_partner_name" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
+                    <option value="">ALL</option>
+                  </select>
+                  <div class="mda-form-control-line"></div>
+                </div>
+              </th>
+              <th>
+                <div class="mda-form-control pt0">
+                  <input type="text" name="filter_transcation_id" placeholder="CODE" class="form-control input-sm datatable_input_col_search">
+                  <div class="mda-form-control-line"></div>
+                </div>
+              </th>
+              <th>
+                <div class="mda-form-control pt0">
+                  <input type="text" name="filter_program_name" placeholder="PROGRAM" class="form-control input-sm datatable_input_col_search">
+                  <div class="mda-form-control-line"></div>
+                </div>
+              </th>
+              <th>
+                <div class="mda-form-control pt0">
+                  <input type="text" name="filter_voucher_code" placeholder="VOUCHER" class="form-control input-sm datatable_input_col_search">
+                  <div class="mda-form-control-line"></div>
+                </div>
+              </th>
+              <th>
+                <div class="mda-form-control pt0">
+                  <input type="text" name="filter_voucher_value" placeholder="VALUE" class="form-control input-sm datatable_input_col_search">
+                  <div class="mda-form-control-line"></div>
+                </div>
+              </th>
+              <th>
+                <div class="mda-form-control pt0">
+                  <input type="text" name="filter_issued_date" placeholder="DATE" class="form-control input-sm datatable_input_col_search">
+                  <div class="mda-form-control-line"></div>
+                </div>
+              </th>
+              <th>
+                <div class="mda-form-control pt0">
+                  <input type="text" name="filter_redeemed_date" placeholder="DATE" class="form-control input-sm datatable_input_col_search">
+                  <div class="mda-form-control-line"></div>
+                </div>
+              </th>
+              <th>
+                <div class="mda-form-control pt0">
+                  <input type="text" name="filter_cashout_date" placeholder="DATE" class="form-control input-sm datatable_input_col_search">
+                  <div class="mda-form-control-line"></div>
+                </div>
+              </th>
+              <th>
+                <div class="mda-form-control pt0">
+                  <select id="username" name="filter_user" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
+                    <option value="">ALL</option>
+                  </select>
+                  <div class="mda-form-control-line"></div>
+                </div>
+              </th>
+              <th>
+                <div class="mda-form-control pt0">
+                  <select name="filter_status" check="true" class="form-control select2 datatable_input_col_search" tabindex="0">
+                    <option value="">ALL</option>
+                    <option value="Paid">PAID</option>
+                    <option value="Pending">PENDING</option>
+                  </select>
+                  <div class="mda-form-control-line"></div>
+                </div>
+              </th>
+            </tr>
+            <tr role="row">
+              <th>PARTNER</th>
+              <th>TRANSACTION CODE</th>
+              <th>PROGRAM</th>
+              <th>VOUCHER</th>
+              <th>VOUCHER VALUE</th>
+              <th>REDEEMED</th>
+              <th>TRANSACTION</th>
+              <th>REIMBURSE</th>
+              <th>USER</th>
+              <th>STATUS</th>
+            </tr>
+          </thead>
+        </table>
+        <div class="cssload-loader">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 </section>
 {{ end }}
 
 {{ define "scripts" }}
+<script type="text/javascript" src="/assets/js/dateformat.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/jquery.dataTables.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.flash.min.js"></script>
@@ -120,6 +143,7 @@
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.html5.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/datatables/media/js/buttons.print.min.js"></script>
 <script type="text/javascript" src="/assets/vendor/nouislider/distribute/nouislider.js"></script>
+<script type="text/javascript" src="/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
 <script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
 <script type="text/javascript" src="/assets/js/report/transaction.js"></script>
 {{ end }}
@@ -130,5 +154,6 @@
 <link rel="stylesheet" href="/assets/vendor/nouislider/distribute/nouislider.min.css">
 <link rel="stylesheet" href="/assets/vendor/datatables/media/css/jquery.dataTables.css">
 <link rel="stylesheet" href="/assets/vendor/datatables/media/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="/assets/vendor/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css">
 <link rel="stylesheet" href="/assets/css/app.css">
 {{ end }}
