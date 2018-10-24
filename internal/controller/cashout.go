@@ -20,7 +20,76 @@ type (
 		Transactions         []string `json:"transactions"`
 		Vouchers             []string `json:"vouchers"`
 	}
+
+	VoidRequest struct {
+		CashoutID   string `json:"cashout_id"`
+		Description string `json:"description"`
+	}
 )
+
+func CashoutVoid(w http.ResponseWriter, r *http.Request) {
+	apiName := "cashout_void"
+
+	logger := model.NewLog()
+	logger.SetService("API").
+		SetMethod(r.Method).
+		SetTag(apiName)
+
+	res := NewResponse(nil)
+
+	var vr VoidRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&vr); err != nil {
+		logger.SetStatus(http.StatusBadRequest).Panic("param :", r.Body, "response :", err.Error())
+		res.AddError(its(http.StatusBadRequest), model.ErrCodeJsonError, err.Error(), logger.TraceID)
+	}
+
+	status := http.StatusOK
+
+	a := AuthTokenWithLogger(w, r, logger)
+	if !a.Valid {
+		res = a.res
+		status = http.StatusUnauthorized
+		render.JSON(w, res, status)
+		return
+	}
+
+	if CheckAPIRole(a, apiName) {
+		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+
+		status = http.StatusUnauthorized
+		res.AddError(its(status), model.ErrCodeInvalidRole, "Invalid Role : "+model.ErrInvalidRole.Error(), logger.TraceID)
+		render.JSON(w, res, status)
+		return
+	}
+
+	trxIDs, err := model.VoidCashout(vr.CashoutID, a.User.ID)
+	if err != nil {
+		status = http.StatusInternalServerError
+		errTitle := model.ErrCodeInternalError
+		res.AddError(its(status), errTitle, "Void Cashout : "+err.Error(), logger.TraceID)
+
+		logger.SetStatus(status).Info("param :", vr, "response :", res.Errors)
+	} else if len(trxIDs) > 0 {
+		if err := model.UpdateCashoutTransactions(trxIDs, a.User.ID, model.VoucherStateUsed); err != nil {
+			status = http.StatusInternalServerError
+			errTitle := model.ErrCodeInternalError
+			res.AddError(its(status), errTitle, "Update Voucher : "+err.Error(), logger.TraceID)
+
+			logger.SetStatus(status).Info("param :", vr, "response :", res.Errors)
+		} else {
+			res = NewResponse("success")
+		}
+	} else if len(trxIDs) == 0 {
+		status = http.StatusNotFound
+		errTitle := model.ErrCodeCashoutNotFound
+		res.AddError(its(status), errTitle, model.ErrMessageCashoutNotFound, logger.TraceID)
+
+		logger.SetStatus(status).Info("param :", vr, "response :", res.Errors)
+	}
+
+	render.JSON(w, res, status)
+}
 
 func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
 	apiName := "transaction_cashout"
@@ -110,7 +179,7 @@ func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
 		logger.SetStatus(status).Info("param :", cashout, "response :", res.Errors)
 	} else {
 		res = NewResponse(id)
-		if err := model.UpdateCashoutTransactions(rd.Transactions, a.User.ID); err != nil {
+		if err := model.UpdateCashoutTransactions(rd.Transactions, a.User.ID, model.VoucherStatePaid); err != nil {
 			status = http.StatusInternalServerError
 			errTitle := model.ErrCodeInternalError
 			res.AddError(its(status), errTitle, "Update Voucher : "+err.Error(), logger.TraceID)

@@ -19,6 +19,7 @@ type (
 		PaymentMethod        string               `db:"payment_method" json:"payment_method"`
 		CreatedAt            time.Time            `db:"created_at" json:"created_at"`
 		CreatedBy            string               `db:"created_by" json:"created_by"`
+		Status               string               `db:"status" json:"status"`
 		Transactions         []CashoutTransaction `db:"-" json:"transactions"`
 	}
 	CashoutTransaction struct {
@@ -26,8 +27,57 @@ type (
 		VoucherId     string    `db:"voucher_id" json:"voucher_id"`
 		VoucherValue  string    `db:"voucher_value" json:"voucher_value"`
 		CreatedAt     time.Time `db:"created_at" json:"created_at"`
+		Status        string    `db:"status" json:"status"`
 	}
 )
+
+func VoidCashout(cashoutID, user string) ([]string, error) {
+	tx, err := db.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	q := `
+		UPDATE cashouts
+		SET
+			status = ?
+			, updated_by = ?
+			, updated_at = ?
+		WHERE
+			id = ?
+			AND status != 'voided'
+	`
+
+	_, err = tx.Exec(tx.Rebind(q), StatusVoid, user, time.Now(), cashoutID)
+	if err != nil {
+		return nil, err
+	}
+
+	q1 := `
+		UPDATE cashout_details
+		SET
+			status = ?
+			, updated_by = ?
+			, updated_at = ?
+		WHERE
+			cashout_id = ?
+			AND status != 'voided'
+		RETURNING transaction_id
+	`
+
+	var transactionIDs []string
+	err = tx.Select(&transactionIDs, tx.Rebind(q1), StatusVoid, user, time.Now(), cashoutID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return transactionIDs, nil
+}
 
 func InsertCashout(d Cashout) (string, error) {
 	tx, err := db.Beginx()
@@ -89,7 +139,7 @@ func InsertCashout(d Cashout) (string, error) {
 	return d.Id, nil
 }
 
-func UpdateCashoutTransactions(transactionId []string, user string) error {
+func UpdateCashoutTransactions(transactionId []string, user, voucherState string) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		return err
@@ -143,7 +193,7 @@ func UpdateCashoutTransactions(transactionId []string, user string) error {
 		q += `id = '` + v + `'`
 	}
 	q += `)`
-	_, err = tx.Exec(tx.Rebind(q), VoucherStatePaid, user, time.Now(), StatusCreated)
+	_, err = tx.Exec(tx.Rebind(q), voucherState, user, time.Now(), StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -158,14 +208,22 @@ func UpdateCashoutTransactions(transactionId []string, user string) error {
 func PrintCashout(accountId string, cashoutCode string) (Cashout, error) {
 	q := `
 		SELECT
-			id, cashout_code, bank_account, bank_account_company, bank_account_number, bank_account_ref_number, partner_id, total_cashout, created_at
+			id
+			, cashout_code
+			, bank_account
+			, bank_account_company
+			, bank_account_number
+			, bank_account_ref_number
+			, partner_id
+			, total_cashout
+			, created_at
+			, status
 		FROM cashouts
 		WHERE
-			status = ?
-			AND account_id = ?
+			account_id = ?
 			AND id = ?`
 	var res []Cashout
-	if err := db.Select(&res, db.Rebind(q), StatusCreated, accountId, cashoutCode); err != nil {
+	if err := db.Select(&res, db.Rebind(q), accountId, cashoutCode); err != nil {
 		fmt.Println("cashout : " + err.Error())
 		return Cashout{}, err
 	}
@@ -176,7 +234,11 @@ func PrintCashout(accountId string, cashoutCode string) (Cashout, error) {
 
 	q = `
 		SELECT DISTINCT
-			t.transaction_code as transaction_id, v.voucher_code as voucher_id, v.voucher_value, t.created_at
+			t.transaction_code as transaction_id
+			, v.voucher_code as voucher_id
+			, v.voucher_value
+			, t.created_at
+			, cd.status
 		FROM cashout_details as cd
 		JOIN
 			transactions as t
@@ -187,10 +249,9 @@ func PrintCashout(accountId string, cashoutCode string) (Cashout, error) {
 		ON
 			cd.voucher_id = v.id
 		WHERE
-			cd.status = ?
-			AND cd.cashout_id = ?`
+			cd.cashout_id = ?`
 	var rest []CashoutTransaction
-	if err := db.Select(&rest, db.Rebind(q), StatusCreated, res[0].Id); err != nil {
+	if err := db.Select(&rest, db.Rebind(q), res[0].Id); err != nil {
 		fmt.Println("cashout detail : " + err.Error())
 		return Cashout{}, err
 	}
@@ -216,6 +277,7 @@ func FindAllReimburse(accountId, user string) ([]Cashout, error) {
 			, c.bank_account_ref_number
 			, c.bank_account_company
 			, c.created_at
+			, c.status
 		FROM
 			cashouts AS c
 		JOIN
@@ -224,12 +286,13 @@ func FindAllReimburse(accountId, user string) ([]Cashout, error) {
 			c.partner_id = p.id
 		WHERE
 			c.status = ?
+			OR c.status = ?
 			AND c.account_id = ?
 		ORDER BY
 		 	c.created_at desc
 		`
 	var res []Cashout
-	if err := db.Select(&res, db.Rebind(q), StatusCreated, accountId); err != nil {
+	if err := db.Select(&res, db.Rebind(q), StatusCreated, StatusVoid, accountId); err != nil {
 		return []Cashout{}, err
 	}
 	if len(res) < 1 {
