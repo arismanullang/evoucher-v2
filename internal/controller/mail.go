@@ -216,7 +216,7 @@ func SendEmailCampaign(w http.ResponseWriter, r *http.Request) {
 			ReferenceNo: rd.ProgramID,
 		}
 
-		target := []model.TargetEmail{}
+		target := []model.CampaignData{}
 		for _, v := range user {
 			gvr.Holder.Key = v.Email
 			gvr.Holder.Email = v.Email
@@ -234,7 +234,7 @@ func SendEmailCampaign(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			tempTarget := model.TargetEmail{
+			tempTarget := model.CampaignData{
 				HolderEmail: v.Email,
 				HolderName:  v.Name,
 				VoucherUrl:  generateLink(vo[0].ID),
@@ -243,6 +243,8 @@ func SendEmailCampaign(w http.ResponseWriter, r *http.Request) {
 			target = append(target, tempTarget)
 		}
 
+		//Email sender need to be registered on nudge(notification services), ask supervisor for email sender
+		campaign.EmailSender = a.User.Account.SenderEmail
 		if idx, err := model.SendVoucherMailV2(model.Domain, model.ApiKey, model.PublicApiKey, campaign, target); err != nil {
 			res := NewResponse(nil)
 			status := http.StatusInternalServerError
@@ -432,10 +434,10 @@ func SendSedayuOneEmail(w http.ResponseWriter, r *http.Request) {
 	}
 	campaign.AccountID = a.User.Account.Id
 	campaign.CreatedBy = a.User.ID
-	listEmail := []model.TargetEmail{}
+	listEmail := []model.CampaignData{}
 
 	for _, v := range totalVoucher {
-		listEmail = append(listEmail, model.TargetEmail{HolderName: v.HolderDescription.String, VoucherUrl: generateLink(v.ID), HolderEmail: v.Holder.String})
+		listEmail = append(listEmail, model.CampaignData{HolderName: v.HolderDescription.String, VoucherUrl: generateLink(v.ID), HolderEmail: v.Holder.String})
 	}
 
 	if err := model.SendMailSedayuOne(model.Domain, model.ApiKey, model.PublicApiKey, "Sedayu One Voucher", listEmail, campaign); err != nil {

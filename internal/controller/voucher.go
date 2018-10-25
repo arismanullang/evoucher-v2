@@ -1325,8 +1325,8 @@ func GenerateSingleVoucherEmail(w http.ResponseWriter, r *http.Request) {
 	campaign.AccountID = a.User.Account.Id
 	campaign.ProgramName = dt.Name
 	campaign.ImageVoucher = dt.ImgUrl
-	listEmail := []model.TargetEmail{}
-	listEmail = append(listEmail, model.TargetEmail{HolderName: gvd.Holder.Description, VoucherUrl: generateLink(voucher[0].ID), HolderEmail: gvd.Holder.Email})
+	listEmail := []model.CampaignData{}
+	listEmail = append(listEmail, model.CampaignData{HolderName: gvd.Holder.Description, VoucherUrl: generateLink(voucher[0].ID), HolderEmail: gvd.Holder.Email})
 
 	if err := model.SendVoucherMail(model.Domain, model.ApiKey, model.PublicApiKey, gvd.Subject, listEmail, campaign); err != nil {
 		res := NewResponse(nil)

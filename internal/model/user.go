@@ -146,6 +146,25 @@ func CheckUsername(username, accountId string) (string, error) {
 	return res[0], nil
 }
 
+func GetAccountEmailSender(accountId string) (string, error) {
+	q := `
+		SELECT
+			sender_mail
+		FROM
+			accounts
+		WHERE
+			id = ?
+	`
+	var res []string
+	if err := db.Select(&res, db.Rebind(q), accountId); err != nil {
+		return "", ErrServerInternal
+	}
+	if len(res) == 0 {
+		return "", nil
+	}
+	return res[0], nil
+}
+
 func GetWebuser() (string, error) {
 	q := `
 		SELECT

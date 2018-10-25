@@ -317,7 +317,16 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		ListVoucher:     listVoucher,
 	}
 
-	if err := model.SendConfirmationEmail(model.Domain, model.ApiKey, model.PublicApiKey, "Elys Voucher Confirmation", req, a.User.Account.Id); err != nil {
+	senderMail, err := model.GetAccountEmailSender(a.User.Account.Id)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+
+	if err := model.SendConfirmationEmail(senderMail, "Elys Voucher Confirmation", req, a.User.Account.Id); err != nil {
 		res := NewResponse(nil)
 		status := http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError
@@ -481,6 +490,15 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	seedCode := randStr(model.DEFAULT_TRANSACTION_LENGTH, model.DEFAULT_TRANSACTION_SEED)
 	txCode := seedCode + randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
 
+	senderMail, err := model.GetAccountEmailSender(program.AccountId)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+
 	user, err := model.GetWebuser()
 	if err != nil {
 		status = http.StatusInternalServerError
@@ -597,7 +615,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		ListVoucher:     listVoucher,
 	}
 
-	if err := model.SendConfirmationEmail(model.Domain, model.ApiKey, model.PublicApiKey, "Sedayu One Voucher Confirmation", req, partner.AccountId); err != nil {
+	if err := model.SendConfirmationEmail(senderMail, "Elys Voucher Confirmation", req, partner.AccountId); err != nil {
 		res := NewResponse(nil)
 		status := http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError
