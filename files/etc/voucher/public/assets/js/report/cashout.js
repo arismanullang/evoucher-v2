@@ -25,7 +25,11 @@ function getCashout() {
 			var i;
 
 			for (i = 0; i < arrData.length; i++) {
-				var button = "<button type='button' onclick='detail(\"" + arrData[i].id + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>";
+        if(arrData[i].status == "voided"){
+          var button = "<button type='button' onclick='detail(\"" + arrData[i].id + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button><span class='label label-danger'>voided</span>";
+        }else {
+          var button = "<button type='button' onclick='detail(\"" + arrData[i].id + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>";
+        }
 
 				var tempArray = [
 					arrData[i].partner_id.toUpperCase()
@@ -33,7 +37,7 @@ function getCashout() {
 					, arrData[i].bank_account
 					, arrData[i].bank_account_ref_number
 					, "Rp. " + addDecimalPoints(arrData[i].total_cashout)
-					, new Date(arrData[i].created_at)
+					, dateFormat(new Date(arrData[i].created_at), 'isoDateTime')
 					, button
 				];
 

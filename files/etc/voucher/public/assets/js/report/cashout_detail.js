@@ -30,7 +30,15 @@ function cashout(id){
 			$("#total-reimburse").html(result.total_cashout);
 			$("#company-name").html(result.bank_account_company);
 			$("#reimburse-code").html(result.cashout_code);
-			$("#reimburse-date").html(new Date(result.created_at));
+      $("#reimburse-date").html(new Date(result.created_at));
+      $("#cashout-void").val(result.id)
+      $("#reimburse-status-row").hide();
+      if(result.status != "created"){
+        $("#reimburse-status-row").show();
+        $("#button-void-row").hide();
+        $("#reimburse-status").html("<span class='label label-danger'>"+ result.status +"</span>");
+      }
+
 		}
 	});
 }
@@ -45,3 +53,53 @@ function getPartnerName(id){
 		}
 	});
 }
+
+
+function voidCashout(id) {
+  var param = {
+		cashout_id: id,
+		description: "voided from cms",
+  };
+
+	var status = "";
+	$.ajax({
+		url: '/v1/cashout/void?token=' + token,
+    type: 'post',
+    dataType: 'json',
+    data: JSON.stringify(param),
+		success: function (data) {
+			cashout(id);
+			swal('Void Success!');
+		},
+		error: function (xhr, ajaxOptions, thrownError) {
+			swal('Cashout cannot be voided', xhr.responseJSON.errors.detail);
+		}
+	});
+	return status;
+}
+
+(function () {
+	'use strict';
+
+  $(runSweetAlert);
+
+	function runSweetAlert() {
+		$(document).on('click', '.swal-void-cashout', function (e) {
+			e.preventDefault();
+			swal({
+					title: 'Are you sure?',
+					text: 'Do you want void this cashout?',
+					type: 'warning',
+					showCancelButton: true,
+					confirmButtonColor: '#DD6B55',
+					confirmButtonText: 'Void',
+					closeOnConfirm: false
+				},
+				function () {
+					voidCashout(e.target.value);
+				});
+
+		});
+	}
+
+})();
