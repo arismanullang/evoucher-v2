@@ -62,6 +62,7 @@ func init() {
 	r.GetFunc("/v1/ui/transaction/privilege", controller.GetTransactionsPrivilege)
 
 	//cashout
+	r.PostFunc("/v1/cashout/void", controller.CashoutVoid)
 	r.PostFunc("/v1/ui/cashout", controller.CashoutTransactions)
 	r.GetFunc("/v1/ui/cashout", controller.GetReimburseHistory)
 	r.GetFunc("/v1/ui/cashout/print", controller.PrintCashoutTransaction)

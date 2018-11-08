@@ -49,6 +49,7 @@ const (
 	LimitRedeemByProgram string = "program"
 	LimitRedeemByDay     string = "day"
 
+	ErrCodeCashoutNotFound          string = "cashout_not_found"
 	ErrCodeAllowAccumulativeDisable string = "accumulation_is_not_allowed"
 	ErrCodeInvalidRedeemMethod      string = "invalid_redeem_method"
 	ErrCodeResourceNotFound         string = "resource_not_found"
@@ -78,6 +79,7 @@ const (
 	ErrCodeValidationError          string = "validation_Error"
 	ErrCodeJsonError                string = "json_error"
 
+	ErrMessageCashoutNotFound          string = "Cashout not found"
 	ErrMessageAllowAccumulativeDisable string = "Accumulation is not allowed"
 	ErrMessageResourceNotFound         string = "Resource not found"
 	ErrMessageMissingParameter         string = "Missing parameter"
@@ -117,6 +119,7 @@ const (
 
 	StatusCreated string = "created"
 	StatusDeleted string = "deleted"
+	StatusVoid    string = "voided"
 
 	VoucherTypeCash     string = "cash"
 	VoucherTypediscount string = "discount"

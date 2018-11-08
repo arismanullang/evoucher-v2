@@ -51,10 +51,11 @@ function getPartner(id) {
 }
 
 function getTransactionByPartner(partnerId) {
-	var date = findGetParameter('date');
+  var startDate = findGetParameter('start_date');
+  var endDate = findGetParameter('end_date');
 	var arrData = [];
 	$.ajax({
-		url: '/v1/ui/transaction/cashout/partner?token=' + token + '&partner='+partnerId + '&date='+date,
+		url: '/v1/ui/transaction/cashout/partner?token=' + token + '&partner='+partnerId + '&start_date='+startDate + '&end_date='+endDate,
 		type: 'get',
 		success: function (data) {
 			var result = data.data;
@@ -66,7 +67,8 @@ function getTransactionByPartner(partnerId) {
 			}
 
 			for(var i = 0; i < arrData.length; i++){
-				var date = new Date(arrData[i].issued);
+        var redeemDate = new Date(arrData[i].issued);
+				var trxDate = new Date(arrData[i].redeemed);
 				for(var j = 0; j < arrData[i].vouchers.length; j++){
 					var body = "<td class='col-lg-1 checkbox c-checkbox'><label>"
 						+ "<input type='checkbox' name='transaction' class='transaction' value='"+arrData[i].transaction_id+";"+arrData[i].voucher_value+";"+arrData[i].vouchers[j].id+"'><span class='ion-checkmark-round'></span>"
@@ -74,7 +76,8 @@ function getTransactionByPartner(partnerId) {
 						+ "<td class='text-ellipsis'>"+arrData[i].transaction_code+"</td>"
 						+ "<td class='text-ellipsis'>"+arrData[i].vouchers[j].voucher_code+"</td>"
 						+ "<td class='text-ellipsis'>Rp. "+addDecimalPoints(arrData[i].voucher_value)+"</td>"
-						+ "<td class='text-ellipsis'>"+date.toDateString() + ", " + date.getHours() + ":" + date.getMinutes()+"</td>"
+						// + "<td class='text-ellipsis'>"+redeemDate.toDateString() + ", " + redeemDate.getHours() + ":" + redeemDate.getMinutes()+"</td>"
+						+ "<td class='text-ellipsis'>"+trxDate.toDateString() + ", " + trxDate.getHours() + ":" + trxDate.getMinutes()+"</td>"
 					var li = $("<tr></tr>");
 					li.html(body);
 					li.appendTo('#listTransaction');

@@ -1,6 +1,38 @@
 $(document).ready(function () {
-	getTransactionByPartner("");
-  getPartner();
+  // getTransactionByPartner("");
+
+  var last30Date = new Date();
+  last30Date.setDate(last30Date.getDate() - 30);
+
+  $('#trx-from').val(dateFormat(last30Date, "mm/dd/yyyy"));
+  $('#trx-to').val(dateFormat(new Date(), "mm/dd/yyyy"));
+
+  $('#datepicker-trx-to').change(function () {
+    var startVal = $('#trx-from').val();
+    var endVal =  $('#trx-to').val();
+
+    if(startVal.length > 0 && endVal.length > 0){
+      var startDate = new Date(startVal);
+      var endDate = new Date(endVal);
+      endDate.setHours(23);
+      endDate.setMinutes(59);
+      endDate.setSeconds(59);
+
+      getTransactionByDate(dateFormat(startDate, 'isoUtcDateTime'), dateFormat(endDate, 'isoUtcDateTime'));
+    }
+
+});
+
+  $('.datepicker-trx-from').datepicker({
+    container: '#datepicker-trx-from',
+    autoclose: true
+  });
+
+	$('.datepicker-trx-to').datepicker({
+		container: '#datepicker-trx-to',
+		autoclose: true
+  });
+
   $(document).ajaxStart(function(){
     // Show image container
     $(".cssload-loader").show();
@@ -11,27 +43,9 @@ $(document).ready(function () {
    });
 });
 
-function getPartner() {
+function getTransactionByDate(dateFrom, dateTo) {
 	$.ajax({
-		url: '/v1/ui/partner/all?token=' + token,
-		type: 'get',
-		success: function (data) {
-			var arrData = [];
-			arrData = data.data;
-
-			var i;
-			for (i = 0; i < arrData.length; i++) {
-				var li = $("<option value='" + arrData[i].name + "'>" + arrData[i].name + "</div>");
-				li.appendTo('#partner-id');
-			}
-		}
-	});
-}
-
-function getTransactionByPartner(partnerId) {
-	var arrData = [];
-	$.ajax({
-		url: '/v1/ui/transaction/partner?token=' + token + '&partner=' + partnerId,
+    url: '/v1/ui/transaction/date?token=' + token + '&start_date=' + dateFrom + '&end_date=' + dateTo,
 		type: 'get',
 		success: function (data) {
 			if ($.fn.DataTable.isDataTable("#datatable1")) {
