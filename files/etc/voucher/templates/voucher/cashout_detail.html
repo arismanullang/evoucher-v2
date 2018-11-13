@@ -68,7 +68,9 @@
                   <th style="padding-bottom: 0px !important;">Transaction Code</th>
                   <th style="padding-bottom: 0px !important;">Voucher Code</th>
                   <th style="padding-bottom: 0px !important;">Voucher Value</th>
-                  <th style="padding-bottom: 0px !important;">Date</th>
+                  <th style="padding-bottom: 0px !important;">Total Voucher</th>
+                  <th style="padding-bottom: 0px !important;">Total Transaction</th>
+                  <th style="padding-bottom: 0px !important;">Transaction Date</th>
                   </thead>
                   <tbody id="listTransaction">
 
@@ -90,6 +92,8 @@
 {{ end }}
 
 {{ define "scripts" }}
+
+<script type="text/javascript" src="/assets/js/dateformat.js"></script>
 <script type="text/javascript" src="/assets/js/voucher/cashout_detail.js"></script>
 <script type="text/javascript" src="/assets/vendor/select2/dist/js/select2.js"></script>
 {{ end }}

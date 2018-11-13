@@ -2,6 +2,7 @@ package model
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 
@@ -262,6 +263,43 @@ func FindVouchersById(param []string) (VoucherResponse, error) {
 
 	res := VoucherResponse{Status: ResponseStateOk, Message: "success", VoucherData: resd}
 	return res, nil
+}
+
+func FindVoucherCashout(transactionID []string) ([]CashoutTransaction, error) {
+	q := `
+		SELECT t.id as transaction_id
+			, v.id as voucher_id
+		FROM 
+			transactions t
+		JOIN 
+			transaction_details td ON t.id = td.transaction_id
+		JOIN 
+			vouchers v ON td.voucher_id = v.id
+		WHERE 
+			v.status = ?
+			AND v.state = 'used'
+			AND (
+		`
+
+	for key, value := range transactionID {
+		if key != 0 {
+			q += `OR `
+		}
+		q += `t.id ='` + value + `'`
+	}
+	q += `) ORDER BY v.id DESC`
+
+	fmt.Println(q)
+	var resd []CashoutTransaction
+	if err := db.Select(&resd, db.Rebind(q), StatusCreated); err != nil {
+		return resd, err
+	}
+	if len(resd) < 1 {
+		return resd, ErrResourceNotFound
+	}
+
+	return resd, nil
+
 }
 
 func FindVouchersState(param []string) ([]VoucherState, error) {
