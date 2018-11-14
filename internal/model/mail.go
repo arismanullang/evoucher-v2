@@ -195,11 +195,14 @@ func makeMessageVoucherEmail(program ProgramCampaign, target CampaignData) strin
 }
 
 func SendVoucherMailV3(program ProgramCampaignV2, CampaignData []TargetEmail) error {
+
+	templateCampaign := Config[program.AccountID]["email_campaign"]
+
 	url := "/v3/email/messages?key="
 	param := BaseMail{
 		From:     program.EmailSender,
 		To:       CampaignData,
-		Template: "basic-template1",
+		Template: templateCampaign,
 	}
 
 	jsonParam, _ := json.Marshal(param)
@@ -288,6 +291,7 @@ func makeMessageVoucherEmailV2(program ProgramCampaignV2, target CampaignData) s
 func SendConfirmationEmail(emailSender, subject string, target ConfirmationEmailRequest, accountId string) error {
 	targetMail := []TargetEmail{}
 	target.EmailSubject = subject
+	mailTemplate := Config[accountId]["email_transaction_confirmation"]
 
 	for _, v := range target.ListEmail {
 		tempTarget := TargetEmail{
@@ -302,7 +306,7 @@ func SendConfirmationEmail(emailSender, subject string, target ConfirmationEmail
 	param := BaseMail{
 		From:     emailSender,
 		To:       targetMail,
-		Template: "s1-confirmation-email",
+		Template: mailTemplate,
 	}
 
 	jsonParam, _ := json.Marshal(param)
