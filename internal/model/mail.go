@@ -143,60 +143,6 @@ func makeMessageForgotPassword(id string) string {
 	return result
 }
 
-func SendMailSedayuOne(domain, apiKey, publicApiKey, subject string, target []CampaignData, program ProgramCampaign) error {
-	mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
-
-	for _, v := range target {
-		message := mailgun.NewMessage(
-			Email,
-			subject,
-			subject,
-			v.HolderEmail)
-		message.SetHtml(makeMessageEmailSedayuOne(program, v))
-		resp, id, err := mg.Send(message)
-		if err != nil {
-			return err
-		}
-		UpdateBroadcastUserState(v.HolderEmail, program.ProgramID, program.CreatedBy)
-		fmt.Printf("ID: %s Resp: %s\n", id, resp)
-	}
-
-	return nil
-}
-func makeMessageEmailSedayuOne(program ProgramCampaign, target CampaignData) string {
-	// %%full-name%%
-	// %%link-voucher%%
-	templateCampaign := Config[program.AccountID]["email_campaign"]
-	str, err := ioutil.ReadFile(RootTemplate + templateCampaign)
-	if err != nil {
-		fmt.Println(err.Error())
-		return ""
-	}
-
-	imageHeader := "http://mailer.gilkor.com/admin/temp/newsletters/137/header_oct2017.jpg"
-	imageVoucher := "http://coma.greenparksolo.com/gilkor/images/testvoucher_image2.jpg"
-	imageFooter := "http://mailer.gilkor.com/admin/temp/newsletters/137/footer_oct-2017.jpg"
-
-	if program.ImageHeader != "" {
-		imageHeader = program.ImageHeader
-	}
-	if program.ImageVoucher != "" {
-		imageVoucher = program.ImageVoucher
-	}
-	if program.ImageFooter != "" {
-		imageFooter = program.ImageFooter
-	}
-
-	result := string(str)
-	result = strings.Replace(result, "%%full-name%%", target.HolderName, 1)
-	result = strings.Replace(result, "%%link-voucher%%", target.VoucherUrl, 1)
-	result = strings.Replace(result, "%%program-name%%", program.ProgramName, 1)
-	result = strings.Replace(result, "%%image-header%%", imageHeader, 1)
-	result = strings.Replace(result, "%%image-voucher%%", imageVoucher, 1)
-	result = strings.Replace(result, "%%image-footer%%", imageFooter, 1)
-	return result
-}
-
 func SendVoucherMail(domain, apiKey, publicApiKey, subject string, target []CampaignData, program ProgramCampaign) error {
 	mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
 
@@ -340,27 +286,6 @@ func makeMessageVoucherEmailV2(program ProgramCampaignV2, target CampaignData) s
 }
 
 func SendConfirmationEmail(emailSender, subject string, target ConfirmationEmailRequest, accountId string) error {
-	// mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
-
-	// for _, v := range target.ListEmail {
-	// 	fmt.Println(v)
-	// 	if v != "" {
-	// 		message := mailgun.NewMessage(
-	// 			Email,
-	// 			subject,
-	// 			subject,
-	// 			v)
-	// 		message.SetHtml(makeMessageConfirmationEmail(accountId, target))
-	// 		resp, id, err := mg.Send(message)
-	// 		if err != nil {
-	// 			fmt.Println(message)
-	// 			fmt.Println(err.Error())
-	// 			return err
-	// 		}
-	// 		fmt.Printf("ID: %s Resp: %s\n", id, resp)
-	// 	}
-	// }
-
 	targetMail := []TargetEmail{}
 	target.EmailSubject = subject
 
@@ -388,36 +313,6 @@ func SendConfirmationEmail(emailSender, subject string, target ConfirmationEmail
 	}
 
 	return nil
-}
-
-func makeMessageConfirmationEmail(accountId string, target ConfirmationEmailRequest) string {
-	// %%full-name%%
-	// %%link-voucher%%
-	fmt.Println(Config[accountId]["email_transaction_confirmation"])
-	templateCampaign := Config[accountId]["email_transaction_confirmation"]
-	str, err := ioutil.ReadFile(RootTemplate + templateCampaign)
-	if err != nil {
-		fmt.Println(err.Error())
-		return ""
-	}
-
-	voucher := ""
-	for _, v := range target.ListVoucher {
-		voucher += "<tr><td style='color:#ffffff; padding:10px 0px; background-color: #69cdcd;'>"
-		voucher += v
-		voucher += "</td><td style='color:#ffffff; padding:10px 0px; background-color: #69cdcd;'>"
-		voucher += target.PartnerName
-		voucher += "</td></tr>"
-	}
-
-	result := string(str)
-	result = strings.Replace(result, "%%full-name%%", target.Holder, 1)
-	result = strings.Replace(result, "%%transaction-code%%", target.TransactionCode, 1)
-	result = strings.Replace(result, "%%transaction-date%%", target.TransactionDate.Format("2006-01-02 15:04:05"), 1)
-	result = strings.Replace(result, "%%program-name%%", target.ProgramName, 1)
-	result = strings.Replace(result, "%%voucher-code%%", voucher, 1)
-
-	return result
 }
 
 // Query Database

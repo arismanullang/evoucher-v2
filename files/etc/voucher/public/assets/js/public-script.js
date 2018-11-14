@@ -20,16 +20,6 @@ $( document ).ready(function() {
 		return false;
 	});
 
-	// $("#tenant").change(function() {
-	// 	$.ajax({
-	// 		url: '/v1/public/challenge',
-	// 		type: 'get',
-	// 		success: function (data) {
-	// 			console.log(data);
-	// 			$('#challange-code').html(data.data.challenge);
-	// 		}
-	// 	});
-	// });
 });
 
 function handleFiles(f){
@@ -77,6 +67,7 @@ function getProfile(x){
 			$("#programId").val(data.data.program_id);
 			$("#discountValue").val(data.data.voucher_value);
 			$("#voucher").val(data.data.vouchers[0].voucher_id);
+			$('#voucher-image').attr('src', data.data.image_url);
       $("#tnc").html(data.data.program_tnc);
       var arrPartners = data.data.partners;
       for(i =0; i< arrPartners.length; i++){

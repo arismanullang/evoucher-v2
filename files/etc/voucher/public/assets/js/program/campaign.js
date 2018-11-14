@@ -319,22 +319,6 @@ function createCampaign(imgUrlObj){
 	});
 }
 
-// function generateVoucher() {
-// 	var id = $('#program-id').val();
-// 	swal("Sending Voucher");
-// 	$.ajax({
-// 		url: '/v1/ui/voucher/send-voucher?program=' + id + '&token=' + token,
-// 		type: 'post',
-// 		success: function (data) {
-// 			window.location = "/program/search";
-// 		},
-// 		error: function (data) {
-// 			var a = JSON.parse(data.responseText);
-// 			swal("Error", a.errors.detail);
-// 		}
-// 	});
-// }
-
 (function () {
 	'use strict';
 
