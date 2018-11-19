@@ -25,6 +25,11 @@ type PubSubMessage struct {
 	Data   interface{} `json:"data"`
 }
 
+type PubSubJunoAccount struct {
+	Action string        `json:"action"`
+	Data   PubSubAccount `json:"data"`
+}
+
 type PubSubAccount struct {
 	Id                 string      `json:"id"`
 	Name               string      `json:"name"`
@@ -70,7 +75,7 @@ func AssignTenantPrivilegeVoucher() {
 		mu.Lock()
 		defer mu.Unlock()
 
-		var msgData PubSubMessage
+		var msgData PubSubJunoAccount
 		if err := json.Unmarshal(msg.Data, &msgData); err != nil {
 			log.Printf("Unable to process data: %v", err)
 			msg.Ack()
@@ -82,7 +87,7 @@ func AssignTenantPrivilegeVoucher() {
 			return
 		}
 
-		data := msgData.Data.(PubSubAccount)
+		data := msgData.Data
 		gpr := model.GeneratePrivilegeRequest{
 			CompanyID:  data.CompanyId,
 			MemberID:   data.Id,
