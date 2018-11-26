@@ -1,18 +1,42 @@
 $( document ).ready(function() {
-	var total = 0;
+  var total = 0;
+
+  var last30Date = new Date();
+  last30Date.setDate(last30Date.getDate() - 30);
+
+  $('#trx-from').val(dateFormat(last30Date, "mm/dd/yyyy"));
+  $('#trx-to').val(dateFormat(new Date(), "mm/dd/yyyy"));
+
 	$('#transaction').submit(function(e) {
 		e.preventDefault();
 		addElem();
 		return false;
-	});
+  });
 
-	$('.datepicker-transaction').datepicker({
-		container: '#datepicker-transaction',
+  $('#datepicker-trx-to').change(function () {
+    var startVal = $('#trx-from').val();
+    var endVal =  $('#trx-to').val();
+
+    if(startVal.length > 0 && endVal.length > 0){
+      var startDate = new Date(startVal);
+      var endDate = new Date(endVal);
+      endDate.setHours(23);
+      endDate.setMinutes(59);
+      endDate.setSeconds(59);
+
+      getTransactionByDate(dateFormat(startDate, 'isoUtcDateTime'), dateFormat(endDate, 'isoUtcDateTime'));
+    }
+
+});
+
+  $('.datepicker-trx-from').datepicker({
+    container: '#datepicker-trx-from',
+    autoclose: true
+  });
+
+	$('.datepicker-trx-to').datepicker({
+		container: '#datepicker-trx-to',
 		autoclose: true
-	});
-
-	$('#transaction-date').change(function () {
-			getTransactionByDate($('#transaction-date').val());
   });
 
   $(document).ajaxStart(function(){
@@ -26,14 +50,15 @@ $( document ).ready(function() {
 
 });
 
-function getTransactionByDate(date) {
+function getTransactionByDate(dateFrom, dateTo) {
 	var arrData = [];
 	$.ajax({
-		url: '/v1/ui/transaction/date?token=' + token + '&date=' + date,
+		url: '/v1/ui/transaction/date?token=' + token + '&state=used&start_date=' + dateFrom + '&end_date=' + dateTo,
 		type: 'get',
 		success: function (data) {
 			var result = data.data;
-			var partner = {};
+      var partner = {};
+      var transactionId = [];
 			var transaction = {};
 			var transactionValue = {};
 
@@ -41,19 +66,24 @@ function getTransactionByDate(date) {
 			if(result != null){
 				for(var i = 0; i < result.length; i++){
 					if(transaction[result[i].partner_id] == null){
-						partner[result[i].partner_id] = result[i].partner_name;
+            partner[result[i].partner_id] = result[i].partner_name;
+            transactionId.push(result[i].transaction_id);
 						transaction[result[i].partner_id] = 1;
-						transactionValue[result[i].partner_id] = result[i].vouchers.length * result[i].voucher_value;
+						transactionValue[result[i].partner_id] = result[i].voucher_value;
 					}else{
-						transaction[result[i].partner_id]++;
-						transactionValue[result[i].partner_id] = transactionValue[result[i].partner_id] + (result[i].vouchers.length * result[i].voucher_value);
+            if(!transactionId.includes(result[i].transaction_id)){
+              console.log(transactionId + "-" + result[i].transaction_id);
+              transactionId.push(result[i].transaction_id);
+              transaction[result[i].partner_id]++ ;
+            }
+						transactionValue[result[i].partner_id] = transactionValue[result[i].partner_id] + result[i].voucher_value;
 					}
 				}
 
 				var keys = Object.keys(transaction);
 
 				for(var i = 0; i < keys.length; i++){
-					var button = "<button type='button' onclick='detail(\"" + keys[i] + "\",\""+date+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>";
+					var button = "<button type='button' onclick='detail(\"" + keys[i] + "\",\""+dateFrom+"\",\""+dateTo+"\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>";
 
 					dataSet[i] = [
 						partner[keys[i]]
@@ -93,6 +123,6 @@ function getTransactionByDate(date) {
 	});
 }
 
-function detail(url, date){
-	window.location = "/voucher/cashout-detail?partner="+url+"&date=" + date;
+function detail(url, startDate, endDate){
+	window.location = "/voucher/cashout-detail?partner="+url+"&start_date=" + startDate+"&end_date=" + endDate;
 }

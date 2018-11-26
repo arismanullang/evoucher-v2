@@ -739,7 +739,9 @@ func GetTransactionsPrivilege(w http.ResponseWriter, r *http.Request) {
 
 func GetTransactionsByDate(w http.ResponseWriter, r *http.Request) {
 	apiName := "report_transaction"
-	date := r.FormValue("date")
+	startDate := r.FormValue("start_date")
+	endDate := r.FormValue("end_date")
+	state := r.FormValue("state")
 
 	logger := model.NewLog()
 	logger.SetService("API").
@@ -766,16 +768,22 @@ func GetTransactionsByDate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	timeDate, err := time.Parse("01/02/2006", date)
+	timeDateFrom, err := time.Parse(time.RFC3339, startDate)
 	if err != nil {
-		logger.SetStatus(status).Panic("param :", date, "response :", err.Error())
+		logger.SetStatus(status).Panic("param :", startDate, "response :", err.Error())
 	}
-	transaction, err := model.FindTransactionsByDate(a.User.Account.Id, timeDate)
+
+	timeDateTo, err := time.Parse(time.RFC3339, endDate)
+	if err != nil {
+		logger.SetStatus(status).Panic("param :", endDate, "response :", err.Error())
+	}
+
+	transaction, err := model.FindTransactionsByDate(a.User.Account.Id, state, timeDateFrom, timeDateTo)
 	res = NewResponse(transaction)
 	if err != nil && err != model.ErrResourceNotFound {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
-		logger.SetStatus(status).Info("param :", a.User.Account.Id+" || "+timeDate.String(), "response :", res.Errors)
+		logger.SetStatus(status).Info("param :", a.User.Account.Id+" || "+startDate+" || "+endDate, "response :", res.Errors)
 	}
 
 	render.JSON(w, res, status)
@@ -784,7 +792,8 @@ func GetTransactionsByDate(w http.ResponseWriter, r *http.Request) {
 func GetTransactionsCustom(w http.ResponseWriter, r *http.Request) {
 	apiName := "report_transaction"
 	partnerId := r.FormValue("partner")
-	date := r.FormValue("date")
+	startDate := r.FormValue("start_date")
+	endDate := r.FormValue("end_date")
 
 	logger := model.NewLog()
 	logger.SetService("API").
@@ -811,12 +820,17 @@ func GetTransactionsCustom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	timeDate, err := time.Parse("01/02/2006", date)
+	timeDateFrom, err := time.Parse(time.RFC3339, startDate)
 	if err != nil {
-		logger.SetStatus(status).Panic("param :", date, "response :", err.Error())
+		logger.SetStatus(status).Panic("param :", startDate, "response :", err.Error())
 	}
 
-	transaction, err := model.FindTransactionsByPartnerDate(a.User.Account.Id, partnerId, timeDate)
+	timeDateTo, err := time.Parse(time.RFC3339, endDate)
+	if err != nil {
+		logger.SetStatus(status).Panic("param :", endDate, "response :", err.Error())
+	}
+
+	transaction, err := model.FindTransactionsByPartnerDate(a.User.Account.Id, partnerId, timeDateFrom, timeDateTo)
 	if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
