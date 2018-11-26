@@ -826,6 +826,7 @@ func FindAvailablePrograms(param map[string]string) ([]SearchProgram, error) {
 		WHERE
 			va.status = ?
 			AND visibility = ?
+			AND vo.status != ?
 	`
 	for key, value := range param {
 		if strings.Contains(key, "date") {
@@ -843,7 +844,7 @@ func FindAvailablePrograms(param map[string]string) ([]SearchProgram, error) {
 	`
 
 	var resv []SearchProgram
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated, true); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, true, StatusVoid); err != nil {
 		fmt.Println(err.Error())
 		return []SearchProgram{}, err
 	}
