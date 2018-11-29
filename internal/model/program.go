@@ -820,7 +820,7 @@ func FindAvailablePrograms(param map[string]string) ([]SearchProgram, error) {
 		FROM
 			programs as va
 		LEFT JOIN
-			vouchers as vo
+			(select * from vouchers where status != ?) as vo
 		ON
 			va.id = vo.program_id
 		WHERE
@@ -843,7 +843,7 @@ func FindAvailablePrograms(param map[string]string) ([]SearchProgram, error) {
 	`
 
 	var resv []SearchProgram
-	if err := db.Select(&resv, db.Rebind(q), StatusCreated, true); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), StatusVoid, StatusCreated, true); err != nil {
 		fmt.Println(err.Error())
 		return []SearchProgram{}, err
 	}
