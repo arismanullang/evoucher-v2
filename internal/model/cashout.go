@@ -285,14 +285,15 @@ func FindAllReimburse(accountId, user string) ([]Cashout, error) {
 		ON
 			c.partner_id = p.id
 		WHERE
-			c.status = ?
-			OR c.status = ?
-			AND c.account_id = ?
+			c.account_id = ?
+			AND (c.status = ?
+			OR c.status = ?)
 		ORDER BY
 		 	c.created_at desc
 		`
+
 	var res []Cashout
-	if err := db.Select(&res, db.Rebind(q), StatusCreated, StatusVoid, accountId); err != nil {
+	if err := db.Select(&res, db.Rebind(q), accountId, StatusCreated, StatusVoid); err != nil {
 		return []Cashout{}, err
 	}
 	if len(res) < 1 {

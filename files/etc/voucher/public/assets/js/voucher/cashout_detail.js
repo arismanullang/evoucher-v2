@@ -59,7 +59,6 @@ function getTransactionByPartner(partnerId) {
 		type: 'get',
 		success: function (data) {
 			var result = data.data;
-			var voucher = 0;
 			$("#listTransaction").html(" ");
 			for(var i = 0; i < result.length; i++){
 				if(result[i].vouchers[0].state == 'used')
@@ -67,29 +66,37 @@ function getTransactionByPartner(partnerId) {
 			}
 
 			for(var i = 0; i < arrData.length; i++){
-        var redeemDate = new Date(arrData[i].issued);
 				var trxDate = new Date(arrData[i].redeemed);
+				var voucherCodes = "";
 				for(var j = 0; j < arrData[i].vouchers.length; j++){
-					var body = "<td class='col-lg-1 checkbox c-checkbox'><label>"
-						+ "<input type='checkbox' name='transaction' class='transaction' value='"+arrData[i].transaction_id+";"+arrData[i].voucher_value+";"+arrData[i].vouchers[j].id+"'><span class='ion-checkmark-round'></span>"
-						+ "</label></td>"
-						+ "<td class='text-ellipsis'>"+arrData[i].transaction_code+"</td>"
-						+ "<td class='text-ellipsis'>"+arrData[i].vouchers[j].voucher_code+"</td>"
-						+ "<td class='text-ellipsis'>Rp. "+addDecimalPoints(arrData[i].voucher_value)+"</td>"
-						// + "<td class='text-ellipsis'>"+redeemDate.toDateString() + ", " + redeemDate.getHours() + ":" + redeemDate.getMinutes()+"</td>"
-						+ "<td class='text-ellipsis'>"+trxDate.toDateString() + ", " + trxDate.getHours() + ":" + trxDate.getMinutes()+"</td>"
-					var li = $("<tr></tr>");
-					li.html(body);
-					li.appendTo('#listTransaction');
-					voucher++;
+					if(j != 0 && voucherCodes != ""){
+						voucherCodes += "</br>"
+					}
+					voucherCodes += arrData[i].vouchers[j].voucher_code;
 				}
+
+				var totalTrx = arrData[i].voucher_value * arrData[i].vouchers.length;
+				
+				var body = "<td class='col-lg-1 checkbox c-checkbox'><label>"
+					+ "<input type='checkbox' name='transaction' class='transaction' value='"+arrData[i].transaction_id+";"+totalTrx+"'><span class='ion-checkmark-round'></span>"
+					+ "</label></td>"
+					+ "<td class='text-ellipsis'>"+arrData[i].transaction_code+"</td>"
+					+ "<td class='text-ellipsis'>"+voucherCodes+"</td>"
+					+ "<td class='text-ellipsis'>Rp. "+addDecimalPoints(arrData[i].voucher_value)+"</td>"
+					+ "<td class='text-ellipsis'>"+arrData[i].vouchers.length+"</td>"
+					+ "<td class='text-ellipsis'>Rp. "+addDecimalPoints(totalTrx)+"</td>"
+					+ "<td class='text-ellipsis'>"+dateFormat(trxDate)+"</td>"
+				var li = $("<tr></tr>");
+				li.html(body);
+				li.appendTo('#listTransaction');
+
 			}
 
 			$('.transaction').change(function () {
 				updateTotal();
 			});
 
-			if(voucher > 5){
+			if(listVoucher.length > 5){
 				$("#tableTransaction").attr("style","overflow:scroll; max-height: 300px;");
 			}else{
 				$("#tableTransaction").removeAttr("style");
@@ -104,7 +111,6 @@ function getTransactionByPartner(partnerId) {
 function cashout(){
 	var partner = findGetParameter('partner');
 
-	var listVoucher = [];
 	var listVoucherValue = [];
 	var listTransaction = [];
 	var li = $("input[class=transaction]:checked");
@@ -117,11 +123,10 @@ function cashout(){
 
 			listTransaction[i] = tempValue[0];
 			listVoucherValue[i] = tempValue[1];
-			listVoucher[i] = tempValue[2];
 		}
 	}
 
-	for (i = 0; i < listVoucher.length; i++) {
+	for (i = 0; i < listVoucherValue.length; i++) {
 		total += parseInt(listVoucherValue[i]);
 	}
 	if(total == 0) {
@@ -139,8 +144,7 @@ function cashout(){
 		bank_account_ref_number: $('#bank-account-ref-number').val(),
 		total_cashout: total,
 		payment_method: "transfer",
-		transactions: listTransaction,
-		vouchers: listVoucher
+		transactions: listTransaction
 	};
 
 	$.ajax({
