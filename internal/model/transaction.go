@@ -9,19 +9,20 @@ import (
 
 type (
 	Transaction struct {
-		Id              string    `db:"id" json:"id"`
-		AccountId       string    `db:"account_id" json:"account_id"`
-		PartnerId       string    `db:"partner_id" json:"partner_id"`
-		PartnerName     string    `db:"partner_name" json:"partner_name"`
-		Holder          string    `db:"holder" json:"holder"`
-		Token           string    `db:"token" json:"token"`
-		TransactionCode string    `db:"transaction_code" json:"transaction_code"`
-		DiscountValue   float64   `db:"discount_value" json:"discount_value"`
-		CreatedAt       time.Time `db:"created_at" json:"created_at"`
-		User            string    `db:"created_by" json:"user"`
-		VoucherIds      []string  `db:"-" json:"voucher_ids"`
-		Vouchers        []Voucher `db:"-" json:"vouchers"`
+		Id              string         `db:"id" json:"id"`
+		AccountId       string         `db:"account_id" json:"account_id"`
+		PartnerId       string         `db:"partner_id" json:"partner_id"`
+		PartnerName     string         `db:"partner_name" json:"partner_name"`
+		Holder          sql.NullString `db:"holder" json:"holder"`
+		Token           string         `db:"token" json:"token,omitempty"`
+		TransactionCode string         `db:"transaction_code" json:"transaction_code"`
+		DiscountValue   float64        `db:"discount_value" json:"discount_value,omitempty"`
+		CreatedAt       time.Time      `db:"created_at" json:"created_at"`
+		User            string         `db:"created_by" json:"user,omitempty"`
+		VoucherIds      []string       `db:"-" json:"voucher_ids"`
+		Vouchers        []Voucher      `db:"-" json:"vouchers"`
 	}
+
 	TransactionCashout struct {
 		Id              string           `db:"id" json:"id"`
 		PartnerId       string           `db:"partner_id" json:"partner_id"`
@@ -56,6 +57,7 @@ type (
 		Username        sql.NullString `db:"username" json:"username"`
 		State           string         `db:"state" json:"state"`
 	}
+
 	VoucherTransaction struct {
 		PartnerName     string         `db:"partner_name" json:"partner_name"`
 		TransactionId   string         `db:"transaction_id" json:"transaction_id"`
@@ -342,6 +344,81 @@ func FindVoucherCycle(accountId, voucherId string) (VoucherTransaction, error) {
 
 	return resv[0], nil
 
+}
+
+func FindTransactionsByPartnerSimplified(accountID, partnerID string) ([]Transaction, error) {
+	q := `SELECT
+			t.id
+			, t.account_id
+			, t.partner_id
+			, p.name as partner_name
+			, t.holder
+			, t.transaction_code
+			, t.created_at
+		FROM transactions t
+		JOIN partners p ON
+			t.partner_id = p.id
+		WHERE 
+			t.status = ?
+			AND t.account_id = ?
+			AND t.partner_id = ?`
+
+	var resv []Transaction
+	if err := db.Select(&resv, db.Rebind(q), StatusCreated, accountID, partnerID); err != nil {
+		fmt.Println(err.Error())
+		return resv, err
+	}
+
+	fmt.Println(q)
+
+	if len(resv) < 1 {
+		return resv, ErrResourceNotFound
+	}
+
+	for i, trx := range resv {
+		q := `
+		SELECT
+			v.id
+			, v.voucher_code
+			, v.reference_no
+			, v.holder
+			, v.holder_phone
+			, v.holder_email
+			, v.holder_description
+			, v.program_id
+			, v.valid_at
+			, v.expired_at
+			, v.voucher_value
+			, v.state
+			, v.created_by
+			, v.created_at
+			, v.updated_by
+			, v.updated_at
+			, v.deleted_by
+			, v.deleted_at
+			, v.status
+		FROM vouchers as v
+		JOIN transaction_details as dt
+		ON
+			v.id = dt.voucher_id
+		WHERE
+			v.status = ?
+			AND dt.transaction_id = ?
+	`
+		//fmt.Println(q)
+		var resv1 []Voucher
+		if err := db.Select(&resv1, db.Rebind(q), StatusCreated, trx.Id); err != nil {
+			return resv, err
+		}
+		if len(resv) < 1 {
+			return resv, ErrResourceNotFound
+		}
+		resv[i].Vouchers = resv1
+		fmt.Println(resv[i])
+
+	}
+
+	return resv, nil
 }
 
 func FindTransactionsByPartner(accountId, partnerId string) ([]TransactionList, error) {
