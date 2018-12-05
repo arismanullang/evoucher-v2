@@ -284,7 +284,7 @@ function createCampaign(imgUrlObj){
 	var campaign = {
 		program_id: id,
 		email_subject: $("#subject-email").val(),
-    email_sender: $("#sender-email").val(),
+    	email_sender: "",
 		email_content: content,
 		image_header: imgUrlObj.headerImageUrl,
 		image_voucher: imgUrlObj.voucherImageUrl,

@@ -106,7 +106,7 @@ func CreateEmailCampaignV2(w http.ResponseWriter, r *http.Request) {
 	campaign := model.ProgramCampaignV2{
 		ProgramID:    rd.ProgramID,
 		EmailSubject: rd.EmailSubject,
-		EmailSender:  rd.EmailSender,
+		EmailSender:  a.User.Account.SenderEmail, //Email sender need to be registered on nudge service, ask supervisor for email sender
 		EmailContent: rd.EmailContent,
 		Template:     "email_campaign_demo",
 		ImageHeader:  rd.ImageHeader,
@@ -243,8 +243,6 @@ func SendEmailCampaign(w http.ResponseWriter, r *http.Request) {
 			target = append(target, tempTarget)
 		}
 
-		//Email sender need to be registered on nudge(notification services), ask supervisor for email sender
-		campaign.EmailSender = a.User.Account.SenderEmail
 		if idx, err := model.SendVoucherMailV2(model.Domain, model.ApiKey, model.PublicApiKey, campaign, target); err != nil {
 			res := NewResponse(nil)
 			status := http.StatusInternalServerError
