@@ -153,7 +153,6 @@ func init() {
 	r.GetFunc("/v1/ui/voucher/:id", controller.GetVoucherDetails)
 	r.PostFunc("/v1/ui/voucher/generate/bulk", controller.GenerateVoucherBulk)
 	r.PostFunc("/v1/ui/voucher/link", controller.GetVoucherlink)
-	r.PostFunc("/v1/ui/voucher/send-voucher", controller.SendSedayuOneEmail)
 	r.GetFunc("/v1/ui/sample/link", controller.GetCsvSample)
 	r.PostFunc("/v1/ui/voucher/generate/email", controller.GenerateSingleVoucherEmail)
 
