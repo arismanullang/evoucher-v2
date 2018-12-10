@@ -339,16 +339,11 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		ListVoucher:     listVoucher,
 	}
 
-	senderMail, err := model.GetAccountEmailSender(a.User.Account.Id)
-	if err != nil {
-		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
-		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
-		render.JSON(w, res, status)
-		return
-	}
+	senderMail := a.User.Account.SenderEmail
+	mailKey := a.User.Account.MailKey.String
+	title := "Elys Voucher Confirmation"
 
-	if err := model.SendConfirmationEmail(senderMail, "Elys Voucher Confirmation", req, a.User.Account.Id); err != nil {
+	if err := model.SendConfirmationEmail(senderMail, title, req, a.User.Account.Id, mailKey); err != nil {
 		res := NewResponse(nil)
 		status := http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError
@@ -517,7 +512,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	seedCode := randStr(model.DEFAULT_TRANSACTION_LENGTH, model.DEFAULT_TRANSACTION_SEED)
 	txCode := seedCode + randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
 
-	senderMail, err := model.GetAccountEmailSender(program.AccountId)
+	accountDetail, err := model.GetAccountDetailByAccountId(program.AccountId)
 	if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
@@ -642,7 +637,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		ListVoucher:     listVoucher,
 	}
 
-	if err := model.SendConfirmationEmail(senderMail, "Elys Voucher Confirmation", req, partner.AccountId); err != nil {
+	if err := model.SendConfirmationEmail(accountDetail.SenderEmail, "Elys Voucher Confirmation", req, partner.AccountId, accountDetail.MailKey.String); err != nil {
 		res := NewResponse(nil)
 		status := http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError

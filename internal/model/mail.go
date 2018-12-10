@@ -194,7 +194,7 @@ func makeMessageVoucherEmail(program ProgramCampaign, target CampaignData) strin
 	return result
 }
 
-func SendVoucherMailV3(program ProgramCampaignV2, CampaignData []TargetEmail) error {
+func SendVoucherMailV3(mailKey string, program ProgramCampaignV2, CampaignData []TargetEmail) error {
 
 	templateCampaign := Config[program.AccountID]["email_campaign"]
 
@@ -207,7 +207,7 @@ func SendVoucherMailV3(program ProgramCampaignV2, CampaignData []TargetEmail) er
 
 	jsonParam, _ := json.Marshal(param)
 
-	err := mailService("POST", url, jsonParam)
+	err := mailService("POST", url, jsonParam, mailKey)
 	if err != nil {
 		return err
 	}
@@ -215,7 +215,7 @@ func SendVoucherMailV3(program ProgramCampaignV2, CampaignData []TargetEmail) er
 	return nil
 }
 
-func SendVoucherMailV2(domain, apiKey, publicApiKey string, program ProgramCampaignV2, CampaignData []CampaignData) (int, error) {
+func SendVoucherMailV2(mailKey string, program ProgramCampaignV2, CampaignData []CampaignData) (int, error) {
 
 	newTarget := []TargetEmail{}
 
@@ -248,7 +248,7 @@ func SendVoucherMailV2(domain, apiKey, publicApiKey string, program ProgramCampa
 		newTarget = append(newTarget, target)
 	}
 
-	err := SendVoucherMailV3(program, newTarget)
+	err := SendVoucherMailV3(mailKey, program, newTarget)
 	if err != nil {
 		return 0, err
 	}
@@ -288,7 +288,7 @@ func makeMessageVoucherEmailV2(program ProgramCampaignV2, target CampaignData) s
 	return result
 }
 
-func SendConfirmationEmail(emailSender, subject string, target ConfirmationEmailRequest, accountId string) error {
+func SendConfirmationEmail(emailSender, subject string, target ConfirmationEmailRequest, accountId, mailKey string) error {
 	targetMail := []TargetEmail{}
 	target.EmailSubject = subject
 	mailTemplate := Config[accountId]["email_transaction_confirmation"]
@@ -311,7 +311,7 @@ func SendConfirmationEmail(emailSender, subject string, target ConfirmationEmail
 
 	jsonParam, _ := json.Marshal(param)
 
-	err := mailService("POST", url, jsonParam)
+	err := mailService("POST", url, jsonParam, mailKey)
 	if err != nil {
 		return err
 	}
@@ -561,14 +561,13 @@ func GetEmail(transaction string) (ConfirmationEmail, error) {
 	return resv[0], nil
 }
 
-func mailService(method, url string, param []byte) error {
+func mailService(method, url string, param []byte, mailKey string) error {
 	domain := os.Getenv("MAIL_DOMAIN")
-	key := os.Getenv("MAIL_KEY")
 
-	fmt.Printf("url = " + domain + url + key)
+	fmt.Printf("url = " + domain + url + mailKey)
 	fmt.Printf("%s", param)
 
-	req, err := http.NewRequest(method, domain+url+key, bytes.NewBuffer(param))
+	req, err := http.NewRequest(method, domain+url+mailKey, bytes.NewBuffer(param))
 	if err != nil {
 		panic(err)
 		return err

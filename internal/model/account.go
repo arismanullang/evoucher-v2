@@ -33,6 +33,7 @@ type (
 		UpdatedBy   sql.NullString `db:"updated_by" json:"updated_by"`
 		Status      string         `db:"status" json:"status"`
 		SenderEmail string         `db:"sender_mail" json:"sender_mail"`
+		MailKey     sql.NullString `db:"mail_key" json:"mail_key"`
 	}
 	//AccountConfig Config account
 	AccountConfig struct {
@@ -250,6 +251,7 @@ func GetAccountDetailByUser(userID string) (Account, error) {
 			, a.building
 			, a.zip_code
 			, a.sender_mail
+			, a.mail_key
 		FROM
 			accounts as a
 		JOIN
@@ -292,6 +294,8 @@ func GetAccountDetailByAccountId(accountId string) (Account, error) {
 			, a.province
 			, a.building
 			, a.zip_code
+			, a.sender_mail
+			, a.mail_key
 		FROM
 			accounts as a
 		WHERE

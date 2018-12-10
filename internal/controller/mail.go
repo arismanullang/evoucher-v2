@@ -243,7 +243,7 @@ func SendEmailCampaign(w http.ResponseWriter, r *http.Request) {
 			target = append(target, tempTarget)
 		}
 
-		if idx, err := model.SendVoucherMailV2(model.Domain, model.ApiKey, model.PublicApiKey, campaign, target); err != nil {
+		if idx, err := model.SendVoucherMailV2(a.User.Account.MailKey.String, campaign, target); err != nil {
 			res := NewResponse(nil)
 			status := http.StatusInternalServerError
 			errTitle := model.ErrCodeInternalError
