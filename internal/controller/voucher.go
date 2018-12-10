@@ -1268,6 +1268,10 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := PublishDataTopic(voucher[0], "update-vouchers", "create"); err != nil {
+		log.Fatalf("Failed to publish: %v", err)
+	}
+
 	gvr := VoucerResponse{
 		VoucherID: voucher[0].ID,
 		VoucherNo: voucher[0].VoucherCode,
