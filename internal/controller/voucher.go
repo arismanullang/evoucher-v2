@@ -1262,14 +1262,24 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	voucher, err = gvd.generateVoucher(&dt)
 	if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"( failed Genarate Voucher :"+err.Error()+")", logger.TraceID)
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"(Failed Generate Voucher :"+err.Error()+")", logger.TraceID)
 		logger.SetStatus(status).Log("param :", gvd, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
 	}
 
-	if err := PublishDataTopic(voucher[0], "update-vouchers", "create"); err != nil {
-		log.Fatalf("Failed to publish: %v", err)
+	fmt.Println(dt.VoucherPrice)
+	if len(voucher) > 0 {
+		voucher[0].VoucherPrice = dt.VoucherPrice
+		if err := PublishDataTopic(voucher[0], "update-voucher", "create"); err != nil {
+			log.Fatalf("Failed to publish: %v", err)
+		}
+	} else {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"(Failed Generate Voucher :"+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", gvd, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
 	}
 
 	gvr := VoucerResponse{

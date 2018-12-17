@@ -23,6 +23,7 @@ type (
 		ValidAt           time.Time      `db:"valid_at" json:"valid_at"`
 		ExpiredAt         time.Time      `db:"expired_at" json:"expired_at"`
 		VoucherValue      float64        `db:"voucher_value" json:"voucher_value"`
+		VoucherPrice      float64        `db:"voucher_price" json:"voucher_price"`
 		State             string         `db:"state" json:"state"`
 		CreatedBy         string         `db:"created_by" json:"created_by"`
 		CreatedAt         time.Time      `db:"created_at" json:"created_at"`

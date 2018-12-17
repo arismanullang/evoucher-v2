@@ -121,7 +121,7 @@ func InitPubSub() (err error) {
 		return err
 	}
 
-	if _, err := createTopicIfNotExists(pscEvoucher, "update-vouchers"); err != nil {
+	if _, err := createTopicIfNotExists(pscEvoucher, "update-voucher"); err != nil {
 		return err
 	}
 
