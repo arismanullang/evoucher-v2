@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -35,13 +36,15 @@ type (
 		End   string `json:"end"`
 	}
 	TransactionResponse struct {
-		TransactionID   string             `json:"id"`
-		TransactionCode string             `json:"transaction_code"`
-		DiscountValue   float64            `json:"discount_value"`
-		Created_at      time.Time          `json:"created_at"`
-		Vouchers        []string           `json:"vouchers"`
-		Voucher         []MobileVoucherObj `json:"voucher"`
-		Partner         MobilePartnerObj   `json:"partner"`
+		TransactionID     string             `json:"id"`
+		TransactionCode   string             `json:"transaction_code"`
+		DiscountValue     float64            `json:"discount_value,omitempty"`
+		Created_at        time.Time          `json:"created_at"`
+		Holder            string             `json:"holder,omitempty"`
+		HolderDescription string             `json:"holer_description,omitempty"`
+		Vouchers          []string           `json:"vouchers,omitempty"`
+		Voucher           []MobileVoucherObj `json:"voucher"`
+		Partner           MobilePartnerObj   `json:"partner"`
 	}
 	TransactionCodeBulk struct {
 		TransactionCode []string `json:"transaction_code"`
@@ -228,7 +231,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	d := model.Transaction{
 		AccountId:       a.User.Account.Id,
 		PartnerId:       rd.Partner,
-		Holder:          rd.Holder,
+		Holder:          sql.NullString{rd.Holder, true},
 		TransactionCode: txCode,
 		DiscountValue:   stf(rd.DiscountValue) * float64(len(rd.Vouchers)),
 		Token:           rd.Response,
@@ -336,7 +339,11 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		ListVoucher:     listVoucher,
 	}
 
-	if err := model.SendConfirmationEmail(model.Domain, model.ApiKey, model.PublicApiKey, "Elys Voucher Confirmation", req, a.User.Account.Id); err != nil {
+	senderMail := a.User.Account.SenderEmail
+	mailKey := a.User.Account.MailKey.String
+	title := "Elys Voucher Confirmation"
+
+	if err := model.SendConfirmationEmail(senderMail, title, req, a.User.Account.Id, mailKey); err != nil {
 		res := NewResponse(nil)
 		status := http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError
@@ -505,6 +512,15 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	seedCode := randStr(model.DEFAULT_TRANSACTION_LENGTH, model.DEFAULT_TRANSACTION_SEED)
 	txCode := seedCode + randStr(model.DEFAULT_TXLENGTH, model.DEFAULT_TXCODE)
 
+	accountDetail, err := model.GetAccountDetailByAccountId(program.AccountId)
+	if err != nil {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"("+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", rd, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+
 	user, err := model.GetWebuser()
 	if err != nil {
 		status = http.StatusInternalServerError
@@ -517,7 +533,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	d := model.Transaction{
 		AccountId:       program.AccountId,
 		PartnerId:       rd.Partner,
-		Holder:          rd.Holder,
+		Holder:          sql.NullString{rd.Holder, true},
 		TransactionCode: txCode,
 		DiscountValue:   stf(rd.DiscountValue),
 		Token:           rd.Response,
@@ -621,7 +637,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 		ListVoucher:     listVoucher,
 	}
 
-	if err := model.SendConfirmationEmail(model.Domain, model.ApiKey, model.PublicApiKey, "Sedayu One Voucher Confirmation", req, partner.AccountId); err != nil {
+	if err := model.SendConfirmationEmail(accountDetail.SenderEmail, "Elys Voucher Confirmation", req, partner.AccountId, accountDetail.MailKey.String); err != nil {
 		res := NewResponse(nil)
 		status := http.StatusInternalServerError
 		errTitle := model.ErrCodeInternalError
@@ -670,9 +686,10 @@ func GetTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	transaction, err := model.FindTransactionsByPartner(a.User.Account.Id, partnerId)
+	listTransaction := []TransactionResponse{}
+	transaction, err := model.FindTransactionsByPartnerSimplified(a.User.Account.Id, partnerId)
 	if err == model.ErrResourceNotFound {
-		transaction = []model.TransactionList{}
+		transaction = []model.Transaction{}
 	} else if err != nil {
 		status = http.StatusInternalServerError
 		res.AddError(its(status), model.ErrCodeInternalError, err.Error(), logger.TraceID)
@@ -681,7 +698,27 @@ func GetTransactionsByPartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res = NewResponse(transaction)
+	for _, trx := range transaction {
+
+		listVoucher := []MobileVoucherObj{}
+		for _, v := range trx.Vouchers {
+			listVoucher = append(listVoucher, MobileVoucherObj{
+				VoucherID:   v.ID,
+				VoucherCode: v.VoucherCode,
+				Holder:      v.Holder.String, HolderDesc: v.HolderDescription.String})
+		}
+
+		listTransaction = append(listTransaction, TransactionResponse{
+			TransactionID:   trx.Id,
+			TransactionCode: trx.TransactionCode,
+			Created_at:      trx.CreatedAt,
+			Voucher:         listVoucher,
+			Partner:         MobilePartnerObj{trx.PartnerId, trx.PartnerName}})
+
+	}
+
+	res = NewResponse(listTransaction)
+
 	render.JSON(w, res, status)
 
 }

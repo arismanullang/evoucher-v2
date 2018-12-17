@@ -1262,7 +1262,21 @@ func GenerateVoucherOnDemand(w http.ResponseWriter, r *http.Request) {
 	voucher, err = gvd.generateVoucher(&dt)
 	if err != nil {
 		status = http.StatusInternalServerError
-		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"( failed Genarate Voucher :"+err.Error()+")", logger.TraceID)
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"(Failed Generate Voucher :"+err.Error()+")", logger.TraceID)
+		logger.SetStatus(status).Log("param :", gvd, "response :", res.Errors.ToString())
+		render.JSON(w, res, status)
+		return
+	}
+
+	fmt.Println(dt.VoucherPrice)
+	if len(voucher) > 0 {
+		voucher[0].VoucherPrice = dt.VoucherPrice
+		if err := PublishDataTopic(voucher[0], "update-voucher", "create"); err != nil {
+			log.Fatalf("Failed to publish: %v", err)
+		}
+	} else {
+		status = http.StatusInternalServerError
+		res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"(Failed Generate Voucher :"+err.Error()+")", logger.TraceID)
 		logger.SetStatus(status).Log("param :", gvd, "response :", res.Errors.ToString())
 		render.JSON(w, res, status)
 		return
@@ -1802,8 +1816,8 @@ func GenerateSingleVoucherEmail(w http.ResponseWriter, r *http.Request) {
 	campaign.AccountID = a.User.Account.Id
 	campaign.ProgramName = dt.Name
 	campaign.ImageVoucher = dt.ImgUrl
-	listEmail := []model.TargetEmail{}
-	listEmail = append(listEmail, model.TargetEmail{HolderName: gvd.Holder.Description, VoucherUrl: generateLink(voucher[0].ID), HolderEmail: gvd.Holder.Email})
+	listEmail := []model.CampaignData{}
+	listEmail = append(listEmail, model.CampaignData{HolderName: gvd.Holder.Description, VoucherUrl: generateLink(voucher[0].ID), HolderEmail: gvd.Holder.Email})
 
 	if err := model.SendVoucherMail(model.Domain, model.ApiKey, model.PublicApiKey, gvd.Subject, listEmail, campaign); err != nil {
 		res := NewResponse(nil)
