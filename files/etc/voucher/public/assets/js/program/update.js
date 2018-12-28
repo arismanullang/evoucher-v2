@@ -69,7 +69,7 @@ function searchById(id) {
 			$("#voucher-price").val(program.voucher_price);
 			$("#voucher-quantity").val(program.max_quantity_voucher);
 			$("#generate-voucher").val(program.max_generate_voucher);
-      $("#max-redeem-voucher").val(program.max_redeem_voucher);
+      		$("#max-redeem-voucher").val(program.max_redeem_voucher);
 			$("#limit-redeem-by").val(program.limit_redeem_by);
 			$("#redemption-method").val(program.redeem_method);
 			$("#program-valid-from").val(convertToDate(program.start_date));
@@ -172,6 +172,14 @@ function searchById(id) {
 			if (program.allow_accumulative) {
 				$("#allow-accumulative").attr("checked", true);
 				$("#use-voucher").attr("style", "display:block");
+			}
+
+			if(program.type == "privilege"){
+				$("#generate-voucher").attr("disabled", "");
+				$("#limit-redeem-by").attr("disabled", "");
+				$("#validity-day").attr("style", "display:none");
+				$("#redemption-method").attr("disabled","");
+				$("#conversion-row").attr("style", "display:none");
 			}
 
 			$(".select2").select2();

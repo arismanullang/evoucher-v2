@@ -50,7 +50,7 @@ function getProgram() {
 				} else if (arrData[i].type == "gift") {
 					dataType.push("gift voucher");
 				} else if (arrData[i].type == "privilege") {
-          dataType.push("privilege");
+          			dataType.push("privilege");
 				} else {
 					dataType.push("Email Blast");
 				}
@@ -105,10 +105,6 @@ function getProgram() {
 					"<button type='button' onclick='edit(\"" + dataId[i] + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-edit'></em></button>" +
           "<button type='button' value=\"" + dataId[i] + "\" class='btn btn-flat btn-sm btn-danger swal-demo4'><em class='ion-trash-a'></em></button>"
 
-          if(dataType[i] == "privilege"){
-            button = "<button type='button' onclick='detail(\"" + dataId[i] + "\")' class='btn btn-flat btn-sm btn-info'><em class='ion-search'></em></button>"
-          }
-
 				var avail = 0;
 				var redemptionRate = 0;
 				//var distributionRate = 0;
@@ -132,27 +128,27 @@ function getProgram() {
 					, avail
 					, Math.round(redemptionRate) + "%"
 					, button
-        ];
+				];
 
-        var privilegeArray = [
-          dataName[i].toUpperCase()
-					, dataType[i].toUpperCase()
-					, "-"
-					, dataStatus[i].toUpperCase()
-					, dataStart[i].toUpperCase()
-					, dataEnd[i].toUpperCase()
-					, dataModified[i].toUpperCase()
-					, "-"
-					, "-"
-					, "-"
-					, button
-        ];
+				var privilegeArray = [
+				dataName[i].toUpperCase()
+							, dataType[i].toUpperCase()
+							, "-"
+							, dataStatus[i].toUpperCase()
+							, dataStart[i].toUpperCase()
+							, dataEnd[i].toUpperCase()
+							, dataModified[i].toUpperCase()
+							, "-"
+							, "-"
+							, "-"
+							, button
+				];
 
-        if(dataType[i] == "privilege"){
-          dataSet.push(privilegeArray);
-        } else {
-          dataSet.push(tempArray);
-        }
+				if(dataType[i] == "privilege"){
+				dataSet.push(privilegeArray);
+				} else {
+				dataSet.push(tempArray);
+				}
 			}
 
 			if ($.fn.DataTable.isDataTable("#datatable1")) {
