@@ -17,22 +17,23 @@ type (
 	}
 	//Account Account object
 	Account struct {
-		Id         string         `db:"id" json:"id"`
-		Name       string         `db:"name" json:"name"`
-		Billing    sql.NullString `db:"billing" json:"billing"`
-		Alias      string         `db:"alias" json:"alias"`
-		Email      string         `db:"email" json:"email"`
-		Address    string         `db:"address" json:"address"`
-		City       string         `db:"city" json:"city"`
-		Province   string         `db:"province" json:"province"`
-		Building   string         `db:"building" json:"building"`
-		ZipCode    string         `db:"zip_code" json:"zip_code"`
-		SenderMail string         `db:"sender_mail" json:"sender_mail"`
-		CreatedAt  time.Time      `db:"created_at" json:"created_at"`
-		CreatedBy  string         `db:"created_by" json:"created_by"`
-		UpdatedAt  sql.NullString `db:"updated_at" json:"updated_at"`
-		UpdatedBy  sql.NullString `db:"updated_by" json:"updated_by"`
-		Status     string         `db:"status" json:"status"`
+		Id          string         `db:"id" json:"id"`
+		Name        string         `db:"name" json:"name"`
+		Billing     sql.NullString `db:"billing" json:"billing"`
+		Alias       string         `db:"alias" json:"alias"`
+		Email       string         `db:"email" json:"email"`
+		Address     string         `db:"address" json:"address"`
+		City        string         `db:"city" json:"city"`
+		Province    string         `db:"province" json:"province"`
+		Building    string         `db:"building" json:"building"`
+		ZipCode     string         `db:"zip_code" json:"zip_code"`
+		CreatedAt   time.Time      `db:"created_at" json:"created_at"`
+		CreatedBy   string         `db:"created_by" json:"created_by"`
+		UpdatedAt   sql.NullString `db:"updated_at" json:"updated_at"`
+		UpdatedBy   sql.NullString `db:"updated_by" json:"updated_by"`
+		Status      string         `db:"status" json:"status"`
+		SenderEmail string         `db:"sender_mail" json:"sender_mail"`
+		MailKey     sql.NullString `db:"mail_key" json:"mail_key"`
 	}
 	//AccountConfig Config account
 	AccountConfig struct {
@@ -249,6 +250,8 @@ func GetAccountDetailByUser(userID string) (Account, error) {
 			, a.province
 			, a.building
 			, a.zip_code
+			, a.sender_mail
+			, a.mail_key
 		FROM
 			accounts as a
 		JOIN
@@ -291,6 +294,8 @@ func GetAccountDetailByAccountId(accountId string) (Account, error) {
 			, a.province
 			, a.building
 			, a.zip_code
+			, a.sender_mail
+			, a.mail_key
 		FROM
 			accounts as a
 		WHERE

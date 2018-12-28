@@ -223,7 +223,6 @@ function getProgram(id, voucher, used, paid) {
           break;
         case 'privilege':
           programType = "Privilege"
-          $('#button-edit').hide();
           $('#button-campaign').hide();
           $('#button-voucher').hide();
           $('#table-status').hide();

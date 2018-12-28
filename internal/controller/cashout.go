@@ -127,30 +127,14 @@ func CashoutTransactions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	voucherState, err := model.FindVouchersState(rd.Vouchers)
+	transactions, err := model.FindVoucherCashout(rd.Transactions)
 	if err != nil {
-		logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
+		logger.SetStatus(status).Info("param :", rd.Transactions, "response :", err.Error())
 
-		status = http.StatusUnauthorized
-		res.AddError(its(status), model.ErrCodeInvalidRole, "Invalid Role : "+model.ErrInvalidRole.Error(), logger.TraceID)
+		status = http.StatusNotFound
+		res.AddError(its(status), model.ErrCodeResourceNotFound, model.ErrMessageResourceNotFound, logger.TraceID)
 		render.JSON(w, res, status)
 		return
-	}
-
-	for _, v := range voucherState {
-		if v.State != model.VoucherStateUsed {
-			logger.SetStatus(status).Info("param :", a.User.ID, "response :", "Invalid Role")
-
-			status = http.StatusBadRequest
-			res.AddError(its(status), model.ErrServerInternal.Error(), model.ErrMessageVoucherAlreadyPaid, logger.TraceID)
-			render.JSON(w, res, status)
-			return
-		}
-	}
-
-	transactions := []model.CashoutTransaction{}
-	for i, v := range rd.Transactions {
-		transactions = append(transactions, model.CashoutTransaction{TransactionId: v, VoucherId: rd.Vouchers[i]})
 	}
 
 	seedCode := randStr(model.DEFAULT_TRANSACTION_LENGTH, model.DEFAULT_TRANSACTION_SEED)

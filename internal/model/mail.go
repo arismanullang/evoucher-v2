@@ -1,8 +1,13 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"os"
 
 	"strings"
 	"time"
@@ -21,11 +26,30 @@ var (
 )
 
 type (
+	CampaignData struct {
+		HolderEmail  string  `json:"email"`
+		HolderName   string  `json:"name"`
+		VoucherUrl   string  `json:"voucher_url"`
+		VoucherObj   Voucher `json:"voucher"`
+		ProgramName  string  `json:"program_name"`
+		ImageHeader  string  `json:"image_header"`
+		ImageVoucher string  `json:"image_voucher"`
+		ImageFooter  string  `json:"image_footer"`
+		EmailContent string  `json:"email_content"`
+		EmailSubject string  `json:"email_subject"`
+	}
+
 	TargetEmail struct {
-		HolderEmail string
-		HolderName  string
-		VoucherUrl  string
-		VoucherObj  Voucher
+		EmailAddress string      `json:"email_address"`
+		Data         interface{} `json:"data"`
+	}
+
+	BaseMail struct {
+		From     string        `json:"from"`
+		To       []TargetEmail `json:"to"`
+		Subject  string        `json:"subject,omitempty"`
+		Message  string        `json:"message,omitempty"`
+		Template string        `json:"template,omitempty"`
 	}
 
 	ProgramCampaign struct {
@@ -63,13 +87,14 @@ type (
 	}
 
 	ConfirmationEmailRequest struct {
-		Holder          string
-		ProgramName     string
-		TransactionCode string
-		TransactionDate time.Time
-		PartnerName     string
-		ListEmail       []string
-		ListVoucher     []string
+		Holder          string    `json:"name"`
+		ProgramName     string    `json:"program_name"`
+		TransactionCode string    `json:"transaction_code"`
+		TransactionDate time.Time `json:"transaction_date"`
+		PartnerName     string    `json:"partner_name"`
+		ListEmail       []string  `json:"list_email"`
+		ListVoucher     []string  `json:"list_voucher"`
+		EmailSubject    string    `json:"email_subject"`
 	}
 )
 
@@ -118,61 +143,7 @@ func makeMessageForgotPassword(id string) string {
 	return result
 }
 
-func SendMailSedayuOne(domain, apiKey, publicApiKey, subject string, target []TargetEmail, program ProgramCampaign) error {
-	mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
-
-	for _, v := range target {
-		message := mailgun.NewMessage(
-			Email,
-			subject,
-			subject,
-			v.HolderEmail)
-		message.SetHtml(makeMessageEmailSedayuOne(program, v))
-		resp, id, err := mg.Send(message)
-		if err != nil {
-			return err
-		}
-		UpdateBroadcastUserState(v.HolderEmail, program.ProgramID, program.CreatedBy)
-		fmt.Printf("ID: %s Resp: %s\n", id, resp)
-	}
-
-	return nil
-}
-func makeMessageEmailSedayuOne(program ProgramCampaign, target TargetEmail) string {
-	// %%full-name%%
-	// %%link-voucher%%
-	templateCampaign := Config[program.AccountID]["email_campaign"]
-	str, err := ioutil.ReadFile(RootTemplate + templateCampaign)
-	if err != nil {
-		fmt.Println(err.Error())
-		return ""
-	}
-
-	imageHeader := "http://mailer.gilkor.com/admin/temp/newsletters/137/header_oct2017.jpg"
-	imageVoucher := "http://coma.greenparksolo.com/gilkor/images/testvoucher_image2.jpg"
-	imageFooter := "http://mailer.gilkor.com/admin/temp/newsletters/137/footer_oct-2017.jpg"
-
-	if program.ImageHeader != "" {
-		imageHeader = program.ImageHeader
-	}
-	if program.ImageVoucher != "" {
-		imageVoucher = program.ImageVoucher
-	}
-	if program.ImageFooter != "" {
-		imageFooter = program.ImageFooter
-	}
-
-	result := string(str)
-	result = strings.Replace(result, "%%full-name%%", target.HolderName, 1)
-	result = strings.Replace(result, "%%link-voucher%%", target.VoucherUrl, 1)
-	result = strings.Replace(result, "%%program-name%%", program.ProgramName, 1)
-	result = strings.Replace(result, "%%image-header%%", imageHeader, 1)
-	result = strings.Replace(result, "%%image-voucher%%", imageVoucher, 1)
-	result = strings.Replace(result, "%%image-footer%%", imageFooter, 1)
-	return result
-}
-
-func SendVoucherMail(domain, apiKey, publicApiKey, subject string, target []TargetEmail, program ProgramCampaign) error {
+func SendVoucherMail(domain, apiKey, publicApiKey, subject string, target []CampaignData, program ProgramCampaign) error {
 	mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
 
 	for _, v := range target {
@@ -191,7 +162,7 @@ func SendVoucherMail(domain, apiKey, publicApiKey, subject string, target []Targ
 
 	return nil
 }
-func makeMessageVoucherEmail(program ProgramCampaign, target TargetEmail) string {
+func makeMessageVoucherEmail(program ProgramCampaign, target CampaignData) string {
 	templateCampaign := Config[program.AccountID]["email_campaign"]
 	str, err := ioutil.ReadFile(RootTemplate + templateCampaign)
 	if err != nil {
@@ -223,26 +194,69 @@ func makeMessageVoucherEmail(program ProgramCampaign, target TargetEmail) string
 	return result
 }
 
-func SendVoucherMailV2(domain, apiKey, publicApiKey string, program ProgramCampaignV2, targetEmail []TargetEmail) (int, error) {
-	mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
+func SendVoucherMailV3(mailKey string, program ProgramCampaignV2, CampaignData []TargetEmail) error {
 
-	for idx, v := range targetEmail {
-		message := mailgun.NewMessage(
-			program.EmailSender,
-			program.EmailSubject,
-			program.EmailSubject,
-			v.HolderEmail)
-		message.SetHtml(makeMessageVoucherEmailV2(program, v))
-		resp, id, err := mg.Send(message)
-		if err != nil {
-			return idx, err
-		}
-		fmt.Printf("ID: %s Resp: %s\n", id, resp)
+	templateCampaign := Config[program.AccountID]["email_campaign"]
+
+	url := "/v3/email/messages?key="
+	param := BaseMail{
+		From:     program.EmailSender,
+		To:       CampaignData,
+		Template: templateCampaign,
 	}
 
-	return len(targetEmail), nil
+	jsonParam, _ := json.Marshal(param)
+
+	err := mailService("POST", url, jsonParam, mailKey)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
-func makeMessageVoucherEmailV2(program ProgramCampaignV2, target TargetEmail) string {
+
+func SendVoucherMailV2(mailKey string, program ProgramCampaignV2, CampaignData []CampaignData) (int, error) {
+
+	newTarget := []TargetEmail{}
+
+	imageHeader := "https://voucher.elys.id/assets/img/template_demo_email_01.jpg"
+	imageVoucher := "https://voucher.elys.id/assets/img/template_demo_email_02.jpg"
+	imageFooter := "https://voucher.elys.id/assets/img/template_demo_email_03.jpg"
+
+	if program.ImageHeader != "" {
+		imageHeader = program.ImageHeader
+	}
+	if program.ImageVoucher != "" {
+		imageVoucher = program.ImageVoucher
+	}
+	if program.ImageFooter != "" {
+		imageFooter = program.ImageFooter
+	}
+
+	for _, v := range CampaignData {
+		v.ProgramName = program.ProgramName
+		v.ImageHeader = imageHeader
+		v.ImageVoucher = imageVoucher
+		v.ImageFooter = imageFooter
+		v.EmailContent = program.EmailContent
+		v.EmailSubject = program.EmailSubject
+		target := TargetEmail{
+			EmailAddress: v.HolderEmail,
+			Data:         v,
+		}
+
+		newTarget = append(newTarget, target)
+	}
+
+	err := SendVoucherMailV3(mailKey, program, newTarget)
+	if err != nil {
+		return 0, err
+	}
+
+	return len(CampaignData), nil
+}
+
+func makeMessageVoucherEmailV2(program ProgramCampaignV2, target CampaignData) string {
 	str, err := ioutil.ReadFile(RootTemplate + program.Template)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -274,59 +288,35 @@ func makeMessageVoucherEmailV2(program ProgramCampaignV2, target TargetEmail) st
 	return result
 }
 
-func SendConfirmationEmail(domain, apiKey, publicApiKey, subject string, target ConfirmationEmailRequest, accountId string) error {
-	mg := mailgun.NewMailgun(domain, apiKey, publicApiKey)
+func SendConfirmationEmail(emailSender, subject string, target ConfirmationEmailRequest, accountId, mailKey string) error {
+	targetMail := []TargetEmail{}
+	target.EmailSubject = subject
+	mailTemplate := Config[accountId]["email_transaction_confirmation"]
 
 	for _, v := range target.ListEmail {
-		fmt.Println(v)
-		if v != "" {
-			message := mailgun.NewMessage(
-				Email,
-				subject,
-				subject,
-				v)
-			message.SetHtml(makeMessageConfirmationEmail(accountId, target))
-			resp, id, err := mg.Send(message)
-			if err != nil {
-				fmt.Println(message)
-				fmt.Println(err.Error())
-				return err
-			}
-			fmt.Printf("ID: %s Resp: %s\n", id, resp)
+		tempTarget := TargetEmail{
+			EmailAddress: v,
+			Data:         target,
 		}
+
+		targetMail = append(targetMail, tempTarget)
+	}
+
+	url := "/v3/email/messages?key="
+	param := BaseMail{
+		From:     emailSender,
+		To:       targetMail,
+		Template: mailTemplate,
+	}
+
+	jsonParam, _ := json.Marshal(param)
+
+	err := mailService("POST", url, jsonParam, mailKey)
+	if err != nil {
+		return err
 	}
 
 	return nil
-}
-
-func makeMessageConfirmationEmail(accountId string, target ConfirmationEmailRequest) string {
-	// %%full-name%%
-	// %%link-voucher%%
-	fmt.Println(Config[accountId]["email_transaction_confirmation"])
-	templateCampaign := Config[accountId]["email_transaction_confirmation"]
-	str, err := ioutil.ReadFile(RootTemplate + templateCampaign)
-	if err != nil {
-		fmt.Println(err.Error())
-		return ""
-	}
-
-	voucher := ""
-	for _, v := range target.ListVoucher {
-		voucher += "<tr><td style='color:#ffffff; padding:10px 0px; background-color: #69cdcd;'>"
-		voucher += v
-		voucher += "</td><td style='color:#ffffff; padding:10px 0px; background-color: #69cdcd;'>"
-		voucher += target.PartnerName
-		voucher += "</td></tr>"
-	}
-
-	result := string(str)
-	result = strings.Replace(result, "%%full-name%%", target.Holder, 1)
-	result = strings.Replace(result, "%%transaction-code%%", target.TransactionCode, 1)
-	result = strings.Replace(result, "%%transaction-date%%", target.TransactionDate.Format("2006-01-02 15:04:05"), 1)
-	result = strings.Replace(result, "%%program-name%%", target.ProgramName, 1)
-	result = strings.Replace(result, "%%voucher-code%%", voucher, 1)
-
-	return result
 }
 
 // Query Database
@@ -569,4 +559,32 @@ func GetEmail(transaction string) (ConfirmationEmail, error) {
 	}
 
 	return resv[0], nil
+}
+
+func mailService(method, url string, param []byte, mailKey string) error {
+	domain := os.Getenv("MAIL_DOMAIN")
+
+	fmt.Printf("url = " + domain + url + mailKey)
+	fmt.Printf("%s", param)
+
+	req, err := http.NewRequest(method, domain+url+mailKey, bytes.NewBuffer(param))
+	if err != nil {
+		panic(err)
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return errors.New(resp.Status)
+	}
+
+	return nil
 }
