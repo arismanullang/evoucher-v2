@@ -1,0 +1,241 @@
+//partner
+{
+    //POST
+    "name":"outlet",
+    "description":"json expr",
+    "tag":["",""]
+}
+{
+    //GET 
+    "id":"",
+    "name":"kfc",
+    "description": {
+        "key":"value",
+    },
+    "tags":[
+        {
+            "id":"",
+            "name":"F&B"
+        },
+        {
+            "id":"",
+            "name":"100k"
+        }
+    ]
+}
+//program
+{
+    //POST
+    "name":"kfc 100K",
+    "type":"import/generated",
+    "voucher_type":"amount",
+    "value":100000.00,
+    "price":{
+        "type":"point/amount",
+        "value":100000.00
+    },
+    "stock":150,
+    "description":"json expr",
+    "template":"",
+    "partners":["IDoutlet1","IDoutlet2"],
+    "rule":"rule expr",
+    "voucher_format":{
+        "type":"fix/random",
+        "properties":{
+            "lenght":16,
+            "prefix":"KFC-",
+            "postfix":"-100k",
+            "format":{
+                "option":"numeric/alphabeth/alhpanumeric",
+                //aditional numeric option
+                "type":"seq/random",
+                "from":"",
+                "order":false,
+            }
+        }
+    }
+}
+{
+    //GET    
+    "data" :
+    [
+        {
+            "name":"kfc 100K",
+            "type":"bulk",
+            "voucher_type":"amount",
+            "value":100000.00,
+            "price":{
+                "type":"point/amount",
+                "value":100000.00
+            },
+            "stock":150,
+            "img_url":"",
+            "description": {
+                "tnc":"value",
+                "how_to_use":"",
+                "key":"value"
+            },
+            "template":"",
+            "partners": [
+                {
+                    "id":"",
+                    "name":"",
+                    "descriptions":{
+                        "key":"value"
+                    },
+                    "tags":[
+                        {
+                            "id":"",
+                            "name":"#100K"
+                        },
+                        {
+                            "id":"",
+                            "name":"F&B"
+                        }
+                    ]
+                }
+            ],
+            "rule":"rule expr",
+            "voucher_format":{
+                "type":"fix/random",
+                "properties":{
+                    "lenght":16,
+                    "prefix":"KFC-",
+                    "postfix":"-100k",
+                    "format":{
+                        "option":"numeric/alphabeth/alhpanumeric",
+                        //aditional numeric option
+                        "type":"seq/random",
+                        "from":"",
+                        "order":false,
+                    }
+                }
+            }
+        },{
+            "name":"kfc 100K",
+            "type":"bulk",
+            "voucher_type":"amount",
+            "value":100000.00,
+            "price":{
+                "type":"point/amount",
+                "value":100000.00
+            },
+            "stock":150,
+            "img_url":"",
+            "description": {
+                "tnc":"value",
+                "how_to_use":"",
+                "key":"value"
+            },
+            "template":"",
+            "partners": [
+                {
+                    "id":"",
+                    "name":"",
+                    "descriptions":{
+                        "key":"value"
+                    },
+                    "tags":[
+                        {
+                            "id":"",
+                            "name":"#100K"
+                        },
+                        {
+                            "id":"",
+                            "name":"F&B"
+                        }
+                    ]
+                }
+            ],
+            "rule":"rule expr",
+            "voucher_format":{
+                "type":"fix/random",
+                "properties":{
+                    "lenght":16,
+                    "prefix":"KFC-",
+                    "postfix":"-100k",
+                    "format":{
+                        "option":"numeric/alphabeth/alhpanumeric",
+                        //aditional numeric option
+                        "type":"seq/random",
+                        "from":"",
+                        "order":false,
+                    }
+                }
+            }
+        }
+    ]
+}
+//customer
+
+    //POST
+    [
+        {
+            "name":"",
+            "mobile_phone":"",
+            "email":"",
+            "ref_id":""
+        },
+        {
+            "name":"",
+            "mobile_phone":"",
+            "email":"",
+            "ref_id":""
+        }
+    ]
+
+{
+    //GET
+    "data":[
+        {
+            "name":"andrie",
+            "mobile_phone":"081213417128",
+            "email":"andrie@gilkor.com",
+            "ref_id":"",
+            "tags":[
+                {
+                    "id":"",
+                    "name":"Gilkor"
+                },
+                {
+                    "id":"",
+                    "name":"ASRI"
+                }
+            ]
+        },
+        {
+            "name":"alfan",
+            "mobile_phone":"081213417128",
+            "email":"alfan@gilkor.com",
+            "ref_id":"",
+            "tags":[
+                {
+                    "id":"",
+                    "name":"Gilkor"
+                }
+            ]
+        }
+    ]
+}
+
+//tags
+{
+    //POST
+    "category":"all/partners/customers",
+    "name":""
+}
+{
+    //GET
+    "data": [
+        {
+            "id":"",
+            "name":"",
+            "category":""
+        },
+        {
+            "id":"",
+            "name":"",
+            "category":""
+        }
+    ]
+}

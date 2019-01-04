@@ -1,0 +1,79 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "EQjJx9j6Tuxd/8fTGlhKf3nTxd4=",
+			"path": "github.com/gilkor/athena/lib/server",
+			"revision": "210ec8b33bd4148d232082ce07a18011c5cb579a",
+			"revisionTime": "2018-11-27T08:00:03Z"
+		},
+		{
+			"checksumSHA1": "j+esvAZ3c4eeICxpET+g2M3h+Ko=",
+			"path": "github.com/gilkor/athena/lib/x",
+			"revision": "210ec8b33bd4148d232082ce07a18011c5cb579a",
+			"revisionTime": "2018-11-27T08:00:03Z"
+		},
+		{
+			"checksumSHA1": "BTf6Dec1XFOLFWENJLyR9K3vUBo=",
+			"path": "github.com/gilkor/athena/lib/x/jsonerr",
+			"revision": "210ec8b33bd4148d232082ce07a18011c5cb579a",
+			"revisionTime": "2018-11-27T08:00:03Z"
+		},
+		{
+			"checksumSHA1": "fduGxup+f2Wrmq8xApej9Sh9u8E=",
+			"path": "github.com/go-zoo/bone",
+			"revision": "2270ec2a18cc13fba907d4ae5ad546a21473c0ed",
+			"revisionTime": "2018-09-10T12:42:28Z"
+		},
+		{
+			"checksumSHA1": "SVzanxaLYK43jeNWQqNs5P+uhow=",
+			"path": "github.com/jmoiron/sqlx",
+			"revision": "82935fac6c1a317907c8f43ed3f7f85ea844a78b",
+			"revisionTime": "2018-10-24T16:34:19Z"
+		},
+		{
+			"checksumSHA1": "i2O6Ji8ZL6q+EL+4cu/ftBytqZg=",
+			"path": "github.com/jmoiron/sqlx/reflectx",
+			"revision": "82935fac6c1a317907c8f43ed3f7f85ea844a78b",
+			"revisionTime": "2018-10-24T16:34:19Z"
+		},
+		{
+			"checksumSHA1": "I+g5iffd0bNDiI8swxzsHiJxBz0=",
+			"path": "github.com/joho/godotenv",
+			"revision": "69ed1d913aa885da390dd6de9febf063d101b097",
+			"revisionTime": "2018-11-20T19:47:48Z"
+		},
+		{
+			"checksumSHA1": "UE4lhbPYYWEhqHXQk24OA73m5+8=",
+			"path": "github.com/joho/godotenv/autoload",
+			"revision": "69ed1d913aa885da390dd6de9febf063d101b097",
+			"revisionTime": "2018-11-20T19:47:48Z"
+		},
+		{
+			"checksumSHA1": "xxLSo5tKtXc7jGrR70yoEfza8Cw=",
+			"path": "github.com/lib/pq",
+			"revision": "9eb73efc1fcc404148b56765b0d3f61d9a5ef8ee",
+			"revisionTime": "2018-10-16T16:26:27Z"
+		},
+		{
+			"checksumSHA1": "AU3fA8Sm33Vj9PBoRPSeYfxLRuE=",
+			"path": "github.com/lib/pq/oid",
+			"revision": "9eb73efc1fcc404148b56765b0d3f61d9a5ef8ee",
+			"revisionTime": "2018-10-16T16:26:27Z"
+		},
+		{
+			"checksumSHA1": "ov35Z0wSGGZpjejRprdPFrZ//Fk=",
+			"path": "github.com/ruizu/render",
+			"revision": "452433e702e2bdae723bd8e597680d5e8bb41a89",
+			"revisionTime": "2016-11-02T06:45:34Z"
+		},
+		{
+			"checksumSHA1": "xenhoJVZLi1s+GJ8Vdl/C07r0o4=",
+			"path": "github.com/urfave/negroni",
+			"revision": "7183f09c600e83777e78b44b39fcccab3b8c0dad",
+			"revisionTime": "2018-12-01T10:46:32Z"
+		}
+	],
+	"rootPath": "github.com/gilkor/evoucher"
+}
