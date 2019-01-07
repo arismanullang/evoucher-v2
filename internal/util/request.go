@@ -41,7 +41,7 @@ func (f *Filter) GetQueryFields(stringFiels []string) string {
 	return ` SElECT ` + strings.Join(stringFiels, ",")
 }
 
-//GetQuerySort : generate sql order syntax base on Filter.Sort field
+//GetQuerySort : generate sql order syntax base on Filter.Sort field , default sort "ASC" ,
 func (f *Filter) GetQuerySort() string {
 	if len(f.Sort) > 1 {
 		i := 0

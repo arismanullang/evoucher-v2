@@ -12,7 +12,7 @@ type (
 	Partner struct {
 		ID          string      `db:"id" json:"id,omitempty"`
 		Name        string      `db:"name" json:"name,omitempty"`
-		Description interface{} `db:"description" json:"description"`
+		Description interface{} `db:"description" json:"description,omitempty"`
 		CreatedAt   *time.Time  `db:"created_at" json:"created_at,omitempty"`
 		CreatedBy   string      `db:"created_by" json:"created_by,omitempty"`
 		UpdatedAt   *time.Time  `db:"updated_at" json:"updated_at,omitempty"`
@@ -44,8 +44,8 @@ func GetPartnerByID(f *util.Filter, id string) (*Partners, bool, error) {
 }
 func getPartners(k, v string, f *util.Filter) (*Partners, bool, error) {
 
-	// q := f.GetQueryByDefaultStruct(Partner{})
-	q := f.GetQueryFields(PartnerFields)
+	q := f.GetQueryByDefaultStruct(Partner{})
+	// q := f.GetQueryFields(PartnerFields)
 	q += `
 			FROM
 				partners

@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/gilkor/evoucher/internal/model"
@@ -13,15 +12,19 @@ import (
 
 //PostTag : POST Tag data
 func PostTag(w http.ResponseWriter, r *http.Request) {
-	res := u.NewResponse(nil)
+	res := u.NewResponse()
 
 	var reqTag model.Tag
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqTag); err != nil {
 		res.SetError(ErrFatal)
+		render.JSON(w, res, ErrFatal.Status)
+		return
 	}
 	if err := reqTag.Insert(); err != nil {
-		fmt.Println(err)
+		res.SetError(ErrFatal)
+		render.JSON(w, res, ErrFatal.Status)
+		return
 	}
 
 	render.JSON(w, res, http.StatusCreated)
@@ -29,12 +32,14 @@ func PostTag(w http.ResponseWriter, r *http.Request) {
 
 //GetTag : GET list of Tags
 func GetTag(w http.ResponseWriter, r *http.Request) {
-	res := u.NewResponse(nil)
+	res := u.NewResponse()
 
 	f := u.NewFilter(r)
 	Tags, next, err := model.GetTags(f)
 	if err != nil {
 		res.SetError(ErrFatal.SetArgs(err.Error()))
+		render.JSON(w, res, ErrFatal.Status)
+		return
 	}
 
 	res.SetResponse(Tags)
@@ -44,14 +49,15 @@ func GetTag(w http.ResponseWriter, r *http.Request) {
 
 //GetTagByID : GET
 func GetTagByID(w http.ResponseWriter, r *http.Request) {
-	res := u.NewResponse(nil)
+	res := u.NewResponse()
 
 	f := u.NewFilter(r)
 	id := bone.GetValue(r, "id")
 	Tag, _, err := model.GetTagByID(f, id)
 	if err != nil {
-		fmt.Println(err)
 		res.SetError(ErrResourceNotFound)
+		render.JSON(w, res, ErrResourceNotFound.Status)
+		return
 	}
 
 	res.SetResponse(Tag)
@@ -60,27 +66,33 @@ func GetTagByID(w http.ResponseWriter, r *http.Request) {
 
 // UpdateTag :
 func UpdateTag(w http.ResponseWriter, r *http.Request) {
-	res := u.NewResponse(nil)
+	res := u.NewResponse()
 
 	var reqTag model.Tag
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqTag); err != nil {
 		res.SetError(ErrFatal)
+		render.JSON(w, res, ErrFatal.Status)
+		return
 	}
 	if err := reqTag.Update(); err != nil {
-		fmt.Println(err)
+		res.SetError(ErrFatal)
+		render.JSON(w, res, ErrFatal.Status)
+		return
 	}
 	render.JSON(w, res, http.StatusCreated)
 }
 
 //DelelteTag : remove Tag
 func DelelteTag(w http.ResponseWriter, r *http.Request) {
-	res := u.NewResponse(nil)
+	res := u.NewResponse()
 
 	id := bone.GetValue(r, "id")
 	p := model.Tag{ID: id}
 	if err := p.Delete(); err != nil {
 		res.SetError(ErrResourceNotFound)
+		render.JSON(w, res, ErrResourceNotFound.Status)
+		return
 	}
 	render.JSON(w, res, http.StatusCreated)
 }

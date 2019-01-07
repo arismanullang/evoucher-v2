@@ -3,9 +3,8 @@ package controller
 import (
 	"net/http"
 
-	"github.com/gilkor/evoucher/internal/util"
-
 	"github.com/gilkor/athena/lib/x/jsonerr"
+	"github.com/gilkor/evoucher/internal/util"
 )
 
 //ErrorResponse embedding of type jsonerr.ErrorResponse
