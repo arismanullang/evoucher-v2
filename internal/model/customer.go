@@ -24,14 +24,26 @@ type (
 		DeletedBy   string     `db:"deleted_by,null" json:"deleted_by,omitempty"`
 		Status      string     `db:"status" json:"status,omitempty"`
 	}
+	//Customers :
+	Customers []Customer
 )
 
-//GetCustomerByCompanyID : get list customers by ID
-func GetCustomerByCompanyID(id string, f *util.Filter) ([]Customer, bool, error) {
+//GetCustomerByCompanyID : get list customers by CompanyID
+func GetCustomerByCompanyID(id string, f *util.Filter) (*Customers, bool, error) {
 	return getCustomers("company_id", id, f)
 }
 
-func getCustomers(key, value string, f *util.Filter) ([]Customer, bool, error) {
+// GetCustomerByID :  get list customers by ID
+func GetCustomerByID(id string, f *util.Filter) (*Customers, bool, error) {
+	return getCustomers("id", id, f)
+}
+
+// GetCustomers : list customer
+func GetCustomers(f *util.Filter) (*Customers, bool, error) {
+	return getCustomers("1", "1", f)
+}
+
+func getCustomers(key, value string, f *util.Filter) (*Customers, bool, error) {
 	q := f.GetQueryByDefaultStruct(Customer{})
 	q += `
 			FROM
@@ -43,10 +55,10 @@ func getCustomers(key, value string, f *util.Filter) ([]Customer, bool, error) {
 	q += f.GetQuerySort()
 	q += f.GetQueryLimit()
 	fmt.Println(q)
-	var resd []Customer
+	var resd Customers
 	err := db.Select(&resd, db.Rebind(q), StatusCreated, value)
 	if err != nil {
-		return []Customer{}, false, err
+		return &Customers{}, false, err
 	}
 
 	next := false
@@ -57,7 +69,7 @@ func getCustomers(key, value string, f *util.Filter) ([]Customer, bool, error) {
 		f.Count = len(resd)
 	}
 
-	return resd, next, nil
+	return &resd, next, nil
 }
 
 //Insert : single row inset into table

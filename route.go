@@ -30,14 +30,14 @@ func init() {
 	r.GetFunc("/api/v1/partners", c.GetPartner)
 	r.GetFunc("/api/v1/partners/:id", c.GetPartnerByID)
 	r.PutFunc("/api/v1/partners", c.UpdatePartner)
-	r.DeleteFunc("/api/v1/partners/:id", c.DeleltePartner)
+	r.DeleteFunc("/api/v1/partners/:id", c.DeletePartner)
 
 	//tags
 	r.PostFunc("/api/v1/tags", c.PostTag)
 	r.GetFunc("/api/v1/tags", c.GetTag)
 	r.GetFunc("/api/v1/tags/:id", c.GetTagByID)
 	r.PutFunc("/api/v1/tags", c.UpdateTag)
-	r.DeleteFunc("/api/v1/tags", c.DelelteTag)
+	r.DeleteFunc("/api/v1/tags", c.DeleteTag)
 
 	//transactions
 	r.PostFunc("/api/v1/transactions", ping)
@@ -47,11 +47,11 @@ func init() {
 	r.DeleteFunc("/api/v1/transactions", ping)
 
 	//customers
-	r.PostFunc("/api/v1/customers", ping)
-	r.GetFunc("/api/v1/customers", ping)
-	r.GetFunc("/api/v1/customers/:id", ping)
-	r.PutFunc("/api/v1/customers", ping)
-	r.DeleteFunc("/api/v1/customers", ping)
+	r.PostFunc("/api/v1/customers", c.PostCustomer)
+	r.GetFunc("/api/v1/customers", c.GetCustomer)
+	r.GetFunc("/api/v1/customers/:id", c.GetCustomerByID)
+	r.PutFunc("/api/v1/customers", c.UpdateCustomer)
+	r.DeleteFunc("/api/v1/customers", c.DeleteCustomer)
 
 	r.GetFunc("/ping", ping)
 

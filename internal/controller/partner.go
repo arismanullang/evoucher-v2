@@ -83,8 +83,8 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, http.StatusCreated)
 }
 
-//DeleltePartner : remove partner
-func DeleltePartner(w http.ResponseWriter, r *http.Request) {
+//DeletePartner : remove partner
+func DeletePartner(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	id := bone.GetValue(r, "id")

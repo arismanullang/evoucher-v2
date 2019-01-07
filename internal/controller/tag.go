@@ -83,8 +83,8 @@ func UpdateTag(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, res, http.StatusCreated)
 }
 
-//DelelteTag : remove Tag
-func DelelteTag(w http.ResponseWriter, r *http.Request) {
+//DeleteTag : remove Tag
+func DeleteTag(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	id := bone.GetValue(r, "id")
