@@ -11,49 +11,51 @@ var router http.Handler
 
 func init() {
 	r := bone.New()
+	//use company prefix
+
+	//define router
+	r.Prefix("/api/v1.0/:company")
+	// r.NotFoundFunc(notFound)
+
 	//voucher
-	r.PostFunc("/api/v1/vouchers", ping)
-	r.GetFunc("/api/v1/vouchers", ping)
-	r.GetFunc("/api/v1/vouchers/:id", ping)
-	r.PutFunc("/api/v1/vouchers", ping)
-	r.DeleteFunc("/api/v1/vouchers", ping)
+	r.PostFunc("/vouchers", ping)
+	r.GetFunc("/vouchers", ping)
+	r.GetFunc("/vouchers/:id", ping)
+	r.PutFunc("/vouchers", ping)
+	r.DeleteFunc("/vouchers", ping)
 
 	//programs
-	r.PostFunc("/api/v1/programs", ping)
-	r.GetFunc("/api/v1/programs", ping)
-	r.GetFunc("/api/v1/programs/:id", ping)
-	r.PutFunc("/api/v1/programs", ping)
-	r.DeleteFunc("/api/v1/programs", ping)
+	r.PostFunc("/programs", ping)
+	r.GetFunc("/programs", ping)
+	r.GetFunc("/programs/:id", ping)
+	r.PutFunc("/programs", ping)
+	r.DeleteFunc("/programs", ping)
 
 	//partners
-	r.PostFunc("/api/v1/partners", c.PostPartner)
-	r.GetFunc("/api/v1/partners", c.GetPartner)
-	r.GetFunc("/api/v1/partners/:id", c.GetPartnerByID)
-	r.PutFunc("/api/v1/partners", c.UpdatePartner)
-	r.DeleteFunc("/api/v1/partners/:id", c.DeletePartner)
+	r.PostFunc("/partners", c.PostPartner)
+	r.GetFunc("/partners", c.GetPartner)
+	r.GetFunc("/partners/:id", c.GetPartnerByID)
+	r.PutFunc("/partners", c.UpdatePartner)
+	r.DeleteFunc("/partners/:id", c.DeletePartner)
 
 	//tags
-	r.PostFunc("/api/v1/tags", c.PostTag)
-	r.GetFunc("/api/v1/tags", c.GetTag)
-	r.GetFunc("/api/v1/tags/:id", c.GetTagByID)
-	r.PutFunc("/api/v1/tags", c.UpdateTag)
-	r.DeleteFunc("/api/v1/tags", c.DeleteTag)
+	r.PostFunc("/tags", c.PostTag)
+	r.GetFunc("/tags", c.GetTag)
+	r.GetFunc("/tags/:id", c.GetTagByID)
+	r.PutFunc("/tags", c.UpdateTag)
+	r.DeleteFunc("/tags", c.DeleteTag)
 
-	//transactions
-	r.PostFunc("/api/v1/transactions", ping)
-	r.GetFunc("/api/v1/transactions", ping)
-	r.GetFunc("/api/v1/transactions/:id", ping)
-	r.PutFunc("/api/v1/transactions", ping)
-	r.DeleteFunc("/api/v1/transactions", ping)
+	//users
+	r.GetFunc("/login", ping)
 
 	//customers
-	r.PostFunc("/api/v1/customers", c.PostCustomer)
-	r.GetFunc("/api/v1/customers", c.GetCustomer)
-	r.GetFunc("/api/v1/customers/:id", c.GetCustomerByID)
-	r.PutFunc("/api/v1/customers", c.UpdateCustomer)
-	r.DeleteFunc("/api/v1/customers", c.DeleteCustomer)
+	r.PostFunc("/customers", c.PostCustomer)
+	r.GetFunc("/customers", c.GetCustomer)
+	r.GetFunc("/customers/:id", c.GetCustomerByID)
+	r.PutFunc("/customers", c.UpdateCustomer)
+	r.DeleteFunc("/customers", c.DeleteCustomer)
 
-	r.GetFunc("/ping", ping)
+	// r.GetFunc("/ping", ping)
 
 	// r.GetFunc("/debug/pprof/", pprof.Index)
 	// r.GetFunc("/debug/pprof/cmdline", pprof.Cmdline)
@@ -66,4 +68,8 @@ func init() {
 
 func ping(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("pong"))
+}
+
+func notFound(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("not found"))
 }

@@ -308,6 +308,12 @@ create table cashout_details as (
     updated_by CHARACTER VARYING(8),
     updated_at TIMESTAMP WITH TIME ZONE,
 )
+
+create table users as (
+    id  CHARACTER VARYING(8) ,
+    
+)
+
 -- partner  , company(user) 
 -- transactions , INVOICE (report) ,
 
