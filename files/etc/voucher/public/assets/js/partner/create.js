@@ -69,7 +69,7 @@ function send() {
 	var partner = {
 		name: $("#partner-name").val(),
 		serial_number: $("#serial-number").val(),
-		email: $("#email").val(),
+		email: $("#email").val().replace(/\s/g,''),
 		tag: listTag,
 		description: $("#description").val(),
 		bank_account: $("#bank-accounts").find(":selected").val(),

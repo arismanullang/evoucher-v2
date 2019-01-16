@@ -186,15 +186,15 @@ function send() {
 	var voucherPrice = parseInt($("#voucher-price").val());
 	var maxQuantityVoucher = parseInt($("#voucher-quantity").val());
 	var redemptionMethod = $("#redemption-method").find(":selected").val();
-  var programValidFrom = $("#program-valid-from").val();
+    var programValidFrom = $("#program-valid-from").val();
 	var programValidTo = $("#program-valid-to").val();
 	var startHour = $("#start-hour").val();
 	var endHour = $("#end-hour").val();
 	var voucherValue = parseInt($("#voucher-value").val().replace(".", ""));
-  var programDescription = $("#program-description").val();
+    var programDescription = $("#program-description").val();
 
-  var today = dateFormat(new Date(), 'isoDateTime');
-  var timezone = today.substr(19, 3) + ":" + today.substr(22,2)
+    var today = dateFormat(new Date(), 'isoDateTime');
+    var timezone = today.substr(19, 3) + ":" + today.substr(22,2)
 
 	if(startHour == '00:00'){
 		startHour = '00:01';
@@ -282,9 +282,9 @@ function send() {
 
 	// max generate and redeem
 	var maxGenerate = parseInt($("#generate-voucher").val());
-  var maxRedeem = 1;
+    var maxRedeem = 1;
 
-  var limitRedeemBy = $("limit-redeem-by").find(":selected").val();
+	var limitRedeemBy = $("#limit-redeem-by").find(":selected").val();
 
 	// voucher type
 	var voucherType = "cash";
