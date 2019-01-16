@@ -278,7 +278,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(emails.EmailAccount, ";") {
 		tempEmailAccount := strings.Split(emails.EmailAccount, ";")
 		for _, v := range tempEmailAccount {
-			listEmail = append(listEmail, v)
+			listEmail = append(listEmail, strings.Replace(v, " ", "", -1))
 		}
 	} else {
 		listEmail = append(listEmail, emails.EmailAccount)
@@ -287,7 +287,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(emails.EmailPartner, ";") {
 		tempEmailPartner := strings.Split(emails.EmailPartner, ";")
 		for _, v := range tempEmailPartner {
-			listEmail = append(listEmail, v)
+			listEmail = append(listEmail, strings.Replace(v, " ", "", -1))
 		}
 	} else {
 		listEmail = append(listEmail, emails.EmailPartner)
@@ -296,7 +296,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(emails.EmailMember, ";") {
 		tempEmailMember := strings.Split(emails.EmailMember, ";")
 		for _, v := range tempEmailMember {
-			listEmail = append(listEmail, v)
+			listEmail = append(listEmail, strings.Replace(v, " ", "", -1))
 		}
 	} else {
 		listEmail = append(listEmail, emails.EmailMember)
@@ -344,18 +344,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	title := "Elys Voucher Confirmation"
 
 	if err := model.SendConfirmationEmail(senderMail, title, req, a.User.Account.Id, mailKey); err != nil {
-		res := NewResponse(nil)
-		status := http.StatusInternalServerError
-		errTitle := model.ErrCodeInternalError
-		if err == model.ErrResourceNotFound {
-			status = http.StatusNotFound
-			errTitle = model.ErrCodeResourceNotFound
-		}
-
-		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
 		logger.SetStatus(status).Info("param :", listEmail, "response :", err.Error())
-		render.JSON(w, res, status)
-		return
 	}
 
 	res = NewResponse(TransactionResponse{
@@ -578,7 +567,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(emails.EmailAccount, ";") {
 		tempEmailAccount := strings.Split(emails.EmailAccount, ";")
 		for _, v := range tempEmailAccount {
-			listEmail = append(listEmail, v)
+			listEmail = append(listEmail, strings.Replace(v, " ", "", -1))
 		}
 	} else {
 		listEmail = append(listEmail, emails.EmailAccount)
@@ -587,7 +576,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(emails.EmailPartner, ";") {
 		tempEmailPartner := strings.Split(emails.EmailPartner, ";")
 		for _, v := range tempEmailPartner {
-			listEmail = append(listEmail, v)
+			listEmail = append(listEmail, strings.Replace(v, " ", "", -1))
 		}
 	} else {
 		listEmail = append(listEmail, emails.EmailPartner)
@@ -596,7 +585,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(emails.EmailMember, ";") {
 		tempEmailMember := strings.Split(emails.EmailMember, ";")
 		for _, v := range tempEmailMember {
-			listEmail = append(listEmail, v)
+			listEmail = append(listEmail, strings.Replace(v, " ", "", -1))
 		}
 	} else {
 		listEmail = append(listEmail, emails.EmailMember)
@@ -638,18 +627,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := model.SendConfirmationEmail(accountDetail.SenderEmail, "Elys Voucher Confirmation", req, partner.AccountId, accountDetail.MailKey.String); err != nil {
-		res := NewResponse(nil)
-		status := http.StatusInternalServerError
-		errTitle := model.ErrCodeInternalError
-		if err == model.ErrResourceNotFound {
-			status = http.StatusNotFound
-			errTitle = model.ErrCodeResourceNotFound
-		}
-
-		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
 		logger.SetStatus(status).Info("param :", listEmail, "response :", err.Error())
-		render.JSON(w, res, status)
-		return
 	}
 
 	res = NewResponse(TransactionResponse{TransactionCode: txCode})
