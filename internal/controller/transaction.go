@@ -344,18 +344,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	title := "Elys Voucher Confirmation"
 
 	if err := model.SendConfirmationEmail(senderMail, title, req, a.User.Account.Id, mailKey); err != nil {
-		res := NewResponse(nil)
-		status := http.StatusInternalServerError
-		errTitle := model.ErrCodeInternalError
-		if err == model.ErrResourceNotFound {
-			status = http.StatusNotFound
-			errTitle = model.ErrCodeResourceNotFound
-		}
-
-		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
 		logger.SetStatus(status).Info("param :", listEmail, "response :", err.Error())
-		render.JSON(w, res, status)
-		return
 	}
 
 	res = NewResponse(TransactionResponse{
@@ -638,18 +627,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := model.SendConfirmationEmail(accountDetail.SenderEmail, "Elys Voucher Confirmation", req, partner.AccountId, accountDetail.MailKey.String); err != nil {
-		res := NewResponse(nil)
-		status := http.StatusInternalServerError
-		errTitle := model.ErrCodeInternalError
-		if err == model.ErrResourceNotFound {
-			status = http.StatusNotFound
-			errTitle = model.ErrCodeResourceNotFound
-		}
-
-		res.AddError(its(status), errTitle, err.Error(), logger.TraceID)
 		logger.SetStatus(status).Info("param :", listEmail, "response :", err.Error())
-		render.JSON(w, res, status)
-		return
 	}
 
 	res = NewResponse(TransactionResponse{TransactionCode: txCode})
