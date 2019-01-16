@@ -278,7 +278,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(emails.EmailAccount, ";") {
 		tempEmailAccount := strings.Split(emails.EmailAccount, ";")
 		for _, v := range tempEmailAccount {
-			listEmail = append(listEmail, v)
+			listEmail = append(listEmail, strings.Replace(v, " ", "", -1))
 		}
 	} else {
 		listEmail = append(listEmail, emails.EmailAccount)
@@ -287,7 +287,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(emails.EmailPartner, ";") {
 		tempEmailPartner := strings.Split(emails.EmailPartner, ";")
 		for _, v := range tempEmailPartner {
-			listEmail = append(listEmail, v)
+			listEmail = append(listEmail, strings.Replace(v, " ", "", -1))
 		}
 	} else {
 		listEmail = append(listEmail, emails.EmailPartner)
@@ -296,7 +296,7 @@ func MobileCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(emails.EmailMember, ";") {
 		tempEmailMember := strings.Split(emails.EmailMember, ";")
 		for _, v := range tempEmailMember {
-			listEmail = append(listEmail, v)
+			listEmail = append(listEmail, strings.Replace(v, " ", "", -1))
 		}
 	} else {
 		listEmail = append(listEmail, emails.EmailMember)
@@ -578,7 +578,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(emails.EmailAccount, ";") {
 		tempEmailAccount := strings.Split(emails.EmailAccount, ";")
 		for _, v := range tempEmailAccount {
-			listEmail = append(listEmail, v)
+			listEmail = append(listEmail, strings.Replace(v, " ", "", -1))
 		}
 	} else {
 		listEmail = append(listEmail, emails.EmailAccount)
@@ -587,7 +587,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(emails.EmailPartner, ";") {
 		tempEmailPartner := strings.Split(emails.EmailPartner, ";")
 		for _, v := range tempEmailPartner {
-			listEmail = append(listEmail, v)
+			listEmail = append(listEmail, strings.Replace(v, " ", "", -1))
 		}
 	} else {
 		listEmail = append(listEmail, emails.EmailPartner)
@@ -596,7 +596,7 @@ func WebCreateTransaction(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(emails.EmailMember, ";") {
 		tempEmailMember := strings.Split(emails.EmailMember, ";")
 		for _, v := range tempEmailMember {
-			listEmail = append(listEmail, v)
+			listEmail = append(listEmail, strings.Replace(v, " ", "", -1))
 		}
 	} else {
 		listEmail = append(listEmail, emails.EmailMember)
