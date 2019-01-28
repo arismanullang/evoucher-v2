@@ -18,6 +18,7 @@ func main() {
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
 	n.UseHandler(router)
+	// n.UseHandler(testRouter)
 
 	log.Fatal(server.ListenAndServe(n))
 }

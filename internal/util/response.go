@@ -27,9 +27,9 @@ type (
 	}
 )
 
-//NewResponse : initiate response
-func NewResponse(data interface{}) *Response {
-	return &Response{Data: data}
+//NewResponse : new response
+func NewResponse() *Response {
+	return &Response{}
 }
 
 //SetResponse :
@@ -72,6 +72,12 @@ func (r *Response) SetError(e ErrResponse) {
 // NewError :
 func NewError(je jsonerr.ErrorResponse) ErrResponse {
 	return ErrResponse{&jsonerr.ErrorResponse{Status: je.Status, Code: je.Code, Message: je.Message, Args: je.Args}}
+}
+
+// SetStatus :
+func (e ErrResponse) SetStatus(i int) ErrResponse {
+	e.Status = i
+	return e
 }
 
 //SetMessage :

@@ -244,7 +244,7 @@ CREATE TABLE transaction_details (
     id integer DEFAULT nextval('transaction_details_id_seq'::regclass) NOT NULL,
     transaction_id CHARACTER VARYING(8) NOT NULL,
     program_id CHARACTER VARYING(8),
-    voucher_id CHARACTER VARYING(8) NOT NULL,    
+    voucher_id CHARACTER VARYING(8) NOT NULL,
     created_by CHARACTER VARYING(8) DEFAULT 'unknown'::CHARACTER VARYING NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8),
@@ -308,6 +308,12 @@ create table cashout_details as (
     updated_by CHARACTER VARYING(8),
     updated_at TIMESTAMP WITH TIME ZONE,
 )
+
+create table users as (
+    id  CHARACTER VARYING(8) ,
+    
+)
+
 -- partner  , company(user) 
 -- transactions , INVOICE (report) ,
 
