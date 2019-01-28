@@ -20,8 +20,6 @@ type (
 		CreatedBy   string     `db:"created_by" json:"created_by,omitempty"`
 		UpdatedAt   *time.Time `db:"updated_at" json:"updated_at,omitempty"`
 		UpdatedBy   string     `db:"updated_by" json:"updated_by,omitempty"`
-		DeletedAt   *time.Time `db:"deleted_at,null" json:"deleted_at,omitempty"`
-		DeletedBy   string     `db:"deleted_by,null" json:"deleted_by,omitempty"`
 		Status      string     `db:"status" json:"status,omitempty"`
 	}
 	//Customers :
@@ -103,8 +101,6 @@ func (c Customer) Insert() error {
 				, created_by
 				, updated_at
 				, updated_by
-				, deleted_at
-				, deleted_by
 				, status
 	`
 	var res []Customer
@@ -152,8 +148,6 @@ func (c *Customer) Update() error {
 				, created_by
 				, updated_at
 				, updated_by
-				, deleted_at
-				, deleted_by
 				, status
 	`
 	var res []Customer
@@ -180,8 +174,8 @@ func (c *Customer) Delete() error {
 	q := `UPDATE
 				customers 
 			SET
-				deleted_at = now(),
-				deleted_by = ?
+				updated_at = now(),
+				updated_by = ?
 				status = ?			
 			WHERE 
 				id = ?	
@@ -196,12 +190,10 @@ func (c *Customer) Delete() error {
 				, created_by
 				, updated_at
 				, updated_by
-				, deleted_at
-				, deleted_by
 				, status
 	`
 	var res []Customer
-	err = tx.Select(&res, tx.Rebind(q), c.DeletedBy, StatusDeleted)
+	err = tx.Select(&res, tx.Rebind(q), c.UpdatedBy, StatusDeleted)
 	if err != nil {
 		return err
 	}

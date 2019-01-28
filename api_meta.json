@@ -1,241 +1,379 @@
-//partner
+//POST api/v1.0/:company/partners
 {
     //POST
-    "name":"outlet",
-    "description":"json expr",
-    "tag":["",""]
-}
+    "name": "outlet",
+    "description": "json expr",
+    "tag": [
+        "",
+        ""
+    ]
+},
+//GET api/v1.0/:company/partners
+//GET api/v1.0/:company/partners/:id
 {
     //GET 
-    "id":"",
-    "name":"kfc",
+    "id": "",
+    "name": "kfc",
     "description": {
-        "key":"value",
+        "key": "value",
     },
-    "tags":[
+    "tags": [
         {
-            "id":"",
-            "name":"F&B"
+            "id": "",
+            "name": "F&B"
         },
         {
-            "id":"",
-            "name":"100k"
+            "id": "",
+            "name": "100k"
         }
     ]
 }
 //program
+//POST api/v1.0/:company/programs?
 {
     //POST
-    "name":"kfc 100K",
-    "type":"import/generated",
-    "voucher_type":"amount",
-    "value":100000.00,
-    "price":{
-        "type":"point/amount",
-        "value":100000.00
-    },
-    "stock":150,
-    "description":"json expr",
-    "template":"",
-    "partners":["IDoutlet1","IDoutlet2"],
-    "rule":"rule expr",
-    "voucher_format":{
-        "type":"fix/random",
-        "properties":{
-            "lenght":16,
-            "prefix":"KFC-",
-            "postfix":"-100k",
-            "format":{
-                "option":"numeric/alphabeth/alhpanumeric",
-                //aditional numeric option
-                "type":"seq/random",
-                "from":"",
-                "order":false,
+    {
+        "name": "Gilkor Voucher 100k",
+        "type": "amount",
+        "value": "100%",
+        "max_value": "100000",
+        "start_date": "",
+        "end_date": "",
+        "description": "",
+        "image_url": "http://...",
+        "template": "<html>",
+        "rule": "rule expr",
+        "state": "created",
+        "partners": [
+            {
+                "id": "IDOutlet01"
+            },
+            {
+                "id": "IDOutlet02"
+            },
+        ],
+        "voucher_format": {
+            "type": "fixed/generated/imported",
+            "format": "alphanumeric/numeric/alphabetic",
+            "prefix": "",
+            "postfix": "",
+            "file": ""
+        },
+        "stock": 150,
+    }
+    
+    "rule": "expr",
+    "voucher_format": {
+        "import": {
+            "file": "uri"
+        },
+        "fix": {
+            "code": "SARAPAN-GOCENG"
+        },
+        "generate": {
+            "properties": {
+                "lenght": 16,
+                "prefix": "KFC-",
+                "postfix": "-100k",
+                "format": {
+                    "option": "numeric/alphabeth/alhpanumeric",
+                    //aditional numeric option
+                    "type": "seq/random",
+                    "from": "",
+                    "order": false,
+                }
             }
         }
-    }
-}
+    },
+    // jika 'voucher_format.import' maka 'stock' disabled
+},
 {
-    //GET    
-    "data" :
-    [
+    //GET api/v1.0/:company/programs?
+    //GET api/v1.0/:company/programs/:id?
+    //GET api/v1.0/:company/programs?holder.name=andrie_gkl
+    "data": [
         {
-            "name":"kfc 100K",
-            "type":"bulk",
-            "voucher_type":"amount",
-            "value":100000.00,
-            "price":{
-                "type":"point/amount",
-                "value":100000.00
-            },
-            "stock":150,
-            "img_url":"",
+            "name": "Gilkor Voucher 100k",
+            "type": "amount",
+            "value": "100%",
+            "max_value": "100000",
+            "start_date": "",
+            "end_date": "",
+            "description": "",
+            "image_url": "http://...",
+            "template": "<html>",
+            "rule": "rule expr",
+            "state": "created",
             "description": {
-                "tnc":"value",
-                "how_to_use":"",
-                "key":"value"
+                "tnc": "value",
+                "how_to_use": "",
+                "key": "value"
             },
-            "template":"",
+            "stock": 300,
             "partners": [
                 {
-                    "id":"",
-                    "name":"",
-                    "descriptions":{
-                        "key":"value"
+                    "id": "",
+                    "name": "",
+                    "descriptions": {
+                        "key": "value"
                     },
-                    "tags":[
+                    "tags": [
                         {
-                            "id":"",
-                            "name":"#100K"
+                            "id": "",
+                            "name": "#100K"
                         },
                         {
-                            "id":"",
-                            "name":"F&B"
+                            "id": "",
+                            "name": "F&B"
+                        }
+                    ]
+                },
+                {
+                    "id": "",
+                    "name": "",
+                    "descriptions": {
+                        "key": "value"
+                    },
+                    "tags": [
+                        {
+                            "id": "",
+                            "name": "#100K"
+                        },
+                        {
+                            "id": "",
+                            "name": "F&B"
                         }
                     ]
                 }
             ],
-            "rule":"rule expr",
-            "voucher_format":{
-                "type":"fix/random",
-                "properties":{
-                    "lenght":16,
-                    "prefix":"KFC-",
-                    "postfix":"-100k",
-                    "format":{
-                        "option":"numeric/alphabeth/alhpanumeric",
-                        //aditional numeric option
-                        "type":"seq/random",
-                        "from":"",
-                        "order":false,
-                    }
-                }
-            }
-        },{
-            "name":"kfc 100K",
-            "type":"bulk",
-            "voucher_type":"amount",
-            "value":100000.00,
-            "price":{
-                "type":"point/amount",
-                "value":100000.00
-            },
-            "stock":150,
-            "img_url":"",
-            "description": {
-                "tnc":"value",
-                "how_to_use":"",
-                "key":"value"
-            },
-            "template":"",
-            "partners": [
+            "vouchers": [
                 {
-                    "id":"",
-                    "name":"",
-                    "descriptions":{
-                        "key":"value"
-                    },
-                    "tags":[
-                        {
-                            "id":"",
-                            "name":"#100K"
-                        },
-                        {
-                            "id":"",
-                            "name":"F&B"
-                        }
-                    ]
+                    "voucher"
                 }
-            ],
-            "rule":"rule expr",
-            "voucher_format":{
-                "type":"fix/random",
-                "properties":{
-                    "lenght":16,
-                    "prefix":"KFC-",
-                    "postfix":"-100k",
-                    "format":{
-                        "option":"numeric/alphabeth/alhpanumeric",
-                        //aditional numeric option
-                        "type":"seq/random",
-                        "from":"",
-                        "order":false,
-                    }
-                }
-            }
+            ]
         }
     ]
 }
 //customer
-
-    //POST
-    [
-        {
-            "name":"",
-            "mobile_phone":"",
-            "email":"",
-            "ref_id":""
-        },
-        {
-            "name":"",
-            "mobile_phone":"",
-            "email":"",
-            "ref_id":""
-        }
-    ]
+//POST
+[
+    {
+        "name": "",
+        "mobile_phone": "",
+        "email": "",
+        "ref_id": ""
+    },
+    {
+        "name": "",
+        "mobile_phone": "",
+        "email": "",
+        "ref_id": ""
+    }
+]
 
 {
     //GET
-    "data":[
+    "data": [
         {
-            "name":"andrie",
-            "mobile_phone":"081213417128",
-            "email":"andrie@gilkor.com",
-            "ref_id":"",
-            "tags":[
+            "name": "andrie",
+            "mobile_phone": "081213417128",
+            "email": "andrie@gilkor.com",
+            "ref_id": "",
+            "tags": [
                 {
-                    "id":"",
-                    "name":"Gilkor"
+                    "id": "",
+                    "name": "Gilkor"
                 },
                 {
-                    "id":"",
-                    "name":"ASRI"
+                    "id": "",
+                    "name": "ASRI"
                 }
             ]
         },
         {
-            "name":"alfan",
-            "mobile_phone":"081213417128",
-            "email":"alfan@gilkor.com",
-            "ref_id":"",
-            "tags":[
+            "name": "alfan",
+            "mobile_phone": "081213417128",
+            "email": "alfan@gilkor.com",
+            "ref_id": "",
+            "tags": [
                 {
-                    "id":"",
-                    "name":"Gilkor"
+                    "id": "",
+                    "name": "Gilkor"
                 }
             ]
         }
     ]
 }
-
 //tags
 {
     //POST
-    "category":"all/partners/customers",
-    "name":""
+    "category": "all/partners/customers",
+    "name": ""
 }
 {
     //GET
     "data": [
         {
-            "id":"",
-            "name":"",
-            "category":""
+            "id": "",
+            "name": "",
+            "category": ""
         },
         {
-            "id":"",
-            "name":"",
-            "category":""
+            "id": "",
+            "name": "",
+            "category": ""
         }
     ]
 }
+//Voucher ;
+{
+    "id": "19smah13",
+    "code": "VC-0012-50K",
+    "reference_no": "",
+    "holder": "",
+    "program_id": "",
+    "valid_at": "",
+    "expired_at": "",
+    "state": "created/claim/used/paid",
+    "craated_at": "",
+    "craated_by": "",
+    "updated_at": "",
+    "updated_by": "",
+    "status": ""
+}
+//transactions 
+// assign
+//POST api/v1.0/:company/vouchers/assign?
+{
+    "reference": "", //txRef or CRM
+    "holder": "",
+    "program_id": "",
+    "count": 5
+},
+//use
+//POST api/v1.0/:company/transactions?
+{
+    "reference": "",
+    "transactions": {
+        "total_amount": 102813112.00,
+        "details": [
+            {
+                "sku": "value",
+                "name": "",
+                "qty": 1,
+                "prize": 100.0
+            },
+            {
+                "sku": "value",
+                "name": "",
+                "qty": 1,
+                "prize": 100.0
+            }
+        ]
+    },
+    "vouchers": [
+        "vcID-01",
+        "vcID-02"
+    ],
+    "partner_id": "outlet01"
+}
+//list of
+//GET api/v1.0/:company/transactions?
+// details transaction by id
+//GET api/v1.0/:company/transactions/:id?
+{
+    "id": "",
+    "code": "",
+    "company": {
+        "id": "id",
+        "name": "",
+        "craated_at": "",
+        "craated_by": "",
+        "updated_at": "",
+        "updated_by": "",
+        "status": ""
+    },
+    "amount": 1000,
+    "partners": {
+        "id": "id",
+        "name": "outlet01",
+        "company_id": "",
+        "craated_at": "",
+        "craated_by": "",
+        "updated_at": "",
+        "updated_by": "",
+        "status": ""
+    },
+    "vouchers": [
+        {
+            "id": "19smah13",
+            "code": "VC-0012-50K",
+            "reference_no": "",
+            "holder": "",
+            "program_id": "",
+            "valid_at": "",
+            "expired_at": "",
+            "state": "created/claim/used/paid",
+            "craated_at": "",
+            "craated_by": "",
+            "updated_at": "",
+            "updated_by": "",
+            "status": ""
+        },
+        {
+            "id": "19smah13",
+            "code": "VC-0012-50K",
+            "reference_no": "",
+            "holder": {
+                "id": "",
+                "name": "andrie",
+                "email": "andrie@gilkor.com"
+            },
+            "program_id": "",
+            "valid_at": "",
+            "expired_at": "",
+            "state": "created/claim/used/paid",
+            "craated_at": "",
+            "craated_by": "",
+            "updated_at": "",
+            "updated_by": "",
+            "status": ""
+        }
+    ],
+    "details": [
+        {
+            "sku": "value",
+            "name": "",
+            "qty": 1,
+            "prize": 100.0,
+            "craated_at": "",
+            "craated_by": "",
+            "updated_at": "",
+            "updated_by": "",
+            "status": ""
+        },
+        {
+            "sku": "value",
+            "name": "",
+            "qty": 1,
+            "prize": 100.0,
+            "craated_at": "",
+            "craated_by": "",
+            "updated_at": "",
+            "updated_by": "",
+            "status": ""
+        }
+    ]
+}'
+
+
+'
+
+//transaction histories
+// transactions 
+//          -> details :detail receipt
+//          -> vouchers : 
+//                  [
+//                      program
+//                          ->partner
+//                  ],

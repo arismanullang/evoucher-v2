@@ -48,6 +48,13 @@ func init() {
 	//users
 	r.GetFunc("/login", ping)
 
+	//Roles
+	r.PostFunc("/tags", c.PostTag)
+	r.GetFunc("/tags", c.GetTag)
+	r.GetFunc("/tags/:id", c.GetTagByID)
+	r.PutFunc("/tags", c.UpdateTag)
+	r.DeleteFunc("/tags", c.DeleteTag)
+
 	//customers
 	r.PostFunc("/customers", c.PostCustomer)
 	r.GetFunc("/customers", c.GetCustomer)

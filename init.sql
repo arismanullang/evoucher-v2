@@ -188,7 +188,7 @@ ALTER SEQUENCE program_partner_id_seq OWNED BY program_partners.id;
 --Voucher
 CREATE TABLE vouchers (
     id CHARACTER VARYING(8) DEFAULT new_id() NOT NULL,
-    voucher_code CHARACTER VARYING(16) NOT NULL,
+    code CHARACTER VARYING(16) NOT NULL,
     reference_no CHARACTER VARYING(64) NOT NULL,
     holder text, 
     program_id CHARACTER VARYING(8) NOT NULL,
@@ -264,6 +264,8 @@ ALTER SEQUENCE transaction_details_id_seq OWNED BY transaction_details.id;
     max_generate_by_program -- maksimum redeem vocher dalam 1 program 
         -> max_generate_by_day -- redeem perhari nya
 
+    min_speding : -- minimum pembelian 
+    max_speding : -- minimum pembelian 
     --DISTRIBUTION
     start_date -- start program (01 Nov) batas awal untuk distribusi / pengambilan voucher
     end_date -- end program (31 - Dec)  batas awal ahir distribusi / pengambilan voucher

@@ -26,20 +26,20 @@ type (
 
 // GetCompanyByAlias :  get list Companies by Alias
 func GetCompanyByAlias(v string, f *util.Filter) ([]Company, bool, error) {
-	return getCompanies("alias", v, f)
+	return getCompanies(f, "alias", v)
 }
 
 // GetCompanyByID :  get list Companies by ID
 func GetCompanyByID(id string, f *util.Filter) ([]Company, bool, error) {
-	return getCompanies("id", id, f)
+	return getCompanies(f, "id", id)
 }
 
 // GetCompanies : list Company
 func GetCompanies(f *util.Filter) ([]Company, bool, error) {
-	return getCompanies("1", "1", f)
+	return getCompanies(f, "1", "1")
 }
 
-func getCompanies(key, value string, f *util.Filter) ([]Company, bool, error) {
+func getCompanies(f *util.Filter, key, value string) ([]Company, bool, error) {
 	q := f.GetQueryByDefaultStruct(Company{})
 	q += `
 			FROM
