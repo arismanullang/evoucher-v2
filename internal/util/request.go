@@ -8,41 +8,42 @@ import (
 )
 
 const (
-	defultPage   = 1
-	defaultCount = 10
-	structTagDB  = "db"
-	tagIsNull    = "null"
-	tagIsNotNUll = "notnull"
+	defultPage      = 1
+	defaultCount    = 10
+	defaultMaxCount = 100
+	structTagDB     = "db"
+	tagIsNull       = "null"
+	tagIsNotNUll    = "notnull"
 )
 
-//Filter : API filter Query Param
-type Filter struct {
+//QueryParam : API QueryParam Query Param
+type QueryParam struct {
 	Page   int
 	Count  int
 	Fields string //Fields : for multyple field , using coma delimiter ex : id , name , etc ..
 	Sort   string
 }
 
-//NewFilter : initialize filter from query params
-func NewFilter(r *http.Request) *Filter {
-	return defaultFilter(r)
+//NewQueryParam : initialize QueryParam from query params
+func NewQueryParam(r *http.Request) *QueryParam {
+	return defaultQueryParam(r)
 }
 
-//GetQueryByDefaultStruct get query field from custom Filter.Fields ,or default using Struct Fileds
-func (f *Filter) GetQueryByDefaultStruct(i interface{}) string {
+//GetQueryByDefaultStruct get query field from custom QueryParam.Fields ,or default using Struct Fileds
+func (f *QueryParam) GetQueryByDefaultStruct(i interface{}) (string, error) {
 	return getQueryFromStruct(f, structTagDB, i)
 }
 
-// GetQueryFields get query field from custom Filter.Fields ,or default using model
-func (f *Filter) GetQueryFields(stringFiels []string) string {
+// GetQueryFields : get query field from custom QueryParam.Fields ,or default using model
+func (f *QueryParam) GetQueryFields(stringFiels []string) string {
 	if len(strings.TrimSpace(f.Fields)) > 0 {
 		return ` SElECT ` + f.Fields
 	}
 	return ` SElECT ` + strings.Join(stringFiels, ",")
 }
 
-//GetQuerySort : generate sql order syntax base on Filter.Sort field , default sort "ASC" ,
-func (f *Filter) GetQuerySort() string {
+//GetQuerySort : generate sql order syntax base on QueryParam.Sort field , default sort "ASC" ,
+func (f *QueryParam) GetQuerySort() string {
 	if len(f.Sort) > 1 {
 		i := 0
 		sort := getMapSort(f.Sort)
@@ -60,14 +61,14 @@ func (f *Filter) GetQuerySort() string {
 }
 
 //GetQueryLimit : generate sql syntax of limit & offside
-func (f *Filter) GetQueryLimit() string {
+func (f *QueryParam) GetQueryLimit() string {
 	l := strconv.Itoa(f.Count + 1)
 	o := strconv.Itoa((f.Page - 1) * f.Count)
 
 	return ` LIMIT ` + l + ` OFFSET ` + o
 }
 
-func defaultFilter(r *http.Request) *Filter {
+func defaultQueryParam(r *http.Request) *QueryParam {
 	p, err := strconv.Atoi(r.FormValue("page"))
 	if err != nil {
 		p = defultPage
@@ -76,10 +77,15 @@ func defaultFilter(r *http.Request) *Filter {
 	if err != nil {
 		c = defaultCount
 	}
+	//limit max
+	if c >= 100 {
+		c = defaultMaxCount
+	}
+
 	f := r.FormValue("fields")
 	s := r.FormValue("sort")
 
-	return &Filter{
+	return &QueryParam{
 		Page:   p,
 		Count:  c,
 		Fields: f,
@@ -105,29 +111,28 @@ func getMapSort(s string) map[string]string {
 	return sf
 }
 
-func getQueryFromStruct(f *Filter, tag string, i interface{}) string {
+func getQueryFromStruct(f *QueryParam, tag string, i interface{}) (string, error) {
 	t := reflect.TypeOf(i)
 	q := `SELECT `
-	queryParam := strings.Split(f.Fields, ",")
+	param := strings.Split(f.Fields, ",")
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		tableField := field.Tag.Get(tag)
-		if len(queryParam) > 1 {
-			for _, v := range queryParam {
+		if len(param) > 1 {
+			for _, v := range param {
 				if tableField == v {
-					q += tableField + `,`
+					q += tableField + ` ,`
 					break
 				}
 			}
 		} else {
-			q += tableField + `,`
+			q += tableField + ` ,`
 		}
-
 	}
-	return q[:len(q)-1]
+	return q[:len(q)-1], nil
 }
 
-// func getQueryFromStruct(f *Filter, tag string, i interface{}) string {
+// func getQueryFromStruct(f *QueryParam, tag string, i interface{}) string {
 // 	t := reflect.TypeOf(i)
 // 	q := `SELECT `
 // 	queryParam := strings.Split(f.Fields, ",")
@@ -175,3 +180,10 @@ func getQueryFromStruct(f *Filter, tag string, i interface{}) string {
 func coalesce(arg1, arg2 string) string {
 	return `coalesce(` + arg1 + `,` + arg2 + `) AS ` + arg1
 }
+
+type (
+	//Filter : custom filter joson obj parser
+	Filter struct {
+		obj map[string]interface{}
+	}
+)

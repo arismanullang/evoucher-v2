@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/gilkor/evoucher/internal/util"
@@ -34,18 +35,22 @@ type (
 var PartnerFields = []string{"id", "name", "description", "created_at", "created_by", "updated_at", "updated_by", "status"}
 
 //GetPartners : get list company by custom filter
-func GetPartners(f *util.Filter) (*Partners, bool, error) {
-	return getPartners("1", "1", f)
+func GetPartners(qp *util.QueryParam) (*Partners, bool, error) {
+	return getPartners("1", "1", qp)
 }
 
 //GetPartnerByID : get partner by specified ID
-func GetPartnerByID(f *util.Filter, id string) (*Partners, bool, error) {
-	return getPartners("id", id, f)
+func GetPartnerByID(qp *util.QueryParam, id string) (*Partners, bool, error) {
+	return getPartners("id", id, qp)
 }
-func getPartners(k, v string, f *util.Filter) (*Partners, bool, error) {
+func getPartners(k, v string, qp *util.QueryParam) (*Partners, bool, error) {
 
-	q := f.GetQueryByDefaultStruct(Partner{})
-	// q := f.GetQueryFields(PartnerFields)
+	q, err := qp.GetQueryByDefaultStruct(Partner{})
+	if err != nil {
+		return &Partners{}, false, err
+	}
+	// q := qp.GetQueryFields(PartnerFields)
+
 	q += `
 			FROM
 				partners
@@ -53,11 +58,12 @@ func getPartners(k, v string, f *util.Filter) (*Partners, bool, error) {
 				status = ?
 			AND ` + k + ` = ?`
 
-	q += f.GetQuerySort()
-	q += f.GetQueryLimit()
+	q += qp.GetQuerySort()
+	q += qp.GetQueryLimit()
 	// fmt.Println(q)
+	fmt.Println("query struct :", q)
 	var resd Partners
-	err := db.Select(&resd, db.Rebind(q), StatusCreated, v)
+	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)
 	if err != nil {
 		return &Partners{}, false, err
 	}
@@ -65,13 +71,12 @@ func getPartners(k, v string, f *util.Filter) (*Partners, bool, error) {
 		return &Partners{}, false, ErrorResourceNotFound
 	}
 	next := false
-	if len(resd) > f.Count {
+	if len(resd) > qp.Count {
 		next = true
 	}
-	if len(resd) < f.Count {
-		f.Count = len(resd)
+	if len(resd) < qp.Count {
+		qp.Count = len(resd)
 	}
-
 	return resd.DecodeDescription(Bank{}), next, nil
 }
 
@@ -174,7 +179,7 @@ func (p *Partners) DecodeDescription(i interface{}) *Partners {
 	data := make(Partners, len(*p))
 	for k, v := range *p {
 		data[k].ID = v.ID
-		data[k].Name = v.ID
+		data[k].Name = v.Name
 		data[k].Description = v.Description
 		data[k].CreatedAt = v.CreatedAt
 		data[k].CreatedBy = v.CreatedBy

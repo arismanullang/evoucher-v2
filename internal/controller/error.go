@@ -4,20 +4,20 @@ import (
 	"net/http"
 
 	"github.com/gilkor/athena/lib/x/jsonerr"
-	"github.com/gilkor/evoucher/internal/util"
+	u "github.com/gilkor/evoucher/internal/util"
 )
 
 //ErrorResponse embedding of type jsonerr.ErrorResponse
 var (
-	//ErrFatal :
-	ErrFatal = util.NewError(*jsonerr.ErrFatal)
-	//ErrUnauthorized :
-	ErrUnauthorized = util.NewError(*jsonerr.ErrUnauthorized)
-	//ErrForbidden :
-	ErrForbidden = util.NewError(*jsonerr.ErrForbidden)
-	//ErrResourceNotFound :
-	ErrResourceNotFound = util.NewError(
-		jsonerr.ErrorResponse{
+	//JSONErrFatal :
+	JSONErrFatal = u.NewError(*jsonerr.ErrFatal)
+	//JsonErrUnauthorized :
+	JSONErrUnauthorized = u.NewError(*jsonerr.ErrUnauthorized)
+	//JSONErrForbidden :
+	JSONErrForbidden = u.NewError(*jsonerr.ErrForbidden)
+	//JSONErrResourceNotFound :
+	JSONErrResourceNotFound = u.NewError(
+		jsonerr.Error{
 			Status:  http.StatusNotFound,
 			Code:    "ERR_RESOURCE_NOT_FOUND",
 			Message: "Can not find requested resource.",
