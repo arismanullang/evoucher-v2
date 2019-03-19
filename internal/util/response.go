@@ -15,9 +15,9 @@ type (
 )
 
 type (
-	// ErrResponse : embeding type of jsonerr.ErrorResponse
+	// ErrResponse : embeding type of jsonerr.Error
 	ErrResponse struct {
-		*jsonerr.ErrorResponse
+		*jsonerr.Error
 	}
 	//Response object JSON
 	Response struct {
@@ -70,8 +70,8 @@ func (r *Response) SetError(e ErrResponse) {
 }
 
 // NewError :
-func NewError(je jsonerr.ErrorResponse) ErrResponse {
-	return ErrResponse{&jsonerr.ErrorResponse{Status: je.Status, Code: je.Code, Message: je.Message, Args: je.Args}}
+func NewError(je jsonerr.Error) ErrResponse {
+	return ErrResponse{&jsonerr.Error{Status: je.Status, Code: je.Code, Message: je.Message, Args: je.Args}}
 }
 
 // SetStatus :

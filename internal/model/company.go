@@ -25,22 +25,25 @@ type (
 )
 
 // GetCompanyByAlias :  get list Companies by Alias
-func GetCompanyByAlias(v string, f *util.Filter) ([]Company, bool, error) {
-	return getCompanies("alias", v, f)
+func GetCompanyByAlias(v string, qp *util.QueryParam) ([]Company, bool, error) {
+	return getCompanies(qp, "alias", v)
 }
 
 // GetCompanyByID :  get list Companies by ID
-func GetCompanyByID(id string, f *util.Filter) ([]Company, bool, error) {
-	return getCompanies("id", id, f)
+func GetCompanyByID(id string, qp *util.QueryParam) ([]Company, bool, error) {
+	return getCompanies(qp, "id", id)
 }
 
 // GetCompanies : list Company
-func GetCompanies(f *util.Filter) ([]Company, bool, error) {
-	return getCompanies("1", "1", f)
+func GetCompanies(qp *util.QueryParam) ([]Company, bool, error) {
+	return getCompanies(qp, "1", "1")
 }
 
-func getCompanies(key, value string, f *util.Filter) ([]Company, bool, error) {
-	q := f.GetQueryByDefaultStruct(Company{})
+func getCompanies(qp *util.QueryParam, key, value string) ([]Company, bool, error) {
+	q, err := qp.GetQueryByDefaultStruct(Company{})
+	if err != nil {
+		return []Company{}, false, err
+	}
 	q += `
 			FROM
 				Companies
@@ -48,21 +51,21 @@ func getCompanies(key, value string, f *util.Filter) ([]Company, bool, error) {
 				status = ?			
 			AND ` + key + ` = ?`
 
-	q += f.GetQuerySort()
-	q += f.GetQueryLimit()
+	q += qp.GetQuerySort()
+	q += qp.GetQueryLimit()
 	fmt.Println(q)
 	var resd []Company
-	err := db.Select(&resd, db.Rebind(q), StatusCreated, value)
+	err = db.Select(&resd, db.Rebind(q), StatusCreated, value)
 	if err != nil {
 		return []Company{}, false, err
 	}
 
 	next := false
-	if len(resd) > f.Count {
+	if len(resd) > qp.Count {
 		next = true
 	}
-	if len(resd) < f.Count {
-		f.Count = len(resd)
+	if len(resd) < qp.Count {
+		qp.Count = len(resd)
 	}
 
 	return resd, next, nil

@@ -20,8 +20,6 @@ type (
 		CreatedBy   string     `db:"created_by" json:"created_by,omitempty"`
 		UpdatedAt   *time.Time `db:"updated_at" json:"updated_at,omitempty"`
 		UpdatedBy   string     `db:"updated_by" json:"updated_by,omitempty"`
-		DeletedAt   *time.Time `db:"deleted_at,null" json:"deleted_at,omitempty"`
-		DeletedBy   string     `db:"deleted_by,null" json:"deleted_by,omitempty"`
 		Status      string     `db:"status" json:"status,omitempty"`
 	}
 	//Customers :
@@ -29,22 +27,25 @@ type (
 )
 
 //GetCustomerByCompanyID : get list customers by CompanyID
-func GetCustomerByCompanyID(id string, f *util.Filter) (*Customers, bool, error) {
-	return getCustomers("company_id", id, f)
+func GetCustomerByCompanyID(id string, qp *util.QueryParam) (*Customers, bool, error) {
+	return getCustomers("company_id", id, qp)
 }
 
 // GetCustomerByID :  get list customers by ID
-func GetCustomerByID(id string, f *util.Filter) (*Customers, bool, error) {
-	return getCustomers("id", id, f)
+func GetCustomerByID(id string, qp *util.QueryParam) (*Customers, bool, error) {
+	return getCustomers("id", id, qp)
 }
 
 // GetCustomers : list customer
-func GetCustomers(f *util.Filter) (*Customers, bool, error) {
-	return getCustomers("1", "1", f)
+func GetCustomers(qp *util.QueryParam) (*Customers, bool, error) {
+	return getCustomers("1", "1", qp)
 }
 
-func getCustomers(key, value string, f *util.Filter) (*Customers, bool, error) {
-	q := f.GetQueryByDefaultStruct(Customer{})
+func getCustomers(key, value string, qp *util.QueryParam) (*Customers, bool, error) {
+	q, err := qp.GetQueryByDefaultStruct(Customer{})
+	if err != nil {
+		return &Customers{}, false, err
+	}
 	q += `
 			FROM
 				customers
@@ -52,21 +53,21 @@ func getCustomers(key, value string, f *util.Filter) (*Customers, bool, error) {
 				status = ?			
 			AND ` + key + ` = ?`
 
-	q += f.GetQuerySort()
-	q += f.GetQueryLimit()
+	q += qp.GetQuerySort()
+	q += qp.GetQueryLimit()
 	fmt.Println(q)
 	var resd Customers
-	err := db.Select(&resd, db.Rebind(q), StatusCreated, value)
+	err = db.Select(&resd, db.Rebind(q), StatusCreated, value)
 	if err != nil {
 		return &Customers{}, false, err
 	}
 
 	next := false
-	if len(resd) > f.Count {
+	if len(resd) > qp.Count {
 		next = true
 	}
-	if len(resd) < f.Count {
-		f.Count = len(resd)
+	if len(resd) < qp.Count {
+		qp.Count = len(resd)
 	}
 
 	return &resd, next, nil
@@ -103,8 +104,6 @@ func (c Customer) Insert() error {
 				, created_by
 				, updated_at
 				, updated_by
-				, deleted_at
-				, deleted_by
 				, status
 	`
 	var res []Customer
@@ -152,8 +151,6 @@ func (c *Customer) Update() error {
 				, created_by
 				, updated_at
 				, updated_by
-				, deleted_at
-				, deleted_by
 				, status
 	`
 	var res []Customer
@@ -180,8 +177,8 @@ func (c *Customer) Delete() error {
 	q := `UPDATE
 				customers 
 			SET
-				deleted_at = now(),
-				deleted_by = ?
+				updated_at = now(),
+				updated_by = ?
 				status = ?			
 			WHERE 
 				id = ?	
@@ -196,12 +193,10 @@ func (c *Customer) Delete() error {
 				, created_by
 				, updated_at
 				, updated_by
-				, deleted_at
-				, deleted_by
 				, status
 	`
 	var res []Customer
-	err = tx.Select(&res, tx.Rebind(q), c.DeletedBy, StatusDeleted)
+	err = tx.Select(&res, tx.Rebind(q), c.UpdatedBy, StatusDeleted)
 	if err != nil {
 		return err
 	}

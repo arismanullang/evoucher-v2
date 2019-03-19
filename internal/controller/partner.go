@@ -17,13 +17,13 @@ func PostPartner(w http.ResponseWriter, r *http.Request) {
 	var reqPartner model.Partner
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqPartner); err != nil {
-		res.SetError(ErrFatal)
-		render.JSON(w, res, ErrFatal.Status)
+		res.SetError(JSONErrFatal)
+		render.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	if err := reqPartner.Insert(); err != nil {
-		res.SetError(ErrFatal)
-		render.JSON(w, res, ErrFatal.Status)
+		res.SetError(JSONErrFatal)
+		render.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
@@ -34,16 +34,16 @@ func PostPartner(w http.ResponseWriter, r *http.Request) {
 func GetPartner(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
-	f := u.NewFilter(r)
-	partners, next, err := model.GetPartners(f)
+	qp := u.NewQueryParam(r)
+	partners, next, err := model.GetPartners(qp)
 	if err != nil {
-		res.SetError(ErrFatal.SetArgs(err.Error()))
-		render.JSON(w, res, ErrFatal.Status)
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		render.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
 	res.SetResponse(partners)
-	res.SetPagination(r, f.Page, next)
+	res.SetPagination(r, qp.Page, next)
 	render.JSON(w, res, http.StatusOK)
 }
 
@@ -51,12 +51,12 @@ func GetPartner(w http.ResponseWriter, r *http.Request) {
 func GetPartnerByID(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
-	f := u.NewFilter(r)
+	qp := u.NewQueryParam(r)
 	id := bone.GetValue(r, "id")
-	partner, _, err := model.GetPartnerByID(f, id)
+	partner, _, err := model.GetPartnerByID(qp, id)
 	if err != nil {
-		res.SetError(ErrResourceNotFound)
-		render.JSON(w, res, ErrResourceNotFound.Status)
+		res.SetError(JSONErrResourceNotFound)
+		render.JSON(w, res, JSONErrResourceNotFound.Status)
 		return
 	}
 
@@ -71,13 +71,13 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	var reqPartner model.Partner
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqPartner); err != nil {
-		res.SetError(ErrFatal)
-		render.JSON(w, res, ErrFatal.Status)
+		res.SetError(JSONErrFatal)
+		render.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	if err := reqPartner.Update(); err != nil {
-		res.SetError(ErrFatal)
-		render.JSON(w, res, ErrFatal.Status)
+		res.SetError(JSONErrFatal)
+		render.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	render.JSON(w, res, http.StatusCreated)
@@ -90,8 +90,8 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
 	p := model.Partner{ID: id}
 	if err := p.Delete(); err != nil {
-		res.SetError(ErrResourceNotFound)
-		render.JSON(w, res, ErrResourceNotFound.Status)
+		res.SetError(JSONErrResourceNotFound)
+		render.JSON(w, res, JSONErrResourceNotFound.Status)
 		return
 	}
 	render.JSON(w, res, http.StatusCreated)

@@ -17,13 +17,13 @@ func PostCustomer(w http.ResponseWriter, r *http.Request) {
 	var reqCustomer model.Customer
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqCustomer); err != nil {
-		res.SetError(ErrFatal)
-		render.JSON(w, res, ErrFatal.Status)
+		res.SetError(JSONErrFatal)
+		render.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	if err := reqCustomer.Insert(); err != nil {
-		res.SetError(ErrFatal)
-		render.JSON(w, res, ErrFatal.Status)
+		res.SetError(JSONErrFatal)
+		render.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
@@ -34,16 +34,16 @@ func PostCustomer(w http.ResponseWriter, r *http.Request) {
 func GetCustomer(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
-	f := u.NewFilter(r)
-	customers, next, err := model.GetCustomers(f)
+	qp := u.NewQueryParam(r)
+	customers, next, err := model.GetCustomers(qp)
 	if err != nil {
-		res.SetError(ErrFatal.SetArgs(err.Error()))
-		render.JSON(w, res, ErrFatal.Status)
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		render.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
 	res.SetResponse(customers)
-	res.SetPagination(r, f.Page, next)
+	res.SetPagination(r, qp.Page, next)
 	render.JSON(w, res, http.StatusOK)
 }
 
@@ -51,12 +51,12 @@ func GetCustomer(w http.ResponseWriter, r *http.Request) {
 func GetCustomerByID(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
-	f := u.NewFilter(r)
+	qp := u.NewQueryParam(r)
 	id := bone.GetValue(r, "id")
-	customer, _, err := model.GetCustomerByID(id, f)
+	customer, _, err := model.GetCustomerByID(id, qp)
 	if err != nil {
-		res.SetError(ErrResourceNotFound)
-		render.JSON(w, res, ErrResourceNotFound.Status)
+		res.SetError(JSONErrResourceNotFound)
+		render.JSON(w, res, JSONErrResourceNotFound.Status)
 		return
 	}
 
@@ -71,13 +71,13 @@ func UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 	var reqCustomer model.Customer
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqCustomer); err != nil {
-		res.SetError(ErrFatal)
-		render.JSON(w, res, ErrFatal.Status)
+		res.SetError(JSONErrFatal)
+		render.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	if err := reqCustomer.Update(); err != nil {
-		res.SetError(ErrFatal)
-		render.JSON(w, res, ErrFatal.Status)
+		res.SetError(JSONErrFatal)
+		render.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	render.JSON(w, res, http.StatusCreated)
@@ -90,8 +90,8 @@ func DeleteCustomer(w http.ResponseWriter, r *http.Request) {
 	id := bone.GetValue(r, "id")
 	p := model.Customer{ID: id}
 	if err := p.Delete(); err != nil {
-		res.SetError(ErrResourceNotFound)
-		render.JSON(w, res, ErrResourceNotFound.Status)
+		res.SetError(JSONErrResourceNotFound)
+		render.JSON(w, res, JSONErrResourceNotFound.Status)
 		return
 	}
 	render.JSON(w, res, http.StatusCreated)

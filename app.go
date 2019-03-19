@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/gilkor/athena/lib/server"
+	// c "github.com/gilkor/evoucher/internal/controller"
 	"github.com/gilkor/evoucher/internal/model"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/urfave/negroni"
@@ -17,7 +18,9 @@ func main() {
 
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
+	// n.Use(c.CompanyParamMiddleware())
 	n.UseHandler(router)
+
 	// n.UseHandler(testRouter)
 
 	log.Fatal(server.ListenAndServe(n))

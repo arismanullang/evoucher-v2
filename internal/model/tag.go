@@ -26,24 +26,24 @@ type (
 var TagFields = []string{"id", "name", "company_id", "created_at", "created_by", "updated_at", "updated_by", "status"}
 
 //GetTags : get list company by custom filter
-func GetTags(f *util.Filter) (*Tags, bool, error) {
-	return getTags("1", "1", f)
+func GetTags(qp *util.QueryParam) (*Tags, bool, error) {
+	return getTags("1", "1", qp)
 }
 
 //GetTagByCompanyID : get partner by specified ID
-func GetTagByCompanyID(f *util.Filter, id string) (*Tags, bool, error) {
-	return getTags("company_id", id, f)
+func GetTagByCompanyID(qp *util.QueryParam, id string) (*Tags, bool, error) {
+	return getTags("company_id", id, qp)
 }
 
 //GetTagByID : get partner by specified ID
-func GetTagByID(f *util.Filter, id string) (*Tags, bool, error) {
-	return getTags("id", id, f)
+func GetTagByID(qp *util.QueryParam, id string) (*Tags, bool, error) {
+	return getTags("id", id, qp)
 }
 
-func getTags(k, v string, f *util.Filter) (*Tags, bool, error) {
+func getTags(k, v string, qp *util.QueryParam) (*Tags, bool, error) {
 
-	// q := f.GetQueryByDefaultStruct(Partner{})
-	q := f.GetQueryFields(PartnerFields)
+	// q := qp.GetQueryByDefaultStruct(Partner{})
+	q := qp.GetQueryFields(PartnerFields)
 	q += `
 			FROM
 				tags
@@ -51,8 +51,8 @@ func getTags(k, v string, f *util.Filter) (*Tags, bool, error) {
 				status = ?
 			AND ` + k + ` = ?`
 
-	q += f.GetQuerySort()
-	q += f.GetQueryLimit()
+	q += qp.GetQuerySort()
+	q += qp.GetQueryLimit()
 	// fmt.Println(q)
 	var resd Tags
 	err := db.Select(&resd, db.Rebind(q), StatusCreated, v)
@@ -63,11 +63,11 @@ func getTags(k, v string, f *util.Filter) (*Tags, bool, error) {
 		return &Tags{}, false, ErrorResourceNotFound
 	}
 	next := false
-	if len(resd) > f.Count {
+	if len(resd) > qp.Count {
 		next = true
 	}
-	if len(resd) < f.Count {
-		f.Count = len(resd)
+	if len(resd) < qp.Count {
+		qp.Count = len(resd)
 	}
 
 	return &resd, next, nil
