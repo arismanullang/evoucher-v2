@@ -3,8 +3,8 @@ package controller
 import (
 	"net/http"
 
-	"github.com/gilkor/evoucher/internal/model"
-	u "github.com/gilkor/evoucher/internal/util"
+	"github.com/gilkor/evoucher/model"
+	u "github.com/gilkor/evoucher/util"
 
 	"github.com/go-zoo/bone"
 

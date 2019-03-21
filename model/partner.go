@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gilkor/evoucher/internal/util"
+	"github.com/gilkor/evoucher/util"
 )
 
 type (
