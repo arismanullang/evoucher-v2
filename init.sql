@@ -36,18 +36,18 @@ END;
 $$;
 
 --Companies : bisa di ganti client juno
-CREATE TABLE companies (
-    id CHARACTER VARYING(8) DEFAULT new_id() NOT NULL,
-    client_key CHARACTER VARYING(64) NOT NULL,
-    client_secret CHARACTER VARYING(64) NOT NULL,
-    created_by CHARACTER VARYING(8) DEFAULT 'system'::CHARACTER VARYING NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
-    updated_by CHARACTER VARYING(8),
-    updated_at TIMESTAMP WITH TIME ZONE,
-    status status DEFAULT 'created'::status NOT NULL,
+-- CREATE TABLE companies (
+--     id CHARACTER VARYING(8) DEFAULT new_id() NOT NULL,
+--     client_key CHARACTER VARYING(64) NOT NULL,
+--     client_secret CHARACTER VARYING(64) NOT NULL,
+--     created_by CHARACTER VARYING(8) DEFAULT 'system'::CHARACTER VARYING NOT NULL,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+--     updated_by CHARACTER VARYING(8),
+--     updated_at TIMESTAMP WITH TIME ZONE,
+--     status status DEFAULT 'created'::status NOT NULL,
 
-    CONSTRAINT accounts_pkey PRIMARY KEY (id)
-);
+--     CONSTRAINT accounts_pkey PRIMARY KEY (id)
+-- );
 
 --customers (additional obj)
 CREATE TABLE customers (
@@ -61,8 +61,6 @@ CREATE TABLE customers (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8),
     updated_at TIMESTAMP WITH TIME ZONE ,
-    deleted_by CHARACTER VARYING(8),
-    deleted_at TIMESTAMP WITH TIME ZONE,
     status status DEFAULT 'created'::status NOT NULL,    
     
     CONSTRAINT customers_pkey PRIMARY KEY (id)

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	c "github.com/gilkor/evoucher/internal/controller"
+	c "github.com/gilkor/evoucher/controller"
 	"github.com/go-zoo/bone"
 )
 

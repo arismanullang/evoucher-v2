@@ -1,7 +1,9 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gilkor/athena/lib/x/jsonerr"
@@ -67,6 +69,25 @@ func (r *Response) SetPagination(req *http.Request, page int, next bool) {
 //SetError : set error type of jsonerr.ErrorResponse
 func (r *Response) SetError(e ErrResponse) {
 	r.Error = &e
+}
+
+//JSON : render response with JSON format
+func (r *Response) JSON(w http.ResponseWriter, data interface{}, code ...int) {
+	b, err := json.Marshal(data)
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+
+	// set HTTP response code
+	c := http.StatusOK
+	if len(code) > 0 {
+		c = code[0]
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(c)
+	w.Write(b)
 }
 
 // NewError :
