@@ -138,23 +138,21 @@ CREATE TABLE programs (
     id CHARACTER VARYING(8) DEFAULT new_id() NOT NULL,
     company_id CHARACTER VARYING(8) NOT NULL,
     name CHARACTER VARYING(64) NOT NULL,
-    type CHARACTER VARYING(64) DEFAULT NOT NULL, --bulk / fix 
-    voucher_type CHARACTER VARYING(16) DEFAULT 'amount'::voucher_type,
+    -- type CHARACTER VARYING(64) DEFAULT NOT NULL, --bulk / fix 
+    type CHARACTER VARYING(16) DEFAULT 'amount'::voucher_type,
     value numeric(24.4) NOT NULL,
-    price numeric(24.4) NOT NULL,
-    price_type CHARACTER VARYING(32),
+    max_value numeric(24.4) NOT NULL,
+    -- price_type CHARACTER VARYING(32),
     stock numeric,
     img_url CHARACTER VARYING(8) NOT NULL,
     description text,        
     template text,
     voucher_format text,
-    rule_id CHARACTER VARYING (8)
+    rule text,
     created_by CHARACTER VARYING(8) DEFAULT 'unknown'::CHARACTER VARYING NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8),
     updated_at TIMESTAMP WITH TIME ZONE,
-    deleted_by CHARACTER VARYING(8),
-    deleted_at TIMESTAMP WITH TIME ZONE,
     status status DEFAULT 'created'::status NOT NULL,
     CONSTRAINT programs_pkey PRIMARY KEY (id)
 );
@@ -264,12 +262,15 @@ ALTER SEQUENCE transaction_details_id_seq OWNED BY transaction_details.id;
 
     min_speding : -- minimum pembelian 
     max_speding : -- minimum pembelian 
+    spending
     --DISTRIBUTION
     start_date -- start program (01 Nov) batas awal untuk distribusi / pengambilan voucher
     end_date -- end program (31 - Dec)  batas awal ahir distribusi / pengambilan voucher
+    active_period
     --USAGE
         start_hour -- spesifik jam penggunaan vocher ( 10 AM)
         end_hour  -- spesifik jam penggunaan vocher (10 PM)
+        valid_hour 
         validity_days -- spesifik hari yg di perbolehkan dalam penggunaan  ( sen , kamis , sabtu)
 
         --Voucher Lifetime
@@ -307,11 +308,6 @@ create table cashout_details as (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8),
     updated_at TIMESTAMP WITH TIME ZONE,
-)
-
-create table users as (
-    id  CHARACTER VARYING(8) ,
-    
 )
 
 -- partner  , company(user) 

@@ -1,0 +1,77 @@
+/*
+    voucher sarapan goceng 
+    - voucher tidak bisa di gabung dng program voucher lain
+    - hanya dapat digunakan 1x dalam sehari
+    - periode program 01 april - 31 agustus atau periode pengambilan voucher
+    - voucher dapat digunakan pada tanggal 10 - april hingga periode program
+    - pembelian 10.000 - 50.000
+    - berlaku dari jam 10:00 - 12:00 atau 15:00 - 17:00
+    - berlaku pada hari kerja    
+*/
+{
+    "$AND": [
+        {
+            "active_program_period": {
+                "$gte": "2019-04-01T23:59:59+07:00",
+                "$lte": "2019-08-31T00:00:00+07:00"
+            }
+        },
+        {
+            "valid_voucher_period": {
+                "$gte": "2019-04-10T23:59:59+07:00",
+                "$lte": "2019-08-31T00:00:00+07:00"
+            }
+        },
+        {
+            "allow_cross_program": {
+                "$in": [
+                    "progid01",
+                    "progid02"
+                ]
+            }
+        },
+        {
+            "allow_accumulative": {
+                "$eq": false
+            }
+        },
+        {
+            "max_usage_by_day": {
+                "$eq": 1
+            }
+        },
+        {
+            "speding": {
+                "$gte": 10000.00,
+                "$lte": 50000.00
+            }
+        },
+        {
+            "$OR": [
+                {
+                    "validity_hours": {
+                        "$gte": "10:00",
+                        "$lte": "12:00"
+                    }
+                },
+                {
+                    "validity_hours": {
+                        "$gte": "15:00",
+                        "$lte": "17:00"
+                    }
+                }
+            ]
+        },
+        {
+            "validity_days": {
+                "$in": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,17 @@
+{
+    "type": "fix",
+    "properties": {
+        "code": "V01-PAYDAY"
+    }
+}
+
+
+{
+    "type": "random",
+    "properties": {
+        "random": "alphabeth/alphanum/num",
+        "prefix ": "VC01-", // len = 5
+        "postfix": "-S1", // len = 3
+        "length": 8 // total len 16
+    }
+}
