@@ -2,15 +2,20 @@
 ----------
 ### Requerment Summary:
 
- * GO v1.11.1 or later varsion
+ * GO v1.12.0 or later varsion
 
 ### Instalation :
 * Read Go installation steps from [hire](golang.org/doc/install).
 
-* Clone the project
+* Go to your repository dir , then clone the project
 ```sh
-git clone https://github.com/gilkor/evoucher.git
+go clone https://github.com/gilkor/evoucher.git
 ```
+* This project are using [GoModules](https://github.com/golang/go/wiki/Modules) , hit command bellow to get all dependenciess and create `./vendor` dir.
+```sh
+go mod vendor
+```
+
 
 * Environment Variable using [Godotenv](https://github.com/joho/godotenv) , Add your application configuration to your `.env` file in the root of your project, use file `.env.sample` as template.
 
