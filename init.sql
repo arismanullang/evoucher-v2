@@ -18,7 +18,6 @@ CREATE TYPE voucher_type AS ENUM (
     'discount',
     'item'
 );
-
 CREATE FUNCTION new_id() RETURNS text
     LANGUAGE plpgsql
     AS $$
@@ -30,7 +29,6 @@ BEGIN
   FOR i IN 1..8 LOOP
     out_result := out_result || v_chars[1+RANDOM()*(ARRAY_LENGTH(v_chars, 1)-1)];
   END LOOP;
-
   RETURN out_result;
 END;
 $$;
@@ -45,7 +43,7 @@ $$;
 --     updated_by CHARACTER VARYING(8),
 --     updated_at TIMESTAMP WITH TIME ZONE,
 --     status status DEFAULT 'created'::status NOT NULL,
-
+-- 
 --     CONSTRAINT accounts_pkey PRIMARY KEY (id)
 -- );
 
@@ -80,8 +78,8 @@ CREATE TABLE customer_tags
     tag_id CHARACTER VARYING(8) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by CHARACTER VARYING(8) NOT NULL DEFAULT 'unknown'::CHARACTER VARYING,
-    status status NOT NULL DEFAULT 'created'::status,
-)
+    status status NOT NULL DEFAULT 'created'::status
+);
 ALTER SEQUENCE customer_tag_id_seq OWNED BY customer_tags.id;
 
 
@@ -104,7 +102,7 @@ CREATE TABLE tags
 (
     id CHARACTER VARYING(8) NOT NULL DEFAULT new_id(),
     name CHARACTER VARYING(32),
-    company_id CHARACTER VARYING (16)
+    company_id CHARACTER VARYING (16),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by CHARACTER VARYING(8) NOT NULL DEFAULT 'unknown'::CHARACTER VARYING,
     updated_at TIMESTAMP WITH TIME ZONE,
@@ -112,7 +110,7 @@ CREATE TABLE tags
     status status NOT NULL DEFAULT 'created'::status,
 
     CONSTRAINT tags_pkey PRIMARY KEY (id)
-)
+);
 
 --Partner Tags
 CREATE SEQUENCE partner_tag_id_seq
@@ -128,8 +126,8 @@ CREATE TABLE partner_tags
     tag_id CHARACTER VARYING(8) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by CHARACTER VARYING(8) NOT NULL DEFAULT 'unknown'::CHARACTER VARYING,
-    status status NOT NULL DEFAULT 'created'::status,
-)
+    status status NOT NULL DEFAULT 'created'::status
+);
 ALTER SEQUENCE partner_tag_id_seq OWNED BY partner_tags.id;
 
 
@@ -140,8 +138,8 @@ CREATE TABLE programs (
     name CHARACTER VARYING(64) NOT NULL,
     -- type CHARACTER VARYING(64) DEFAULT NOT NULL, --bulk / fix 
     type CHARACTER VARYING(16) DEFAULT 'amount'::voucher_type,
-    value numeric(24.4) NOT NULL,
-    max_value numeric(24.4) NOT NULL,
+    value numeric(24,4) NOT NULL,
+    max_value numeric(24,4) NOT NULL,
     -- price_type CHARACTER VARYING(32),
     stock numeric,
     img_url CHARACTER VARYING(8) NOT NULL,
@@ -175,7 +173,7 @@ CREATE TABLE program_partners (
     updated_at TIMESTAMP WITH TIME ZONE ,
     status status DEFAULT 'created'::status NOT NULL ,
 
-    CONSTRAINT partners_pkey PRIMARY KEY (id)
+    CONSTRAINT program_partner_pkey PRIMARY KEY (id)
 );
 ALTER SEQUENCE program_partner_id_seq OWNED BY program_partners.id;
 
@@ -209,8 +207,8 @@ CREATE TABLE campaigns (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8),
     updated_at TIMESTAMP WITH TIME ZONE,
-    status status DEFAULT 'created'::status NOT NULL,
-)
+    status status DEFAULT 'created'::status NOT NULL
+);
 
 CREATE TABLE transactions (
     id CHARACTER VARYING(8) DEFAULT new_id() NOT NULL,
@@ -226,6 +224,7 @@ CREATE TABLE transactions (
     status status DEFAULT 'created'::status NOT NULL,
     CONSTRAINT transactions_pkey PRIMARY KEY (id)
 );
+
 
 
 CREATE SEQUENCE transaction_details_id_seq
@@ -278,11 +277,6 @@ ALTER SEQUENCE transaction_details_id_seq OWNED BY transaction_details.id;
         --## OR ## --
         valid_voucher_start -- tanggal berlakunya voucher (15 )
         valid_voucher_end -- tanggal berlakunya vocher 
-
-        max_usage_by_program -- usage voucher dalam 1 program 
-        -> max_usage_by_day -- usage perhari nya
-    
-    
 
 
 -- #### CASHOUT ####--  

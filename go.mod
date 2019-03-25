@@ -8,7 +8,6 @@ require (
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/joho/godotenv v1.3.0
 	github.com/lib/pq v1.0.0
-	github.com/ruizu/render v0.0.0-20161102064534-452433e702e2
 	github.com/urfave/negroni v1.0.0
-	google.golang.org/appengine v1.4.0 // indirect
+	google.golang.org/appengine v1.5.0 // indirect
 )
