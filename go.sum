@@ -1,3 +1,5 @@
+github.com/davidrjenni/reftools v0.0.0-20180914123528-654d0ba4f96d h1:aRvyac5PN1NEfcANJ1tfs8GMs5I9OXsVeg0FJkpXOys=
+github.com/davidrjenni/reftools v0.0.0-20180914123528-654d0ba4f96d/go.mod h1:8o/GRMvsb9VyFbSEZGXfa0dkSXml4G23W0D/h9FksWM=
 github.com/gilkor/athena v0.0.0-20190304115447-10789df036dd h1:EvdBSJK98gxMjwjdQSIt/gZEraflZwbuxXxwfQwUkRI=
 github.com/gilkor/athena v0.0.0-20190304115447-10789df036dd/go.mod h1:nkirEY3j2Wg1XPAdOnF6i0elTZCSV1932f0bI5YJao4=
 github.com/go-sql-driver/mysql v1.4.0 h1:7LxgVwFb2hIQtMm87NdgAVfXjnt4OePseqT1tKx+opk=
@@ -13,6 +15,8 @@ github.com/lib/pq v1.0.0 h1:X5PMW56eZitiTeO7tKzZxFCSpbFZJtkMMooicw2us9A=
 github.com/lib/pq v1.0.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/mattn/go-sqlite3 v1.9.0 h1:pDRiWfl+++eC2FEFRy6jXmQlvp4Yh3z1MJKg4UeYM/4=
 github.com/mattn/go-sqlite3 v1.9.0/go.mod h1:FPy6KqzDD04eiIsT53CuJW3U88zkxoIYsOqkbpncsNc=
+github.com/prometheus/prometheus v2.5.0+incompatible h1:7QPitgO2kOFG8ecuRn9O/4L9+10He72rVRJvMXrE9Hg=
+github.com/prometheus/prometheus v2.5.0+incompatible/go.mod h1:oAIUtOny2rjMX0OWN5vPR5/q/twIROJvdqnQKDdil/s=
 github.com/urfave/negroni v1.0.0 h1:kIimOitoypq34K7TG7DUaJ9kq/N4Ofuwi1sjz0KipXc=
 github.com/urfave/negroni v1.0.0/go.mod h1:Meg73S6kFm/4PpbYdq35yYWoCZ9mS/YSx+lKnmiohz4=
 golang.org/x/net v0.0.0-20180724234803-3673e40ba225/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
