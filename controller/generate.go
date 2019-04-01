@@ -44,9 +44,12 @@ func (c *GenerateCode) start() *GenerateCode {
 	return c
 }
 
+// duplicate code will be generated 2 times max. may be changed next plan
 func (c *GenerateCode) process() *GenerateCode {
 	str := string(randString(c.letterConsume, c.codeLength, c.randomSrc))
 	if c.getCacheMapValue(str) != nil {
+		str = string(randString(c.letterConsume, c.codeLength, c.randomSrc))
+		c.setCacheMap(str, "")
 		// fmt.Println("WARNING!!DUPLICATE.")
 	} else {
 		c.setCacheMap(str, "")
