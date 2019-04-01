@@ -8,23 +8,30 @@ import (
 type (
 	//Voucher model
 	Voucher struct {
-		ID           string     `json:"id,omitempty" db:"id"`
-		Code         string     `json:"code,omitempty" db:"code"`
-		ReferenceNo  string     `json:"reference_no,omitempty" db:"reference_no"`
-		Holder       *string    `json:"holder,omitempty" db:"holder"`
-		HolderDetail *string    `json:"holder_detail,omitempty" db:"holder_detail"`
-		ProgramID    string     `json:"program_id,omitempty" db:"program_id"`
-		ValidAt      *time.Time `json:"valid_at,omitempty" db:"valid_at"`
-		ExpiredAt    *time.Time `json:"expired_at,omitempty" db:"expired_at"`
-		State        string     `json:"state,omitempty" db:"state"`
-		CreatedBy    string     `json:"created_by,omitempty" db:"created_by"`
-		CreatedAt    *time.Time `json:"created_at,omitempty" db:"created_at"`
-		UpdatedBy    *string    `json:"updated_by,omitempty" db:"updated_by"`
-		UpdatedAt    *time.Time `json:"updated_at,omitempty" db:"updated_at"`
-		Status       string     `json:"status,omitempty" db:"status"`
+		ID           string      `json:"id,omitempty" db:"id"`
+		Code         string      `json:"code,omitempty" db:"code"`
+		ReferenceNo  string      `json:"reference_no,omitempty" db:"reference_no"`
+		Holder       *string     `json:"holder,omitempty" db:"holder"`
+		HolderDetail interface{} `json:"holder_detail,omitempty" db:"holder_detail"`
+		ProgramID    string      `json:"program_id,omitempty" db:"program_id"`
+		ValidAt      *time.Time  `json:"valid_at,omitempty" db:"valid_at"`
+		ExpiredAt    *time.Time  `json:"expired_at,omitempty" db:"expired_at"`
+		State        string      `json:"state,omitempty" db:"state"`
+		CreatedBy    string      `json:"created_by,omitempty" db:"created_by"`
+		CreatedAt    *time.Time  `json:"created_at,omitempty" db:"created_at"`
+		UpdatedBy    *string     `json:"updated_by,omitempty" db:"updated_by"`
+		UpdatedAt    *time.Time  `json:"updated_at,omitempty" db:"updated_at"`
+		Status       string      `json:"status,omitempty" db:"status"`
 	}
 	//Vouchers :
 	Vouchers []Voucher
+	//HolderDetail :
+	HolderDetail struct {
+		Name        *string `json:"holder_name,omitempty"`
+		Phone       *string `json:"holder_phone,omitempty"`
+		Email       *string `json:"holder_email,omitempty"`
+		Description *string `json:"holder_description,omitempty"`
+	}
 )
 
 // GetVoucherByID :  get list vouchers by ID
@@ -44,7 +51,7 @@ func getVouchers(key, value string, qp *util.QueryParam) (*Vouchers, bool, error
 	}
 	q += `
 			FROM
-				vouchers
+				vouchers voucher
 			WHERE 
 				status = ?			
 			AND ` + key + ` = ?`
