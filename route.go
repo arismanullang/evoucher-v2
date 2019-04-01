@@ -18,7 +18,7 @@ func init() {
 
 	//define sub router
 	v1 := bone.New()
-	r.SubRoute("/api/v1.0", v1)
+	r.SubRoute("/api/v2.0", v1)
 
 	//voucher
 	v1.PostFunc("/:company/vouchers", ping)
@@ -28,11 +28,11 @@ func init() {
 	v1.DeleteFunc("/:company/vouchers", ping)
 
 	//programs
-	v1.PostFunc("/:company/programs", ping)
-	v1.GetFunc("/:company/programs", ping)
-	v1.GetFunc("/:company/programs/:id", ping)
+	v1.PostFunc("/:company/programs", c.PostProgram)
+	v1.GetFunc("/:company/programs", c.GetProgram)
+	v1.GetFunc("/:company/programs/:id", c.GetProgramByID)
 	v1.PutFunc("/:company/programs", ping)
-	v1.DeleteFunc("/:company/programs", ping)
+	v1.DeleteFunc("/:company/programs/:id", c.DeleteProgram)
 
 	//partners
 	v1.PostFunc("/:company/partners", c.PostPartner)

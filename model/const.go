@@ -7,6 +7,10 @@ const (
 	StatusCreated = "created"
 	//StatusDeleted row satus "deleted"
 	StatusDeleted = "deleted"
+	// VoucherFormatTypeFix type
+	VoucherFormatTypeFix = "fix"
+	// VoucherFormatTypeRandom type
+	VoucherFormatTypeRandom = "random"
 )
 
 var (

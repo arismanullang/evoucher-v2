@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/gilkor/evoucher/util"
@@ -48,14 +47,14 @@ func getCustomers(key, value string, qp *util.QueryParam) (*Customers, bool, err
 	}
 	q += `
 			FROM
-				customers
+				customers customer
 			WHERE 
 				status = ?			
 			AND ` + key + ` = ?`
 
 	q += qp.GetQuerySort()
 	q += qp.GetQueryLimit()
-	fmt.Println(q)
+
 	var resd Customers
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, value)
 	if err != nil {

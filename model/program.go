@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -10,34 +11,56 @@ import (
 type (
 	//Program : base model
 	Program struct {
-		ID          string      `db:"id" json:"id"`
-		CompanyID   string      `db:"company_id" json:"company_id"`
-		Name        string      `db:"name" json:"name,omitempty"`
-		Type        string      `db:"type" json:"type,omitempty"`
-		Value       float64     `db:"value" json:"value,omitempty"`
-		MaxValue    float64     `db:"max_value" json:"max_value,omitempty"`
-		StartDate   time.Time   `db:"start_date" json:"start_date,omitempty"`
-		EndDate     time.Time   `db:"end_date" json:"end_date,omitempty"`
-		Description interface{} `db:"description" json:"description,omitempty"`
-		ImageURL    string      `db:"image_url" json:"image_url,omitempty"`
-		Template    string      `db:"template" json:"template,omitempty"`
-		Rule        string      `db:"rule" json:"rule"`
-		State       string      `db:"state" json:"state"`
-		Stock       int64       `db:"stock" json:"stock"`
-		CreatedAt   *time.Time  `db:"created_at" json:"created_at,omitempty"`
-		CreatedBy   string      `db:"created_by" json:"created_by,omitempty"`
-		UpdatedAt   *time.Time  `db:"updated_at" json:"updated_at,omitempty"`
-		UpdatedBy   string      `db:"updated_by" json:"updated_by,omitempty"`
-		Status      string      `db:"status" json:"status,omitempty"`
-		Partners    Partners    `json:"partners"`
+		ID            string     `db:"id" json:"id"`
+		CompanyID     string     `db:"company_id" json:"company_id"`
+		Name          string     `db:"name" json:"name,omitempty"`
+		Type          string     `db:"type" json:"type,omitempty"`
+		Value         float64    `db:"value" json:"value,omitempty"`
+		MaxValue      float64    `db:"max_value" json:"max_value,omitempty"`
+		StartDate     time.Time  `db:"start_date" json:"start_date,omitempty"`
+		EndDate       time.Time  `db:"end_date" json:"end_date,omitempty"`
+		Description   JSONExpr   `db:"description" json:"description,omitempty"`
+		ImageURL      string     `db:"image_url" json:"image_url,omitempty"`
+		Template      string     `db:"template" json:"template,omitempty"`
+		Rule          JSONExpr   `db:"rule" json:"rule"`
+		State         string     `db:"state" json:"state"`
+		Stock         int64      `db:"stock" json:"stock"`
+		CreatedAt     *time.Time `db:"created_at" json:"created_at,omitempty"`
+		CreatedBy     string     `db:"created_by" json:"created_by,omitempty"`
+		UpdatedAt     *time.Time `db:"updated_at" json:"updated_at,omitempty"`
+		UpdatedBy     string     `db:"updated_by" json:"updated_by,omitempty"`
+		Status        string     `db:"status" json:"status,omitempty"`
+		Partners      Partners   `json:"partners,omitempty"`
+		Vouchers      Vouchers   `json:"vouchers,omitempty"`
+		VoucherFormat JSONExpr   `db:"voucher_format" json:"voucher_format,omitempty"`
 	}
 	// Programs : base model
 	Programs []Program
 )
 
+// GetProgramByHolder :
+func GetProgramByHolder(id string, qp *util.QueryParam) (*Programs, bool, error) {
+	return getPrograms("holder", id, qp)
+}
+
 // GetProgramByID :  program details
-func GetProgramByID(id string, qp *util.QueryParam) (*Programs, bool, error) {
-	return getPrograms("id", id, qp)
+func GetProgramByID(id string, qp *util.QueryParam) (*Program, error) {
+
+	programs, _, err := getPrograms("id", id, qp)
+	if err != nil {
+		return &Program{}, errors.New("Failed when select on program ," + err.Error())
+	}
+	program := &(*programs)[0]
+	//get partner
+	partners, _, err := GetPartnerByProgramID(program.ID, qp)
+	if err != nil {
+		return &Program{}, errors.New("Failed when select on program partners ," + err.Error())
+	}
+	program.Partners = *partners
+
+	//get voucher
+
+	return program, nil
 }
 
 // GetPrograms : get program list
@@ -46,15 +69,15 @@ func GetPrograms(qp *util.QueryParam) (*Programs, bool, error) {
 }
 
 func getPrograms(key, value string, qp *util.QueryParam) (*Programs, bool, error) {
-	q, err := qp.GetQueryByDefaultStruct(Programs{})
+	q, err := qp.GetQueryByDefaultStruct(Program{})
 	if err != nil {
-		return &Programs{}, false, err
+		return &Programs{}, false, errors.New("Failed when select on program ," + err.Error())
 	}
 	q += `
 			FROM
-				programs
+				programs program
 			WHERE 
-				status = ?			
+				status = ?
 			AND ` + key + ` = ?`
 
 	q += qp.GetQuerySort()
@@ -63,8 +86,12 @@ func getPrograms(key, value string, qp *util.QueryParam) (*Programs, bool, error
 	var resd Programs
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, value)
 	if err != nil {
-		return &Programs{}, false, err
+		return &Programs{}, false, errors.New("Failed when select on program ," + err.Error())
 	}
+	if len(resd) < 1 {
+		return &Programs{}, false, errors.New("Failed when select on program ," + ErrorResourceNotFound.Error())
+	}
+	fmt.Println("data :", resd)
 
 	next := false
 	if len(resd) > qp.Count {
@@ -78,10 +105,10 @@ func getPrograms(key, value string, qp *util.QueryParam) (*Programs, bool, error
 }
 
 //Insert : single row inset into table
-func (p Program) Insert() error {
+func (p *Program) Insert() error {
 	tx, err := db.Beginx()
 	if err != nil {
-		return err
+		return errors.New("Failed when insert new program ," + err.Error())
 	}
 	defer tx.Rollback()
 
@@ -100,8 +127,8 @@ func (p Program) Insert() error {
 					, template
 					, rule
 					, state
-					, description
 					, stock
+					, voucher_format
 					, created_by
 					, updated_by					
 					, status
@@ -122,7 +149,6 @@ func (p Program) Insert() error {
 			, template
 			, rule
 			, state
-			, description
 			, stock
 			, created_at
 			, created_by
@@ -130,22 +156,30 @@ func (p Program) Insert() error {
 			, updated_by					
 			, status
 	`
-	var res []Customer
+	var res Programs
 	err = tx.Select(&res, tx.Rebind(q), p.CompanyID, p.Name, p.Type, p.Value, p.MaxValue, p.StartDate, p.EndDate,
-		p.Description, p.ImageURL, p.Template, p.Rule, p.State, p.Description, p.Stock, p.CreatedBy, p.UpdatedBy, StatusCreated)
+		p.Description, p.ImageURL, p.Template, p.Rule, p.State, p.Stock, p.VoucherFormat.String(), p.CreatedBy, p.UpdatedBy, StatusCreated)
 	if err != nil {
-		return err
+		return errors.New("Failed when insert new program ," + err.Error())
 	}
+
+	//update returning ID into obj program
+	p.ID = res[0].ID
+	//insert program partners
+	if err := NewProgramPartners(p.ID, p.Partners).Upsert(tx); err != nil {
+		return errors.New("Failed when insert new partners ," + err.Error())
+	}
+
 	err = tx.Commit()
 	if err != nil {
-		return err
+		return errors.New("Failed when insert new program ," + err.Error())
 	}
 
 	return nil
 }
 
 //Update : update program
-func (p Program) Update() error {
+func (p *Program) Update() error {
 	tx, err := db.Beginx()
 	if err != nil {
 		return err
@@ -167,7 +201,6 @@ func (p Program) Update() error {
 					, template = ?
 					, rule = ?
 					, state = ?
-					, description = ?
 					, stock = ?
 					, updated_by = ?		
 			WHERE 
@@ -186,7 +219,6 @@ func (p Program) Update() error {
 				, template
 				, rule
 				, state
-				, description
 				, stock
 				, created_at
 				, created_by
@@ -194,9 +226,10 @@ func (p Program) Update() error {
 				, updated_by					
 				, status
 	`
+
 	var res []Customer
 	err = tx.Select(&res, tx.Rebind(q), p.CompanyID, p.Name, p.Type, p.Value, p.MaxValue, p.StartDate, p.EndDate,
-		p.Description, p.ImageURL, p.Template, p.Rule, p.State, p.Description, p.Stock, p.UpdatedBy, p.ID)
+		p.Description, p.ImageURL, p.Template, p.Rule, p.State, p.Stock, p.UpdatedBy, p.ID)
 	if err != nil {
 		return err
 	}
@@ -209,51 +242,38 @@ func (p Program) Update() error {
 }
 
 //Delete : soft delated data by updateting row status to "deleted"
-func (p Program) Delete() error {
+func (p *Program) Delete() error {
+
 	tx, err := db.Beginx()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
+	//delete partners
+	if err := NewProgramPartners(p.ID, p.Partners).Delete(tx); err != nil {
+		return errors.New("Failed when delete partners ," + err.Error())
+	}
+
 	q := `UPDATE
 				customers 
 			SET
 				updated_at = now(),
-				updated_by = ?
+				updated_by = ?,
 				status = ?			
 			WHERE 
-				id = ?	
-			RETURNING
-				id
-				, company_id
-				, name
-				, type
-				, value
-				, max_value
-				, start_date
-				, end_date
-				, description
-				, image_url
-				, template
-				, rule
-				, state
-				, description
-				, stock
-				, created_at
-				, created_by
-				, updated_at
-				, updated_by					
-				, status
+				id = ?
+			RETURNING 
+				id			
 	`
-	var res []Customer
+	var res []string
 	err = tx.Select(&res, tx.Rebind(q), p.UpdatedBy, StatusDeleted, p.ID)
 	if err != nil {
-		return err
+		return errors.New("Failed when delete program ," + ErrorNoDataAffected.Error() + " , " + err.Error())
 	}
 	err = tx.Commit()
 	if err != nil {
-		return err
+		return errors.New("Failed when delete program ," + err.Error())
 	}
 
 	return nil

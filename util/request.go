@@ -18,10 +18,11 @@ const (
 
 //QueryParam : API QueryParam Query Param
 type QueryParam struct {
-	Page   int
-	Count  int
-	Fields string //Fields : for multyple field , using coma delimiter ex : id , name , etc ..
-	Sort   string
+	Page       int
+	Count      int
+	TableAlias string //table alias
+	Fields     string //Fields : for multyple field , using coma delimiter ex : id , name , etc ..
+	Sort       string
 }
 
 //NewQueryParam : initialize QueryParam from query params
@@ -29,30 +30,35 @@ func NewQueryParam(r *http.Request) *QueryParam {
 	return defaultQueryParam(r)
 }
 
+//SetTableAlias : set table name base on
+func (qp *QueryParam) SetTableAlias(t string) {
+	qp.TableAlias = t + `.`
+}
+
 //GetQueryByDefaultStruct get query field from custom QueryParam.Fields ,or default using Struct Fileds
-func (f *QueryParam) GetQueryByDefaultStruct(i interface{}) (string, error) {
-	return getQueryFromStruct(f, structTagDB, i)
+func (qp *QueryParam) GetQueryByDefaultStruct(i interface{}) (string, error) {
+	return getQueryFromStruct(qp, structTagDB, i)
 }
 
 // GetQueryFields : get query field from custom QueryParam.Fields ,or default using model
-func (f *QueryParam) GetQueryFields(stringFiels []string) string {
-	if len(strings.TrimSpace(f.Fields)) > 0 {
-		return ` SElECT ` + f.Fields
+func (qp *QueryParam) GetQueryFields(stringFiels []string) string {
+	if len(strings.TrimSpace(qp.Fields)) > 0 {
+		return ` SElECT ` + qp.Fields
 	}
 	return ` SElECT ` + strings.Join(stringFiels, ",")
 }
 
 //GetQuerySort : generate sql order syntax base on QueryParam.Sort field , default sort "ASC" ,
-func (f *QueryParam) GetQuerySort() string {
-	if len(f.Sort) > 1 {
+func (qp *QueryParam) GetQuerySort() string {
+	if len(qp.Sort) > 1 {
 		i := 0
-		sort := getMapSort(f.Sort)
+		sort := getMapSort(qp.Sort)
 		q := ` ORDER BY `
 		for k, v := range sort {
 			if i > 0 {
 				q += ` , `
 			}
-			q += k + ` ` + v
+			q += qp.TableAlias + k + ` ` + v
 			i++
 		}
 		return q
@@ -61,9 +67,9 @@ func (f *QueryParam) GetQuerySort() string {
 }
 
 //GetQueryLimit : generate sql syntax of limit & offside
-func (f *QueryParam) GetQueryLimit() string {
-	l := strconv.Itoa(f.Count + 1)
-	o := strconv.Itoa((f.Page - 1) * f.Count)
+func (qp *QueryParam) GetQueryLimit() string {
+	l := strconv.Itoa(qp.Count + 1)
+	o := strconv.Itoa((qp.Page - 1) * qp.Count)
 
 	return ` LIMIT ` + l + ` OFFSET ` + o
 }
@@ -111,22 +117,26 @@ func getMapSort(s string) map[string]string {
 	return sf
 }
 
-func getQueryFromStruct(f *QueryParam, tag string, i interface{}) (string, error) {
+func getQueryFromStruct(qp *QueryParam, tag string, i interface{}) (string, error) {
 	t := reflect.TypeOf(i)
+	qp.SetTableAlias(t.Name())
+
 	q := `SELECT `
-	param := strings.Split(f.Fields, ",")
+	param := strings.Split(qp.Fields, ",")
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		tableField := field.Tag.Get(tag)
 		if len(param) > 1 {
 			for _, v := range param {
 				if tableField == v {
-					q += tableField + ` ,`
+					q += qp.TableAlias + tableField + ` ,`
 					break
 				}
 			}
 		} else {
-			q += tableField + ` ,`
+			if len(tableField) > 0 {
+				q += qp.TableAlias + tableField + ` ,`
+			}
 		}
 	}
 	return q[:len(q)-1], nil
@@ -135,7 +145,7 @@ func getQueryFromStruct(f *QueryParam, tag string, i interface{}) (string, error
 // func getQueryFromStruct(f *QueryParam, tag string, i interface{}) string {
 // 	t := reflect.TypeOf(i)
 // 	q := `SELECT `
-// 	queryParam := strings.Split(f.Fields, ",")
+// 	queryParam := strings.Split(qp.Fields, ",")
 // 	for i := 0; i < t.NumField(); i++ {
 // 		field := t.Field(i)
 // 		tag := strings.Split(field.Tag.Get(tag), ",")
