@@ -22,4 +22,11 @@ var (
 			Code:    "ERR_RESOURCE_NOT_FOUND",
 			Message: "Can not find requested resource.",
 		})
+	//JSONErrBadRequest :
+	JSONErrBadRequest = u.NewError(
+		jsonerr.Error{
+			Status:  http.StatusBadRequest,
+			Code:    "ERR_BAD_REQUEST",
+			Message: "Can not find requested resource.",
+		})
 )

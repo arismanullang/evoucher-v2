@@ -53,7 +53,7 @@ func getPartners(k, v string, qp *util.QueryParam) (*Partners, bool, error) {
 
 	q += `
 			FROM
-				partners
+				partners partner
 			WHERE 
 				status = ?
 			AND ` + k + ` = ?`

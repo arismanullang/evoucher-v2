@@ -46,7 +46,7 @@ func getTags(k, v string, qp *util.QueryParam) (*Tags, bool, error) {
 	q := qp.GetQueryFields(PartnerFields)
 	q += `
 			FROM
-				tags
+				tags tag
 			WHERE 
 				status = ?
 			AND ` + k + ` = ?`

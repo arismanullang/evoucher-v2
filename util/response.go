@@ -9,25 +9,17 @@ import (
 	"github.com/gilkor/athena/lib/x/jsonerr"
 )
 
-type (
-	paginationData struct {
-		Next     string `json:"next,omitempty"`
-		Previous string `json:"previous,omitempty"`
-	}
-)
+type paginationData struct {
+	Next     string `json:"next,omitempty"`
+	Previous string `json:"previous,omitempty"`
+}
 
-type (
-	// ErrResponse : embeding type of jsonerr.Error
-	ErrResponse struct {
-		*jsonerr.Error
-	}
-	//Response object JSON
-	Response struct {
-		Pagination *paginationData `json:"pagination,omitempty"`
-		Error      *ErrResponse    `json:"error,omitempty"`
-		Data       interface{}     `json:"data,omitempty"`
-	}
-)
+//Response object JSON
+type Response struct {
+	Pagination *paginationData `json:"pagination,omitempty"`
+	Error      *ErrResponse    `json:"error,omitempty"`
+	Data       interface{}     `json:"data,omitempty"`
+}
 
 //NewResponse : new response
 func NewResponse() *Response {
@@ -88,6 +80,11 @@ func (r *Response) JSON(w http.ResponseWriter, data interface{}, code ...int) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(c)
 	w.Write(b)
+}
+
+// ErrResponse :
+type ErrResponse struct {
+	*jsonerr.Error
 }
 
 // NewError :
