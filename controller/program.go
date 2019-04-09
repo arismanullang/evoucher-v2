@@ -42,6 +42,40 @@ func PostProgram(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// generate voucher
+	var vouchers model.Vouchers
+	var vf model.VoucherFormat
+	program.VoucherFormat.Unmarshal(&vf)
+
+	generateVoucher := func(str string) {
+		var code string
+		// specific code for coupon
+		// else generate random unique code
+		if vf.IsSpecifiedCode() {
+			code = vf.Properties.Code
+		} else {
+			code = vf.Properties.Prefix + str + vf.Properties.Postfix
+		}
+		vc := model.Voucher{
+			Code:      code,
+			ProgramID: program.ID,
+			CreatedBy: program.CreatedBy,
+			UpdatedBy: &program.CreatedBy,
+		}
+
+		vouchers = append(vouchers, vc)
+	}
+
+	// generate stock
+	NewGenerateCode(generateVoucher, int64(vf.Properties.Length), program.Stock).
+		setLetterTemplate(vf.Letter()).
+		start()
+
+	if err := vouchers.Insert(); err != nil {
+		fmt.Println(err)
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
 
 	res.SetResponse(program)
 	res.JSON(w, res, http.StatusCreated)

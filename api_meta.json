@@ -237,8 +237,8 @@
     "valid_at": "",
     "expired_at": "",
     "state": "created/claim/used/paid",
-    "craated_at": "",
-    "craated_by": "",
+    "created_at": "",
+    "created_by": "",
     "updated_at": "",
     "updated_by": "",
     "status": ""

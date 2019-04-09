@@ -1,6 +1,7 @@
 package model
 
 import (
+	"bytes"
 	"github.com/gilkor/evoucher/util"
 	"time"
 )
@@ -42,6 +43,11 @@ func GetVoucherByID(id string, qp *util.QueryParam) (*Vouchers, bool, error) {
 // GetVouchers : list voucher
 func GetVouchers(qp *util.QueryParam) (*Vouchers, bool, error) {
 	return getVouchers("1", "1", qp)
+}
+
+// GetVouchersByProgramID : get list vouchers by program.ID
+func GetVouchersByProgramID(programID string, qp *util.QueryParam) (*Vouchers, bool, error) {
+	return getVouchers("program_id", programID, qp)
 }
 
 func getVouchers(key, value string, qp *util.QueryParam) (*Vouchers, bool, error) {
@@ -116,7 +122,7 @@ func (v Voucher) Insert() error {
 			, updated_at
 			, status
 	`
-	var res []Voucher
+	var res Voucher
 	t1 := time.Now()
 	err = tx.Select(&res, tx.Rebind(q),
 		v.Code,
@@ -233,5 +239,51 @@ func (v *Voucher) Delete() error {
 		return err
 	}
 
+	return nil
+}
+
+//Insert : insert data, build query using string append
+func (vs *Vouchers) Insert() error {
+	tx, err := db.Beginx()
+	values := new(bytes.Buffer)
+	var args []interface{}
+	for _, v := range *vs {
+		values.WriteString("(?, ?, ?, ?, ?, ?),")
+		args = append(args, v.Code, v.ReferenceNo, VoucherStateCreated, v.CreatedBy, v.UpdatedBy, StatusCreated)
+	}
+
+	q := `INSERT INTO 
+				vouchers
+				( 				
+					 code
+					, reference_no
+					, state
+					, created_by
+					, updated_by
+					, status
+				)
+			VALUES 
+			`
+	valuestr := values.String()
+	q += valuestr[:len(valuestr)-1]
+
+	q += `
+			RETURNING
+				id
+				, program_id
+				, partner_id
+				, created_at
+				, created_by
+				, updated_at
+				, updated_by					
+				, status
+	`
+	var res Vouchers
+	err = tx.Select(&res, tx.Rebind(q), args...)
+	if err != nil {
+		return err
+	}
+
+	*vs = res
 	return nil
 }

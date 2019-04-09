@@ -14,8 +14,8 @@ type GenerateCode struct {
 	cacheMapMu    sync.Mutex
 	cacheMap      map[string]interface{}
 	randomSrc     rand.Source
-	numberRoutine int
-	codeLength    int
+	numberRoutine int64
+	codeLength    int64
 	letterConsume string
 	processFunc   func(string)
 }
@@ -25,7 +25,7 @@ type GenerateCode struct {
 // fixed configuration given length for fixed character code length
 // routine number of generated code
 // each of code will be using 1 routines
-func NewGenerateCode(f func(str string), length, routine int) *GenerateCode {
+func NewGenerateCode(f func(str string), length, routine int64) *GenerateCode {
 	var defaultLetter = "abcdefghijklmnopqrstuvwxyzQWERTYUIOPASDFGHJKLZXCVBNM0123456789"
 	return &GenerateCode{randomSrc: rand.NewSource(time.Now().UnixNano()),
 		cacheMap:      make(map[string]interface{}),
@@ -35,27 +35,30 @@ func NewGenerateCode(f func(str string), length, routine int) *GenerateCode {
 		processFunc:   f}
 }
 
-// make sure app not terminated before all routines complete
+// make sure app.main() not terminated before all routines complete
 func (c *GenerateCode) start() *GenerateCode {
-	c.cacheMapWg.Add(c.numberRoutine)
-	for i := 0; i < c.numberRoutine; i++ {
+	c.cacheMapWg.Add(int(c.numberRoutine))
+	for i := 0; i < int(c.numberRoutine); i++ {
 		go c.process()
 	}
 	c.cacheMapWg.Wait()
 	return c
 }
 
-// duplicate code will be generated 2 times max. may be changed next plan
+// Duplicate code will be re-generated until unique found as many times posible. May be changed next plan.
+// Calculation unique string len(letterConsume)^codeLength,
+// ex. letterConsume = qweQWE123, len(letterConsume) = 9, codeLength = 4
+// then max Unique Code can be generated is 9^4 = 6.561
+// TODO: what happen if unique string cache reached max try.
 func (c *GenerateCode) process() *GenerateCode {
-	str := c.getUniqueString()
-	c.processFunc(str)
+	c.processFunc(c.getUniqueString())
 	c.cacheMapWg.Done()
 	return c
 }
 
 func (c *GenerateCode) getUniqueString() (str string) {
 	for {
-		str = string(randString(c.letterConsume, c.codeLength, c.randomSrc))
+		str = string(randString(c.letterConsume, int(c.codeLength), c.randomSrc))
 		if c.getCacheMapValue(str) != nil {
 			// fmt.Println("WARNING!!DUPLICATE.")
 		} else {
@@ -66,6 +69,8 @@ func (c *GenerateCode) getUniqueString() (str string) {
 	return
 }
 
+// setLetterTemplate config set for letter template to be generated
+// must set before start() executed
 func (c *GenerateCode) setLetterTemplate(letter string) *GenerateCode {
 	c.letterConsume = letter
 	return c

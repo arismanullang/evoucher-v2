@@ -9,7 +9,7 @@
 {
     "type": "random",
     "properties": {
-        "random": "alphabeth/alphanum/num",
+        "random": "alphabet/alphanum/numeric",
         "prefix ": "VC01-", // len = 5
         "postfix": "-S1", // len = 3
         "length": 8 // total len 16

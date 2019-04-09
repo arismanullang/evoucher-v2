@@ -25,6 +25,25 @@ func (vf VoucherFormat) ToString() string {
 	return string(j)
 }
 
+// IsSpecifiedCode type voucher specified code or random generated
+func (vf VoucherFormat) IsSpecifiedCode() bool {
+	return vf.Properties.Code != ""
+}
+
+// Letter return character set set by random type
+func (vf VoucherFormat) Letter() string {
+	switch vf.Properties.Random {
+	case "alphabet":
+		return "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	case "numeric":
+		return "1234567890"
+	case "alphanum":
+		return "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+	}
+	// default
+	return "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+}
+
 func castInterface(dist interface{}, src interface{}) error {
 	err := json.Unmarshal([]byte(src.(string)), &dist)
 	if err != nil {

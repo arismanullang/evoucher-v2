@@ -58,8 +58,6 @@ func GetProgramByID(id string, qp *util.QueryParam) (*Program, error) {
 	}
 	program.Partners = *partners
 
-	//get voucher
-
 	return program, nil
 }
 
