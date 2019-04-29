@@ -26,4 +26,8 @@ var (
 	ErrorResourceNotFound = errors.New("Resource Not Found")
 	// ErrorNoDataAffected :
 	ErrorNoDataAffected = errors.New("No Data Affected")
+	// ErrorInternalServer :
+	ErrorInternalServer = errors.New("Internal Server Error")
+	// ErrorForbidden :
+	ErrorForbidden = errors.New("Forbidden")
 )

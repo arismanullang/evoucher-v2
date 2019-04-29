@@ -18,6 +18,10 @@ CREATE TYPE voucher_type AS ENUM (
     'discount',
     'item'
 );
+CREATE TYPE tag_holder_type AS ENUM (
+    'partner',
+    'customer'
+);
 CREATE FUNCTION new_id() RETURNS text
     LANGUAGE plpgsql
     AS $$
@@ -41,7 +45,7 @@ $$;
 --     created_by CHARACTER VARYING(8) DEFAULT 'system'::CHARACTER VARYING NOT NULL,
 --     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
 --     updated_by CHARACTER VARYING(8),
---     updated_at TIMESTAMP WITH TIME ZONE,
+--     updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
 --     status status DEFAULT 'created'::status NOT NULL,
 -- 
 --     CONSTRAINT accounts_pkey PRIMARY KEY (id)
@@ -58,10 +62,28 @@ CREATE TABLE customers (
     created_by CHARACTER VARYING(8) DEFAULT 'system'::CHARACTER VARYING NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8),
-    updated_at TIMESTAMP WITH TIME ZONE ,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL ,
     status status DEFAULT 'created'::status NOT NULL,    
     
     CONSTRAINT customers_pkey PRIMARY KEY (id)
+);
+
+--GLOBAL Tags
+CREATE SEQUENCE tag_holder_id_seq
+START WITH 1
+INCREMENT BY 1
+NO MINVALUE
+NO MAXVALUE
+CACHE 1;
+CREATE TABLE tag_holders
+(
+    id serial NOT NULL,
+    holder_type CHARACTER VARYING(16) NOT NULL,
+    holder CHARACTER VARYING(8) NOT NULL,
+    tag CHARACTER VARYING(8) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    created_by CHARACTER VARYING(8) NOT NULL DEFAULT 'unknown'::CHARACTER VARYING,
+    status status NOT NULL DEFAULT 'created'::status
 );
 
 --Partner Tags
@@ -92,7 +114,7 @@ CREATE TABLE partners (
     created_by CHARACTER VARYING(8) DEFAULT 'system'::CHARACTER VARYING NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8),
-    updated_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     status status DEFAULT 'created'::status NOT NULL,
     CONSTRAINT partners_pkey PRIMARY KEY (id)
 );
@@ -105,7 +127,7 @@ CREATE TABLE tags
     company_id CHARACTER VARYING (16),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by CHARACTER VARYING(8) NOT NULL DEFAULT 'unknown'::CHARACTER VARYING,
-    updated_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8) DEFAULT 'unknown'::CHARACTER VARYING,
     status status NOT NULL DEFAULT 'created'::status,
 
@@ -150,7 +172,7 @@ CREATE TABLE programs (
     created_by CHARACTER VARYING(8) DEFAULT 'unknown'::CHARACTER VARYING NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8),
-    updated_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     status status DEFAULT 'created'::status NOT NULL,
     CONSTRAINT programs_pkey PRIMARY KEY (id)
 );
@@ -170,7 +192,7 @@ CREATE TABLE program_partners (
     created_by CHARACTER VARYING(8) DEFAULT 'system'::CHARACTER VARYING NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8),
-    updated_at TIMESTAMP WITH TIME ZONE ,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL ,
     status status DEFAULT 'created'::status NOT NULL ,
 
     CONSTRAINT program_partner_pkey PRIMARY KEY (id)
@@ -192,7 +214,7 @@ CREATE TABLE vouchers (
     created_by CHARACTER VARYING(8) DEFAULT 'unknown'::CHARACTER VARYING NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8),
-    updated_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     status status DEFAULT 'created'::status NOT NULL,
     CONSTRAINT vouchers_pkey PRIMARY KEY (id)
 );
@@ -206,7 +228,7 @@ CREATE TABLE campaigns (
     created_by CHARACTER VARYING(8) DEFAULT 'unknown'::CHARACTER VARYING NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8),
-    updated_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     status status DEFAULT 'created'::status NOT NULL
 );
 
@@ -220,7 +242,7 @@ CREATE TABLE transactions (
     created_by CHARACTER VARYING(8) DEFAULT 'unknown'::CHARACTER VARYING NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8),
-    updated_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     status status DEFAULT 'created'::status NOT NULL,
     CONSTRAINT transactions_pkey PRIMARY KEY (id)
 );
@@ -243,7 +265,7 @@ CREATE TABLE transaction_details (
     created_by CHARACTER VARYING(8) DEFAULT 'unknown'::CHARACTER VARYING NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8),
-    updated_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     status status DEFAULT 'created'::status NOT NULL ,
     CONSTRAINT transaction_details_pkey PRIMARY KEY (id)
     -- totamount
@@ -291,7 +313,7 @@ create table cashouts as (
     created_by CHARACTER VARYING(8) DEFAULT 'unknown'::CHARACTER VARYING NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8),
-    updated_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     status status DEFAULT 'created'::status NOT NULL ,
 )
 create table cashout_details as (
@@ -301,7 +323,7 @@ create table cashout_details as (
     created_by CHARACTER VARYING(8) DEFAULT 'unknown'::CHARACTER VARYING NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_by CHARACTER VARYING(8),
-    updated_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
 )
 
 -- partner  , company(user) 

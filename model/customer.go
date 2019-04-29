@@ -84,18 +84,19 @@ func (c Customer) Insert() error {
 				customers 
 				( 
 					name
-					, mobile_pone 
+					, mobile_phone 
 					, email 
 					, ref_id 
 					, company_id 
 					, created_by
+					, updated_by
 					, status)
 			VALUES 
-				( ?, ?, ?, ?, ?, ?, ?)
+				( ?, ?, ?, ?, ?, ?, ?, ?)
 			RETURNING
 				id
 				, name
-				, mobile_pone 
+				, mobile_phone 
 				, email 
 				, ref_id 
 				, company_id 
@@ -106,7 +107,7 @@ func (c Customer) Insert() error {
 				, status
 	`
 	var res []Customer
-	err = tx.Select(&res, tx.Rebind(q), c.Name, c.MobilePhone, c.MobilePhone, c.Email, c.RefID, c.CompanyID, c.CreatedBy, StatusCreated)
+	err = tx.Select(&res, tx.Rebind(q), c.Name, c.MobilePhone, c.Email, c.RefID, c.CompanyID, c.CreatedBy, c.CreatedBy, StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -142,7 +143,7 @@ func (c *Customer) Update() error {
 			RETURNING
 				id
 				, name
-				, mobile_pone 
+				, mobile_phone 
 				, email 
 				, ref_id 
 				, company_id 
@@ -184,7 +185,7 @@ func (c *Customer) Delete() error {
 			RETURNING
 				id
 				, name
-				, mobile_pone 
+				, mobile_phone 
 				, email 
 				, ref_id 
 				, company_id 

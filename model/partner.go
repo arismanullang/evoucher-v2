@@ -2,7 +2,6 @@ package model
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/gilkor/evoucher/util"
@@ -43,6 +42,7 @@ func GetPartners(qp *util.QueryParam) (*Partners, bool, error) {
 func GetPartnerByID(qp *util.QueryParam, id string) (*Partners, bool, error) {
 	return getPartners("id", id, qp)
 }
+
 func getPartners(k, v string, qp *util.QueryParam) (*Partners, bool, error) {
 
 	q, err := qp.GetQueryByDefaultStruct(Partner{})
@@ -61,7 +61,7 @@ func getPartners(k, v string, qp *util.QueryParam) (*Partners, bool, error) {
 	q += qp.GetQuerySort()
 	q += qp.GetQueryLimit()
 	// fmt.Println(q)
-	fmt.Println("query struct :", q)
+	util.DEBUG("query struct :", q)
 	var resd Partners
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)
 	if err != nil {
@@ -89,14 +89,14 @@ func (p *Partner) Insert() error {
 	defer tx.Rollback()
 
 	q := `INSERT INTO 
-				companies ( name, description, created_by, status)
+				partners ( name, description, created_by, updated_by, status)
 			VALUES 
-				( ?, ?, ?, ?)
+				( ?, ?, ?, ?, ?)
 			RETURNING
 				id, name, description, created_at, created_by, updated_at, updated_by, status
 	`
 	var res []Partner
-	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Description, p.CreatedBy, StatusCreated)
+	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Description, p.CreatedBy, p.CreatedBy, StatusCreated)
 	if err != nil {
 		return err
 	}

@@ -20,7 +20,7 @@
     "tags": [
         {
             "id": "",
-            "name": "F&B"
+            
         },
         {
             "id": "",
@@ -28,6 +28,19 @@
         }
     ]
 }
+//POST api/v1.0/:company/partners/:id
+{
+    "tags" : [{
+        "id":":idtags"
+    },
+    {
+        "id":":idtags"
+    }
+]
+}
+//
+
+
 //program
 //POST api/v1.0/:company/programs?
 {

@@ -16,11 +16,13 @@ func PostPartner(w http.ResponseWriter, r *http.Request) {
 	var reqPartner model.Partner
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqPartner); err != nil {
+		u.DEBUG(err)
 		res.SetError(JSONErrFatal)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	if err := reqPartner.Insert(); err != nil {
+		u.DEBUG(err)
 		res.SetError(JSONErrFatal)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
@@ -29,8 +31,8 @@ func PostPartner(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusCreated)
 }
 
-//GetPartner : GET list of partners
-func GetPartner(w http.ResponseWriter, r *http.Request) {
+//GetPartners : GET list of partners
+func GetPartners(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
@@ -93,5 +95,27 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
 		return
 	}
+	res.JSON(w, res, http.StatusCreated)
+}
+
+//PostPartnerTags : POST tags of partner
+func PostPartnerTags(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	var reqPartner model.Partner
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&reqPartner); err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrFatal)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+	if err := reqPartner.Insert(); err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrFatal)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
 	res.JSON(w, res, http.StatusCreated)
 }
