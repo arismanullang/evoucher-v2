@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gilkor/evoucher/model"
@@ -35,3 +36,47 @@ func CompanyParamMiddleware() negroni.Handler {
 
 		})
 }
+
+//VerifyJunoJWTAuthMiddleware : set session user data from auth
+func VerifyJunoJWTAuthMiddleware() negroni.Handler {
+	return negroni.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+			tokenString := bone.GetValue(r, "token")
+			token, err := VerifyJWT(tokenString)
+			if err != nil {
+				if err == model.ErrorForbidden {
+					u.NewResponse().SetError(JSONErrForbidden)
+					return
+				} else if err == model.ErrorInternalServer {
+					u.NewResponse().SetError(JSONErrFatal)
+					return
+				}
+			} else {
+				claims, ok := token.Claims.(*JWTJunoClaims)
+				if ok && token.Valid {
+					// fmt.Printf("Key:%v", token.Header)
+					ctx := context.WithValue(r.Context(), KeyContextAuth, claims)
+					r.WithContext(ctx)
+				} else {
+					u.NewResponse().SetError(JSONErrForbidden)
+					return
+				}
+			}
+			next(w, r)
+		})
+}
+
+type (
+	contextKey string
+)
+
+const (
+	//KeyContextAuth :
+	KeyContextAuth = contextKey("auth")
+	//KeyContextCompanyID :
+	KeyContextCompanyID = contextKey("company_id")
+	//KeyContextUserID :
+	KeyContextUserID = contextKey("user_id")
+	//KeyContextAccountID :
+	KeyContextAccountID = contextKey("account_id")
+)
