@@ -68,6 +68,7 @@ func GetTagByID(w http.ResponseWriter, r *http.Request) {
 func UpdateTag(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
+	id := bone.GetValue(r, "id")
 	var reqTag model.Tag
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqTag); err != nil {
@@ -75,12 +76,13 @@ func UpdateTag(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
+	reqTag.ID = id
 	if err := reqTag.Update(); err != nil {
 		res.SetError(JSONErrFatal)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	res.JSON(w, res, http.StatusCreated)
+	res.JSON(w, res, http.StatusOK)
 }
 
 //DeleteTag : remove Tag
@@ -95,7 +97,7 @@ func DeleteTag(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
 		return
 	}
-	res.JSON(w, res, http.StatusCreated)
+	res.JSON(w, res, http.StatusOK)
 }
 
 //PostTagHolder : submit holder to tags

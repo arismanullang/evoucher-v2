@@ -70,6 +70,7 @@ func GetCustomerByID(w http.ResponseWriter, r *http.Request) {
 func UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
+	id := bone.GetValue(r, "id")
 	var reqCustomer model.Customer
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqCustomer); err != nil {
@@ -77,12 +78,13 @@ func UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
+	reqCustomer.ID = id
 	if err := reqCustomer.Update(); err != nil {
 		res.SetError(JSONErrFatal)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	res.JSON(w, res, http.StatusCreated)
+	res.JSON(w, res, http.StatusOK)
 }
 
 //DeleteCustomer : remove Customer
@@ -96,21 +98,29 @@ func DeleteCustomer(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
 		return
 	}
-	res.JSON(w, res, http.StatusCreated)
+	res.JSON(w, res, http.StatusOK)
 }
 
 //Customer Tag
 
-//PostCustomerTags :
+//PostCustomerTags : POST tags of customers
 func PostCustomerTags(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
-	id := bone.GetValue(r, "id")
-	model := model.TagHolder{Holder: id}
-	if err := model.Insert(); err != nil {
+	var req model.TagHolder
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&req); err != nil {
+		u.DEBUG(err)
 		res.SetError(JSONErrFatal)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
+	if err := req.Insert(); err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrFatal)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
 	res.JSON(w, res, http.StatusCreated)
 }

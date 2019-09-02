@@ -245,11 +245,12 @@ func (v *Voucher) Delete() error {
 //Insert : insert data, build query using string append
 func (vs *Vouchers) Insert() error {
 	tx, err := db.Beginx()
+	defer tx.Rollback()
 	values := new(bytes.Buffer)
 	var args []interface{}
 	for _, v := range *vs {
-		values.WriteString("(?, ?, ?, ?, ?, ?),")
-		args = append(args, v.Code, v.ReferenceNo, VoucherStateCreated, v.CreatedBy, v.UpdatedBy, StatusCreated)
+		values.WriteString("(?, ?, ?, ?, ?, ?, ?),")
+		args = append(args, v.Code, v.ReferenceNo, v.ProgramID, VoucherStateCreated, v.CreatedBy, v.UpdatedBy, StatusCreated)
 	}
 
 	q := `INSERT INTO 
@@ -257,6 +258,7 @@ func (vs *Vouchers) Insert() error {
 				( 				
 					 code
 					, reference_no
+					, program_id
 					, state
 					, created_by
 					, updated_by
@@ -271,7 +273,6 @@ func (vs *Vouchers) Insert() error {
 			RETURNING
 				id
 				, program_id
-				, partner_id
 				, created_at
 				, created_by
 				, updated_at
@@ -283,7 +284,9 @@ func (vs *Vouchers) Insert() error {
 	if err != nil {
 		return err
 	}
-
+	util.DEBUG("LAMHOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOT", q)
+	util.DEBUG("LAMHOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOT [", len(args), "args")
+	tx.Commit()
 	*vs = res
 	return nil
 }

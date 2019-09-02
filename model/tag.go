@@ -1,6 +1,7 @@
 package model
 
 import (
+	"bytes"
 	"time"
 
 	"github.com/gilkor/evoucher/util"
@@ -25,7 +26,8 @@ type (
 		ID         int        `db:"id" json:"id,omitempty"`
 		HolderType string     `db:"holder_type" json:"holder_type,omitempty"`
 		Holder     string     `db:"holder" json:"holder,omitempty"`
-		Tag        string     `db:"tag" json:"tag,omitempty"`
+		TagID      string     `db:"tag" json:"tag,omitempty"`
+		Tags       Tags       `json:"tags,omitempty"`
 		CreatedAt  *time.Time `db:"created_at" json:"created_at,omitempty"`
 		CreatedBy  string     `db:"created_by" json:"created_by,omitempty"`
 		Status     string     `db:"status" json:"status,omitempty"`
@@ -129,7 +131,7 @@ func (t *Tag) Update() error {
 				name = ?,
 				company_id = ?,
 				updated_at = now(),
-				updated_by = ?				
+				updated_by = ?	
 			WHERE 
 				id = ?	
 			RETURNING
@@ -161,7 +163,7 @@ func (t *Tag) Delete() error {
 				tags 
 			SET
 				updated_at = now(),
-				updated_by = ?
+				updated_by = ?,
 				status = ?			
 			WHERE 
 				id = ?	
@@ -217,6 +219,13 @@ func getTagHolders(k, v string, qp *util.QueryParam) (*TagHolders, bool, error) 
 
 //Insert : save data to database
 func (t *TagHolder) Insert() error {
+	values := new(bytes.Buffer)
+	var args []interface{}
+	for _, v := range t.Tags {
+		values.WriteString("(?, ?, ?, ?, ?),")
+		args = append(args, t.HolderType, t.Holder, v.ID, t.CreatedBy, StatusCreated)
+	}
+
 	tx, err := db.Beginx()
 	if err != nil {
 		return err
@@ -224,14 +233,18 @@ func (t *TagHolder) Insert() error {
 	defer tx.Rollback()
 
 	q := `INSERT INTO 
-				TagHolders ( holder_type, holder, tag, created_by, status)
+				tag_holders ( holder_type, holder, tag, created_by, status)
 			VALUES 
-				( ?, ?, ?, ?, ?)
+				`
+	valuestr := values.String()
+	q += valuestr[:len(valuestr)-1]
+	q += `  ON CONFLICT (holder_type, holder, tag)
+			DO UPDATE SET holder_type = EXCLUDED.holder_type
 			RETURNING
-				id, name, company_id, created_at, created_by, updated_at, updated_by, status
+				id
 	`
-	var res TagHolders
-	err = tx.Select(&res, tx.Rebind(q), t.HolderType, t.Holder, t.Tag, t.CreatedBy, StatusCreated)
+	var res []TagHolder
+	err = tx.Select(&res, tx.Rebind(q), args...)
 	if err != nil {
 		return err
 	}
@@ -239,37 +252,37 @@ func (t *TagHolder) Insert() error {
 	if err != nil {
 		return err
 	}
-	*t = res[0]
+	// *t = res[0]
 	return nil
 }
 
 //InsertByHolderID : save data to database
-func (t *TagHolder) InsertByHolderID(holder, holderType string, tags []string) error {
-	tx, err := db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+// func (t *TagHolder) InsertByHolderID(holder, holderType string, tags []string) error {
+// 	tx, err := db.Beginx()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer tx.Rollback()
 
-	q := `INSERT INTO 
-				TagHolders ( holder_type, holder, tag, created_by, status)
-			VALUES 
-				( ?, ?, ?, ?, ?)
-			RETURNING
-				id, name, company_id, created_at, created_by, updated_at, updated_by, status
-	`
-	var res TagHolders
-	err = tx.Select(&res, tx.Rebind(q), t.HolderType, holder, t.Tag, t.CreatedBy, StatusCreated)
-	if err != nil {
-		return err
-	}
-	err = tx.Commit()
-	if err != nil {
-		return err
-	}
-	*t = res[0]
-	return nil
-}
+// 	q := `INSERT INTO
+// 				TagHolders ( holder_type, holder, tag, created_by, status)
+// 			VALUES
+// 				( ?, ?, ?, ?, ?)
+// 			RETURNING
+// 				id, name, company_id, created_at, created_by, updated_at, updated_by, status
+// 	`
+// 	var res TagHolders
+// 	err = tx.Select(&res, tx.Rebind(q), t.HolderType, holder, t.Tag, t.CreatedBy, StatusCreated)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	err = tx.Commit()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	*t = res[0]
+// 	return nil
+// }
 
 //Delete :
 func (t *TagHolder) Delete() error {

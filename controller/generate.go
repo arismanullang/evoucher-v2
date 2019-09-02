@@ -18,21 +18,36 @@ type GenerateCode struct {
 	codeLength    int64
 	letterConsume string
 	processFunc   func(string)
+	listBuffer    []interface{}
 }
 
-// NewGenerateCode returns a GenerateVoucher
+const (
+	defaultLetter = "abcdefghijklmnopqrstuvwxyzQWERTYUIOPASDFGHJKLZXCVBNM0123456789"
+)
+
+// NewGenerateCodeRoutine returns a GenerateVoucher
 // f for listener each process routines
 // fixed configuration given length for fixed character code length
 // routine number of generated code
 // each of code will be using 1 routines
-func NewGenerateCode(f func(str string), length, routine int64) *GenerateCode {
-	var defaultLetter = "abcdefghijklmnopqrstuvwxyzQWERTYUIOPASDFGHJKLZXCVBNM0123456789"
+func NewGenerateCodeRoutine(f func(str string), length, routine int64, i []interface{}) *GenerateCode {
 	return &GenerateCode{randomSrc: rand.NewSource(time.Now().UnixNano()),
 		cacheMap:      make(map[string]interface{}),
 		numberRoutine: routine,
 		codeLength:    length,
 		letterConsume: defaultLetter,
-		processFunc:   f}
+		processFunc:   f,
+		listBuffer:    i}
+}
+
+// NewGenerateCode basic generate random string
+// return unique array of string with GetUniqueStrings()
+func NewGenerateCode() *GenerateCode {
+	return &GenerateCode{
+		randomSrc:     rand.NewSource(time.Now().UnixNano()),
+		cacheMap:      make(map[string]interface{}),
+		letterConsume: defaultLetter,
+	}
 }
 
 // make sure app.main() not terminated before all routines complete
@@ -54,6 +69,15 @@ func (c *GenerateCode) process() *GenerateCode {
 	c.processFunc(c.getUniqueString())
 	c.cacheMapWg.Done()
 	return c
+}
+
+//GetUniqueStrings : generate string of length by [size]string arrays
+func (c *GenerateCode) GetUniqueStrings(length, size int) []string {
+	r := make([]string, size)
+	for i := 0; i < size; i++ {
+		r = append(r, c.getUniqueString())
+	}
+	return r
 }
 
 func (c *GenerateCode) getUniqueString() (str string) {

@@ -132,7 +132,7 @@ func (pp *ProgramPartners) Upsert(tx *sqlx.Tx) error {
 					 program_id
 					, partner_id	
 					, created_by
-					, updated_by					
+					, updated_by
 					, status
 				)
 			VALUES 
@@ -156,10 +156,10 @@ func (pp *ProgramPartners) Upsert(tx *sqlx.Tx) error {
 				, created_at
 				, created_by
 				, updated_at
-				, updated_by					
+				, updated_by
 				, status
 	`
-	fmt.Println("pp query : ", q)
+	// fmt.Println("pp query : ", q)
 	var res ProgramPartners
 	err := tx.Select(&res, tx.Rebind(q), args...)
 	if err != nil {
@@ -167,7 +167,7 @@ func (pp *ProgramPartners) Upsert(tx *sqlx.Tx) error {
 	}
 
 	*pp = res
-	fmt.Println("final ProgramPartner Obj :", *pp)
+	// fmt.Println("final ProgramPartner Obj :", *pp)
 	return nil
 }
 
@@ -188,7 +188,7 @@ func (pp *ProgramPartners) Delete(tx *sqlx.Tx) error {
 			, created_at
 			, created_by
 			, updated_at
-			, updated_by					
+			, updated_by
 			, status
 	`
 

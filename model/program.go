@@ -156,7 +156,7 @@ func (p *Program) Insert() error {
 	`
 	var res Programs
 	err = tx.Select(&res, tx.Rebind(q), p.CompanyID, p.Name, p.Type, p.Value, p.MaxValue, p.StartDate, p.EndDate,
-		p.Description, p.ImageURL, p.Template, p.Rule, p.State, p.Stock, p.VoucherFormat.String(), p.CreatedBy, p.UpdatedBy, StatusCreated)
+		p.Description, p.ImageURL, p.Template, util.StandardizeSpaces(p.Rule.String()), p.State, p.Stock, util.StandardizeSpaces(p.VoucherFormat.String()), p.CreatedBy, p.UpdatedBy, StatusCreated)
 	if err != nil {
 		return errors.New("Failed when insert new program ," + err.Error())
 	}

@@ -19,6 +19,10 @@ const (
 	VoucherStateUsed = "used"
 	// VoucherStatePaid state
 	VoucherStatePaid = "paid"
+	// HolderTypePartner tag
+	HolderTypePartner = "partner"
+	// HolderTypeCustomer tag
+	HolderTypeCustomer = "customer"
 )
 
 var (
