@@ -35,6 +35,7 @@ func NewGenerateCode(f func(str string), length, routine int) *GenerateCode {
 		processFunc:   f}
 }
 
+// make sure app not terminated before all routines complete
 func (c *GenerateCode) start() *GenerateCode {
 	c.cacheMapWg.Add(c.numberRoutine)
 	for i := 0; i < c.numberRoutine; i++ {
@@ -46,17 +47,23 @@ func (c *GenerateCode) start() *GenerateCode {
 
 // duplicate code will be generated 2 times max. may be changed next plan
 func (c *GenerateCode) process() *GenerateCode {
-	str := string(randString(c.letterConsume, c.codeLength, c.randomSrc))
-	if c.getCacheMapValue(str) != nil {
-		str = string(randString(c.letterConsume, c.codeLength, c.randomSrc))
-		c.setCacheMap(str, "")
-		// fmt.Println("WARNING!!DUPLICATE.")
-	} else {
-		c.setCacheMap(str, "")
-	}
+	str := c.getUniqueString()
 	c.processFunc(str)
 	c.cacheMapWg.Done()
 	return c
+}
+
+func (c *GenerateCode) getUniqueString() (str string) {
+	for {
+		str = string(randString(c.letterConsume, c.codeLength, c.randomSrc))
+		if c.getCacheMapValue(str) != nil {
+			// fmt.Println("WARNING!!DUPLICATE.")
+		} else {
+			c.setCacheMap(str, "")
+			break
+		}
+	}
+	return
 }
 
 func (c *GenerateCode) setLetterTemplate(letter string) *GenerateCode {
