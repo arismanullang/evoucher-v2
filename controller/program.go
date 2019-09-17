@@ -34,7 +34,6 @@ func PostProgram(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	//insert program -> partners
-	// fmt.Println(program)
 	if err := program.Insert(); err != nil {
 		fmt.Println(err)
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))

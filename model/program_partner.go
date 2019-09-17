@@ -160,6 +160,7 @@ func (pp *ProgramPartners) Upsert(tx *sqlx.Tx) error {
 				, status
 	`
 	// fmt.Println("pp query : ", q)
+
 	var res ProgramPartners
 	err := tx.Select(&res, tx.Rebind(q), args...)
 	if err != nil {
@@ -167,7 +168,7 @@ func (pp *ProgramPartners) Upsert(tx *sqlx.Tx) error {
 	}
 
 	*pp = res
-	// fmt.Println("final ProgramPartner Obj :", *pp)
+
 	return nil
 }
 
