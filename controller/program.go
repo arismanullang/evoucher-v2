@@ -10,10 +10,10 @@ import (
 	"github.com/go-zoo/bone"
 )
 
-//PostProgram : POST partner data
+//PostProgram : post create program api
 func PostProgram(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
-	// qp := u.NewQueryParam(r)
+	qp := u.NewQueryParam(r)
 
 	var program *model.Program
 	decoder := json.NewDecoder(r.Body)
@@ -22,18 +22,17 @@ func PostProgram(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-
 	// TO-DO
 	//validate partners(?)
-	// for _, v := range program.Partners {
-	// 	_, _, err := model.GetPartnerByID(qp, v.ID)
-	// 	if err != nil {
-	// 		u.DEBUG(err)
-	// 		res.SetError(JSONErrBadRequest.SetMessage(err.Error()))
-	// 		res.JSON(w, res, JSONErrBadRequest.Status)
-	// 		return
-	// 	}
-	// }
+	for _, v := range program.Partners {
+		_, _, err := model.GetPartnerByID(qp, v.ID)
+		if err != nil {
+			u.DEBUG(JSONErrBadRequest.Message, " OutletID:", v.ID)
+			res.SetError(JSONErrBadRequest.SetMessage(err.Error()))
+			res.JSON(w, res, JSONErrBadRequest.Status)
+			return
+		}
+	}
 	//insert program -> partners
 	// fmt.Println(program)
 	if err := program.Insert(); err != nil {
@@ -44,58 +43,8 @@ func PostProgram(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// generate voucher
-	var vouchers model.Vouchers
-	var vf model.VoucherFormat
-	program.VoucherFormat.Unmarshal(&vf)
 
-	// generateVoucher := func(str string, i []interface{}) {
-	// 	var code string
-	// 	// specific code for coupon
-	// 	// else generate random unique code
-	// 	if vf.IsSpecifiedCode() {
-	// 		code = vf.Properties.Code
-	// 	} else {
-	// 		code = vf.Properties.Prefix + str + vf.Properties.Postfix
-	// 	}
-	// 	vc := model.Voucher{
-	// 		Code:      code,
-	// 		ProgramID: program.ID,
-	// 		CreatedBy: program.CreatedBy,
-	// 		UpdatedBy: &program.CreatedBy,
-	// 	}
-	// 	// u.DEBUG("LAMHOT", vc.ProgramID)
-
-	// 	i = append(i, vc)
-	// }
-
-	// generate stock
-	gco := NewGenerateCode()
-	codes := gco.GetUniqueStrings(vf.Properties.Length, int(program.Stock))
-	for _, code := range codes {
-		vouchers = append(vouchers, model.Voucher{
-			Code:      code,
-			ProgramID: program.ID,
-			CreatedBy: program.CreatedBy,
-			UpdatedBy: &program.CreatedBy,
-		})
-	}
-
-	if int64(len(vouchers)) != program.Stock {
-		u.DEBUG("[", len(vouchers), "|", program.Stock, "]Stock Generate went wrong, terminate request. Please Contact us if this error frequently happen.")
-		res.SetError(JSONErrFatal.SetArgs("Stock Generate went wrong, terminate request. Please Contact us if this error frequently happen."))
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
-
-	if err := vouchers.Insert(); err != nil {
-		u.DEBUG("zz_generate_voucher", err)
-		fmt.Println(err)
-		res.SetError(JSONErrFatal.SetArgs(err.Error()))
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
-
-	// res.SetResponse(program)
+	res.SetResponse(program)
 	res.JSON(w, res, http.StatusCreated)
 }
 

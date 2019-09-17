@@ -104,7 +104,7 @@ type (
 )
 
 //PostVoucherUse :
-func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
+func PostVoucherUset(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	var req model.Voucher

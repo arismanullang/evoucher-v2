@@ -59,6 +59,27 @@ const (
 	//TODO
 	ruleGetVoucherType = "get_voucher_type" //1days, program
 	ruleMaxGetVoucher  = "max_get_voucher"  //2
+
+	//UPDATE NEW
+	ruleClaimValidityHour       = "rule_claim_validity_hour"
+	ruleClaimValidityDay        = "rule_claim_validity_day"
+	ruleClaimValidityDate       = "rule_claim_validity_date"
+	ruleClaimIsAccumulative     = "rule_claim_is_accumulative"
+	ruleClaimAccumulative       = "rule_claim_accumulative"
+	ruleClaimAccumulativePeriod = "rule_claim_accumulative_period"
+	ruleClaimMinSpending        = "rule_claim_accumulative_spending"
+
+	ruleUseIsCrossProgram  = "rule_use_is_cross_program"
+	ruleUseCrossProgram    = "rule_use_cross_program"
+	ruleUseValidityHour    = "rule_use_validity_hour"
+	ruleUseValidityDay     = "rule_use_validity_day"
+	ruleUseValidityDate    = "rule_use_validity_date"
+	ruleUseActivePeriod    = "rule_use_active_period"
+	ruleUseOutlet          = "rule_use_outlet"
+	ruleUseDicountTreshold = "rule_use_discount_treshold"
+	ruleUseMinSpending     = "rule_use_min_spending"
+	ruleUseMaxUsage        = "rule_use_max_usage"
+	ruleUseUsagePeriod     = "rule_use_usage_period"
 )
 
 var (

@@ -240,7 +240,7 @@ CREATE TABLE transactions (
     company_id CHARACTER VARYING(8) NOT NULL,
     transaction_code CHARACTER VARYING(16) NOT NULL,
     total_amount numeric(24,2) NOT NULL,
-    holder text ,
+    holder CHARACTER VARYING(64) ,
     partner_id CHARACTER VARYING(8),
     created_by CHARACTER VARYING(8) DEFAULT 'unknown'::CHARACTER VARYING NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
@@ -329,8 +329,19 @@ create table cashout_details as (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
 )
 
+create table 
+
 -- partner  , company(user) 
 -- transactions , INVOICE (report) ,
 
 -- dasboard outlet/partner ???
 -- upload bukti transfer untuk validasi cashout
+
+-- generate voucher assurance
+CREATE TABLE generate_vouchers (
+id character varying(8) not null default new_id(),
+program_id character varying(8) not null,
+created_by character varying(8) not null default 'unknown'::character varying,
+created_at timestamp with time zone not null default now(),
+finish_at timestamp with time zone
+)

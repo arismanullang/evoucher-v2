@@ -18,11 +18,25 @@ type (
 		UpdatedAt   *time.Time `db:"updated_at" json:"updated_at,omitempty"`
 		UpdatedBy   string     `db:"updated_by" json:"updated_by,omitempty"`
 		Status      string     `db:"status" json:"status,omitempty"`
-		Bank        *Bank      `db:"bank" json:"bank,omitempty"`
-		Tags        Tags       `json:"tags,omitempty"`
+		Bank        *Bank      `json:"bank,omitempty"`
+		Tags        *Tags      `json:"tags,omitempty"`
 	}
 	//Partners :
 	Partners []Partner
+
+	PartnersWithTags struct {
+		ID          string     `db:"id" json:"id,omitempty"`
+		Name        string     `db:"name" json:"name,omitempty"`
+		Description JSONExpr   `db:"description" json:"description,omitempty"`
+		CompanyID   string     `db:"company_id" json:"company_id,omitempty"`
+		CreatedAt   *time.Time `db:"created_at" json:"created_at,omitempty"`
+		CreatedBy   string     `db:"created_by" json:"created_by,omitempty"`
+		UpdatedAt   *time.Time `db:"updated_at" json:"updated_at,omitempty"`
+		UpdatedBy   string     `db:"updated_by" json:"updated_by,omitempty"`
+		Status      string     `db:"status" json:"status,omitempty"`
+		Bank        *Bank      `json:"bank,omitempty"`
+		Tags        *Tags      `json:"tags,omitempty"`
+	}
 
 	//Bank :
 	/**
