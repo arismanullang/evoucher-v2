@@ -7,6 +7,5 @@ RUN go install github.com/gilkor/evoucher-v2
 FROM alpine:latest
 RUN apk add --no-cache ca-certificates tzdata
 RUN [ ! -e /etc/nsswitch.conf ] && echo 'hosts: files dns' > /etc/nsswitch.conf
-COPY --from=0 /go/bin/evoucher-v2 /usr/local/bin/evoucher-v2
-COPY ./files/etc/evoucher-v2 "/etc/evoucher-v2"
+COPY --from=0 /go/bin/* /usr/local/bin/
 CMD echo "Use the app commands."; exit 1
