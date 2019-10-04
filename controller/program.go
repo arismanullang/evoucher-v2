@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gilkor/evoucher/model"
-	u "github.com/gilkor/evoucher/util"
+	"github.com/gilkor/evoucher-v2/model"
+	u "github.com/gilkor/evoucher-v2/util"
 	"github.com/go-zoo/bone"
 )
 

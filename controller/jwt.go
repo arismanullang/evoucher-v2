@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/gilkor/evoucher/model"
+	"github.com/gilkor/evoucher-v2/model"
 )
 
 type (

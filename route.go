@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	c "github.com/gilkor/evoucher/controller"
+	c "github.com/gilkor/evoucher-v2/controller"
 	"github.com/go-zoo/bone"
 )
 
@@ -14,11 +14,12 @@ func init() {
 	//main router
 	r := bone.New()
 	// r.NotFoundFunc(notFound)
+	r.GetFunc("/", healthCheck)
 	r.GetFunc("/ping", ping)
 
 	//define sub router
 	v2 := bone.New()
-	r.SubRoute("/api/v2.0", v2)
+	r.SubRoute("/v2/api", v2)
 
 	//voucher
 	v2.PostFunc("/:company/vouchers", ping)
@@ -88,7 +89,13 @@ func init() {
 
 func ping(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("ping")
+	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("pong"))
+}
+
+func healthCheck(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write(nil)
 }
 
 func notFound(w http.ResponseWriter, r *http.Request) {

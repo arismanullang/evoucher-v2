@@ -9,7 +9,7 @@
 
 * Go to your repository dir , then clone the project
 ```sh
-go clone https://github.com/gilkor/evoucher.git
+go clone https://github.com/gilkor/evoucher-v2.git
 ```
 * This project are using [GoModules](https://github.com/golang/go/wiki/Modules) , hit command bellow to get all dependenciess and create `./vendor` dir.
 ```sh

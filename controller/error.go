@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gilkor/athena/lib/x/jsonerr"
-	u "github.com/gilkor/evoucher/util"
+	u "github.com/gilkor/evoucher-v2/util"
 )
 
 //ErrorResponse embedding of type jsonerr.ErrorResponse

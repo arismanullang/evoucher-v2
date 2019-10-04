@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/gilkor/athena/lib/server"
-	// c "github.com/gilkor/evoucher/controller"
-	"github.com/gilkor/evoucher/model"
+	// c "github.com/gilkor/evoucher-v2/controller"
+	"github.com/gilkor/evoucher-v2/model"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/urfave/negroni"
 )

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"time"
 
-	"github.com/gilkor/evoucher/util"
+	"github.com/gilkor/evoucher-v2/util"
 )
 
 type (

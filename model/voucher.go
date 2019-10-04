@@ -2,7 +2,7 @@ package model
 
 import (
 	"bytes"
-	"github.com/gilkor/evoucher/util"
+	"github.com/gilkor/evoucher-v2/util"
 	"time"
 )
 
