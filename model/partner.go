@@ -4,55 +4,79 @@ import (
 	"time"
 
 	"github.com/gilkor/evoucher-v2/util"
+	"github.com/jmoiron/sqlx/types"
 )
 
 type (
 	//Partner : represent of partners table model
 	Partner struct {
-		ID          string     `db:"id" json:"id,omitempty"`
-		Name        string     `db:"name" json:"name,omitempty"`
-		Description JSONExpr   `db:"description" json:"description,omitempty"`
-		CompanyID   string     `db:"company_id" json:"company_id,omitempty"`
-		CreatedAt   *time.Time `db:"created_at" json:"created_at,omitempty"`
-		CreatedBy   string     `db:"created_by" json:"created_by,omitempty"`
-		UpdatedAt   *time.Time `db:"updated_at" json:"updated_at,omitempty"`
-		UpdatedBy   string     `db:"updated_by" json:"updated_by,omitempty"`
-		Status      string     `db:"status" json:"status,omitempty"`
-		Bank        *Bank      `json:"bank,omitempty"`
-		Tags        *Tags      `json:"tags,omitempty"`
+		ID          string         `db:"id" json:"id,omitempty"`
+		Name        string         `db:"name" json:"name,omitempty"`
+		Description JSONExpr       `db:"description" json:"description,omitempty"`
+		CompanyID   string         `db:"company_id" json:"company_id,omitempty"`
+		CreatedAt   *time.Time     `db:"created_at" json:"created_at,omitempty"`
+		CreatedBy   string         `db:"created_by" json:"created_by,omitempty"`
+		UpdatedAt   *time.Time     `db:"updated_at" json:"updated_at,omitempty"`
+		UpdatedBy   string         `db:"updated_by" json:"updated_by,omitempty"`
+		Status      string         `db:"status" json:"status,omitempty"`
+		Banks       types.JSONText `db:"partner_banks" json:"banks,omitempty"`
+		Tags        types.JSONText `db:"partner_tags" json:"tags,omitempty"`
 	}
 	//Partners :
 	Partners []Partner
 
 	PartnersWithTags struct {
-		ID          string     `db:"id" json:"id,omitempty"`
-		Name        string     `db:"name" json:"name,omitempty"`
-		Description JSONExpr   `db:"description" json:"description,omitempty"`
-		CompanyID   string     `db:"company_id" json:"company_id,omitempty"`
-		CreatedAt   *time.Time `db:"created_at" json:"created_at,omitempty"`
-		CreatedBy   string     `db:"created_by" json:"created_by,omitempty"`
-		UpdatedAt   *time.Time `db:"updated_at" json:"updated_at,omitempty"`
-		UpdatedBy   string     `db:"updated_by" json:"updated_by,omitempty"`
-		Status      string     `db:"status" json:"status,omitempty"`
-		Bank        *Bank      `json:"bank,omitempty"`
-		Tags        *Tags      `json:"tags,omitempty"`
+		ID          string         `db:"id" json:"id,omitempty"`
+		Name        string         `db:"name" json:"name,omitempty"`
+		Description JSONExpr       `db:"description" json:"description,omitempty"`
+		CompanyID   string         `db:"company_id" json:"company_id,omitempty"`
+		CreatedAt   *time.Time     `db:"created_at" json:"created_at,omitempty"`
+		CreatedBy   string         `db:"created_by" json:"created_by,omitempty"`
+		UpdatedAt   *time.Time     `db:"updated_at" json:"updated_at,omitempty"`
+		UpdatedBy   string         `db:"updated_by" json:"updated_by,omitempty"`
+		Status      string         `db:"status" json:"status,omitempty"`
+		Banks       types.JSONText `db:"partner_banks" json:"banks,omitempty"`
+		Tags        types.JSONText `db:"partner_tags" json:"tags,omitempty"`
 	}
 
-	//Bank :
 	/**
-	Company Name
-	Person In Charge
-	Contact Number
-	Company Email
-	Bank Name
-	Bank Branch
-	Bank Account Number
-	Bank Account Holder
-	**/
+		Company Name
+		Person In Charge
+		Contact Number
+		Company Email
+		Bank Name
+		Bank Branch
+		Bank Account Number
+		Bank Account Holder
+
+		"company_name": "Company Name",
+	    "company_pic": "Andrie Satya",
+	    "pic_number": "08988068578",
+	    "pic_email": "andrie@gilkor.com",
+	    "bank_name": "BCA",
+	    "bank_branch": "Kembangan",
+	    "bank_acc_holder": "Company Holder",
+	    "bank_acc_number": "1231239123901121"
+		**/
+	Banks []Bank
+	//Bank :
 	Bank struct {
-		Bank            string `json:"bank,omitempty"`
-		BankAccount     string `json:"bank_account,omitempty"`
-		BankAccountName string `json:"bank_acount_name,omitempty"`
+		// Bank            string `json:"bank,omitempty"`
+		ID              string     `db:"id" json:"id,omitempty"`
+		PartnerID       string     `db:"partner_id" json:"partner_id"`
+		BankName        string     `db:"bank_name" json:"bank_name,omitempty"`
+		BankBranch      string     `db:"bank_branch" json:"bank_branch,omitempty"`
+		BankAccount     string     `db:"bank_account" json:"bank_account,omitempty"`
+		BankAccountName string     `db:"bank_account_name" json:"bank_acount_name,omitempty"`
+		CompanyName     string     `db:"company_name" json:"company_name,omitempty"`
+		Name            string     `db:"name" json:"name,omitempty"`
+		Phone           string     `db:"phone" json:"phone,omitempty"`
+		Email           string     `db:"email" json:"email,omitempty"`
+		CreatedAt       *time.Time `db:"created_at" json:"created_at,omitempty"`
+		CreatedBy       string     `db:"created_by" json:"created_by,omitempty"`
+		UpdatedAt       *time.Time `db:"updated_at" json:"updated_at,omitempty"`
+		UpdatedBy       string     `db:"updated_by" json:"updated_by,omitempty"`
+		Status          string     `db:"status" json:"status,omitempty"`
 	}
 )
 
@@ -79,7 +103,7 @@ func getPartners(k, v string, qp *util.QueryParam) (*Partners, bool, error) {
 
 	q += `
 			FROM
-				partners partner
+				m_partners partner
 			WHERE 
 				status = ?
 			AND ` + k + ` = ?`
@@ -88,6 +112,7 @@ func getPartners(k, v string, qp *util.QueryParam) (*Partners, bool, error) {
 	q += qp.GetQueryLimit()
 	// fmt.Println(q)
 	util.DEBUG("query struct :", q)
+	// query := "select row_to_json(row) from (" + q + ") row"
 	var resd Partners
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)
 	if err != nil {
@@ -162,7 +187,12 @@ func (p *Partner) Insert() error {
 			RETURNING
 				id, name, description, company_id, created_at, created_by, updated_at, updated_by, status
 	`
+	// bank, err := json.Marshal(p.Bank)
+	if err != nil {
+		return err
+	}
 	var res []Partner
+	// util.DEBUG(p.Bank)
 	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Description, p.CompanyID, p.CreatedBy, p.CreatedBy, StatusCreated)
 	if err != nil {
 		return err

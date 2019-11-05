@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/gilkor/athena/lib/server"
@@ -17,6 +18,15 @@ func main() {
 	}
 
 	n := negroni.New()
+	n.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		w.Header().Add("Access-Control-Allow-Origin", "*")
+		if r.Method == http.MethodOptions {
+			w.Header().Add("Access-Control-Allow-Headers", "Authorization, Accept, Content-Type")
+			w.Header().Add("Access-Control-Allow-Methods", "GET, HEAD, POST, PUT, PATCH, DELETE")
+			return
+		}
+		next(w, r)
+	})
 	n.Use(negroni.NewRecovery())
 	// n.Use(c.CompanyParamMiddleware())
 	n.UseHandler(router)

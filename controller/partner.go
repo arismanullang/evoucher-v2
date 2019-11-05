@@ -36,6 +36,7 @@ func GetPartners(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
+
 	partners, next, err := model.GetPartners(qp)
 	if err != nil {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))

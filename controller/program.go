@@ -33,6 +33,7 @@ func PostProgram(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
 	//insert program -> partners
 	if err := program.Insert(); err != nil {
 		fmt.Println(err)
