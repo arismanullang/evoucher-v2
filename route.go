@@ -56,6 +56,14 @@ func init() {
 	v2.GetFunc("/:company/outlets/tags/:tag_id", c.GetPartnerByTags)
 	v2.PostFunc("/:company/outlets/tags/:holder", c.PostPartnerTags)
 
+	//channel
+
+	v2.PostFunc("/:company/channels", c.PostChannel)
+	v2.GetFunc("/:company/channels", c.GetChannels)
+	v2.GetFunc("/:company/channels/:id", c.GetChannelByID)
+	v2.PutFunc("/:company/channels/:id", c.UpdateChannel)
+	v2.DeleteFunc("/:company/channels/:id", c.DeleteChannel)
+
 	//users
 	// v2.GetFunc("/:company/login", ping)
 

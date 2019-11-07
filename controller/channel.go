@@ -9,33 +9,19 @@ import (
 	"github.com/go-zoo/bone"
 )
 
-//PostPartner : POST partner data
-func PostPartner(w http.ResponseWriter, r *http.Request) {
+//PostChannel : POST channel data
+func PostChannel(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
-	var reqPartner model.Partner
+	var reqChannel model.Channel
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&reqPartner); err != nil {
+	if err := decoder.Decode(&reqChannel); err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrFatal)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	if err := reqPartner.Insert(); err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
-
-	//Unmarshal banks
-	if err := decoder.Decode(&reqPartner); err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
-	if err := reqPartner.Insert(); err != nil {
+	if err := reqChannel.Insert(); err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrFatal)
 		res.JSON(w, res, JSONErrFatal.Status)
@@ -45,55 +31,55 @@ func PostPartner(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusCreated)
 }
 
-//GetPartners : GET list of partners
-func GetPartners(w http.ResponseWriter, r *http.Request) {
+//GetChannels : GET list of channels
+func GetChannels(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
 
-	partners, next, err := model.GetPartners(qp)
+	channels, next, err := model.GetChannels(qp)
 	if err != nil {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
-	res.SetResponse(partners)
+	res.SetResponse(channels)
 	res.SetPagination(r, qp.Page, next)
 	res.JSON(w, res, http.StatusOK)
 }
 
-//GetPartnerByID : GET
-func GetPartnerByID(w http.ResponseWriter, r *http.Request) {
+//GetChannelByID : GET
+func GetChannelByID(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
 	id := bone.GetValue(r, "id")
-	partner, _, err := model.GetPartnerByID(qp, id)
+	channel, _, err := model.GetChannelByID(qp, id)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
 		return
 	}
 
-	res.SetResponse(partner)
+	res.SetResponse(channel)
 	res.JSON(w, res, http.StatusOK)
 }
 
-// UpdatePartner :
-func UpdatePartner(w http.ResponseWriter, r *http.Request) {
+// UpdateChannel :
+func UpdateChannel(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	id := bone.GetValue(r, "id")
-	var reqPartner model.Partner
+	var reqChannel model.Channel
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&reqPartner); err != nil {
+	if err := decoder.Decode(&reqChannel); err != nil {
 		res.SetError(JSONErrFatal)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	reqPartner.ID = id
-	if err := reqPartner.Update(); err != nil {
+	reqChannel.ID = id
+	if err := reqChannel.Update(); err != nil {
 		res.SetError(JSONErrFatal)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
@@ -101,12 +87,12 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-//DeletePartner : remove partner
-func DeletePartner(w http.ResponseWriter, r *http.Request) {
+//DeleteChannel : remove channel
+func DeleteChannel(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	id := bone.GetValue(r, "id")
-	p := model.Partner{ID: id}
+	p := model.Channel{ID: id}
 	if err := p.Delete(); err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
@@ -115,8 +101,8 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-//PostPartnerTags : POST tags of partner
-func PostPartnerTags(w http.ResponseWriter, r *http.Request) {
+//PostChannelTags : POST tags of channel
+func PostChannelTags(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	var req model.TagHolder
@@ -127,7 +113,7 @@ func PostPartnerTags(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	// reqPartner.ID = bone.GetValue(r, "holder")
+	// reqChannel.ID = bone.GetValue(r, "holder")
 	if err := req.Insert(); err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrFatal)
@@ -138,13 +124,13 @@ func PostPartnerTags(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusCreated)
 }
 
-//GetPartnerByTags : GET
-func GetPartnerByTags(w http.ResponseWriter, r *http.Request) {
+//GetChannelByTags : GET
+func GetChannelByTags(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
 	id := bone.GetValue(r, "tag_id")
-	partner, _, err := model.GetPartnersByTags(qp, id)
+	channel, _, err := model.GetChannelsByTags(qp, id)
 	if err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrResourceNotFound)
@@ -152,6 +138,6 @@ func GetPartnerByTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res.SetResponse(partner)
+	res.SetResponse(channel)
 	res.JSON(w, res, http.StatusOK)
 }

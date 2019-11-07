@@ -38,46 +38,6 @@ type (
 		Banks       types.JSONText `db:"partner_banks" json:"banks,omitempty"`
 		Tags        types.JSONText `db:"partner_tags" json:"tags,omitempty"`
 	}
-
-	/**
-		Company Name
-		Person In Charge
-		Contact Number
-		Company Email
-		Bank Name
-		Bank Branch
-		Bank Account Number
-		Bank Account Holder
-
-		"company_name": "Company Name",
-	    "company_pic": "Andrie Satya",
-	    "pic_number": "08988068578",
-	    "pic_email": "andrie@gilkor.com",
-	    "bank_name": "BCA",
-	    "bank_branch": "Kembangan",
-	    "bank_acc_holder": "Company Holder",
-	    "bank_acc_number": "1231239123901121"
-		**/
-	Banks []Bank
-	//Bank :
-	Bank struct {
-		// Bank            string `json:"bank,omitempty"`
-		ID              string     `db:"id" json:"id,omitempty"`
-		PartnerID       string     `db:"partner_id" json:"partner_id"`
-		BankName        string     `db:"bank_name" json:"bank_name,omitempty"`
-		BankBranch      string     `db:"bank_branch" json:"bank_branch,omitempty"`
-		BankAccount     string     `db:"bank_account" json:"bank_account,omitempty"`
-		BankAccountName string     `db:"bank_account_name" json:"bank_acount_name,omitempty"`
-		CompanyName     string     `db:"company_name" json:"company_name,omitempty"`
-		Name            string     `db:"name" json:"name,omitempty"`
-		Phone           string     `db:"phone" json:"phone,omitempty"`
-		Email           string     `db:"email" json:"email,omitempty"`
-		CreatedAt       *time.Time `db:"created_at" json:"created_at,omitempty"`
-		CreatedBy       string     `db:"created_by" json:"created_by,omitempty"`
-		UpdatedAt       *time.Time `db:"updated_at" json:"updated_at,omitempty"`
-		UpdatedBy       string     `db:"updated_by" json:"updated_by,omitempty"`
-		Status          string     `db:"status" json:"status,omitempty"`
-	}
 )
 
 //PartnerFields : default table field
