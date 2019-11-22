@@ -33,6 +33,9 @@ type (
 		Partners      Partners   `json:"partners,omitempty"`
 		Vouchers      Vouchers   `json:"vouchers,omitempty"`
 		VoucherFormat JSONExpr   `db:"voucher_format" json:"voucher_format,omitempty"`
+		IsReimburse   bool       `db:"is_reimburse" json:"is_reimburse,omitempty"`
+		Channels      Channels   `json:"channels,omitempty"`
+		// WithTransactionCount bool       `json:"with_transaction_count,omitempty"`
 	}
 	// Programs : base model
 	Programs []Program

@@ -93,6 +93,24 @@ func DeleteChannel(w http.ResponseWriter, r *http.Request) {
 
 	id := bone.GetValue(r, "id")
 	p := model.Channel{ID: id}
+
+	qp := u.NewQueryParam(r)
+	datas, _, err := model.GetChannelByID(qp, id)
+	if err != nil {
+		res.SetError(JSONErrFatal)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+	if len(*datas) <= 0 {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
+	if (*datas)[0].IsSuper {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
 	if err := p.Delete(); err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
@@ -105,7 +123,7 @@ func DeleteChannel(w http.ResponseWriter, r *http.Request) {
 func PostChannelTags(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
-	var req model.TagHolder
+	var req model.ObjectTag
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&req); err != nil {
 		u.DEBUG(err)

@@ -10,3 +10,9 @@ import (
 func StandardizeSpaces(s string) string {
 	return strings.Join(strings.Fields(s), " ")
 }
+
+//SimplifyKeyString : trim redundant spaces and conver string word by word to simple lowercase string data
+func SimplifyKeyString(val string) (key string) {
+	key = strings.ToLower(StandardizeSpaces(val))
+	return key
+}

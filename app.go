@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/gilkor/athena/lib/server"
+
 	// c "github.com/gilkor/evoucher-v2/controller"
 	"github.com/gilkor/evoucher-v2/model"
 	_ "github.com/joho/godotenv/autoload"
@@ -16,6 +17,8 @@ func main() {
 	if err := model.ConnectDB(os.Getenv("DB")); err != nil {
 		log.Fatal(err)
 	}
+
+	model.RegisterValidator()
 
 	n := negroni.New()
 	n.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {

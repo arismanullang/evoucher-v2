@@ -10,34 +10,49 @@ import (
 type (
 	//Tag : represent of tags table model
 	Tag struct {
-		ID        string     `db:"id" json:"id,omitempty"`
-		Name      string     `db:"name" json:"name,omitempty"`
-		CompanyID string     `db:"company_id" json:"company_id"`
-		CreatedAt *time.Time `db:"created_at" json:"created_at,omitempty"`
-		CreatedBy string     `db:"created_by" json:"created_by,omitempty"`
-		UpdatedAt *time.Time `db:"updated_at" json:"updated_at,omitempty"`
-		UpdatedBy string     `db:"updated_by" json:"updated_by,omitempty"`
-		Status    string     `db:"status" json:"status,omitempty"`
+		ID          string     `db:"id" json:"id,omitempty"`
+		Name        string     `db:"name" json:"name,omitempty"`
+		Key         string     `db:"key" json:"key,omitempty"`
+		CompanyID   string     `db:"company_id" json:"company_id,omitempty"`
+		AccessLevel string     `db:"access_level" json:"access_level,omitempty"`
+		CreatedAt   *time.Time `db:"created_at" json:"created_at,omitempty"`
+		CreatedBy   string     `db:"created_by" json:"created_by,omitempty"`
+		UpdatedAt   *time.Time `db:"updated_at" json:"updated_at,omitempty"`
+		UpdatedBy   string     `db:"updated_by" json:"updated_by,omitempty"`
+		Status      string     `db:"status" json:"status,omitempty"`
+		Action      string     `json:"action,omitempty"`
 	}
 	//Tags :
 	Tags []Tag
-	//TagHolder tags to n
-	TagHolder struct {
-		ID         int        `db:"id" json:"id,omitempty"`
-		HolderType string     `db:"holder_type" json:"holder_type,omitempty"`
-		Holder     string     `db:"holder" json:"holder,omitempty"`
-		TagID      string     `db:"tag" json:"tag,omitempty"`
-		Tags       Tags       `json:"tags,omitempty"`
-		CreatedAt  *time.Time `db:"created_at" json:"created_at,omitempty"`
-		CreatedBy  string     `db:"created_by" json:"created_by,omitempty"`
-		Status     string     `db:"status" json:"status,omitempty"`
+	//ObjectTag tags to n
+	ObjectTag struct {
+		ID             string     `db:"id" json:"id,omitempty"`
+		TagID          string     `db:"tag_id" json:"tag_id,omitempty"`
+		ObjectID       string     `db:"object_id" json:"object_id,omitempty" validate:"required"`
+		ObjectCategory string     `db:"object_category" json:"object_category,omitempty" validate:"required"`
+		CreatedAt      *time.Time `db:"created_at" json:"created_at,omitempty"`
+		CreatedBy      string     `db:"created_by" json:"created_by,omitempty" validate:"required"`
+		Status         string     `db:"status" json:"status,omitempty"`
+		Tags           Tags       `json:"tags,omitempty"  validate:"required"`
 	}
-	//TagHolders : list of TagHolder
-	TagHolders []TagHolder
+	//ObjectTags : list of ObjectTag
+	ObjectTags []ObjectTag
 )
 
 //TagFields : default table field
-var TagFields = []string{"id", "name", "company_id", "created_at", "created_by", "updated_at", "updated_by", "status"}
+var TagFields = []string{"id", "name", "key", "company_id", "access_level", "created_at", "created_by", "updated_at", "updated_by", "status"}
+
+//ObjectTagCategory : type const object tag category
+type ObjectTagCategory string
+
+//OTGPrograms : programs
+//OTGChannels : channels
+//OTGPartners : partners
+const (
+	OTGPrograms ObjectTagCategory = "programs"
+	OTGChannels ObjectTagCategory = "channels"
+	OTGPartners ObjectTagCategory = "partners"
+)
 
 //GetTags : get list company by custom filter
 func GetTags(qp *util.QueryParam) (*Tags, bool, error) {
@@ -52,6 +67,10 @@ func GetTagByCompanyID(qp *util.QueryParam, id string) (*Tags, bool, error) {
 //GetTagByID : get partner by specified ID
 func GetTagByID(qp *util.QueryParam, id string) (*Tags, bool, error) {
 	return getTags("id", id, qp)
+}
+
+func getTagByKey(qp *util.QueryParam, key string) (*Tags, bool, error) {
+	return getTags("key", key, qp)
 }
 
 func getTags(k, v string, qp *util.QueryParam) (*Tags, bool, error) {
@@ -89,32 +108,81 @@ func getTags(k, v string, qp *util.QueryParam) (*Tags, bool, error) {
 	return &resd, next, nil
 }
 
+func getSearchTags(k, v string, qp *util.QueryParam) (*Tags, bool, error) {
+	q, err := qp.GetQueryByDefaultStruct(Tag{})
+	if err != nil {
+		return &Tags{}, false, err
+	}
+	// q := qp.GetQueryFields(TagFields)
+	q += `
+			FROM
+				tags tag
+			WHERE 
+				status = ?
+			AND ` + k + ` = ?`
+
+	q += qp.GetQuerySort()
+	q += qp.GetQueryLimit()
+	// fmt.Println(q)
+	var resd Tags
+	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)
+	if err != nil {
+		return &Tags{}, false, err
+	}
+	if len(resd) < 1 {
+		return &Tags{}, false, ErrorResourceNotFound
+	}
+	next := false
+	if len(resd) > qp.Count {
+		next = true
+	}
+	if len(resd) < qp.Count {
+		qp.Count = len(resd)
+	}
+
+	return &resd, next, nil
+}
+
 //Insert : save data to database
-func (t *Tag) Insert() error {
+func (t *Tag) Insert() (*Tags, error) {
 	tx, err := db.Beginx()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback()
 
-	q := `INSERT INTO 
-				tags ( name, company_id, created_by, updated_by, status)
-			VALUES 
-				( ?, ?, ?, ?, ?)
-			RETURNING
-				id, name, company_id, created_at, created_by, updated_at, updated_by, status
-	`
+	q := `SELECT id, name, key, company_id, access_level, created_at, created_by, updated_at, updated_by, status
+				FROM 
+					tags
+				WHERE 
+					key = ?
+					AND status != ?`
 	var res Tags
-	err = tx.Select(&res, tx.Rebind(q), t.Name, t.CompanyID, t.CreatedBy, t.CreatedBy, StatusCreated)
+	err = tx.Select(&res, tx.Rebind(q), util.SimplifyKeyString(t.Name), StatusDeleted)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	//if no row return
+	if len(res) <= 0 {
+		q = `INSERT INTO 
+					tags ( name, key, company_id, access_level, created_by, updated_by, status)
+				VALUES 
+					( ?, ?, ?, ?, ?, ?, ?)
+				RETURNING
+					id, name, key, company_id, access_level, created_at, created_by, updated_at, updated_by, status
+			`
+		err = tx.Select(&res, tx.Rebind(q), util.StandardizeSpaces(t.Name), util.SimplifyKeyString(t.Name), t.CompanyID, t.AccessLevel, t.CreatedBy, t.CreatedBy, StatusCreated)
+		// util.DEBUG("Lamhoot:", pqerr.Code.Name())
+		if err != nil {
+			return nil, err
+		}
 	}
 	err = tx.Commit()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	*t = res[0]
-	return nil
+	return &res, nil
 }
 
 //Update : modify data
@@ -129,16 +197,17 @@ func (t *Tag) Update() error {
 				tags 
 			SET
 				name = ?,
+				key = ?,
 				company_id = ?,
 				updated_at = now(),
 				updated_by = ?	
 			WHERE 
 				id = ?	
 			RETURNING
-			id, name, company_id ,created_at, created_by, updated_at, updated_by, status
+			id, name, key, company_id ,created_at, created_by, updated_at, updated_by, status
 	`
 	var res Tags
-	err = tx.Select(&res, tx.Rebind(q), t.Name, t.CompanyID, t.UpdatedBy, t.ID)
+	err = tx.Select(&res, tx.Rebind(q), util.StandardizeSpaces(t.Name), util.SimplifyKeyString(t.Name), t.CompanyID, t.UpdatedBy, t.ID)
 	if err != nil {
 		return err
 	}
@@ -183,14 +252,14 @@ func (t *Tag) Delete() error {
 	return nil
 }
 
-// TagHolders ###
-func getTagHolders(k, v string, qp *util.QueryParam) (*TagHolders, bool, error) {
+// ObjectTags ###
+func getObjectTags(k, v string, qp *util.QueryParam) (*ObjectTags, bool, error) {
 
 	// q := qp.GetQueryByDefaultStruct(Partner{})
 	q := qp.GetQueryFields(PartnerFields)
 	q += `
 			FROM
-				tag_holders tag_holders
+				object_tags object_tags
 			WHERE 
 				status = ?
 			AND ` + k + ` = ?`
@@ -198,13 +267,13 @@ func getTagHolders(k, v string, qp *util.QueryParam) (*TagHolders, bool, error) 
 	q += qp.GetQuerySort()
 	q += qp.GetQueryLimit()
 	// fmt.Println(q)
-	var resd TagHolders
+	var resd ObjectTags
 	err := db.Select(&resd, db.Rebind(q), StatusCreated, v)
 	if err != nil {
-		return &TagHolders{}, false, err
+		return &ObjectTags{}, false, err
 	}
 	if len(resd) < 1 {
-		return &TagHolders{}, false, ErrorResourceNotFound
+		return &ObjectTags{}, false, ErrorResourceNotFound
 	}
 	next := false
 	if len(resd) > qp.Count {
@@ -218,12 +287,16 @@ func getTagHolders(k, v string, qp *util.QueryParam) (*TagHolders, bool, error) 
 }
 
 //Insert : save data to database
-func (t *TagHolder) Insert() error {
+//nothing wrong here, just do as front guy requested
+func (t *ObjectTag) Insert() error {
+
 	values := new(bytes.Buffer)
 	var args []interface{}
+	// var status string
+	//verify existing and deleted data from front guys
 	for _, v := range t.Tags {
 		values.WriteString("(?, ?, ?, ?, ?),")
-		args = append(args, t.HolderType, t.Holder, v.ID, t.CreatedBy, StatusCreated)
+		args = append(args, t.ObjectCategory, t.ObjectID, v.ID, t.CreatedBy, StatusCreated)
 	}
 
 	tx, err := db.Beginx()
@@ -233,17 +306,19 @@ func (t *TagHolder) Insert() error {
 	defer tx.Rollback()
 
 	q := `INSERT INTO 
-				tag_holders ( holder_type, holder, tag, created_by, status)
+			object_tags ( object_category, object_id, tag_id, created_by, status)
 			VALUES 
-				`
+	`
 	valuestr := values.String()
 	q += valuestr[:len(valuestr)-1]
-	q += `  ON CONFLICT (holder_type, holder, tag)
-			DO UPDATE SET holder_type = EXCLUDED.holder_type
+	// ON CONFLICT (object_category, object_id, tag_id, status)
+	// 		DO UPDATE SET status = EXCLUDED.status,
+	// 					object_category = EXCLUDED.object_category
+	q += `  
 			RETURNING
-				id
+				id, tag_id, object_id, object_category, created_by, created_at, status
 	`
-	var res []TagHolder
+	var res []ObjectTag
 	err = tx.Select(&res, tx.Rebind(q), args...)
 	if err != nil {
 		return err
@@ -257,7 +332,7 @@ func (t *TagHolder) Insert() error {
 }
 
 //InsertByHolderID : save data to database
-// func (t *TagHolder) InsertByHolderID(holder, holderType string, tags []string) error {
+// func (t *ObjectTag) InsertByHolderID(holder, holderType string, tags []string) error {
 // 	tx, err := db.Beginx()
 // 	if err != nil {
 // 		return err
@@ -265,13 +340,13 @@ func (t *TagHolder) Insert() error {
 // 	defer tx.Rollback()
 
 // 	q := `INSERT INTO
-// 				TagHolders ( holder_type, holder, tag, created_by, status)
+// 				ObjectTags ( holder_type, holder, tag, created_by, status)
 // 			VALUES
 // 				( ?, ?, ?, ?, ?)
 // 			RETURNING
 // 				id, name, company_id, created_at, created_by, updated_at, updated_by, status
 // 	`
-// 	var res TagHolders
+// 	var res ObjectTags
 // 	err = tx.Select(&res, tx.Rebind(q), t.HolderType, holder, t.Tag, t.CreatedBy, StatusCreated)
 // 	if err != nil {
 // 		return err
@@ -285,7 +360,7 @@ func (t *TagHolder) Insert() error {
 // }
 
 //Delete :
-func (t *TagHolder) Delete() error {
+func (t *ObjectTag) Delete() error {
 	tx, err := db.Beginx()
 	if err != nil {
 		return err
@@ -293,7 +368,7 @@ func (t *TagHolder) Delete() error {
 	defer tx.Rollback()
 
 	q := `DELETE FROM tag_holders where id = ?`
-	var res TagHolders
+	var res ObjectTags
 	err = tx.Select(&res, tx.Rebind(q), t.ID)
 	if err != nil {
 		return err

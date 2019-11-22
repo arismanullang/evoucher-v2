@@ -68,8 +68,8 @@ func (qp *QueryParam) GetQuerySort() string {
 
 //GetQueryLimit : generate sql syntax of limit & offside
 func (qp *QueryParam) GetQueryLimit() string {
-	l := strconv.Itoa(qp.Count + 1)
-	o := strconv.Itoa((qp.Page - 1) * qp.Count)
+	l := strconv.Itoa(qp.Count)
+	o := strconv.Itoa((qp.Page - 1) * (qp.Count))
 
 	return ` LIMIT ` + l + ` OFFSET ` + o
 }

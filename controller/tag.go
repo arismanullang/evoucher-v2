@@ -20,12 +20,14 @@ func PostTag(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	if err := reqTag.Insert(); err != nil {
-		res.SetError(JSONErrFatal)
+	tags, err := reqTag.Insert()
+	if err != nil {
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
+	res.SetResponse(tags)
 	res.JSON(w, res, http.StatusCreated)
 }
 
@@ -34,7 +36,7 @@ func GetTags(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
-	Tags, next, err := model.GetTags(qp)
+	tags, next, err := model.GetTags(qp)
 	if err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
@@ -42,7 +44,7 @@ func GetTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res.SetResponse(Tags)
+	res.SetResponse(tags)
 	res.SetPagination(r, qp.Page, next)
 	res.JSON(w, res, http.StatusOK)
 }
@@ -100,22 +102,48 @@ func DeleteTag(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-//PostTagHolder : submit holder to tags
-func PostTagHolder(w http.ResponseWriter, r *http.Request) {
+//PostObjectTags : submit holder to tags
+func PostObjectTags(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
-	var reqTag model.TagHolder
+	var reqTag model.ObjectTag
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqTag); err != nil {
 		res.SetError(JSONErrFatal)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
+	// reqTag.ObjectCategory = OTG
 	if err := reqTag.Insert(); err != nil {
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
 	res.JSON(w, res, http.StatusCreated)
+}
+
+func PostAssignObjectTags(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	var reqTag model.ObjectTag
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&reqTag); err != nil {
+		res.SetError(JSONErrBadRequest)
+		res.JSON(w, res, JSONErrBadRequest.Status)
+	}
+
+	// switch reqTag.Action {
+	// case "add":
+	// 	status = StatusCreated
+	// 	break
+	// case "exist":
+	// 	continue
+	// case "remove":
+	// 	status = StatusDeleted
+	// 	break
+	// default:
+	// 	break
+	// }
+
 }

@@ -9,16 +9,24 @@ import (
 	"github.com/gilkor/athena/lib/x/jsonerr"
 )
 
+const (
+	//APIIsDebugError :
+	APIIsDebugError = true
+)
+
 type paginationData struct {
 	Next     string `json:"next,omitempty"`
 	Previous string `json:"previous,omitempty"`
+	// Count     interface{} `json:"count,omitempty"`
+	// TotalData interface{} `json:"total_data,omitempty"`
 }
 
 //Response object JSON
 type Response struct {
-	Pagination *paginationData `json:"pagination,omitempty"`
-	Error      *ErrResponse    `json:"error,omitempty"`
-	Data       interface{}     `json:"data,omitempty"`
+	Pagination  *paginationData `json:"pagination,omitempty"`
+	Error       *ErrResponse    `json:"error,omitempty"`
+	ErrorDetail interface{}     `json:"error_detail,omitempty"`
+	Data        interface{}     `json:"data,omitempty"`
 }
 
 //NewResponse : new response
@@ -29,6 +37,12 @@ func NewResponse() *Response {
 //SetResponse :
 func (r *Response) SetResponse(data interface{}) *Response {
 	r.Data = data
+	return r
+}
+
+//SetErrorDetail :
+func (r *Response) SetErrorDetail(errorDetail interface{}) *Response {
+	r.ErrorDetail = errorDetail
 	return r
 }
 
@@ -58,9 +72,23 @@ func (r *Response) SetPagination(req *http.Request, page int, next bool) {
 	}
 }
 
+//SetTotalData : Pagination
+// func (r *Response) SetTotalData(td interface{}) {
+// 	r.Pagination.TotalData = td
+// }
+
 //SetError : set error type of jsonerr.ErrorResponse
 func (r *Response) SetError(e ErrResponse) {
+	r.SetErrorWithDetail(e, nil)
+}
+
+//SetErrorWithDetail : set error type of jsonerr.ErrorResponse
+func (r *Response) SetErrorWithDetail(e ErrResponse, err error) {
 	r.Error = &e
+	if APIIsDebugError && err != nil {
+		r.Error.SetArgs(err.Error())
+		r.ErrorDetail = err
+	}
 }
 
 //JSON : render response with JSON format

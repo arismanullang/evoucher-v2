@@ -56,6 +56,13 @@ func init() {
 	v2.GetFunc("/:company/outlets/tags/:tag_id", c.GetPartnerByTags)
 	v2.PostFunc("/:company/outlets/tags/:holder", c.PostPartnerTags)
 
+	// partner/outlet bank
+	v2.PostFunc("/:company/partners/banks", c.PostBank)
+	v2.GetFunc("/:company/partners/banks", c.GetBanks)
+	v2.GetFunc("/:company/partners/banks/:pid", c.GetBankByPartnerID)
+	v2.PutFunc("/:company/partners/banks/:pid", c.UpdateBank)
+	v2.DeleteFunc("/:company/partners/banks/:pid", c.DeleteBank)
+
 	//channel
 
 	v2.PostFunc("/:company/channels", c.PostChannel)
@@ -73,6 +80,9 @@ func init() {
 	v2.GetFunc("/:company/tags/:id", c.GetTagByID)
 	v2.PutFunc("/:company/tags/:id", c.UpdateTag)
 	v2.DeleteFunc("/:company/tags/:id", c.DeleteTag)
+
+	v2.PostFunc("/:company/tags/assign/:id", c.PostObjectTags)
+	v2.PostFunc("/:company/tags/assign", c.PostObjectTags)
 
 	//customers
 	v2.PostFunc("/:company/customers", c.PostCustomer)

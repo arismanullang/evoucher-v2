@@ -107,7 +107,7 @@ func DeleteCustomer(w http.ResponseWriter, r *http.Request) {
 func PostCustomerTags(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
-	var req model.TagHolder
+	var req model.ObjectTag
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&req); err != nil {
 		u.DEBUG(err)

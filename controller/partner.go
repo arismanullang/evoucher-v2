@@ -28,20 +28,7 @@ func PostPartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Unmarshal banks
-	if err := decoder.Decode(&reqPartner); err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
-	if err := reqPartner.Insert(); err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
-
+	res.SetResponse(reqPartner)
 	res.JSON(w, res, http.StatusCreated)
 }
 
@@ -119,7 +106,7 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 func PostPartnerTags(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
-	var req model.TagHolder
+	var req model.ObjectTag
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&req); err != nil {
 		u.DEBUG(err)
@@ -153,5 +140,98 @@ func GetPartnerByTags(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res.SetResponse(partner)
+	res.JSON(w, res, http.StatusOK)
+}
+
+//PostBank : POST bank data
+func PostBank(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	var reqBank model.Bank
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&reqBank); err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrFatal)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+	if err := reqBank.Insert(); err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrFatal)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(reqBank)
+	res.JSON(w, res, http.StatusCreated)
+}
+
+//GetBanks : GET list of banks
+func GetBanks(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	qp := u.NewQueryParam(r)
+
+	banks, next, err := model.GetBanks(qp)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(banks)
+	res.SetPagination(r, qp.Page, next)
+	res.JSON(w, res, http.StatusOK)
+}
+
+//GetBankByPartnerID : GET bank by partner id
+func GetBankByPartnerID(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	qp := u.NewQueryParam(r)
+	partnerID := bone.GetValue(r, "pid")
+	bank, _, err := model.GetBankByPartnerID(qp, partnerID)
+	if err != nil {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
+
+	res.SetResponse(bank)
+	res.JSON(w, res, http.StatusOK)
+}
+
+// UpdateBank :
+func UpdateBank(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	id := bone.GetValue(r, "id")
+	var reqBank model.Bank
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&reqBank); err != nil {
+		res.SetError(JSONErrFatal)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+	reqBank.PartnerID = id
+	if err := reqBank.Update(); err != nil {
+		res.SetError(JSONErrFatal)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+	res.JSON(w, res, http.StatusOK)
+}
+
+//DeleteBank : remove bank
+func DeleteBank(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	id := bone.GetValue(r, "id")
+	p := model.Bank{ID: id}
+	if err := p.Delete(); err != nil {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
 	res.JSON(w, res, http.StatusOK)
 }

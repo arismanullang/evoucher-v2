@@ -152,13 +152,15 @@ func (p *Partner) Insert() error {
 		return err
 	}
 	var res []Partner
-	// util.DEBUG(p.Bank)
+	util.DEBUG(q)
 	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Description, p.CompanyID, p.CreatedBy, p.CreatedBy, StatusCreated)
 	if err != nil {
+		util.DEBUG(`la1-->`, err)
 		return err
 	}
 	err = tx.Commit()
 	if err != nil {
+		util.DEBUG(`la2-->`, err)
 		return err
 	}
 	*p = res[0]

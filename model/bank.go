@@ -43,6 +43,11 @@ func GetBankByID(qp *util.QueryParam, id string) (*Banks, bool, error) {
 	return getBanks("id", id, qp)
 }
 
+//GetBankByPartnerID : get bank by specified partner ID
+func GetBankByPartnerID(qp *util.QueryParam, id string) (*Banks, bool, error) {
+	return getBanks("partner_id", id, qp)
+}
+
 func getBanks(k, v string, qp *util.QueryParam) (*Banks, bool, error) {
 
 	q, err := qp.GetQueryByDefaultStruct(Bank{})
