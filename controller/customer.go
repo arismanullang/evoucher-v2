@@ -84,6 +84,8 @@ func UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
+
+	res.SetResponse(reqCustomer)
 	res.JSON(w, res, http.StatusOK)
 }
 

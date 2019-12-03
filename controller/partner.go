@@ -85,6 +85,7 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
+	res.SetResponse(reqPartner)
 	res.JSON(w, res, http.StatusOK)
 }
 
@@ -205,20 +206,21 @@ func GetBankByPartnerID(w http.ResponseWriter, r *http.Request) {
 func UpdateBank(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
-	id := bone.GetValue(r, "id")
+	id := bone.GetValue(r, "pid")
 	var reqBank model.Bank
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqBank); err != nil {
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	reqBank.PartnerID = id
 	if err := reqBank.Update(); err != nil {
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
+	res.SetResponse(reqBank)
 	res.JSON(w, res, http.StatusOK)
 }
 

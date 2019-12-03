@@ -84,6 +84,7 @@ func UpdateTag(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
+	res.SetResponse(reqTag)
 	res.JSON(w, res, http.StatusOK)
 }
 

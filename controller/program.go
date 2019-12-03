@@ -82,6 +82,28 @@ func GetProgramByID(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
+//UpdateProgram :
+func UpdateProgram(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	id := bone.GetValue(r, "id")
+	var req model.Program
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&req); err != nil {
+		res.SetErrorWithDetail(JSONErrFatal, err)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+	req.ID = id
+	if err := req.Update(); err != nil {
+		res.SetErrorWithDetail(JSONErrFatal, err)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+	res.SetResponse(req)
+	res.JSON(w, res, http.StatusOK)
+}
+
 // DeleteProgram :
 func DeleteProgram(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()

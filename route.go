@@ -34,7 +34,7 @@ func init() {
 	v2.PostFunc("/:company/programs", c.PostProgram)
 	v2.GetFunc("/:company/programs", c.GetProgram)
 	v2.GetFunc("/:company/programs/:id", c.GetProgramByID)
-	// v2.PutFunc("/:company/programs/:id", ping)
+	v2.PutFunc("/:company/programs/:id", c.UpdateProgram)
 	v2.DeleteFunc("/:company/programs/:id", c.DeleteProgram)
 
 	//partners == outlets
@@ -57,14 +57,13 @@ func init() {
 	v2.PostFunc("/:company/outlets/tags/:holder", c.PostPartnerTags)
 
 	// partner/outlet bank
-	v2.PostFunc("/:company/partners/banks", c.PostBank)
-	v2.GetFunc("/:company/partners/banks", c.GetBanks)
-	v2.GetFunc("/:company/partners/banks/:pid", c.GetBankByPartnerID)
-	v2.PutFunc("/:company/partners/banks/:pid", c.UpdateBank)
-	v2.DeleteFunc("/:company/partners/banks/:pid", c.DeleteBank)
+	v2.PostFunc("/:company/banks", c.PostBank)
+	v2.GetFunc("/:company/banks", c.GetBanks)
+	v2.GetFunc("/:company/banks/:pid", c.GetBankByPartnerID)
+	v2.PutFunc("/:company/banks/:pid", c.UpdateBank)
+	v2.DeleteFunc("/:company/banks/:pid", c.DeleteBank)
 
 	//channel
-
 	v2.PostFunc("/:company/channels", c.PostChannel)
 	v2.GetFunc("/:company/channels", c.GetChannels)
 	v2.GetFunc("/:company/channels/:id", c.GetChannelByID)

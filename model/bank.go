@@ -66,6 +66,7 @@ func getBanks(k, v string, qp *util.QueryParam) (*Banks, bool, error) {
 	q += qp.GetQuerySort()
 	q += qp.GetQueryLimit()
 	var resd Banks
+	util.DEBUG(q)
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)
 	if err != nil {
 		return &Banks{}, false, err
@@ -155,7 +156,7 @@ func (p *Bank) Update() error {
 	q := `UPDATE
 				partner_banks 
 			SET
-			, bank_name = ?
+			bank_name = ?
 			, bank_branch = ?
 			, bank_account = ?
 			, bank_account_name = ?
@@ -165,9 +166,9 @@ func (p *Bank) Update() error {
 			, email = ?
 			, updated_at = ?
 			, updated_by = ?
-			, status				
+			, status = ?				
 			WHERE 
-				id = ?	
+				partner_id = ?	
 			RETURNING
 			id
 			, partner_id
@@ -187,7 +188,7 @@ func (p *Bank) Update() error {
 	`
 	var res []Bank
 	err = tx.Select(&res, tx.Rebind(q), p.BankName, p.BankBranch, p.BankAccount, p.BankAccountName,
-		p.CompanyName, p.Name, p.Phone, p.Email, p.CreatedAt, p.CreatedBy, p.UpdatedAt, p.UpdatedBy, p.ID)
+		p.CompanyName, p.Name, p.Phone, p.Email, p.UpdatedAt, p.UpdatedBy, p.Status, p.PartnerID)
 	if err != nil {
 		return err
 	}
