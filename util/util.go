@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -15,4 +16,12 @@ func StandardizeSpaces(s string) string {
 func SimplifyKeyString(val string) (key string) {
 	key = strings.ToLower(StandardizeSpaces(val))
 	return key
+}
+
+var replacer = strings.NewReplacer("r", "0x0A", "\n", "0x0B", "\t", "0x0C")
+
+//ToStringOneLine : replace \t \r \n to character to debug on logger
+func ToStringOneLine(s interface{}) string {
+	str := fmt.Sprintf("%v", s)
+	return replacer.Replace(str)
 }

@@ -18,8 +18,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	model.RegisterValidator()
-
 	n := negroni.New()
 	n.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")

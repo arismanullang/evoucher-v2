@@ -66,6 +66,23 @@ func GetTagByID(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
+//GetTagByKey : GET
+func GetTagByKey(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	qp := u.NewQueryParam(r)
+	key := bone.GetValue(r, "key")
+	Tag, _, err := model.GetTagByKey(qp, key)
+	if err != nil {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
+
+	res.SetResponse(Tag)
+	res.JSON(w, res, http.StatusOK)
+}
+
 // UpdateTag :
 func UpdateTag(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
@@ -121,6 +138,7 @@ func PostObjectTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	res.SetResponse(reqTag)
 	res.JSON(w, res, http.StatusCreated)
 }
 

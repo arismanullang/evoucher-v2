@@ -59,18 +59,19 @@ func GetTags(qp *util.QueryParam) (*Tags, bool, error) {
 	return getTags("1", "1", qp)
 }
 
-//GetTagByCompanyID : get partner by specified ID
+//GetTagByCompanyID : get tag by specified ID
 func GetTagByCompanyID(qp *util.QueryParam, id string) (*Tags, bool, error) {
 	return getTags("company_id", id, qp)
 }
 
-//GetTagByID : get partner by specified ID
+//GetTagByID : get tag by specified ID
 func GetTagByID(qp *util.QueryParam, id string) (*Tags, bool, error) {
 	return getTags("id", id, qp)
 }
 
-func getTagByKey(qp *util.QueryParam, key string) (*Tags, bool, error) {
-	return getTags("key", key, qp)
+//GetTagByKey : get tag by specified key
+func GetTagByKey(qp *util.QueryParam, key string) (*Tags, bool, error) {
+	return getSearchTags("name", util.SimplifyKeyString("%"+key+"%"), qp)
 }
 
 func getTags(k, v string, qp *util.QueryParam) (*Tags, bool, error) {
@@ -119,7 +120,7 @@ func getSearchTags(k, v string, qp *util.QueryParam) (*Tags, bool, error) {
 				tags tag
 			WHERE 
 				status = ?
-			AND ` + k + ` = ?`
+			AND ` + k + ` ILIKE ?`
 
 	q += qp.GetQuerySort()
 	q += qp.GetQueryLimit()
@@ -327,7 +328,7 @@ func (t *ObjectTag) Insert() error {
 	if err != nil {
 		return err
 	}
-	// *t = res[0]
+	*t = res[0]
 	return nil
 }
 

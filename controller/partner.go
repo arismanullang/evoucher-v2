@@ -156,6 +156,7 @@ func PostBank(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
+	reqBank.PartnerID = bone.GetValue(r, "pid")
 	if err := reqBank.Insert(); err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrFatal)
