@@ -18,7 +18,7 @@ func SimplifyKeyString(val string) (key string) {
 	return key
 }
 
-var replacer = strings.NewReplacer("r", "0x0A", "\n", "0x0B", "\t", "0x0C")
+var replacer = strings.NewReplacer("\r", "0x0A", "\n", "0x0B", "\t", "0x0C")
 
 //ToStringOneLine : replace \t \r \n to character to debug on logger
 func ToStringOneLine(s interface{}) string {
