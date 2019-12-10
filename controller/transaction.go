@@ -25,7 +25,7 @@ func PostVoucherAssignHolder(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := req.Update(); err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
@@ -83,7 +83,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	}
 	if err = req.Update(); err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
@@ -153,7 +153,7 @@ func PostVoucherUset(w http.ResponseWriter, r *http.Request) {
 	}
 	if err = req.Update(); err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
@@ -215,7 +215,7 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	}
 	if err = req.Update(); err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}

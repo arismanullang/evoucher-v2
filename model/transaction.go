@@ -34,10 +34,10 @@ type (
 )
 
 //Insert : transaction data
-func (t Transaction) Insert() error {
+func (t Transaction) Insert() (*[]Transaction, error) {
 	tx, err := db.Beginx()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback()
 
@@ -46,14 +46,14 @@ func (t Transaction) Insert() error {
 	var res []Transaction
 	err = tx.Select(&res, tx.Rebind(q))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = tx.Commit()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &res, nil
 }
 
 //Update : Transaction

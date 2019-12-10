@@ -133,10 +133,10 @@ func GetPartnersByTags(qp *util.QueryParam, v string) (*Partners, bool, error) {
 }
 
 //Insert : save data to database
-func (p *Partner) Insert() error {
+func (p *Partner) Insert() (*Partners, error) {
 	tx, err := db.Beginx()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback()
 
@@ -149,22 +149,22 @@ func (p *Partner) Insert() error {
 	`
 	// bank, err := json.Marshal(p.Bank)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	var res []Partner
+	var res Partners
 	util.DEBUG(q)
 	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Description, p.CompanyID, p.CreatedBy, p.CreatedBy, StatusCreated)
 	if err != nil {
 		util.DEBUG(`la1-->`, err)
-		return err
+		return nil, err
 	}
 	err = tx.Commit()
 	if err != nil {
 		util.DEBUG(`la2-->`, err)
-		return err
+		return nil, err
 	}
 	*p = res[0]
-	return nil
+	return &res, nil
 }
 
 //Update : modify data

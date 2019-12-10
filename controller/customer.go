@@ -17,17 +17,19 @@ func PostCustomer(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqCustomer); err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	if err := reqCustomer.Insert(); err != nil {
+	response, err := reqCustomer.Insert()
+	if err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
+	res.SetResponse(response)
 	res.JSON(w, res, http.StatusCreated)
 }
 
@@ -74,13 +76,14 @@ func UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 	var reqCustomer model.Customer
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqCustomer); err != nil {
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	reqCustomer.ID = id
-	if err := reqCustomer.Update(); err != nil {
-		res.SetError(JSONErrFatal)
+	err := reqCustomer.Update()
+	if err != nil {
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
@@ -113,16 +116,18 @@ func PostCustomerTags(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&req); err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	if err := req.Insert(); err != nil {
+	response, err := req.Insert()
+	if err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
+	res.SetResponse(response)
 	res.JSON(w, res, http.StatusCreated)
 }

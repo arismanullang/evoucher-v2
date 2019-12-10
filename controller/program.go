@@ -35,8 +35,8 @@ func PostProgram(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//insert program -> partners
-	if err := program.Insert(); err != nil {
-		fmt.Println(err)
+	response, err := program.Insert()
+	if err != nil {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
@@ -44,7 +44,7 @@ func PostProgram(w http.ResponseWriter, r *http.Request) {
 
 	// generate voucher
 
-	res.SetResponse(program)
+	res.SetResponse(response)
 	res.JSON(w, res, http.StatusCreated)
 }
 
@@ -95,7 +95,8 @@ func UpdateProgram(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req.ID = id
-	if err := req.Update(); err != nil {
+	err := req.Update()
+	if err != nil {
 		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return

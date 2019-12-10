@@ -16,18 +16,18 @@ func PostTag(w http.ResponseWriter, r *http.Request) {
 	var reqTag model.Tag
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqTag); err != nil {
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	tags, err := reqTag.Insert()
+	response, err := reqTag.Insert()
 	if err != nil {
 		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
-	res.SetResponse(tags)
+	res.SetResponse(response)
 	res.JSON(w, res, http.StatusCreated)
 }
 
@@ -91,13 +91,14 @@ func UpdateTag(w http.ResponseWriter, r *http.Request) {
 	var reqTag model.Tag
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqTag); err != nil {
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	reqTag.ID = id
-	if err := reqTag.Update(); err != nil {
-		res.SetError(JSONErrFatal)
+	err := reqTag.Update()
+	if err != nil {
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
@@ -127,21 +128,23 @@ func PostObjectTags(w http.ResponseWriter, r *http.Request) {
 	var reqTag model.ObjectTag
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqTag); err != nil {
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	// reqTag.ObjectCategory = OTG
-	if err := reqTag.Insert(); err != nil {
+	response, err := reqTag.Insert()
+	if err != nil {
 		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
-	res.SetResponse(reqTag)
+	res.SetResponse(response)
 	res.JSON(w, res, http.StatusCreated)
 }
 
+//PostAssignObjectTags :
 func PostAssignObjectTags(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 

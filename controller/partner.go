@@ -16,19 +16,18 @@ func PostPartner(w http.ResponseWriter, r *http.Request) {
 	var reqPartner model.Partner
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqPartner); err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	if err := reqPartner.Insert(); err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+	response, err := reqPartner.Insert()
+	if err != nil {
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
-	res.SetResponse(reqPartner)
+	res.SetResponse(response)
 	res.JSON(w, res, http.StatusCreated)
 }
 
@@ -75,13 +74,14 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	var reqPartner model.Partner
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqPartner); err != nil {
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	reqPartner.ID = id
-	if err := reqPartner.Update(); err != nil {
-		res.SetError(JSONErrFatal)
+	err := reqPartner.Update()
+	if err != nil {
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
@@ -111,18 +111,20 @@ func PostPartnerTags(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&req); err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	// reqPartner.ID = bone.GetValue(r, "holder")
-	if err := req.Insert(); err != nil {
+	response, err := req.Insert()
+	if err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
+	res.SetResponse(response)
 	res.JSON(w, res, http.StatusCreated)
 }
 
@@ -152,19 +154,20 @@ func PostBank(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqBank); err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	reqBank.PartnerID = bone.GetValue(r, "pid")
-	if err := reqBank.Insert(); err != nil {
+	response, err := reqBank.Insert()
+	if err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
-	res.SetResponse(reqBank)
+	res.SetResponse(response)
 	res.JSON(w, res, http.StatusCreated)
 }
 
@@ -216,7 +219,8 @@ func UpdateBank(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	reqBank.PartnerID = id
-	if err := reqBank.Update(); err != nil {
+	err := reqBank.Update()
+	if err != nil {
 		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return

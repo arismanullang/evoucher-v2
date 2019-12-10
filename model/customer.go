@@ -75,10 +75,10 @@ func getCustomers(key, value string, qp *util.QueryParam) (*Customers, bool, err
 }
 
 //Insert : single row inset into table
-func (c Customer) Insert() error {
+func (c Customer) Insert() (*Customers, error) {
 	tx, err := db.Beginx()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback()
 
@@ -108,17 +108,17 @@ func (c Customer) Insert() error {
 				, updated_by
 				, status
 	`
-	var res []Customer
+	var res Customers
 	err = tx.Select(&res, tx.Rebind(q), c.Name, c.MobilePhone, c.Email, c.RefID, c.CompanyID, c.CreatedBy, c.CreatedBy, StatusCreated)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = tx.Commit()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &res, nil
 }
 
 //Update : update customer

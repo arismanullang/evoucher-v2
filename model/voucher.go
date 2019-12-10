@@ -2,8 +2,9 @@ package model
 
 import (
 	"bytes"
-	"github.com/gilkor/evoucher-v2/util"
 	"time"
+
+	"github.com/gilkor/evoucher-v2/util"
 )
 
 type (
@@ -82,10 +83,10 @@ func getVouchers(key, value string, qp *util.QueryParam) (*Vouchers, bool, error
 }
 
 //Insert : single row insert into table
-func (v Voucher) Insert() error {
+func (v Voucher) Insert() (*Vouchers, error) {
 	tx, err := db.Beginx()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback()
 
@@ -122,7 +123,7 @@ func (v Voucher) Insert() error {
 			, updated_at
 			, status
 	`
-	var res Voucher
+	var res Vouchers
 	t1 := time.Now()
 	err = tx.Select(&res, tx.Rebind(q),
 		v.Code,
@@ -140,14 +141,14 @@ func (v Voucher) Insert() error {
 		StatusCreated,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = tx.Commit()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &res, nil
 }
 
 //Update : update voucher
@@ -243,7 +244,7 @@ func (v *Voucher) Delete() error {
 }
 
 //Insert : insert data, build query using string append
-func (vs *Vouchers) Insert() error {
+func (vs *Vouchers) Insert() (*Vouchers, error) {
 	tx, err := db.Beginx()
 	defer tx.Rollback()
 	values := new(bytes.Buffer)
@@ -282,11 +283,11 @@ func (vs *Vouchers) Insert() error {
 	var res Vouchers
 	err = tx.Select(&res, tx.Rebind(q), args...)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	util.DEBUG("LAMHOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOT", q)
 	util.DEBUG("LAMHOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOT [", len(args), "args")
 	tx.Commit()
 	*vs = res
-	return nil
+	return &res, nil
 }

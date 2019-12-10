@@ -85,10 +85,10 @@ func getBanks(k, v string, qp *util.QueryParam) (*Banks, bool, error) {
 }
 
 //Insert : save data to database
-func (p *Bank) Insert() error {
+func (p *Bank) Insert() (*Banks, error) {
 	tx, err := db.Beginx()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback()
 
@@ -128,21 +128,21 @@ func (p *Bank) Insert() error {
 	`
 	// bank, err := json.Marshal(p.Bank)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	var res []Bank
+	var res Banks
 	// util.DEBUG(p.Bank)
 	err = tx.Select(&res, tx.Rebind(q), p.PartnerID, p.BankName, p.BankBranch, p.BankAccount, p.BankAccountName,
-		p.CompanyName, p.Name, p.Phone, p.Email, p.CreatedAt, p.CreatedBy, p.UpdatedAt, p.UpdatedBy, StatusCreated)
+		p.CompanyName, p.Name, p.Phone, p.Email, p.CreatedAt, p.CreatedBy, p.CreatedAt, p.CreatedBy, StatusCreated)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = tx.Commit()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	*p = res[0]
-	return nil
+	return &res, nil
 }
 
 //Update : modify data

@@ -17,17 +17,19 @@ func PostChannel(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqChannel); err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	if err := reqChannel.Insert(); err != nil {
+	response, err := reqChannel.Insert()
+	if err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
+	res.SetResponse(response)
 	res.JSON(w, res, http.StatusCreated)
 }
 
@@ -74,16 +76,18 @@ func UpdateChannel(w http.ResponseWriter, r *http.Request) {
 	var reqChannel model.Channel
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqChannel); err != nil {
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	reqChannel.ID = id
-	if err := reqChannel.Update(); err != nil {
-		res.SetError(JSONErrFatal)
+	err := reqChannel.Update()
+	if err != nil {
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
+	res.SetResponse(reqChannel)
 	res.JSON(w, res, http.StatusOK)
 }
 
@@ -97,7 +101,7 @@ func DeleteChannel(w http.ResponseWriter, r *http.Request) {
 	qp := u.NewQueryParam(r)
 	datas, _, err := model.GetChannelByID(qp, id)
 	if err != nil {
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
@@ -127,18 +131,20 @@ func PostChannelTags(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&req); err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 	// reqChannel.ID = bone.GetValue(r, "holder")
-	if err := req.Insert(); err != nil {
+	response, err := req.Insert()
+	if err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
+		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
+	res.SetResponse(response)
 	res.JSON(w, res, http.StatusCreated)
 }
 

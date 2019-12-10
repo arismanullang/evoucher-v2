@@ -4,10 +4,14 @@ import (
 	"fmt"
 )
 
-const tag = "[DEBUG]"
+const (
+	tagDebug   = "[DBG]"
+	tagInfo    = "[INF]"
+	tagWarning = "[WRN]"
+	tagError   = "[ERR]"
+)
 
 //DEBUG debug
 func DEBUG(i ...interface{}) {
-	var tag interface{}
-	fmt.Println(tag, ToStringOneLine(i))
+	fmt.Println(tagDebug, ToStringOneLine(i))
 }

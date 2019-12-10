@@ -72,10 +72,10 @@ func getCompanies(qp *util.QueryParam, key, value string) ([]Company, bool, erro
 }
 
 //Insert : single row inset into table
-func (c *Company) Insert() error {
+func (c *Company) Insert() (*[]Company, error) {
 	tx, err := db.Beginx()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback()
 
@@ -109,14 +109,14 @@ func (c *Company) Insert() error {
 	var res []Company
 	err = tx.Select(&res, tx.Rebind(q), c.Name, c.Description, c.Alias, c.ClientKey, c.ClientSecret, c.CreatedBy, c.UpdatedBy, StatusCreated)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = tx.Commit()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &res, nil
 }
 
 //Update : update Company

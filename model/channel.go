@@ -129,10 +129,10 @@ func GetChannelsByTags(qp *util.QueryParam, v string) (*Channels, bool, error) {
 }
 
 //Insert : save data to database
-func (p *Channel) Insert() error {
+func (p *Channel) Insert() (*Channels, error) {
 	tx, err := db.Beginx()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback()
 
@@ -145,20 +145,20 @@ func (p *Channel) Insert() error {
 	`
 	// bank, err := json.Marshal(p.Bank)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	var res []Channel
+	var res Channels
 	// util.DEBUG(p.Bank)
 	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Description, p.IsSuper, p.CreatedBy, p.CreatedBy, StatusCreated)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = tx.Commit()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	*p = res[0]
-	return nil
+	return &res, nil
 }
 
 //Update : modify data

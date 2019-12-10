@@ -288,13 +288,91 @@ func getObjectTags(k, v string, qp *util.QueryParam) (*ObjectTags, bool, error) 
 }
 
 //Insert : save data to database
-//nothing wrong here, just do as front guy requested
-func (t *ObjectTag) Insert() error {
+func (t *ObjectTag) Insert() (*ObjectTags, error) {
 
+	valuesInsert := new(bytes.Buffer)
+	valuesDelete := new(bytes.Buffer)
+	var argsInsert []interface{}
+	var argsDelete []interface{}
+	isInsert := false
+	isDelete := false
+	// var status string
+	//verify existing and deleted data from front guys
+	for _, v := range t.Tags {
+		if v.Action == "add" {
+			isInsert = true
+			valuesInsert.WriteString("(?, ?, ?, ?, ?),")
+			argsInsert = append(argsInsert, t.ObjectCategory, t.ObjectID, v.ID, t.CreatedBy, StatusCreated)
+		} else if v.Action == "remove" {
+			isDelete = true
+			valuesDelete.WriteString("?,")
+			argsDelete = append(argsDelete, v.ID)
+		}
+	}
+
+	tx, err := db.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	var res ObjectTags
+
+	if isDelete {
+		q := `DELETE FROM object_tags WHERE tag_id in (`
+
+		valuestr := valuesDelete.String()
+		q += valuestr[:len(valuestr)-1]
+		q += ")"
+		util.DEBUG(q, argsDelete)
+		err = tx.Select(&res, tx.Rebind(q), argsDelete...)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if isInsert {
+		q := `INSERT INTO 
+				object_tags ( object_category, object_id, tag_id, created_by, status)
+				VALUES 
+		`
+		valuestr := valuesInsert.String()
+		q += valuestr[:len(valuestr)-1]
+		// ON CONFLICT (object_category, object_id, tag_id, status)
+		// 		DO UPDATE SET status = EXCLUDED.status,
+		// 					object_category = EXCLUDED.object_category
+		q += `  ON CONFLICT DO NOTHING
+				RETURNING
+					id, tag_id, object_id, object_category, created_by, created_at, status
+		`
+		util.DEBUG(q, argsInsert)
+		err = tx.Select(&res, tx.Rebind(q), argsInsert...)
+		if err != nil {
+			return nil, err
+		}
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	// *t = res[0]
+	return &res, nil
+}
+
+//Assign :
+//nothing wrong here, just do as front guy requested
+func (t *ObjectTag) Assign() error {
 	values := new(bytes.Buffer)
 	var args []interface{}
 	// var status string
 	//verify existing and deleted data from front guys
+
+	//create tag : NEW
+
+	//delete object tag :
+
+	//assign tag object
+
 	for _, v := range t.Tags {
 		values.WriteString("(?, ?, ?, ?, ?),")
 		args = append(args, t.ObjectCategory, t.ObjectID, v.ID, t.CreatedBy, StatusCreated)

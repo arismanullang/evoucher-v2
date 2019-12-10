@@ -34,6 +34,7 @@ type (
 		Vouchers      Vouchers   `json:"vouchers,omitempty"`
 		VoucherFormat JSONExpr   `db:"voucher_format" json:"voucher_format,omitempty"`
 		IsReimburse   bool       `db:"is_reimburse" json:"is_reimburse,omitempty"`
+		Price         float64    `db:"price" json:"price,omitempty"`
 		Channels      Channels   `json:"channels,omitempty"`
 		// WithTransactionCount bool       `json:"with_transaction_count,omitempty"`
 	}
@@ -107,10 +108,10 @@ func getPrograms(key, value string, qp *util.QueryParam) (*Programs, bool, error
 }
 
 //Insert : single row inset into table
-func (p *Program) Insert() error {
+func (p *Program) Insert() (*Programs, error) {
 	tx, err := db.Beginx()
 	if err != nil {
-		return errors.New("Failed when insert new program ," + err.Error())
+		return nil, errors.New("Failed when insert new program ," + err.Error())
 	}
 	defer tx.Rollback()
 
@@ -121,6 +122,7 @@ func (p *Program) Insert() error {
 					, name
 					, type
 					, value
+					, price
 					, max_value
 					, start_date
 					, end_date
@@ -136,13 +138,14 @@ func (p *Program) Insert() error {
 					, status
 				)
 			VALUES 
-				( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 			RETURNING
 			id
 			, company_id
 			, name
 			, type
 			, value
+			, price
 			, max_value
 			, start_date
 			, end_date
@@ -159,26 +162,25 @@ func (p *Program) Insert() error {
 			, status
 	`
 	var res Programs
-	err = tx.Select(&res, tx.Rebind(q), p.CompanyID, p.Name, p.Type, p.Value, p.MaxValue, p.StartDate, p.EndDate,
-
+	err = tx.Select(&res, tx.Rebind(q), p.CompanyID, p.Name, p.Type, p.Value, p.Price, p.MaxValue, p.StartDate, p.EndDate,
 		p.Description, p.ImageURL, p.Template, util.StandardizeSpaces(p.Rule.String()), p.State, p.Stock, util.StandardizeSpaces(p.VoucherFormat.String()), p.CreatedBy, p.UpdatedBy, StatusCreated)
 	if err != nil {
-		return errors.New("Failed when insert new program ," + err.Error())
+		return nil, errors.New("Failed when insert new program ," + err.Error())
 	}
 
 	//update returning ID into obj program
 	p.ID = res[0].ID
 	//insert program partners
 	if err := NewProgramPartners(p.ID, p.Partners).Upsert(tx); err != nil {
-		return errors.New("Failed when insert new partners ," + err.Error())
+		return nil, errors.New("Failed when insert new partners ," + err.Error())
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return errors.New("Failed when insert new program ," + err.Error())
+		return nil, errors.New("Failed when insert new program ," + err.Error())
 	}
 
-	return nil
+	return &res, nil
 }
 
 //Update : update program
@@ -196,6 +198,7 @@ func (p *Program) Update() error {
 					, name = ?
 					, type = ?
 					, value = ?
+					, price = ?
 					, max_value = ?
 					, start_date = ?
 					, end_date = ?
@@ -214,6 +217,7 @@ func (p *Program) Update() error {
 				, name
 				, type
 				, value
+				, price
 				, max_value
 				, start_date
 				, end_date
@@ -231,7 +235,7 @@ func (p *Program) Update() error {
 	`
 
 	var res []Customer
-	err = tx.Select(&res, tx.Rebind(q), p.CompanyID, p.Name, p.Type, p.Value, p.MaxValue, p.StartDate, p.EndDate,
+	err = tx.Select(&res, tx.Rebind(q), p.CompanyID, p.Name, p.Type, p.Value, p.Price, p.MaxValue, p.StartDate, p.EndDate,
 		p.Description, p.ImageURL, p.Template, p.Rule, p.State, p.Stock, p.UpdatedBy, p.ID)
 	if err != nil {
 		return err
