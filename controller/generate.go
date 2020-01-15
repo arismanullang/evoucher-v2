@@ -23,6 +23,7 @@ type GenerateCode struct {
 
 const (
 	defaultLetter = "abcdefghijklmnopqrstuvwxyzQWERTYUIOPASDFGHJKLZXCVBNM0123456789"
+	urlSafeLetter = "abcdefghijklmnopqrstuvwxyzQWERTYUIOPASDFGHJKLZXCVBNM0123456789-_"
 )
 
 // NewGenerateCodeRoutine returns a GenerateVoucher

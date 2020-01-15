@@ -41,7 +41,11 @@ func (t Transaction) Insert() (*[]Transaction, error) {
 	}
 	defer tx.Rollback()
 
-	q := `
+	q := `INSERT INTO 
+			transactions (company_id, transaction_code, total_amount, holder, partner_id, created_by, created_at, updated_by, updated_at, status)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			RETURNING
+				id, company_id, transaction_code, total_amount, holder, partner_id, created_by, created_at, updated_by, updated_at, status
 	`
 	var res []Transaction
 	err = tx.Select(&res, tx.Rebind(q))
@@ -57,6 +61,7 @@ func (t Transaction) Insert() (*[]Transaction, error) {
 }
 
 //Update : Transaction
+//There is no update for transaction yet
 func (t Transaction) Update() error {
 	tx, err := db.Beginx()
 	if err != nil {
@@ -88,10 +93,15 @@ func (t Transaction) Delete() error {
 	}
 	defer tx.Rollback()
 
-	q := `
+	q := `UPDATE FROM 
+				transactions
+			SET
+			 status = ?
+			WHERE
+			 id = ?
 	`
 	var res []Transaction
-	err = tx.Select(&res, tx.Rebind(q))
+	err = tx.Select(&res, tx.Rebind(q), StatusDeleted, t.ID)
 	if err != nil {
 		return err
 	}

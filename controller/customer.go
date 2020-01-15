@@ -88,7 +88,7 @@ func UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res.SetResponse(reqCustomer)
+	res.SetResponse(model.Customers{reqCustomer})
 	res.JSON(w, res, http.StatusOK)
 }
 

@@ -38,7 +38,7 @@ func GetPartnerByProgramID(programID string, qp *util.QueryParam) (*Partners, bo
 	q += `
 			FROM
 				program_partners ProgramPartner
-				INNER JOIN partners partner ON ProgramPartner.partner_id = partner.id
+				INNER JOIN m_partners partner ON ProgramPartner.partner_id = partner.id
 				INNER JOIN programs program ON ProgramPartner.program_id = program.id
 
 			WHERE 

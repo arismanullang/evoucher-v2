@@ -30,6 +30,11 @@ func NewQueryParam(r *http.Request) *QueryParam {
 	return defaultQueryParam(r)
 }
 
+//NewQueryParamDefault : initialize QueryParam from query params
+func NewQueryParamDefault() *QueryParam {
+	return defaultQP()
+}
+
 //SetTableAlias : set table name base on
 func (qp *QueryParam) SetTableAlias(t string) {
 	qp.TableAlias = t + `.`
@@ -90,6 +95,21 @@ func defaultQueryParam(r *http.Request) *QueryParam {
 
 	f := r.FormValue("fields")
 	s := r.FormValue("sort")
+
+	return &QueryParam{
+		Page:   p,
+		Count:  c,
+		Fields: f,
+		Sort:   s,
+	}
+}
+
+func defaultQP() *QueryParam {
+
+	p := defultPage
+	c := defaultCount
+	f := ""
+	s := ""
 
 	return &QueryParam{
 		Page:   p,

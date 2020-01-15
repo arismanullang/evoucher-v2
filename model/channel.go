@@ -69,6 +69,7 @@ func getChannels(k, v string, qp *util.QueryParam) (*Channels, bool, error) {
 
 	q += qp.GetQuerySort()
 	q += qp.GetQueryLimit()
+	util.DEBUG(q)
 	var resd Channels
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)
 	if err != nil {

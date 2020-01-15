@@ -17,7 +17,7 @@ type (
 		BankName        string     `db:"bank_name" json:"bank_name,omitempty"`
 		BankBranch      string     `db:"bank_branch" json:"bank_branch,omitempty"`
 		BankAccount     string     `db:"bank_account" json:"bank_account,omitempty"`
-		BankAccountName string     `db:"bank_account_name" json:"bank_acount_name,omitempty"`
+		BankAccountName string     `db:"bank_account_name" json:"bank_account_name,omitempty"`
 		CompanyName     string     `db:"company_name" json:"company_name,omitempty"`
 		Name            string     `db:"name" json:"name,omitempty"`
 		Phone           string     `db:"phone" json:"phone,omitempty"`

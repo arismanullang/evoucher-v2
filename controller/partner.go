@@ -85,7 +85,7 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	res.SetResponse(reqPartner)
+	res.SetResponse(model.Partners{reqPartner})
 	res.JSON(w, res, http.StatusOK)
 }
 
@@ -225,7 +225,7 @@ func UpdateBank(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	res.SetResponse(reqBank)
+	res.SetResponse(model.Banks{reqBank})
 	res.JSON(w, res, http.StatusOK)
 }
 

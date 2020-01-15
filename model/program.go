@@ -2,40 +2,42 @@ package model
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/gilkor/evoucher-v2/util"
+	"github.com/jmoiron/sqlx/types"
 )
 
 type (
 	//Program : base model
 	Program struct {
-		ID            string     `db:"id" json:"id"`
-		CompanyID     string     `db:"company_id" json:"company_id"`
-		Name          string     `db:"name" json:"name,omitempty"`
-		Type          string     `db:"type" json:"type,omitempty"`
-		Value         float64    `db:"value" json:"value,omitempty"`
-		MaxValue      float64    `db:"max_value" json:"max_value,omitempty"`
-		StartDate     time.Time  `db:"start_date" json:"start_date,omitempty"`
-		EndDate       time.Time  `db:"end_date" json:"end_date,omitempty"`
-		Description   JSONExpr   `db:"description" json:"description,omitempty"`
-		ImageURL      string     `db:"image_url" json:"image_url,omitempty"`
-		Template      string     `db:"template" json:"template,omitempty"`
-		Rule          JSONExpr   `db:"rule" json:"rule"`
-		State         string     `db:"state" json:"state"`
-		Stock         int64      `db:"stock" json:"stock"`
-		CreatedAt     *time.Time `db:"created_at" json:"created_at,omitempty"`
-		CreatedBy     string     `db:"created_by" json:"created_by,omitempty"`
-		UpdatedAt     *time.Time `db:"updated_at" json:"updated_at,omitempty"`
-		UpdatedBy     string     `db:"updated_by" json:"updated_by,omitempty"`
-		Status        string     `db:"status" json:"status,omitempty"`
-		Partners      Partners   `json:"partners,omitempty"`
-		Vouchers      Vouchers   `json:"vouchers,omitempty"`
-		VoucherFormat JSONExpr   `db:"voucher_format" json:"voucher_format,omitempty"`
-		IsReimburse   bool       `db:"is_reimburse" json:"is_reimburse,omitempty"`
-		Price         float64    `db:"price" json:"price,omitempty"`
-		Channels      Channels   `json:"channels,omitempty"`
+		ID              string         `db:"id" json:"id"`
+		CompanyID       string         `db:"company_id" json:"company_id"`
+		Name            string         `db:"name" json:"name,omitempty"`
+		Type            string         `db:"type" json:"type,omitempty"`
+		Value           float64        `db:"value" json:"value,omitempty"`
+		MaxValue        float64        `db:"max_value" json:"max_value,omitempty"`
+		StartDate       time.Time      `db:"start_date" json:"start_date,omitempty"`
+		EndDate         time.Time      `db:"end_date" json:"end_date,omitempty"`
+		Description     JSONExpr       `db:"description" json:"description,omitempty"`
+		ImageURL        string         `db:"image_url" json:"image_url,omitempty"`
+		Template        string         `db:"template" json:"template,omitempty"`
+		Rule            JSONExpr       `db:"rule" json:"rule"`
+		State           string         `db:"state" json:"state"`
+		Stock           int64          `db:"stock" json:"stock"`
+		CreatedAt       *time.Time     `db:"created_at" json:"created_at,omitempty"`
+		CreatedBy       string         `db:"created_by" json:"created_by,omitempty"`
+		UpdatedAt       *time.Time     `db:"updated_at" json:"updated_at,omitempty"`
+		UpdatedBy       string         `db:"updated_by" json:"updated_by,omitempty"`
+		Status          string         `db:"status" json:"status,omitempty"`
+		Partners        Partners       `json:"partners,omitempty"`
+		Vouchers        Vouchers       `json:"vouchers,omitempty"`
+		VoucherFormat   JSONExpr       `db:"voucher_format" json:"voucher_format,omitempty"`
+		IsReimburse     bool           `db:"is_reimburse" json:"is_reimburse,omitempty"`
+		Price           float64        `db:"price" json:"price,omitempty"`
+		ChannelID       string         `db:"channel_id" json:"channel_id,omitempty"`
+		Channels        Channels       `json:"channels,omitempty"`
+		ProgramChannels types.JSONText `db:"program_channels" json:"program_channels,omitempty"`
 		// WithTransactionCount bool       `json:"with_transaction_count,omitempty"`
 	}
 	// Programs : base model
@@ -77,14 +79,14 @@ func getPrograms(key, value string, qp *util.QueryParam) (*Programs, bool, error
 	}
 	q += `
 			FROM
-				programs program
+				m_programs program
 			WHERE 
 				status = ?
 			AND ` + key + ` = ?`
 
 	q += qp.GetQuerySort()
 	q += qp.GetQueryLimit()
-	fmt.Println(q)
+	util.DEBUG(q)
 	var resd Programs
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, value)
 	if err != nil {
@@ -93,8 +95,6 @@ func getPrograms(key, value string, qp *util.QueryParam) (*Programs, bool, error
 	if len(resd) < 1 {
 		return &Programs{}, false, errors.New("Failed when select on program ," + ErrorResourceNotFound.Error())
 	}
-
-	fmt.Println("data :", resd)
 
 	next := false
 	if len(resd) > qp.Count {
@@ -132,14 +132,16 @@ func (p *Program) Insert() (*Programs, error) {
 					, rule
 					, state
 					, stock
+					, is_reimburse
+					, channel_id
 					, voucher_format
 					, created_by
 					, updated_by					
 					, status
 				)
 			VALUES 
-				( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-			RETURNING
+				( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			RETURNING 
 			id
 			, company_id
 			, name
@@ -155,17 +157,32 @@ func (p *Program) Insert() (*Programs, error) {
 			, rule
 			, state
 			, stock
+			, is_reimburse
+			, channel_id
+			, voucher_format
 			, created_at
 			, created_by
 			, updated_at
-			, updated_by					
+			, updated_by
 			, status
+			, (SELECT array_to_json(array_agg(row_to_json(c.*))) AS array_to_json
+			FROM channels c
+			WHERE (((c.id)::text = (programs.channel_id)::text) AND (c.status = 'created'::status))) AS program_channels
 	`
+
+	util.DEBUG(q)
 	var res Programs
-	err = tx.Select(&res, tx.Rebind(q), p.CompanyID, p.Name, p.Type, p.Value, p.Price, p.MaxValue, p.StartDate, p.EndDate,
-		p.Description, p.ImageURL, p.Template, util.StandardizeSpaces(p.Rule.String()), p.State, p.Stock, util.StandardizeSpaces(p.VoucherFormat.String()), p.CreatedBy, p.UpdatedBy, StatusCreated)
-	if err != nil {
-		return nil, errors.New("Failed when insert new program ," + err.Error())
+	channelID := p.ChannelID
+	if channelID == "" && (len(p.Channels) > 0) {
+		channelID = p.Channels[0].ID
+
+		util.DEBUG(channelID)
+		err = tx.Select(&res, tx.Rebind(q), p.CompanyID, p.Name, p.Type, p.Value, p.Price, p.MaxValue, p.StartDate, p.EndDate,
+			p.Description, p.ImageURL, p.Template, util.StandardizeSpaces(p.Rule.String()), p.State, p.Stock, p.IsReimburse, channelID,
+			util.StandardizeSpaces(p.VoucherFormat.String()), p.CreatedBy, p.UpdatedBy, StatusCreated)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	//update returning ID into obj program
@@ -227,14 +244,20 @@ func (p *Program) Update() error {
 				, rule
 				, state
 				, stock
+				, is_reimburse
+				, channel_id
+				, voucher_format
 				, created_at
 				, created_by
 				, updated_at
-				, updated_by					
+				, updated_by
 				, status
+				, (SELECT array_to_json(array_agg(row_to_json(c.*))) AS array_to_json
+				FROM channels c
+				WHERE (((c.id)::text = (programs.channel_id)::text) AND (c.status = 'created'::status))) AS program_channels
 	`
-
-	var res []Customer
+	util.DEBUG(q)
+	var res []Program
 	err = tx.Select(&res, tx.Rebind(q), p.CompanyID, p.Name, p.Type, p.Value, p.Price, p.MaxValue, p.StartDate, p.EndDate,
 		p.Description, p.ImageURL, p.Template, p.Rule, p.State, p.Stock, p.UpdatedBy, p.ID)
 	if err != nil {

@@ -151,6 +151,31 @@ func (v Voucher) Insert() (*Vouchers, error) {
 	return &res, nil
 }
 
+//CreateVoucher : from program.VoucherFormat
+func (vf *VoucherFormat) CreateVoucher(v *Vouchers) error {
+	// rs := v.NewSource()
+
+	// for _, val := range *v {
+	// 	code := vf.
+
+	// 	val.ID = ""
+	// 	val.Code = ""
+	// 	val.ReferenceNo = ""
+	// 	val.Holder = ""
+	// 	val.HolderDetail = ""
+	// 	val.ProgramID = ""
+	// 	val.ValidAt = ""
+	// 	val.ExpiredAt = ""
+	// 	val.State = ""
+	// 	val.CreatedBy = ""
+	// 	val.CreatedAt = ""
+	// 	val.UpdatedBy = ""
+	// 	val.UpdatedAt = ""
+	// 	val.Status = ""
+	// }
+	return nil
+}
+
 //Update : update voucher
 func (v *Voucher) Update() error {
 	tx, err := db.Beginx()
@@ -188,7 +213,7 @@ func (v *Voucher) Update() error {
 				, status
 	`
 	var res []Voucher
-	err = tx.Select(&res, tx.Rebind(q), v.Holder, v.HolderDetail, v.State, t1, v.UpdatedBy, v.Status)
+	err = tx.Select(&res, tx.Rebind(q), v.Holder, v.HolderDetail, v.State, t1, v.UpdatedBy, v.Status, v.ID)
 	if err != nil {
 		return err
 	}

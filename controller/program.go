@@ -101,7 +101,7 @@ func UpdateProgram(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	res.SetResponse(req)
+	res.SetResponse(model.Programs{req})
 	res.JSON(w, res, http.StatusOK)
 }
 

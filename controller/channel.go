@@ -87,7 +87,7 @@ func UpdateChannel(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	res.SetResponse(reqChannel)
+	res.SetResponse(model.Channels{reqChannel})
 	res.JSON(w, res, http.StatusOK)
 }
 

@@ -12,6 +12,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/lib/pq v1.0.0
+	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf
 	github.com/urfave/negroni v1.0.0
 	google.golang.org/appengine v1.5.0 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect

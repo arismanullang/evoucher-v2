@@ -78,6 +78,8 @@ func init() {
 	v2.GetFunc("/:company/tags", c.GetTags)
 	v2.GetFunc("/:company/tags/:id", c.GetTagByID)
 	v2.GetFunc("/:company/tags/key/:key", c.GetTagByKey)
+	v2.GetFunc("/:company/tags/category/:category", c.GetTagByKey)
+	// v2.GetFunc("/:company/tags/category/:key", c.GetTagByKey)
 	v2.PutFunc("/:company/tags/:id", c.UpdateTag)
 	v2.DeleteFunc("/:company/tags/:id", c.DeleteTag)
 
@@ -129,4 +131,24 @@ func AutoCORS(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)
+}
+
+func checkJunoToken() {
+	// token, err := VerifyJWT(key)
+	// if err != nil {
+	// 	res.SetStatus(http.StatusUnauthorized)
+	// 	res.AddErrors(err)
+	// 	res.Write(w)
+	// 	return
+	// }
+
+	// claims, ok := token.Claims.(*JWTJunoClaims)
+	// if ok && token.Valid {
+	// 	// fmt.Printf("Key:%v", token.Header)
+	// } else {
+	// 	res.SetStatus(http.StatusUnauthorized)
+	// 	res.AddErrors(errors.New("key is invalid"))
+	// 	res.Write(w)
+	// 	return
+	// }
 }

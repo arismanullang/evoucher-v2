@@ -74,6 +74,11 @@ func GetTagByKey(qp *util.QueryParam, key string) (*Tags, bool, error) {
 	return getSearchTags("name", util.SimplifyKeyString("%"+key+"%"), qp)
 }
 
+//GetTagByCategory : get tag by specified category
+func GetTagByCategory(qp *util.QueryParam, val string) (*Tags, bool, error) {
+	return getSearchTags("object_category", val, qp)
+}
+
 func getTags(k, v string, qp *util.QueryParam) (*Tags, bool, error) {
 	q, err := qp.GetQueryByDefaultStruct(Tag{})
 	if err != nil {
