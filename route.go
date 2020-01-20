@@ -107,7 +107,10 @@ func init() {
 	// v2.GetFunc("/:company/debug/pprof/trace", pprof.Trace)
 
 	// blast
-	v2.PostFunc("/:company/blast/send", c.EmailBlast)
+	v2.GetFunc("/:company/blasts", c.GetBlasts)
+	v2.GetFunc("/:company/blasts/:id", c.GetBlastByID)
+	v2.PostFunc("/:company/blast/create", c.CreateEmailBlast)
+	v2.PostFunc("/:company/blast/send/:id", c.SendEmailBlast)
 	router = r
 }
 
