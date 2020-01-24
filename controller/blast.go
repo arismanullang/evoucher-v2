@@ -31,7 +31,7 @@ func CreateEmailBlast(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	blast.Program = *program
+	blast.Program = program
 	blast.Template = "blast-template"
 
 	// validate program channel -> should be blast
@@ -41,10 +41,10 @@ func CreateEmailBlast(w http.ResponseWriter, r *http.Request) {
 
 	// }
 
-	for _, recipient := range blast.RecipientsData {
-		// generate voucher for every recipient
-		recipient.VoucherURL = "voucher-staging.elys.id"
-	}
+	// for _, recipient := range blast.RecipientsData {
+	// 	// generate voucher for every recipient
+	// 	recipient.VoucherID = ""
+	// }
 
 	// insert blast
 	response, err := blast.Insert()
@@ -58,8 +58,8 @@ func CreateEmailBlast(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-// UpdateBlat :
-func UpdateBlat(w http.ResponseWriter, r *http.Request) {
+// UpdateBlast :
+func UpdateBlast(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	id := bone.GetValue(r, "id")
@@ -143,13 +143,13 @@ func SendEmailBlast(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	blast.Program = *program
+	blast.Program = program
 	blast.Template = "blast-template"
 
-	for _, recipient := range blast.RecipientsData {
-		// generate voucher for every recipient
-		recipient.VoucherURL = "voucher-staging.elys.id"
-	}
+	// for _, recipient := range blast.BlastRecipient {
+	// 	// generate voucher for every recipient
+	// 	// recipient.VoucherID = ""
+	// }
 
 	success, err := model.SendEmailBlast(*blast)
 	if err != nil {
