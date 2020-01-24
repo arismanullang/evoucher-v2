@@ -133,15 +133,22 @@ func SendEmailBlast(w http.ResponseWriter, r *http.Request) {
 	// 	// recipient.VoucherID = ""
 	// }
 
-	success, err := model.SendEmailBlast(*blast)
-	if err != nil {
-		// rollback inserted blast
-		fmt.Println(err)
-		res.SetError(JSONErrFatal.SetArgs(err.Error()))
-		res.JSON(w, res, JSONErrFatal.Status)
+	if blast.Status == model.StatusCreated {
+		success, err := model.SendEmailBlast(*blast)
+		if err != nil {
+			// rollback inserted blast
+			fmt.Println(err)
+			res.SetError(JSONErrFatal.SetArgs(err.Error()))
+			res.JSON(w, res, JSONErrFatal.Status)
+			return
+		}
+
+		res.SetResponse(success)
+		res.JSON(w, res, http.StatusOK)
+	} else {
+		res.SetError(JSONErrBadRequest.SetMessage("Blast already submitted"))
+		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
 	}
 
-	res.SetResponse(success)
-	res.JSON(w, res, http.StatusOK)
 }
