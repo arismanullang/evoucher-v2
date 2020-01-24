@@ -128,24 +128,6 @@ func SendEmailBlast(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&blast); err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
-
-	program, err := model.GetProgramByID(blast.Program.ID, qp)
-	if err != nil {
-		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
-
-	blast.Program = program
-	blast.Template = "blast-template"
-
 	// for _, recipient := range blast.BlastRecipient {
 	// 	// generate voucher for every recipient
 	// 	// recipient.VoucherID = ""
