@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"math"
 	"time"
+
+	"github.com/gilkor/evoucher-v2/util"
+	"github.com/jmoiron/sqlx/types"
 )
 
 type (
@@ -15,8 +18,8 @@ type (
 	}
 	//RulesExpression :
 	RulesExpression struct {
-		Or  []map[string]RulesArgument `json:"$OR"`
-		And []map[string]RulesArgument `json:"$AND"`
+		Or  map[string]RulesArgument `json:"$OR"`
+		And map[string]RulesArgument `json:"$AND"`
 	}
 	//RulesArgument :
 	// Gte : Greater Than Equals (>=)
@@ -46,19 +49,19 @@ const (
 	ruleAllowCrossProgram   = "cross_program"
 
 	//allow accumulative change to number 0 = unlimited
-	ruleAccumulative = "allow_accumulative"
+	// ruleAccumulative = "allow_accumulative"
 
 	//rule max usage by day
-	ruleMaxUsageByDay = "max_usage_by_day"
+	// ruleMaxUsageByDay = "max_usage_by_day"
 
-	ruleSpending      = "spending"
-	ruleValidityHours = "validity_hours"
-	ruleValidityDays  = "validity_days"
+	// ruleSpending      = "spending"
+	// ruleValidityHours = "validity_hours"
+	// ruleValidityDays  = "validity_days"
 
 	//GET Voucher
 	//TODO
-	ruleGetVoucherType = "get_voucher_type" //1days, program
-	ruleMaxGetVoucher  = "max_get_voucher"  //2
+	// ruleGetVoucherType = "get_voucher_type" //1days, program
+	// ruleMaxGetVoucher  = "max_get_voucher"  //2
 
 	//UPDATE NEW
 	ruleClaimValidityHour       = "rule_claim_validity_hour"
@@ -89,8 +92,8 @@ var (
 	ErrorRuleUnexpectedNumericType = errors.New("Non-numeric type could not be converted to float")
 )
 
-// Unmarshal from JSONExpr.String to Rule struct
-func (rule *Rules) Unmarshal(exp JSONExpr) error {
+// Unmarshal from types.JSONText.String to Rule struct
+func (rule *Rules) Unmarshal(exp types.JSONText) error {
 	err := json.Unmarshal([]byte(exp.String()), rule)
 	return err
 }
@@ -100,12 +103,9 @@ func (rule *Rules) getRuleKeys() ([]string, error) {
 	keys := make([]string, len(rule.Rules.And))
 
 	i := 0
-	for _, v := range rule.Rules.And {
-		for k := range v {
-			keys[i] = k
-			i++
-			break
-		}
+	for k := range rule.Rules.And {
+		keys[i] = k
+		i++
 	}
 	return keys, nil
 }
@@ -113,12 +113,12 @@ func (rule *Rules) getRuleKeys() ([]string, error) {
 //Validate Rules
 func (rule *Rules) Validate() (bool, error) {
 	r := false
-	for _, v := range rule.Rules.And {
-		r, err := rule.validateRulesAnd(v)
-		if !r {
-			return r, err
-		}
+	// for _, v := range rule.Rules.And {
+	r, err := rule.validateRulesAnd(rule.Rules.And)
+	if !r {
+		return r, err
 	}
+	// }
 	return r, nil
 }
 
@@ -127,35 +127,59 @@ func (rule *Rules) Validate() (bool, error) {
 //DEPRECATED
 func (rule *Rules) validateRulesAnd(ra map[string]RulesArgument) (bool, error) {
 	r := false
-	for k, v := range ra {
-		switch k {
-		case ruleActiveProgramPeriod:
-			v.validateTime(time.Now())
-			break
-		case ruleValidVoucherPeriod:
-			v.validateTime(time.Now())
-			break
-		case ruleAllowCrossProgram:
-			v.validateString("")
-			break
-		case ruleAccumulative:
-			//validate bool
-			break
-		case ruleMaxUsageByDay:
-			v.validateNumber(0)
-			break
-		case ruleSpending:
-			v.validateNumber(0)
-			break
-		case ruleValidityHours:
-			//??
-			break
-		case ruleValidityDays:
-			v.validateNumber(0)
-			break
-		}
-	}
+	// for k, v := range ra {
+	// 	switch k {
+	// 	case ruleActiveProgramPeriod:
+	// 		v.validateTime(time.Now())
+	// 		break
+	// 	case ruleValidVoucherPeriod:
+	// 		v.validateTime(time.Now())
+	// 		break
+	// 	case ruleAllowCrossProgram:
+	// 		v.validateString("")
+	// 		break
+	// 	case ruleAccumulative:
+	// 		//validate bool
+	// 		break
+	// 	case ruleMaxUsageByDay:
+	// 		v.validateNumber(0)
+	// 		break
+	// 	case ruleSpending:
+	// 		v.validateNumber(0)
+	// 		break
+	// 	case ruleValidityHours:
+	// 		//??
+	// 		break
+	// 	case ruleValidityDays:
+	// 		v.validateNumber(0)
+	// 		break
+	// 	}
+	// }
 	return r, nil
+}
+
+func (ra *RulesArgument) isEmpty() bool {
+	r := true
+	if ra.Eq != nil {
+		r = false
+	}
+	if ra.Gte != nil {
+		r = false
+	}
+	if ra.Lte != nil {
+		r = false
+	}
+	if ra.Gt != nil {
+		r = false
+	}
+	if ra.Lt != nil {
+		r = false
+	}
+	util.DEBUG("check len", len(ra.In), len(ra.In) > 0)
+	if len(ra.In) > 0 {
+		r = false
+	}
+	return r
 }
 
 //Default true if 1 validate return false then return `not valid transaction rule`
@@ -191,7 +215,7 @@ func (ra *RulesArgument) validateTime(tx time.Time) (bool, error) {
 			return r, err
 		}
 	}
-	if ra.In != nil {
+	if ra.In != nil && len(ra.In) > 0 {
 		r, err := ra.validateInTime(tx)
 		if err != nil {
 			return r, err
@@ -263,8 +287,10 @@ func (ra *RulesArgument) validateLtTime(tx time.Time) (bool, error) {
 func (ra *RulesArgument) validateInTime(tx time.Time) (bool, error) {
 	r := false
 	//convert to time
+	util.DEBUG("Start.....")
 	for _, value := range ra.In {
 		t, err := stringToTime(fmt.Sprint(value))
+		util.DEBUG("val:", value)
 		if err != nil {
 			return r, err
 		}
@@ -543,4 +569,53 @@ func (rule *Rules) isNumberValid(opr string, val, exp int) bool {
 		break
 	}
 	return r
+}
+
+// ruleClaimValidityHour       = "rule_claim_validity_hour"
+// 	ruleClaimValidityDay        = "rule_claim_validity_day"
+// 	ruleClaimValidityDate       = "rule_claim_validity_date"
+// 	ruleClaimIsAccumulative     = "rule_claim_is_accumulative"
+// 	ruleClaimAccumulative       = "rule_claim_accumulative"
+// 	ruleClaimAccumulativePeriod = "rule_claim_accumulative_period"
+// 	ruleClaimMinSpending        = "rule_claim_accumulative_spending"
+
+// 	ruleUseIsCrossProgram  = "rule_use_is_cross_program"
+// 	ruleUseCrossProgram    = "rule_use_cross_program"
+// 	ruleUseValidityHour    = "rule_use_validity_hour"
+// 	ruleUseValidityDay     = "rule_use_validity_day"
+// 	ruleUseValidityDate    = "rule_use_validity_date"
+// 	ruleUseActivePeriod    = "rule_use_active_period"
+// 	ruleUseOutlet          = "rule_use_outlet"
+// 	ruleUseDicountTreshold = "rule_use_discount_treshold"
+// 	ruleUseMinSpending     = "rule_use_min_spending"
+// 	ruleUseMaxUsage        = "rule_use_max_usage"
+// 	ruleUseUsagePeriod     = "rule_use_usage_period"
+
+//ValidateClaimValidity : checking time base validity of transaction
+func (rule RulesExpression) ValidateClaimValidity() (bool, error) {
+	r := true
+	t := time.Now()
+	ruleDate := rule.And[ruleClaimValidityDate]
+	if !ruleDate.isEmpty() {
+		r, err := ruleDate.validateTime(t)
+		if !r {
+			return r, err
+		}
+	}
+	ruleDay := rule.And[ruleClaimValidityDay]
+	if !ruleDay.isEmpty() {
+		r, err := ruleDay.validateTime(t)
+		if !r {
+			return r, err
+		}
+	}
+	ruleHour := rule.And[ruleClaimValidityHour]
+	if !ruleHour.isEmpty() {
+		r, err := ruleHour.validateTime(t)
+		if !r {
+			return r, err
+		}
+	}
+	util.DEBUG("Cheecking", ruleDate, ruleDay, ruleHour)
+	return r, nil
 }

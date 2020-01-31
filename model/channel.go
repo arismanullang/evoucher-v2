@@ -12,7 +12,7 @@ type (
 	Channel struct {
 		ID          string         `db:"id" json:"id,omitempty"`
 		Name        string         `db:"name" json:"name,omitempty"`
-		Description JSONExpr       `db:"description" json:"description,omitempty"`
+		Description types.JSONText `db:"description" json:"description,omitempty"`
 		IsSuper     bool           `db:"is_super" json:"is_super,omitempty"`
 		CreatedAt   *time.Time     `db:"created_at" json:"created_at,omitempty"`
 		CreatedBy   string         `db:"created_by" json:"created_by,omitempty"`
@@ -27,7 +27,7 @@ type (
 	// ChannelsWithTags struct {
 	// 	ID          string         `db:"id" json:"id,omitempty"`
 	// 	Name        string         `db:"name" json:"name,omitempty"`
-	// 	Description JSONExpr       `db:"description" json:"description,omitempty"`
+	// 	Description types.JSONText       `db:"description" json:"description,omitempty"`
 	// 	CompanyID   string         `db:"company_id" json:"company_id,omitempty"`
 	// 	CreatedAt   *time.Time     `db:"created_at" json:"created_at,omitempty"`
 	// 	CreatedBy   string         `db:"created_by" json:"created_by,omitempty"`

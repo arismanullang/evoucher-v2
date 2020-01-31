@@ -98,6 +98,7 @@ func init() {
 	//transaction voucher
 	v2.PostFunc("/:company/transaction/voucher/assign", c.PostVoucherAssignHolder)
 	v2.PostFunc("/:company/transaction/voucher/assignholder", c.PostVoucherAssignHolder)
+	v2.PostFunc("/:company/transaction/voucher/claim", c.PostVoucherClaim)
 	// v2.PostFunc("/:company/transaction/voucher/redeem", c.PostVoucherRedeem)
 
 	// v2.GetFunc("/:company/debug/pprof/", pprof.Index)

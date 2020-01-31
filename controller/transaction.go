@@ -47,7 +47,10 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	//Validate Rule Program
 	program, err := model.GetProgramByID(req.ProgramID, qp)
 	if err != nil {
-
+		u.DEBUG(err)
+		res.SetError(JSONErrBadRequest)
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
 	}
 	err = rule.Unmarshal(program.Rule)
 	if err != nil {
@@ -57,30 +60,30 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := rule.Validate()
-	if result {
-		//Unexpected error
-		if err != nil {
-			u.DEBUG(err)
-			res.SetError(JSONErrBadRequest)
-			res.JSON(w, res, JSONErrBadRequest.Status)
-			return
-		}
-		//expected error
-		res.SetError(JSONErrBadRequest)
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
+	// result, err := rule.Validate()
+	// if result {
+	// 	//Unexpected error
+	// 	if err != nil {
+	// 		u.DEBUG(err)
+	// 		res.SetError(JSONErrBadRequest)
+	// 		res.JSON(w, res, JSONErrBadRequest.Status)
+	// 		return
+	// 	}
+	// 	//expected error
+	// 	res.SetError(JSONErrBadRequest)
+	// 	res.JSON(w, res, JSONErrBadRequest.Status)
+	// 	return
+	// }
 
 	//
 	//
 	//
-	if err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrBadRequest)
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
+	// if err != nil {
+	// 	u.DEBUG(err)
+	// 	res.SetError(JSONErrBadRequest)
+	// 	res.JSON(w, res, JSONErrBadRequest.Status)
+	// 	return
+	// }
 	if err = req.Update(); err != nil {
 		u.DEBUG(err)
 		res.SetErrorWithDetail(JSONErrFatal, err)
@@ -103,7 +106,7 @@ type (
 	}
 )
 
-//PostVoucherUse :
+//PostVoucherUset :
 func PostVoucherUset(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
@@ -118,7 +121,10 @@ func PostVoucherUset(w http.ResponseWriter, r *http.Request) {
 	//Validate Rule Program
 	program, err := model.GetProgramByID(req.ProgramID, qp)
 	if err != nil {
-
+		u.DEBUG(err)
+		res.SetError(JSONErrBadRequest)
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
 	}
 	err = rule.Unmarshal(program.Rule)
 	if err != nil {
@@ -142,7 +148,10 @@ func PostVoucherUset(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
 	}
-	//
+	//parse data transaction
+	//validate user data
+	//get program id, user data
+	//check voucher
 	//
 	//
 	if err != nil {
@@ -180,7 +189,9 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	//Validate Rule Program
 	program, err := model.GetProgramByID(req.ProgramID, qp)
 	if err != nil {
-
+		u.DEBUG(err)
+		res.SetError(JSONErrBadRequest)
+		res.JSON(w, res, JSONErrBadRequest.Status)
 	}
 	err = rule.Unmarshal(program.Rule)
 	if err != nil {
@@ -190,21 +201,42 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := rule.Validate()
-	if result {
-		//Unexpected error
-		if err != nil {
-			u.DEBUG(err)
-			res.SetError(JSONErrBadRequest)
-			res.JSON(w, res, JSONErrBadRequest.Status)
-			return
-		}
-		//expected error
-		res.SetError(JSONErrBadRequest)
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
-	//
+	// u.DEBUG("############################")
+	// u.DEBUG(program.Rule)
+	// u.DEBUG("############################")
+
+	// var rules model.RulesExpression
+	// program.Rule.Unmarshal(&rules)
+
+	// for k, val := range rules.And {
+	// 	u.DEBUG(k, "----> ", val, ":s:", len(val.In))
+	// }
+
+	// u.DEBUG("############################")
+	// resultr, err := rules.ValidateClaimValidity()
+	// u.DEBUG("END:", resultr, err)
+
+	// return
+
+	// result, err := rule.Validate()
+	// if result {
+	// 	//Unexpected error
+	// 	if err != nil {
+	// 		u.DEBUG(err)
+	// 		res.SetError(JSONErrBadRequest)
+	// 		res.JSON(w, res, JSONErrBadRequest.Status)
+	// 		return
+	// 	}
+	// 	//expected error
+	// 	res.SetError(JSONErrBadRequest)
+	// 	res.JSON(w, res, JSONErrBadRequest.Status)
+	// 	return
+	// }
+	//parse transaction data
+	//validate user data
+	//get program id, user data, claim amount
+	//get voucher available stock
+	//generate voucher data
 	//
 	//
 	if err != nil {

@@ -19,10 +19,10 @@ type (
 		MaxValue        float64        `db:"max_value" json:"max_value,omitempty"`
 		StartDate       time.Time      `db:"start_date" json:"start_date,omitempty"`
 		EndDate         time.Time      `db:"end_date" json:"end_date,omitempty"`
-		Description     JSONExpr       `db:"description" json:"description,omitempty"`
+		Description     types.JSONText `db:"description" json:"description,omitempty"`
 		ImageURL        string         `db:"image_url" json:"image_url,omitempty"`
 		Template        string         `db:"template" json:"template,omitempty"`
-		Rule            JSONExpr       `db:"rule" json:"rule"`
+		Rule            types.JSONText `db:"rule" json:"rule"`
 		State           string         `db:"state" json:"state"`
 		Stock           int64          `db:"stock" json:"stock"`
 		CreatedAt       *time.Time     `db:"created_at" json:"created_at,omitempty"`
@@ -32,7 +32,7 @@ type (
 		Status          string         `db:"status" json:"status,omitempty"`
 		Partners        Partners       `json:"partners,omitempty"`
 		Vouchers        Vouchers       `json:"vouchers,omitempty"`
-		VoucherFormat   JSONExpr       `db:"voucher_format" json:"voucher_format,omitempty"`
+		VoucherFormat   types.JSONText `db:"voucher_format" json:"voucher_format,omitempty"`
 		IsReimburse     bool           `db:"is_reimburse" json:"is_reimburse,omitempty"`
 		Price           float64        `db:"price" json:"price,omitempty"`
 		ChannelID       string         `db:"channel_id" json:"channel_id,omitempty"`
