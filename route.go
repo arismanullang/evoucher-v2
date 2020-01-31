@@ -110,8 +110,8 @@ func init() {
 	// blast
 	v2.GetFunc("/:company/blasts", c.GetBlasts)
 	v2.GetFunc("/:company/blasts/:id", c.GetBlastByID)
-	v2.PostFunc("/:company/blast/create", c.CreateEmailBlast)
-	v2.PostFunc("/:company/blast/send/:id", c.SendEmailBlast)
+	v2.PostFunc("/:company/blasts/create", c.CreateEmailBlast)
+	v2.PostFunc("/:company/blasts/send/:id", c.SendEmailBlast)
 	router = r
 }
 
