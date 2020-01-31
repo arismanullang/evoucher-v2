@@ -352,7 +352,7 @@ func (b *Blast) Update() error {
 }
 
 // SendEmailBlast send email blast
-func SendEmailBlast(blast Blast) (bool, error) {
+func (blast *Blast) SendEmailBlast() error {
 	recipients := []Recipient{}
 
 	imageHeader := blast.ImageHeader
@@ -389,17 +389,18 @@ func SendEmailBlast(blast Blast) (bool, error) {
 
 	success, err := mailService("POST", url, jsonParam)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	if success {
 		// Update blast status
-		if err := blast.UpdateBlastStatus(); err != nil {
-			return false, errors.New("Failed when update blast status ," + err.Error())
+		err = blast.UpdateBlastStatus()
+		if err != nil {
+			return errors.New("Failed when update blast status ," + err.Error())
 		}
 	}
 
-	return success, nil
+	return nil
 }
 
 func (b *Blast) UpdateBlastStatus() error {

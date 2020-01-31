@@ -134,7 +134,7 @@ func SendEmailBlast(w http.ResponseWriter, r *http.Request) {
 	// }
 
 	if blast.Status == model.StatusCreated {
-		success, err := model.SendEmailBlast(*blast)
+		err := blast.SendEmailBlast()
 		if err != nil {
 			// rollback inserted blast
 			fmt.Println(err)
@@ -142,8 +142,7 @@ func SendEmailBlast(w http.ResponseWriter, r *http.Request) {
 			res.JSON(w, res, JSONErrFatal.Status)
 			return
 		}
-
-		res.SetResponse(success)
+		res.SetResponse(model.Blasts{*blast})
 		res.JSON(w, res, http.StatusOK)
 	} else {
 		res.SetError(JSONErrBadRequest.SetMessage("Blast already submitted"))
