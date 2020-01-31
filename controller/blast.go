@@ -111,7 +111,7 @@ func GetBlastByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res.SetResponse(blast)
+	res.SetResponse(model.Blasts{*blast})
 	res.JSON(w, res, http.StatusOK)
 }
 

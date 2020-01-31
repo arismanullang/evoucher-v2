@@ -10,21 +10,25 @@ import (
 	"time"
 
 	"github.com/gilkor/evoucher-v2/util"
+	"github.com/jmoiron/sqlx/types"
 )
 
 type (
+
 	// Blast : represent of blast table model
 	Blast struct {
 		ID             string          `db:"id" json:"id,omitempty"`
 		Subject        string          `db:"subject" json:"subject,omitempty"`
 		ProgramID      string          `db:"program_id" json:"program_id,omitempty"`
 		Program        *Program        `json:"program,omitempty"`
+		BlastProgram   types.JSONText  `db:"program" json:"-"`
 		CompanyID      string          `db:"company_id" json:"company_id,omitempty"`
 		ImageHeader    string          `db:"image_header" json:"image_header,omitempty"`
 		ImageFooter    string          `db:"image_footer" json:"image_footer,omitempty"`
 		EmailContent   string          `db:"email_content" json:"email_content,omitempty"`
 		Template       string          `db:"template" json:"template,omitempty"`
 		BlastRecipient BlastRecipients `json:"recipients,omitempty"`
+		Recipient      types.JSONText  `db:"recipients" json:"-"`
 		CreatedAt      *time.Time      `db:"created_at" json:"created_at,omitempty"`
 		CreatedBy      string          `db:"created_by" json:"created_by,omitempty"`
 		UpdatedAt      *time.Time      `db:"updated_at" json:"updated_at,omitempty"`
@@ -37,7 +41,7 @@ type (
 
 	// BlastRecipient : detail data for each recipient per blast
 	BlastRecipient struct {
-		ID          string     `db:"id" json:"id,omitempty"`
+		ID          int        `db:"id" json:"id,omitempty"`
 		BlastID     string     `db:"blast_id" json:"blast_id,omitempty"`
 		HolderEmail string     `db:"email" json:"email,omitempty"`
 		HolderName  string     `db:"name" json:"name,omitempty"`
@@ -180,6 +184,20 @@ func getBlasts(k, v string, qp *util.QueryParam) (*Blasts, bool, error) {
 	if len(resd) < qp.Count {
 		qp.Count = len(resd)
 	}
+
+	err = json.Unmarshal([]byte(resd[0].Recipient), &resd[0].BlastRecipient)
+	if err != nil {
+		return &Blasts{}, false, err
+	}
+
+	var programs Programs
+	err = json.Unmarshal([]byte(resd[0].BlastProgram), &programs)
+	if err != nil {
+		return &Blasts{}, false, err
+	}
+
+	resd[0].Program = &programs[0]
+
 	return &resd, next, nil
 }
 
