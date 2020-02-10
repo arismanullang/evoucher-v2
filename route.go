@@ -112,6 +112,11 @@ func init() {
 	v2.GetFunc("/:company/blasts/:id", c.GetBlastByID)
 	v2.PostFunc("/:company/blasts/create", c.CreateEmailBlast)
 	v2.PostFunc("/:company/blasts/send/:id", c.SendEmailBlast)
+	// config
+	v2.GetFunc("/:company/config", c.GetConfigs)
+	v2.PostFunc("/:company/config", c.PostConfig)
+	v2.PutFunc("/:company/config", c.UpdateConfig)
+
 	router = r
 }
 
