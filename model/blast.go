@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -82,6 +83,21 @@ type (
 		ImageFooter  string `json:"image_footer,omitempty"`
 		EmailContent string `json:"email_content,omitempty"`
 		EmailSubject string `json:"email_subject,omitempty"`
+	}
+
+	Template struct {
+		Data struct {
+			CompanyID     string `json:"company_id"`
+			CreatedAt     string `json:"created_at"`
+			CreatedBy     string `json:"created_by"`
+			Description   string `json:"description"`
+			ID            string `json:"id"`
+			LastUpdatedAt string `json:"last_updated_at"`
+			LastUpdatedBy string `json:"last_updated_by"`
+			Message       string `json:"message"`
+			Name          string `json:"name"`
+			Subject       string `json:"subject"`
+		} `json:"data"`
 	}
 )
 
@@ -431,6 +447,38 @@ func (b *Blast) UpdateBlastStatus() error {
 
 	*b = res[0]
 	return nil
+}
+
+func GetBlastsTemplate(templateName string) (Template, error) {
+	domain := os.Getenv("MAIL_DOMAIN")
+	mailKey := os.Getenv("MAIL_KEY")
+
+	url := domain + "/v3/email/templates/" + templateName + "?key=" + mailKey
+
+	client := &http.Client{}
+	resp, err := client.Get(url)
+	if err != nil {
+		return Template{}, err
+	}
+	defer resp.Body.Close()
+
+	data := Template{}
+
+	if resp.StatusCode == http.StatusOK {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return Template{}, err
+		}
+		bodyString := string(bodyBytes)
+		fmt.Println("template response : ", bodyString)
+		err = json.Unmarshal([]byte(bodyString), &data)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		return data, nil
+	}
+
+	return Template{}, err
 }
 
 func mailService(method, url string, param []byte) (bool, error) {

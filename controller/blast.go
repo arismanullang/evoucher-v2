@@ -104,6 +104,7 @@ func GetBlastByID(w http.ResponseWriter, r *http.Request) {
 
 	qp := u.NewQueryParam(r)
 	id := bone.GetValue(r, "id")
+
 	blast, err := model.GetBlastByID(qp, id)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
@@ -112,6 +113,48 @@ func GetBlastByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res.SetResponse(model.Blasts{*blast})
+	res.JSON(w, res, http.StatusOK)
+}
+
+// GetTemplateByName : get template of blast by using nudge blast name
+func GetTemplateByName(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	name := bone.GetValue(r, "name")
+
+	template, err := model.GetBlastsTemplate(name)
+	if err != nil {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
+
+	res.SetResponse(template.Data)
+	res.JSON(w, res, http.StatusOK)
+}
+
+// GetBlastsTemplate : get template of blast
+func GetBlastsTemplate(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	qp := u.NewQueryParam(r)
+	id := bone.GetValue(r, "id")
+
+	fmt.Println("get blast template biasa = ", id)
+	blast, err := model.GetBlastByID(qp, id)
+	if err != nil {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
+
+	template, err := model.GetBlastsTemplate(blast.Template)
+	if err != nil {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
+
+	res.SetResponse(template.Data)
 	res.JSON(w, res, http.StatusOK)
 }
 
