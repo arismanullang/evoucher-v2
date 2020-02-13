@@ -490,7 +490,6 @@ func mailService(method, url string, param []byte) (bool, error) {
 
 	req, err := http.NewRequest(method, domain+url+mailKey, bytes.NewBuffer(param))
 	if err != nil {
-		panic(err)
 		return false, err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -498,7 +497,6 @@ func mailService(method, url string, param []byte) (bool, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
 		return false, err
 	}
 	defer resp.Body.Close()
