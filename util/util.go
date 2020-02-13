@@ -2,7 +2,18 @@ package util
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
+	"time"
+)
+
+const (
+	// ALPHABET string
+	ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	// NUMERALS string
+	NUMERALS = "1234567890"
+	// ALPHANUMERIC string
+	ALPHANUMERIC = ALPHABET + NUMERALS
 )
 
 //StandardizeSpaces : trim redundant spaces
@@ -24,4 +35,21 @@ var replacer = strings.NewReplacer("\r", "0x0A", "\n", "0x0B", "\t", "0x0C")
 func ToStringOneLine(s interface{}) string {
 	str := fmt.Sprintf("%v", s)
 	return replacer.Replace(str)
+}
+
+//RandomizeString : randomize string with custom length and random type
+func RandomizeString(ln int, fm string) string {
+	CharsType := map[string]string{
+		"Alphabet":     ALPHABET,
+		"Numerals":     NUMERALS,
+		"Alphanumeric": ALPHANUMERIC,
+	}
+
+	rand.Seed(time.Now().UTC().UnixNano())
+	chars := CharsType[fm]
+	result := make([]byte, ln)
+	for i := 0; i < ln; i++ {
+		result[i] = chars[rand.Intn(len(chars))]
+	}
+	return string(result)
 }

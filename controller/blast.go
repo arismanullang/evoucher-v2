@@ -15,6 +15,8 @@ func CreateEmailBlast(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	qp := u.NewQueryParam(r)
 
+	companyID := bone.GetValue(r, "company")
+
 	var blast model.Blast
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&blast); err != nil {
@@ -31,8 +33,15 @@ func CreateEmailBlast(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	configs, err := model.GetConfigs(companyID, "blast")
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
 	blast.Program = program
-	blast.Template = "blast-template"
+	blast.Template = configs["template_name"].(string)
 
 	// validate program channel -> should be blast
 	// validate available voucher on program stock
@@ -139,7 +148,6 @@ func GetBlastsTemplate(w http.ResponseWriter, r *http.Request) {
 	qp := u.NewQueryParam(r)
 	id := bone.GetValue(r, "id")
 
-	fmt.Println("get blast template biasa = ", id)
 	blast, err := model.GetBlastByID(qp, id)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)

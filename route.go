@@ -120,6 +120,9 @@ func init() {
 	v2.PostFunc("/:company/config", c.PostConfig)
 	v2.PutFunc("/:company/config", c.UpdateConfig)
 
+	// GCS
+	v2.PostFunc("/:company/file/upload", c.UploadFile)
+
 	router = r
 }
 
