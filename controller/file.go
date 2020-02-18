@@ -106,6 +106,15 @@ func DeleteFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res.JSON(w, nil, http.StatusOK)
+
+	// 	ctx := context.Background()
+
+	// ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	// defer cancel()
+	// o := client.Bucket(bucket).Object(object)
+	// if err := o.Delete(ctx); err != nil {
+	//         return err
+	// }
 }
 
 func deleteFile(w http.ResponseWriter, r *http.Request, objname string) bool {

@@ -122,6 +122,7 @@ func init() {
 
 	// GCS
 	v2.PostFunc("/:company/file/upload", c.UploadFile)
+	v2.GetFunc("/:company/file/delete", c.DeleteFile)
 
 	router = r
 }
