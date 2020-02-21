@@ -1,6 +1,7 @@
 package model
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"log"
@@ -89,12 +90,19 @@ func GetConfigs(companyID, category string) (map[string]interface{}, error) {
 }
 
 //Insert : single row inset into table
-func (c *Config) Insert() (*Configs, error) {
+func (c *Configs) Upsert() (*Configs, error) {
 	tx, err := db.Beginx()
 	if err != nil {
 		return nil, errors.New("Failed when insert new config ," + err.Error())
 	}
 	defer tx.Rollback()
+
+	values := new(bytes.Buffer)
+	var args []interface{}
+	for _, c := range *c {
+		values.WriteString("( ?, ?, ?, ?, ?, ?, ?),")
+		args = append(args, c.CompanyID, c.Category, c.Key, c.Value, c.CreatedBy, c.UpdatedBy, StatusCreated)
+	}
 
 	q := `INSERT INTO 
 				config
@@ -108,23 +116,37 @@ func (c *Config) Insert() (*Configs, error) {
 					, status
 				)
 			VALUES 
-				( ?, ?, ?, ?, ?, ?, ?)
+			`
+
+	valuestr := values.String()
+	q += valuestr[:len(valuestr)-1]
+
+	q += ` 	
+			ON CONFLICT 
+				( company_id , key ) 
+			DO UPDATE 
+			SET
+				category = excluded.category
+				,key = excluded.key
+				,value = excluded.value
+				,updated_at = now()
+				,status = excluded.status
 			RETURNING 
-			company_id
-			, category
-			, key
-			, value
-			, created_at
-			, created_by
-			, updated_at
-			, updated_by					
-			, status
+				company_id
+				, category
+				, key
+				, value
+				, created_at
+				, created_by
+				, updated_at
+				, updated_by					
+				, status
 	`
 
 	util.DEBUG(q)
 	var res Configs
 
-	err = tx.Select(&res, tx.Rebind(q), c.CompanyID, c.Category, c.Key, c.Value, c.CreatedBy, c.UpdatedBy, StatusCreated)
+	err = tx.Select(&res, tx.Rebind(q), args...)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +155,7 @@ func (c *Config) Insert() (*Configs, error) {
 	if err != nil {
 		return nil, err
 	}
-	*c = res[0]
+	*c = res
 	return &res, nil
 }
 

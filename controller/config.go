@@ -13,9 +13,9 @@ import (
 func PostConfig(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
-	var config model.Config
+	var configs model.Configs
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&config); err != nil {
+	if err := decoder.Decode(&configs); err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrFatal)
 		res.JSON(w, res, JSONErrFatal.Status)
@@ -23,7 +23,7 @@ func PostConfig(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// insert config
-	response, err := config.Insert()
+	response, err := configs.Upsert()
 	if err != nil {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
