@@ -200,5 +200,107 @@ func SendEmailBlast(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
 	}
-
 }
+
+//temp
+
+func SetBlastConfig(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	companyID := bone.GetValue(r, "company")
+
+	err := r.ParseMultipartForm(2 << 20)
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error(), "err parse form"))
+		res.JSON(w, res, JSONErrFatal.Status)
+	}
+
+	configs := model.Configs{}
+	if len(r.MultipartForm.File) > 0 {
+		for key := range r.MultipartForm.File {
+			sourceURL, err := UploadFileFromForm(r, key, "blast_config/")
+			if err != nil {
+				res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+				res.JSON(w, res, JSONErrFatal.Status)
+				return
+			}
+
+			configs = append(configs, model.Config{
+				CompanyID: companyID,
+				Category:  "blast",
+				Key:       key,
+				Value:     sourceURL,
+				Status:    "created",
+			})
+		}
+	}
+
+	// insert config
+	if len(configs) > 0 {
+		response, err := configs.Upsert()
+		if err != nil {
+			res.SetError(JSONErrFatal.SetArgs(err.Error()))
+			res.JSON(w, res, JSONErrFatal.Status)
+			return
+		}
+
+		res.SetResponse(response)
+		res.JSON(w, res, http.StatusOK)
+	} else {
+		res.SetError(JSONErrBadRequest.SetMessage("Config is empty"))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+}
+
+// SetBlastConfig :
+// func SetBlastConfig(w http.ResponseWriter, r *http.Request) {
+// 	res := u.NewResponse()
+
+// 	companyID := bone.GetValue(r, "company")
+
+// 	r.ParseForm()
+
+// 	imageHeaderURL, err := UploadFileFromForm(r, "image_header", "blast_config/")
+// 	if err != nil {
+// 		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+// 		res.JSON(w, res, JSONErrFatal.Status)
+// 		return
+// 	}
+
+// 	imageFooterURL, err := UploadFileFromForm(r, "image_footer", "blast_config/")
+// 	if err != nil {
+// 		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+// 		res.JSON(w, res, JSONErrFatal.Status)
+// 		return
+// 	}
+
+// 	configImageHeader := model.Config{
+// 		CompanyID: companyID,
+// 		Category:  "blast",
+// 		Key:       "image_header",
+// 		Value:     imageHeaderURL,
+// 		Status:    "created",
+// 	}
+
+// 	configImageFooter := model.Config{
+// 		CompanyID: companyID,
+// 		Category:  "blast",
+// 		Key:       "image_footer",
+// 		Value:     imageFooterURL,
+// 		Status:    "created",
+// 	}
+
+// 	configs := model.Configs{configImageHeader, configImageFooter}
+
+// 	// insert config
+// 	response, err := configs.Upsert()
+// 	if err != nil {
+// 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+// 		res.JSON(w, res, JSONErrFatal.Status)
+// 		return
+// 	}
+
+// 	res.SetResponse(response)
+// 	res.JSON(w, res, http.StatusOK)
+// }

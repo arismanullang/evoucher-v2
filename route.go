@@ -111,6 +111,7 @@ func init() {
 	v2.GetFunc("/:company/blasts", c.GetBlasts)
 	v2.GetFunc("/:company/blasts/:id", c.GetBlastByID)
 	v2.PostFunc("/:company/blasts/create", c.CreateEmailBlast)
+	v2.PostFunc("/:company/blasts/config", c.SetBlastConfig)
 	v2.PostFunc("/:company/blasts/send/:id", c.SendEmailBlast)
 	v2.GetFunc("/:company/blasts/template/:id", c.GetBlastsTemplate)
 	v2.GetFunc("/:company/template/:name", c.GetTemplateByName)
