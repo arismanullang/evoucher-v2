@@ -19,7 +19,7 @@ import (
 func UploadFile(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
-	imgURL, err := UploadFileFromForm(r)
+	imgURL, err := UploadFileFromForm(r, "image-url", "")
 	if err != nil {
 		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
@@ -31,10 +31,9 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-func UploadFileFromForm(r *http.Request) (url string, err error) {
+func UploadFileFromForm(r *http.Request, formField, directory string) (url string, err error) {
 	r.ParseMultipartForm(32 << 20)
-	fmt.Println("upload file from form data")
-	f, fh, err := r.FormFile("image-url")
+	f, fh, err := r.FormFile(formField)
 	if err == http.ErrMissingFile {
 		return "", err
 	}
@@ -57,7 +56,7 @@ func UploadFileFromForm(r *http.Request) (url string, err error) {
 	}
 
 	// random filename, retaining existing extension. -> v2 used to add folder
-	name := "v2/" + u.RandomizeString(32, "Alphanumeric") + ext
+	name := "v2/" + directory + formField + ext
 
 	fmt.Println("filename = ", name)
 	b, err := json.Marshal(model.StorageBucket)
