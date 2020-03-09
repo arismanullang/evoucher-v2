@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	cloud.google.com/go v0.52.0 // indirect
+	cloud.google.com/go/pubsub v1.1.0
 	cloud.google.com/go/storage v1.5.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gilkor/athena v0.0.0-20190304115447-10789df036dd
