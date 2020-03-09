@@ -34,5 +34,7 @@ func main() {
 
 	// n.UseHandler(testRouter)
 
+	model.StartSubscriber()
+
 	log.Fatal(server.ListenAndServe(n))
 }
