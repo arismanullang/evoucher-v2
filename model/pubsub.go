@@ -20,7 +20,7 @@ func init() {
 	var err error
 	// connect to Cloud Pub/Sub
 	ctx := context.Background()
-	psc, err = pubsub.NewClient(ctx, os.Getenv("GCLOUD_PROJECT"))
+	psc, err = pubsub.NewClient(ctx, os.Getenv("GCLOUD_PUBSUB_PROJECT"))
 	if err != nil {
 		log.Fatal(err)
 	}
