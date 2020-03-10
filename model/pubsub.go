@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"cloud.google.com/go/pubsub"
+	"google.golang.org/api/option"
 
 	"github.com/gilkor/athena/lib/x"
 )
@@ -20,7 +21,7 @@ func init() {
 	var err error
 	// connect to Cloud Pub/Sub
 	ctx := context.Background()
-	psc, err = pubsub.NewClient(ctx, os.Getenv("JUNO_GCLOUD_PROJECT"))
+	psc, err = pubsub.NewClient(ctx, os.Getenv("JUNO_GCLOUD_PROJECT"), option.WithCredentialsFile(os.Getenv("JUNO_GCLOUD_CREDENTIALS")))
 	if err != nil {
 		log.Fatal(err)
 	}
