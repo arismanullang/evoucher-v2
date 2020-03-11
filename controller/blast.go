@@ -40,8 +40,23 @@ func CreateEmailBlast(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sender := configs["sender"]
+	if sender != nil {
+		blast.Sender = sender.(string)
+	}
+
+	templateName := configs["template_name"]
+	if templateName != nil {
+		blast.Template = templateName.(string)
+	}
+
 	blast.Program = program
-	blast.Template = configs["template_name"].(string)
+
+	if blast.Template == "" || blast.Sender == "" {
+		res.SetError(JSONErrBadRequest.SetMessage("Please setup the blast config"))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
 
 	// validate program channel -> should be blast
 	// validate available voucher on program stock

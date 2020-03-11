@@ -19,6 +19,7 @@ type (
 	// Blast : represent of blast table model
 	Blast struct {
 		ID             string          `db:"id" json:"id,omitempty"`
+		Sender         string          `db:"sender" json:"sender,omitempty"`
 		Subject        string          `db:"subject" json:"subject,omitempty"`
 		ProgramID      string          `db:"program_id" json:"program_id,omitempty"`
 		Program        *Program        `json:"program,omitempty"`
@@ -42,16 +43,17 @@ type (
 
 	// BlastRecipient : detail data for each recipient per blast
 	BlastRecipient struct {
-		ID          int        `db:"id" json:"id,omitempty"`
-		BlastID     string     `db:"blast_id" json:"blast_id,omitempty"`
+		ID          int        `db:"id" json:"-"`
+		BlastID     string     `db:"blast_id" json:"-"`
 		HolderEmail string     `db:"email" json:"email,omitempty"`
 		HolderName  string     `db:"name" json:"name,omitempty"`
+		HolderPhone string     `db:"mobile_no" json:"mobile_no,omitempty"`
 		VoucherID   string     `db:"voucher_id" json:"voucher_id,omitempty"`
 		VoucherObj  Voucher    `json:"voucher,omitempty"`
 		CreatedAt   *time.Time `db:"created_at" json:"created_at,omitempty"`
-		CreatedBy   string     `db:"created_by" json:"created_by,omitempty"`
+		CreatedBy   string     `db:"created_by" json:"-"`
 		UpdatedAt   *time.Time `db:"updated_at" json:"updated_at,omitempty"`
-		UpdatedBy   string     `db:"updated_by" json:"updated_by,omitempty"`
+		UpdatedBy   string     `db:"updated_by" json:"-"`
 		Status      string     `db:"status" json:"status,omitempty"`
 	}
 
@@ -201,18 +203,20 @@ func getBlasts(k, v string, qp *util.QueryParam) (*Blasts, bool, error) {
 		qp.Count = len(resd)
 	}
 
-	err = json.Unmarshal([]byte(resd[0].Recipient), &resd[0].BlastRecipient)
-	if err != nil {
-		return &Blasts{}, false, err
-	}
+	for i, _ := range resd {
+		err = json.Unmarshal([]byte(resd[i].Recipient), &resd[i].BlastRecipient)
+		if err != nil {
+			return &Blasts{}, false, err
+		}
 
-	var programs Programs
-	err = json.Unmarshal([]byte(resd[0].BlastProgram), &programs)
-	if err != nil {
-		return &Blasts{}, false, err
-	}
+		var programs Programs
+		err = json.Unmarshal([]byte(resd[i].BlastProgram), &programs)
+		if err != nil {
+			return &Blasts{}, false, err
+		}
 
-	resd[0].Program = &programs[0]
+		resd[i].Program = &programs[0]
+	}
 
 	return &resd, next, nil
 }
@@ -272,15 +276,16 @@ func (b *Blast) Insert() (*Blasts, error) {
 				blast_id
 				, name
 				, email
+				, mobile_no
 				, voucher_id
 				, created_by
 				, updated_by
 				, status					
 			)
-			VALUES (?, ?, ?, ?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q), res[0].ID, r.HolderName, r.HolderEmail, r.VoucherObj.ID, res[0].CreatedBy, res[0].UpdatedBy, StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q), res[0].ID, r.HolderName, r.HolderEmail, r.HolderPhone, r.VoucherObj.ID, res[0].CreatedBy, res[0].UpdatedBy, StatusCreated)
 		if err != nil {
 			return nil, err
 		}
@@ -396,7 +401,7 @@ func (blast *Blast) SendEmailBlast() error {
 
 	url := "/v3/email/messages?key="
 	param := BlastRequest{
-		From:     "voucher@elys.id",
+		From:     blast.Sender,
 		To:       recipients,
 		Template: blast.Template,
 	}
