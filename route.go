@@ -124,6 +124,9 @@ func init() {
 	v2.PostFunc("/:company/file/upload", c.UploadFile)
 	v2.GetFunc("/:company/file/delete", c.DeleteFile)
 
+	v2.GetFunc("/:company/accounts", c.GetAccounts)
+	v2.GetFunc("/:company/accounts/:id", c.GetAccountByID)
+
 	router = r
 }
 
