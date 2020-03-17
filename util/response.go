@@ -15,9 +15,9 @@ const (
 )
 
 type paginationData struct {
-	Next     string `json:"next,omitempty"`
-	Previous string `json:"previous,omitempty"`
-	// Count     interface{} `json:"count,omitempty"`
+	Next     string      `json:"next,omitempty"`
+	Previous string      `json:"previous,omitempty"`
+	Count    interface{} `json:"count,omitempty"`
 	// TotalData interface{} `json:"total_data,omitempty"`
 }
 
@@ -68,13 +68,50 @@ func (r *Response) SetPagination(req *http.Request, page int, next bool) {
 	}
 
 	if nextp != "" || prev != "" {
-		r.Pagination = &paginationData{nextp, prev}
+		r.Pagination = &paginationData{
+			Next:     nextp,
+			Previous: prev,
+		}
+	}
+}
+
+func (r *Response) SetNewPagination(req *http.Request, page int, next bool, count int) {
+	u := *req.URL
+	u.User = nil
+
+	nextp := ""
+	if next {
+		q := u.Query()
+		q.Set("page", fmt.Sprintf("%d", page+1))
+		u.RawQuery = q.Encode()
+		nextp = u.String()
+	}
+
+	prev := ""
+	if page > 1 {
+		q := u.Query()
+		q.Set("page", fmt.Sprintf("%d", page-1))
+		u.RawQuery = q.Encode()
+		prev = u.String()
+	}
+
+	if nextp != "" || prev != "" {
+		r.Pagination = &paginationData{
+			Next:     nextp,
+			Previous: prev,
+			Count:    count,
+		}
 	}
 }
 
 //SetTotalData : Pagination
 // func (r *Response) SetTotalData(td interface{}) {
 // 	r.Pagination.TotalData = td
+// }
+
+//SetTotalData : Pagination
+// func (r *Response) SetCount(td interface{}) {
+// 	r.Pagination.Count = td
 // }
 
 //SetError : set error type of jsonerr.ErrorResponse

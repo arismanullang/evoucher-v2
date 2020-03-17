@@ -9,7 +9,7 @@ import (
 type (
 	Account struct {
 		ID                string      `db:"id" json:"id"`
-		Name              string      `dn:"name" json:"name"`
+		Name              string      `db:"name" json:"name"`
 		CompanyId         string      `db:"company_id" json:"company_id"`
 		Gender            string      `db:"gender" json:"gender"`
 		Email             string      `db:"email" json:"email"`
@@ -23,12 +23,13 @@ type (
 		UpdatedAt         time.Time   `db:"updated_at" json:"updated_at"`
 		DeletedBy         string      `db:"deleted_by" json:"deleted_by"`
 		DeletedAt         interface{} `db:"deleted_at" json:"deleted_at"`
+		Count             int         `db:"count" json:"-"`
 	}
 
 	Accounts []Account
 )
 
-//ChannelFields : default table field
+//AccountFields : default table field
 var AccountFields = []string{"id", "name", "company_id", "gender", "email", "mobile_calling_code", "mobile_no", "state", "status", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by"}
 
 //GetAccounts : get list company by custom filter
@@ -43,21 +44,21 @@ func GetAccountByID(qp *util.QueryParam, id string) (*Accounts, bool, error) {
 
 func getAccounts(k, v string, qp *util.QueryParam) (*Accounts, bool, error) {
 
-	q, err := qp.GetQueryByDefaultStruct(Channel{})
+	q, err := qp.GetQueryByDefaultStruct(Account{})
 	if err != nil {
 		return &Accounts{}, false, err
 	}
-	// q := qp.GetQueryFields(ChannelFields)
+	// q := qp.GetQueryFields(AccountFields)
 
 	q += `
 			FROM
-				accounts
+				accounts account
 			WHERE 
-				status = ?
+				account.status = ?
 			AND ` + k + ` = ?`
 
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
+
 	util.DEBUG(q)
 	var resd Accounts
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)
@@ -70,6 +71,7 @@ func getAccounts(k, v string, qp *util.QueryParam) (*Accounts, bool, error) {
 	next := false
 	if len(resd) > qp.Count {
 		next = true
+		resd = resd[:qp.Count]
 	}
 	if len(resd) < qp.Count {
 		qp.Count = len(resd)
