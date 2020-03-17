@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gilkor/evoucher-v2/util"
@@ -20,6 +21,7 @@ type (
 		UpdatedBy   string         `db:"updated_by" json:"updated_by,omitempty"`
 		Status      string         `db:"status" json:"status,omitempty"`
 		Tags        types.JSONText `db:"channel_tags" json:"tags,omitempty"`
+		Count       int            `db:"count" json:"-"`
 	}
 	//Channels :
 	Channels []Channel
@@ -67,8 +69,9 @@ func getChannels(k, v string, qp *util.QueryParam) (*Channels, bool, error) {
 				status = ?
 			AND ` + k + ` = ?`
 
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
+
+	fmt.Println(q)
 	util.DEBUG(q)
 	var resd Channels
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)
@@ -81,6 +84,7 @@ func getChannels(k, v string, qp *util.QueryParam) (*Channels, bool, error) {
 	next := false
 	if len(resd) > qp.Count {
 		next = true
+		resd = resd[:qp.Count]
 	}
 	if len(resd) < qp.Count {
 		qp.Count = len(resd)

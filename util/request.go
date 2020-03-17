@@ -80,11 +80,11 @@ func (qp *QueryParam) GetQueryLimit() string {
 }
 
 func (qp *QueryParam) GetQueryWithPagination(q string, sort string, limit string) string {
-	return `WITH tbl AS (` + q + `)
+	return `WITH tbl AS (` + q + sort + `)
 			SELECT *
 			FROM  (
 				TABLE  tbl
-				` + sort + limit + `
+				` + limit + `
 				) sub
 			RIGHT  JOIN (SELECT count(*) FROM tbl) c("count") ON true`
 }
