@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/gilkor/evoucher-v2/util"
@@ -70,8 +69,6 @@ func getChannels(k, v string, qp *util.QueryParam) (*Channels, bool, error) {
 			AND ` + k + ` = ?`
 
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
-
-	fmt.Println(q)
 	util.DEBUG(q)
 	var resd Channels
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)

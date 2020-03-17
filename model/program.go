@@ -38,6 +38,7 @@ type (
 		ChannelID       string         `db:"channel_id" json:"channel_id,omitempty"`
 		Channels        Channels       `json:"channels,omitempty"`
 		ProgramChannels types.JSONText `db:"program_channels" json:"program_channels,omitempty"`
+		Count           int            `db:"count" json:"-"`
 		// WithTransactionCount bool       `json:"with_transaction_count,omitempty"`
 	}
 	// Programs : base model
@@ -84,8 +85,7 @@ func getPrograms(key, value string, qp *util.QueryParam) (*Programs, bool, error
 				status = ?
 			AND ` + key + ` = ?`
 
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	util.DEBUG(q)
 	var resd Programs
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, value)
@@ -99,6 +99,7 @@ func getPrograms(key, value string, qp *util.QueryParam) (*Programs, bool, error
 	next := false
 	if len(resd) > qp.Count {
 		next = true
+		resd = resd[:qp.Count]
 	}
 	if len(resd) < qp.Count {
 		qp.Count = len(resd)
