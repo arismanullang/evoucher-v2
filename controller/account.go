@@ -22,7 +22,8 @@ func GetAccounts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res.SetResponse(accounts)
-	res.SetPagination(r, qp.Page, next)
+	res.SetNewPagination(r, qp.Page, next, (*accounts)[0].Count)
+	// res.SetCount((*accounts)[0].Count)
 	res.JSON(w, res, http.StatusOK)
 }
 

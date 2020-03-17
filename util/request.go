@@ -73,10 +73,20 @@ func (qp *QueryParam) GetQuerySort() string {
 
 //GetQueryLimit : generate sql syntax of limit & offside
 func (qp *QueryParam) GetQueryLimit() string {
-	l := strconv.Itoa(qp.Count)
+	l := strconv.Itoa(qp.Count + 1)
 	o := strconv.Itoa((qp.Page - 1) * (qp.Count))
 
 	return ` LIMIT ` + l + ` OFFSET ` + o
+}
+
+func (qp *QueryParam) GetQueryWithPagination(q string, sort string, limit string) string {
+	return `WITH tbl AS (` + q + `)
+			SELECT *
+			FROM  (
+				TABLE  tbl
+				` + sort + limit + `
+				) sub
+			RIGHT  JOIN (SELECT count(*) FROM tbl) c("count") ON true`
 }
 
 func defaultQueryParam(r *http.Request) *QueryParam {
@@ -154,7 +164,7 @@ func getQueryFromStruct(qp *QueryParam, tag string, i interface{}) (string, erro
 				}
 			}
 		} else {
-			if len(tableField) > 0 {
+			if len(tableField) > 0 && tableField != "count" {
 				q += qp.TableAlias + tableField + ` ,`
 			}
 		}

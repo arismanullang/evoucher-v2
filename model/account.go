@@ -23,6 +23,7 @@ type (
 		UpdatedAt         time.Time   `db:"updated_at" json:"updated_at"`
 		DeletedBy         string      `db:"deleted_by" json:"deleted_by"`
 		DeletedAt         interface{} `db:"deleted_at" json:"deleted_at"`
+		Count             int         `db:"count" json:"-"`
 	}
 
 	Accounts []Account
@@ -56,8 +57,8 @@ func getAccounts(k, v string, qp *util.QueryParam) (*Accounts, bool, error) {
 				account.status = ?
 			AND ` + k + ` = ?`
 
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
+
 	util.DEBUG(q)
 	var resd Accounts
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)
@@ -70,6 +71,7 @@ func getAccounts(k, v string, qp *util.QueryParam) (*Accounts, bool, error) {
 	next := false
 	if len(resd) > qp.Count {
 		next = true
+		resd = resd[:qp.Count]
 	}
 	if len(resd) < qp.Count {
 		qp.Count = len(resd)
