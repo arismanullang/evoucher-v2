@@ -61,7 +61,7 @@ func GetProgram(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res.SetResponse(programs)
-	res.SetPagination(r, qp.Page, next)
+	res.SetNewPagination(r, qp.Page, next, (*programs)[0].Count)
 	res.JSON(w, res, http.StatusOK)
 }
 
