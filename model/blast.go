@@ -36,6 +36,7 @@ type (
 		UpdatedAt      *time.Time      `db:"updated_at" json:"updated_at,omitempty"`
 		UpdatedBy      string          `db:"updated_by" json:"updated_by,omitempty"`
 		Status         string          `db:"status" json:"status,omitempty"`
+		Count          int             `db:"count" json:"-"`
 	}
 
 	// Blasts : List of Blast
@@ -184,8 +185,7 @@ func getBlasts(k, v string, qp *util.QueryParam) (*Blasts, bool, error) {
 				status IN (?, ?)
 			AND ` + k + ` = ?`
 
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	util.DEBUG(q)
 	var resd Blasts
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, StatusSubmitted, v)
@@ -198,6 +198,7 @@ func getBlasts(k, v string, qp *util.QueryParam) (*Blasts, bool, error) {
 	next := false
 	if len(resd) > qp.Count {
 		next = true
+		resd = resd[:qp.Count]
 	}
 	if len(resd) < qp.Count {
 		qp.Count = len(resd)
