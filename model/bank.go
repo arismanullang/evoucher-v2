@@ -27,6 +27,7 @@ type (
 		UpdatedAt       *time.Time `db:"updated_at" json:"updated_at,omitempty"`
 		UpdatedBy       string     `db:"updated_by" json:"updated_by,omitempty"`
 		Status          string     `db:"status" json:"status,omitempty"`
+		Count           int        `db:"count" json:"-"`
 	}
 )
 
@@ -63,8 +64,7 @@ func getBanks(k, v string, qp *util.QueryParam) (*Banks, bool, error) {
 				status = ?
 			AND ` + k + ` = ?`
 
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	var resd Banks
 	util.DEBUG(q)
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)
@@ -77,6 +77,7 @@ func getBanks(k, v string, qp *util.QueryParam) (*Banks, bool, error) {
 	next := false
 	if len(resd) > qp.Count {
 		next = true
+		resd = resd[:qp.Count]
 	}
 	if len(resd) < qp.Count {
 		qp.Count = len(resd)
