@@ -148,9 +148,9 @@ func (p *Partner) Insert() (*Partners, error) {
 				id, name, description, company_id, created_at, created_by, updated_at, updated_by, status
 	`
 	// bank, err := json.Marshal(p.Bank)
-	if err != nil {
-		return nil, err
-	}
+	// if err != nil {
+	// 	return nil, err
+	// }
 	var res Partners
 	util.DEBUG(q)
 	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Description, p.CompanyID, p.CreatedBy, p.CreatedBy, StatusCreated)

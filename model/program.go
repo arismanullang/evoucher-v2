@@ -11,20 +11,20 @@ import (
 type (
 	//Program : base model
 	Program struct {
-		ID              string         `db:"id" json:"id"`
-		CompanyID       string         `db:"company_id" json:"company_id"`
+		ID              string         `db:"id" json:"id,omitempty"`
+		CompanyID       string         `db:"company_id" json:"company_id,omitempty"`
 		Name            string         `db:"name" json:"name,omitempty"`
 		Type            string         `db:"type" json:"type,omitempty"`
 		Value           float64        `db:"value" json:"value,omitempty"`
 		MaxValue        float64        `db:"max_value" json:"max_value,omitempty"`
-		StartDate       time.Time      `db:"start_date" json:"start_date,omitempty"`
-		EndDate         time.Time      `db:"end_date" json:"end_date,omitempty"`
+		StartDate       *time.Time     `db:"start_date" json:"start_date,omitempty"`
+		EndDate         *time.Time     `db:"end_date" json:"end_date,omitempty"`
 		Description     types.JSONText `db:"description" json:"description,omitempty"`
 		ImageURL        string         `db:"image_url" json:"image_url,omitempty"`
 		Template        string         `db:"template" json:"template,omitempty"`
-		Rule            types.JSONText `db:"rule" json:"rule"`
-		State           string         `db:"state" json:"state"`
-		Stock           int64          `db:"stock" json:"stock"`
+		Rule            types.JSONText `db:"rule" json:"rule,omitempty"`
+		State           string         `db:"state" json:"state,omitempty"`
+		Stock           int64          `db:"stock" json:"stock,omitempty"`
 		CreatedAt       *time.Time     `db:"created_at" json:"created_at,omitempty"`
 		CreatedBy       string         `db:"created_by" json:"created_by,omitempty"`
 		UpdatedAt       *time.Time     `db:"updated_at" json:"updated_at,omitempty"`

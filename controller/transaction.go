@@ -2,12 +2,60 @@ package controller
 
 import (
 	"encoding/json"
-	"net/http"
-
 	"github.com/gilkor/evoucher-v2/model"
 	u "github.com/gilkor/evoucher-v2/util"
+	"github.com/go-zoo/bone"
+	"net/http"
 	// "github.com/go-zoo/bone"
 )
+
+type (
+	VoucherUseRequest struct {
+		Reference    string                 `json:'reference'`
+		Transactions VoucherUseTransactions `json:"transactions"`
+		Vouchers     []string               `json:"vouchers"`
+		OutletID     string                 `json:"outlet_id"`
+	}
+	VoucherUseTransactions struct {
+		TotalAmount float64 `json:"total_amount"`
+		Details     string  `json:"details"`
+	}
+)
+
+//GetTransactions : GET list of partners
+func GetTransactions(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	qp := u.NewQueryParam(r)
+
+	partners, next, err := model.GetTransactions(qp)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(partners)
+	res.SetPagination(r, qp.Page, next)
+	res.JSON(w, res, http.StatusOK)
+}
+
+//GetTransactionByID : GET
+func GetTransactionByID(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	qp := u.NewQueryParam(r)
+	id := bone.GetValue(r, "id")
+	partner, _, err := model.GetTransactionByID(qp, id)
+	if err != nil {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
+
+	res.SetResponse(partner)
+	res.JSON(w, res, http.StatusOK)
+}
 
 //PostVoucherAssignHolder :
 func PostVoucherAssignHolder(w http.ResponseWriter, r *http.Request) {
@@ -93,19 +141,6 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusCreated)
 }
 
-type (
-	VoucherUseRequest struct {
-		Reference    string                 `json:'reference'`
-		Transactions VoucherUseTransactions `json:"transactions"`
-		Vouchers     []string               `json:"vouchers"`
-		OutletID     string                 `json:"outlet_id"`
-	}
-	VoucherUseTransactions struct {
-		TotalAmount float64 `json:"total_amount"`
-		Details     string  `json:"details"`
-	}
-)
-
 //PostVoucherUset :
 func PostVoucherUset(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
@@ -117,6 +152,28 @@ func PostVoucherUset(w http.ResponseWriter, r *http.Request) {
 	qp := u.NewQueryParam(r)
 	err := decoder.Decode(&req)
 	req.State = model.VoucherStateUsed
+
+	//if key == "" {
+	//	res.SetError(JSONErrUnauthorized)
+	//	res.JSON(w, res, JSONErrUnauthorized.Status)
+	//	return
+	//}
+	//
+	//token, err := VerifyJWT(key)
+	//if err != nil {
+	//	res.SetError(JSONErrUnauthorized)
+	//	res.JSON(w, res, JSONErrUnauthorized.Status)
+	//	return
+	//}
+	//
+	//claims, ok := token.Claims.(*JWTJunoClaims)
+	//if ok && token.Valid {
+	//	// fmt.Printf("Key:%v", token.Header)
+	//} else {
+	//	res.SetError(JSONErrUnauthorized)
+	//	res.JSON(w, res, JSONErrUnauthorized.Status)
+	//	return
+	//}
 
 	//Validate Rule Program
 	program, err := model.GetProgramByID(req.ProgramID, qp)
@@ -135,14 +192,13 @@ func PostVoucherUset(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result, err := rule.Validate()
-	if result {
-		//Unexpected error
-		if err != nil {
-			u.DEBUG(err)
-			res.SetError(JSONErrBadRequest)
-			res.JSON(w, res, JSONErrBadRequest.Status)
-			return
-		}
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrBadRequest)
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+	if !result {
 		//expected error
 		res.SetError(JSONErrBadRequest)
 		res.JSON(w, res, JSONErrBadRequest.Status)
@@ -154,12 +210,7 @@ func PostVoucherUset(w http.ResponseWriter, r *http.Request) {
 	//check voucher
 	//
 	//
-	if err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrBadRequest)
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
+
 	if err = req.Update(); err != nil {
 		u.DEBUG(err)
 		res.SetErrorWithDetail(JSONErrFatal, err)
@@ -192,6 +243,7 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 		u.DEBUG(err)
 		res.SetError(JSONErrBadRequest)
 		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
 	}
 	err = rule.Unmarshal(program.Rule)
 	if err != nil {
@@ -205,18 +257,18 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	// u.DEBUG(program.Rule)
 	// u.DEBUG("############################")
 
-	// var rules model.RulesExpression
-	// program.Rule.Unmarshal(&rules)
+	var rules model.RulesExpression
+	program.Rule.Unmarshal(&rules)
 
-	// for k, val := range rules.And {
-	// 	u.DEBUG(k, "----> ", val, ":s:", len(val.In))
-	// }
+	for k, val := range rules.And {
+		u.DEBUG(k, "----> ", val, ":s:", len(val.In))
+	}
 
-	// u.DEBUG("############################")
-	// resultr, err := rules.ValidateClaimValidity()
-	// u.DEBUG("END:", resultr, err)
+	u.DEBUG("############################")
+	resultr, err := rules.ValidateClaim()
+	u.DEBUG("END:", resultr, err)
 
-	// return
+	return
 
 	// result, err := rule.Validate()
 	// if result {
