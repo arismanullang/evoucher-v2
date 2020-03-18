@@ -45,7 +45,7 @@ func GetTags(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res.SetResponse(tags)
-	res.SetPagination(r, qp.Page, next)
+	res.SetNewPagination(r, qp.Page, next, (*tags)[0].Count)
 	res.JSON(w, res, http.StatusOK)
 }
 
