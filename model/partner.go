@@ -21,6 +21,7 @@ type (
 		Status      string         `db:"status" json:"status,omitempty"`
 		Banks       types.JSONText `db:"partner_banks" json:"banks,omitempty"`
 		Tags        types.JSONText `db:"partner_tags" json:"tags,omitempty"`
+		Count       int            `db:"count" json:"-"`
 	}
 	//Partners :
 	Partners []Partner
@@ -68,8 +69,7 @@ func getPartners(k, v string, qp *util.QueryParam) (*Partners, bool, error) {
 				status = ?
 			AND ` + k + ` = ?`
 
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	// fmt.Println(q)
 	util.DEBUG("query struct :", q)
 	// query := "select row_to_json(row) from (" + q + ") row"
@@ -84,6 +84,7 @@ func getPartners(k, v string, qp *util.QueryParam) (*Partners, bool, error) {
 	next := false
 	if len(resd) > qp.Count {
 		next = true
+		resd = resd[:qp.Count]
 	}
 	if len(resd) < qp.Count {
 		qp.Count = len(resd)
@@ -110,8 +111,7 @@ func GetPartnersByTags(qp *util.QueryParam, v string) (*Partners, bool, error) {
 			AND partner.id = t.holder
 			AND t.tag = ?`
 
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	// fmt.Println(q)
 	util.DEBUG("query struct :", q)
 	var resd Partners
@@ -125,6 +125,7 @@ func GetPartnersByTags(qp *util.QueryParam, v string) (*Partners, bool, error) {
 	next := false
 	if len(resd) > qp.Count {
 		next = true
+		resd = resd[:qp.Count]
 	}
 	if len(resd) < qp.Count {
 		qp.Count = len(resd)
