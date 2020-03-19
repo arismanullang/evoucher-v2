@@ -45,7 +45,7 @@ func GetPartners(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res.SetResponse(partners)
-	res.SetPagination(r, qp.Page, next)
+	res.SetNewPagination(r, qp.Page, next, (*partners)[0].Count)
 	res.JSON(w, res, http.StatusOK)
 }
 
@@ -134,7 +134,7 @@ func GetPartnerByTags(w http.ResponseWriter, r *http.Request) {
 
 	qp := u.NewQueryParam(r)
 	id := bone.GetValue(r, "tag_id")
-	partner, _, err := model.GetPartnersByTags(qp, id)
+	partners, next, err := model.GetPartnersByTags(qp, id)
 	if err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrResourceNotFound)
@@ -142,7 +142,8 @@ func GetPartnerByTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res.SetResponse(partner)
+	res.SetResponse(partners)
+	res.SetNewPagination(r, qp.Page, next, (*partners)[0].Count)
 	res.JSON(w, res, http.StatusOK)
 }
 
@@ -185,7 +186,7 @@ func GetBanks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res.SetResponse(banks)
-	res.SetPagination(r, qp.Page, next)
+	res.SetNewPagination(r, qp.Page, next, (*banks)[0].Count)
 	res.JSON(w, res, http.StatusOK)
 }
 

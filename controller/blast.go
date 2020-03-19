@@ -118,7 +118,7 @@ func GetBlasts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res.SetResponse(blasts)
-	res.SetPagination(r, qp.Page, next)
+	res.SetNewPagination(r, qp.Page, next, (*blasts)[0].Count)
 	res.JSON(w, res, http.StatusOK)
 }
 
