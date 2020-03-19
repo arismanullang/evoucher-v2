@@ -34,6 +34,7 @@ func init() {
 	v2.PostFunc("/:company/programs", c.PostProgram)
 	v2.GetFunc("/:company/programs", c.GetProgram)
 	v2.GetFunc("/:company/programs/:id", c.GetProgramByID)
+	v2.PostFunc("/:company/programs/image/:id", c.UploadProgramImage)
 	v2.PutFunc("/:company/programs/:id", c.UpdateProgram)
 	v2.DeleteFunc("/:company/programs/:id", c.DeleteProgram)
 
