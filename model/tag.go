@@ -21,6 +21,7 @@ type (
 		UpdatedBy   string     `db:"updated_by" json:"updated_by,omitempty"`
 		Status      string     `db:"status" json:"status,omitempty"`
 		Action      string     `json:"action,omitempty"`
+		Count       int        `db:"count" json:"-"`
 	}
 	//Tags :
 	Tags []Tag
@@ -92,8 +93,7 @@ func getTags(k, v string, qp *util.QueryParam) (*Tags, bool, error) {
 				status = ?
 			AND ` + k + ` = ?`
 
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	// fmt.Println(q)
 	var resd Tags
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)
@@ -106,6 +106,7 @@ func getTags(k, v string, qp *util.QueryParam) (*Tags, bool, error) {
 	next := false
 	if len(resd) > qp.Count {
 		next = true
+		resd = resd[:qp.Count]
 	}
 	if len(resd) < qp.Count {
 		qp.Count = len(resd)
