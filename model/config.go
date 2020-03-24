@@ -83,7 +83,7 @@ func GetConfigs(companyID, category string) (map[string]interface{}, error) {
 		return map[string]interface{}{}, err
 	}
 	if len(m) < 1 {
-		return map[string]interface{}{}, ErrorResourceNotFound
+		return map[string]interface{}{}, nil
 	}
 
 	return m, nil
