@@ -128,9 +128,9 @@ func (p *Bank) Insert() (*Banks, error) {
 				, status
 	`
 	// bank, err := json.Marshal(p.Bank)
-	if err != nil {
-		return nil, err
-	}
+	// if err != nil {
+	// 	return nil, err
+	// }
 	var res Banks
 	// util.DEBUG(p.Bank)
 	err = tx.Select(&res, tx.Rebind(q), p.PartnerID, p.BankName, p.BankBranch, p.BankAccount, p.BankAccountName,
