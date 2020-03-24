@@ -118,7 +118,7 @@ func init() {
 
 	// config
 	v2.GetFunc("/:company/config", c.GetConfigs)
-	v2.PostFunc("/:company/config", c.PostConfig)
+	v2.PostFunc("/:company/config/:category", c.SetConfig)
 	v2.PutFunc("/:company/config", c.UpdateConfig)
 
 	// GCS
