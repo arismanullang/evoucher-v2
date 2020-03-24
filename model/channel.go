@@ -146,9 +146,9 @@ func (p *Channel) Insert() (*Channels, error) {
 				id, name, description, is_super, created_at, created_by, updated_at, updated_by, status
 	`
 	// bank, err := json.Marshal(p.Bank)
-	if err != nil {
-		return nil, err
-	}
+	// if err != nil {
+	// 	return nil, err
+	// }
 	var res Channels
 	// util.DEBUG(p.Bank)
 	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Description, p.IsSuper, p.CreatedBy, p.CreatedBy, StatusCreated)

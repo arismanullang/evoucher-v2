@@ -29,4 +29,11 @@ var (
 			Code:    "ERR_BAD_REQUEST",
 			Message: "Can not find requested resource.",
 		})
+	//JSONErrInvalidRule :
+	JSONErrInvalidRule = u.NewError(
+		jsonerr.Error{
+			Status:  http.StatusBadRequest,
+			Code:    "ERR_INVALID_RULE",
+			Message: "Rule Checking Return Invalid.",
+		})
 )
