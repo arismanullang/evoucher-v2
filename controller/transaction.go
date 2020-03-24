@@ -2,10 +2,11 @@ package controller
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/gilkor/evoucher-v2/model"
 	u "github.com/gilkor/evoucher-v2/util"
 	"github.com/go-zoo/bone"
-	"net/http"
 	// "github.com/go-zoo/bone"
 )
 
@@ -265,7 +266,7 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u.DEBUG("############################")
-	resultr, err := rules.ValidateClaim()
+	resultr, err := rules.ValidateClaimValidity()
 	u.DEBUG("END:", resultr, err)
 
 	return
