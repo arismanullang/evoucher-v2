@@ -69,6 +69,7 @@ func getPartners(k, v string, qp *util.QueryParam) (*Partners, bool, error) {
 				status = ?
 			AND ` + k + ` = ?`
 
+	q = qp.GetQueryWhereClause(q, qp.Q)
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	// fmt.Println(q)
 	util.DEBUG("query struct :", q)

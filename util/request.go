@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/jmoiron/sqlx/types"
 )
 
 const (
@@ -18,11 +20,14 @@ const (
 
 //QueryParam : API QueryParam Query Param
 type QueryParam struct {
-	Page       int
-	Count      int
-	TableAlias string //table alias
-	Fields     string //Fields : for multyple field , using coma delimiter ex : id , name , etc ..
-	Sort       string
+	Page        int
+	Count       int
+	TableAlias  string //table alias
+	Fields      string //Fields : for multyple field , using coma delimiter ex : id , name , etc ..
+	Sort        string
+	Q           string
+	Model       interface{}
+	FilterModel interface{}
 }
 
 //NewQueryParam : initialize QueryParam from query params
@@ -38,6 +43,16 @@ func NewQueryParamDefault() *QueryParam {
 //SetTableAlias : set table name base on
 func (qp *QueryParam) SetTableAlias(t string) {
 	qp.TableAlias = t + `.`
+}
+
+//SetFilterModel : Set model which will be used in query
+func (qp *QueryParam) SetModel(i interface{}) {
+	qp.Model = i
+}
+
+//SetFilterModel : Set model of filter which will be used in search query
+func (qp *QueryParam) SetFilterModel(i interface{}) {
+	qp.FilterModel = i
 }
 
 //GetQueryByDefaultStruct get query field from custom QueryParam.Fields ,or default using Struct Fileds
@@ -79,6 +94,10 @@ func (qp *QueryParam) GetQueryLimit() string {
 	return ` LIMIT ` + l + ` OFFSET ` + o
 }
 
+func (qp *QueryParam) GetQueryWhereClause(q string, val string) string {
+	return q + getQClauseFromStruct(qp, val, qp.Model) + getWhereClauseFromStruct(qp, qp.FilterModel)
+}
+
 func (qp *QueryParam) GetQueryWithPagination(q string, sort string, limit string) string {
 	return `WITH tbl AS (` + q + sort + `)
 			SELECT *
@@ -105,12 +124,14 @@ func defaultQueryParam(r *http.Request) *QueryParam {
 
 	f := r.FormValue("fields")
 	s := r.FormValue("sort")
+	q := r.FormValue("q")
 
 	return &QueryParam{
 		Page:   p,
 		Count:  c,
 		Fields: f,
 		Sort:   s,
+		Q:      q,
 	}
 }
 
@@ -149,6 +170,7 @@ func getMapSort(s string) map[string]string {
 
 func getQueryFromStruct(qp *QueryParam, tag string, i interface{}) (string, error) {
 	t := reflect.TypeOf(i)
+	qp.SetModel(i)
 	qp.SetTableAlias(t.Name())
 
 	q := `SELECT `
@@ -170,6 +192,208 @@ func getQueryFromStruct(qp *QueryParam, tag string, i interface{}) (string, erro
 		}
 	}
 	return q[:len(q)-1], nil
+}
+
+func getQClauseFromStruct(qp *QueryParam, val string, i interface{}) string {
+	if len(val) < 1 {
+		return ``
+	}
+
+	t := reflect.TypeOf(i)
+	tv := reflect.ValueOf(i)
+
+	q := ` AND (`
+	param := strings.Split(qp.Fields, ",")
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		value := tv.Field(i)
+		f := value.Interface()
+		tableField := field.Tag.Get("db")
+		switch f.(type) {
+		default:
+		case string, types.JSONText:
+			if len(param) > 1 {
+				for _, v := range param {
+					if tableField == v {
+						q += qp.TableAlias + tableField + `::text ILIKE '%` + val + `%' OR `
+						break
+					}
+				}
+
+			} else {
+				if len(tableField) > 0 && tableField != "count" && tableField != "status" {
+					q += qp.TableAlias + tableField + `::text ILIKE '%` + val + `%' OR `
+				}
+			}
+		}
+	}
+	q = q[:len(q)-3]
+	q += `) `
+	return q
+}
+
+func getWhereClauseFromStruct(qp *QueryParam, i interface{}) string {
+	if i == nil {
+		return ``
+	}
+
+	t := reflect.TypeOf(i)
+	tv := reflect.ValueOf(i)
+
+	q := ` AND `
+	param := strings.Split(qp.Fields, ",")
+
+	if t.NumField() < 1 {
+		return ``
+	}
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		value := tv.Field(i)
+		tableField := field.Tag.Get("schema")
+		tableType := field.Tag.Get("filter")
+		if value.String() != "" {
+			switch tableType {
+			case "string":
+				if len(param) > 1 {
+					for _, v := range param {
+						if tableField == v {
+							q += qp.TableAlias + tableField + ` ILIKE '%` + value.String() + `%' `
+							break
+						}
+					}
+
+				} else {
+					if len(tableField) > 0 {
+						q += qp.TableAlias + tableField + ` ILIKE '%` + value.String() + `%' `
+					}
+				}
+			case "date":
+				if len(param) > 1 {
+					for _, v := range param {
+						if tableField == v {
+							dates := strings.Split(value.String(), ",")
+							q += ` BETWEEN '` + dates[0] + ` 00:00:00+07'::timestamp AND '` + dates[1] + ` 23:59:59+07'::timestamp `
+							break
+						}
+					}
+
+				} else {
+					if len(tableField) > 0 {
+						dates := strings.Split(value.String(), ",")
+						q += ` BETWEEN '` + dates[0] + ` 00:00:00+07'::timestamp AND '` + dates[1] + ` 23:59:59+07'::timestamp `
+						break
+					}
+				}
+			case "array":
+				val := arrayToQueryString(strings.Split(value.String(), ","))
+				if len(param) > 1 {
+					for _, v := range param {
+						if tableField == v {
+							q += qp.TableAlias + tableField + ` IN (` + val + `) `
+							break
+						}
+					}
+
+				} else {
+					if len(tableField) > 0 {
+						q += qp.TableAlias + tableField + ` IN (` + val + `) `
+					}
+				}
+			case "json":
+				val := arrayToQueryString(strings.Split(value.String(), ","))
+				if len(param) > 1 {
+					for _, v := range param {
+						if tableField == v {
+							q += ` json_array_elements (` + qp.TableAlias + tableField + `) @> ARRAY(` + val + `) `
+							break
+						}
+					}
+
+				} else {
+					if len(tableField) > 0 {
+						q += ` json_array_elements (` + qp.TableAlias + tableField + `) IN (` + val + `) `
+					}
+				}
+			case "json_array":
+				fName := `json_array_` + tableField
+				q += `EXISTS (
+					SELECT 1 FROM json_array_elements(` + qp.TableAlias + tableField + `) ` + fName + `
+					WHERE `
+
+				elem := strings.Split(value.String(), ",")
+				for _, e := range elem {
+					data := strings.Split(e, ":")
+					if len(param) > 1 {
+						for _, v := range param {
+							if tableField == v {
+								q += fName + `->>'` + data[0] + `' ILIKE '%` + data[1] + `%' `
+								break
+							}
+						}
+
+					} else {
+						if len(tableField) > 0 {
+							q += fName + `->>'` + data[0] + `' ILIKE '%` + data[1] + `%' `
+						}
+					}
+					q += `AND `
+				}
+				q = q[:len(q)-4]
+				q += `) `
+			case "record":
+				elem := strings.Split(value.String(), ",")
+				for _, e := range elem {
+					data := strings.Split(e, ":")
+					if len(param) > 1 {
+						for _, v := range param {
+							if tableField == v {
+								q += qp.TableAlias + tableField + `->>'` + data[0] + `' ILIKE '%` + data[1] + `%' `
+								break
+							}
+						}
+
+					} else {
+						if len(tableField) > 0 {
+							q += qp.TableAlias + tableField + `->>'` + data[0] + `' ILIKE '%` + data[1] + `%' `
+						}
+					}
+					q += `AND `
+				}
+				q = q[:len(q)-4]
+			default:
+				if len(param) > 1 {
+					for _, v := range param {
+						if tableField == v {
+							q += qp.TableAlias + tableField + ` = '` + value.String() + `' `
+							break
+						}
+					}
+
+				} else {
+					if len(tableField) > 0 {
+						q += qp.TableAlias + tableField + ` = '` + value.String() + `' `
+					}
+				}
+			}
+			q += `AND `
+		}
+	}
+
+	q = q[:len(q)-4]
+	return q
+}
+
+func arrayToQueryString(arr []string) string {
+	if len(arr) < 1 {
+		return ""
+	}
+
+	str := ""
+	for _, v := range arr {
+		str += "'" + v + "', "
+	}
+	return str[:len(str)-2]
 }
 
 // func getQueryFromStruct(f *QueryParam, tag string, i interface{}) string {

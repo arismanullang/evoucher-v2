@@ -266,8 +266,9 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u.DEBUG("############################")
-	resultr, err := rules.ValidateClaimValidity()
-	u.DEBUG("END:", resultr, err)
+	// TEMP
+	// resultr, err := rules.ValidateClaim()
+	// u.DEBUG("END:", resultr, err)
 
 	return
 
