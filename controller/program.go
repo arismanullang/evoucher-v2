@@ -127,3 +127,44 @@ func DeleteProgram(w http.ResponseWriter, r *http.Request) {
 	}
 	res.JSON(w, res, http.StatusOK)
 }
+
+//UploadProgramImage : post upload and update program image
+func UploadProgramImage(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	qp := u.NewQueryParam(r)
+
+	companyID := bone.GetValue(r, "company")
+	id := bone.GetValue(r, "id")
+
+	program, err := model.GetProgramByID(id, qp)
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	err = r.ParseMultipartForm(2 << 20)
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error(), "parse error"))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	sourceURL, err := UploadFileFromForm(r, id, companyID+"/programs/"+id+"/")
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error(), "upload fail"))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	program.ImageURL = sourceURL
+
+	err = program.Update()
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+	res.SetResponse(model.Programs{*program})
+	res.JSON(w, res, http.StatusOK)
+}

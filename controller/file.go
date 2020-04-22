@@ -55,6 +55,7 @@ func UploadFileFromForm(r *http.Request, formField, directory string) (url strin
 		return "We do not allow files of type " + ext + " , We only allow jpg, jpeg, png extensions.", nil
 	}
 
+	// randomString := u.RandomizeString(32, "Alphanumeric")
 	// random filename, retaining existing extension. -> v2 used to add folder
 	name := "v2/" + directory + formField + ext
 

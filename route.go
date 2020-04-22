@@ -34,6 +34,7 @@ func init() {
 	v2.PostFunc("/:company/programs", c.PostProgram)
 	v2.GetFunc("/:company/programs", c.GetProgram)
 	v2.GetFunc("/:company/programs/:id", c.GetProgramByID)
+	v2.PostFunc("/:company/programs/image/:id", c.UploadProgramImage)
 	v2.PutFunc("/:company/programs/:id", c.UpdateProgram)
 	v2.DeleteFunc("/:company/programs/:id", c.DeleteProgram)
 
@@ -100,6 +101,8 @@ func init() {
 	v2.PostFunc("/:company/transaction/voucher/assignholder", c.PostVoucherAssignHolder)
 	v2.PostFunc("/:company/transaction/voucher/claim", c.PostVoucherClaim)
 	// v2.PostFunc("/:company/transaction/voucher/redeem", c.PostVoucherRedeem)
+	v2.GetFunc("/:company/transaction", c.GetTransactions)
+	v2.GetFunc("/:company/transaction/:id", c.GetTransactionByID)
 
 	// v2.GetFunc("/:company/debug/pprof/", pprof.Index)
 	// v2.GetFunc("/:company/debug/pprof/cmdline", pprof.Cmdline)
