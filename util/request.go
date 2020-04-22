@@ -195,6 +195,10 @@ func getQueryFromStruct(qp *QueryParam, tag string, i interface{}) (string, erro
 }
 
 func getQClauseFromStruct(qp *QueryParam, val string, i interface{}) string {
+	if len(val) < 1 {
+		return ``
+	}
+
 	t := reflect.TypeOf(i)
 	tv := reflect.ValueOf(i)
 
@@ -236,7 +240,7 @@ func getWhereClauseFromStruct(qp *QueryParam, i interface{}) string {
 	t := reflect.TypeOf(i)
 	tv := reflect.ValueOf(i)
 
-	q := `AND `
+	q := ` AND `
 	param := strings.Split(qp.Fields, ",")
 
 	if t.NumField() < 1 {
@@ -311,6 +315,32 @@ func getWhereClauseFromStruct(qp *QueryParam, i interface{}) string {
 						q += ` json_array_elements (` + qp.TableAlias + tableField + `) IN (` + val + `) `
 					}
 				}
+			case "json_array":
+				fName := `json_array_` + tableField
+				q += `EXISTS (
+					SELECT 1 FROM json_array_elements(` + qp.TableAlias + tableField + `) ` + fName + `
+					WHERE `
+
+				elem := strings.Split(value.String(), ",")
+				for _, e := range elem {
+					data := strings.Split(e, ":")
+					if len(param) > 1 {
+						for _, v := range param {
+							if tableField == v {
+								q += fName + `->>'` + data[0] + `' ILIKE '%` + data[1] + `%' `
+								break
+							}
+						}
+
+					} else {
+						if len(tableField) > 0 {
+							q += fName + `->>'` + data[0] + `' ILIKE '%` + data[1] + `%' `
+						}
+					}
+					q += `AND `
+				}
+				q = q[:len(q)-4]
+				q += `) `
 			case "record":
 				elem := strings.Split(value.String(), ",")
 				for _, e := range elem {
@@ -318,14 +348,14 @@ func getWhereClauseFromStruct(qp *QueryParam, i interface{}) string {
 					if len(param) > 1 {
 						for _, v := range param {
 							if tableField == v {
-								q += qp.TableAlias + tableField + `->>'` + data[0] + `' ilike '%` + data[1] + `%' `
+								q += qp.TableAlias + tableField + `->>'` + data[0] + `' ILIKE '%` + data[1] + `%' `
 								break
 							}
 						}
 
 					} else {
 						if len(tableField) > 0 {
-							q += qp.TableAlias + tableField + `->>'` + data[0] + `' ilike '%` + data[1] + `%' `
+							q += qp.TableAlias + tableField + `->>'` + data[0] + `' ILIKE '%` + data[1] + `%' `
 						}
 					}
 					q += `AND `
