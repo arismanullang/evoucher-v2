@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-zoo/bone"
+	"github.com/gorilla/schema"
+
 	"github.com/gilkor/evoucher-v2/model"
 	u "github.com/gilkor/evoucher-v2/util"
-	"github.com/go-zoo/bone"
 )
 
 //PostPartner : POST partner data
@@ -31,11 +33,37 @@ func PostPartner(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusCreated)
 }
 
+type PartnerFilter struct {
+	ID          string `schema:"id" filter:"array"`
+	Name        string `schema:"name" filter:"string"`
+	Description string `schema:"description" filter:"record"`
+	CompanyID   string `schema:"company_id" filter:"string"`
+	CreatedAt   string `schema:"created_at" filter:"date"`
+	CreatedBy   string `schema:"created_by" filter:"string"`
+	UpdatedAt   string `schema:"updated_at" filter:"date"`
+	UpdatedBy   string `schema:"updated_by" filter:"string"`
+	Status      string `schema:"status" filter:"enum"`
+	Banks       string `schema:"partner_banks" filter:"json"`
+	Tags        string `schema:"partner_tags" filter:"json"`
+}
+
 //GetPartners : GET list of partners
 func GetPartners(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
+
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+
+	var f PartnerFilter
+	if err := decoder.Decode(&f, r.Form); err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	qp.SetFilterModel(f)
 
 	partners, next, err := model.GetPartners(qp)
 	if err != nil {

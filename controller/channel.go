@@ -7,6 +7,7 @@ import (
 	"github.com/gilkor/evoucher-v2/model"
 	u "github.com/gilkor/evoucher-v2/util"
 	"github.com/go-zoo/bone"
+	"github.com/gorilla/schema"
 )
 
 //PostChannel : POST channel data
@@ -33,11 +34,36 @@ func PostChannel(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusCreated)
 }
 
+type ChannelFilter struct {
+	ID          string `schema:"id" filter:"array"`
+	Name        string `schema:"name" filter:"string"`
+	Description string `schema:"description" filter:"record"`
+	IsSuper     string `schema:"is_super" filter:"bool"`
+	CreatedAt   string `schema:"created_at" filter:"date"`
+	CreatedBy   string `schema:"created_by" filter:"string"`
+	UpdatedAt   string `schema:"updated_at" filter:"date"`
+	UpdatedBy   string `schema:"updated_by" filter:"string"`
+	Status      string `schema:"status" filter:"enum"`
+	Tags        string `schema:"channel_tags" filter:"json"`
+}
+
 //GetChannels : GET list of channels
 func GetChannels(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
+
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+
+	var f ChannelFilter
+	if err := decoder.Decode(&f, r.Form); err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	qp.SetFilterModel(f)
 
 	channels, next, err := model.GetChannels(qp)
 	if err != nil {

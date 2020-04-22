@@ -6,12 +6,14 @@ require (
 	cloud.google.com/go v0.52.0 // indirect
 	cloud.google.com/go/pubsub v1.1.0
 	cloud.google.com/go/storage v1.5.0
+	github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gilkor/athena v0.0.0-20190304115447-10789df036dd
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator v9.30.0+incompatible
 	github.com/go-zoo/bone v0.0.0-20190117145001-d7ce1372afa7
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
+	github.com/gorilla/schema v1.1.0
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/joho/godotenv v1.3.0
 	github.com/leodido/go-urn v1.2.0 // indirect

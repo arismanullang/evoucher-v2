@@ -85,6 +85,7 @@ func getPrograms(key, value string, qp *util.QueryParam) (*Programs, bool, error
 				status = ?
 			AND ` + key + ` = ?`
 
+	q = qp.GetQueryWhereClause(q, qp.Q)
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	util.DEBUG(q)
 	var resd Programs
