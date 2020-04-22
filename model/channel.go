@@ -68,6 +68,7 @@ func getChannels(k, v string, qp *util.QueryParam) (*Channels, bool, error) {
 				status = ?
 			AND ` + k + ` = ?`
 
+	q = qp.GetQueryWhereClause(q, qp.Q)
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	util.DEBUG(q)
 	var resd Channels
