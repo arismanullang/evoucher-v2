@@ -314,7 +314,7 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 
 	for i := 0; i >= req.VoucherAmount; i++ {
 		voucher := new(model.Voucher)
-		voucher.Code = vf.Properties.Prefix + vf.Properties.Postfix
+		voucher.Code = vf.Properties.Prefix + u.RandomizeString(vf.Properties.Length, u.ALPHANUMERIC) + vf.Properties.Postfix
 		voucher.Holder = &accountID
 		voucher.ProgramID = program.ID
 		voucher.CreatedBy = "system"
