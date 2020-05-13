@@ -35,6 +35,15 @@ func PostProgram(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	//var rules model.RulesExpression
+	//program.Rule.Unmarshal(&rules)
+	//
+	//for k, val := range rules.And {
+	//	u.DEBUG(k, "----> ", val, ":s:", len(val.In))
+	//}
+	//ras := (rules.And["some"])
+	//u.DEBUG("isempty", ras.IsEmpty())
+
 	//insert program -> partners
 	response, err := program.Insert()
 	if err != nil {
