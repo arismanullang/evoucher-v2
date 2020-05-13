@@ -32,8 +32,15 @@ var (
 	//JSONErrInvalidRule :
 	JSONErrInvalidRule = u.NewError(
 		jsonerr.Error{
-			Status:  http.StatusBadRequest,
+			Status:  http.StatusForbidden,
 			Code:    "ERR_INVALID_RULE",
 			Message: "Rule Checking Return Invalid.",
+		})
+	//JSONErrExceedAmount :
+	JSONErrExceedAmount = u.NewError(
+		jsonerr.Error{
+			Status:  http.StatusOK,
+			Code:    "AMOUNT_EXCEED_MAXIMUM",
+			Message: "Amount Exceed Maximum.",
 		})
 )

@@ -86,6 +86,8 @@ const (
 )
 
 var (
+	//ErrorUnexpected :
+	ErrorUnexpected = errors.New("Unexpected Error")
 	//ErrorRuleUnexpectedTimeFormat :
 	ErrorRuleUnexpectedTimeFormat = errors.New("Invalid string time format could not be converted to time")
 	//ErrorRuleUnexpectedNumericType :
@@ -122,9 +124,7 @@ func (rule *Rules) Validate() (bool, error) {
 	return r, nil
 }
 
-//DEPRECATED
-//DEPRECATED
-//DEPRECATED
+//@DEPRECATED
 func (rule *Rules) validateRulesAnd(ra map[string]RulesArgument) (bool, error) {
 	r := false
 	// for k, v := range ra {
@@ -158,6 +158,9 @@ func (rule *Rules) validateRulesAnd(ra map[string]RulesArgument) (bool, error) {
 	return r, nil
 }
 
+func (ra *RulesArgument) IsEmpty() bool {
+	return ra.isEmpty()
+}
 func (ra *RulesArgument) isEmpty() bool {
 	r := true
 	if ra.Eq != nil {
@@ -175,7 +178,7 @@ func (ra *RulesArgument) isEmpty() bool {
 	if ra.Lt != nil {
 		r = false
 	}
-	util.DEBUG("check len", len(ra.In), len(ra.In) > 0)
+	util.DEBUG("check len:", len(ra.In), len(ra.In) > 0)
 	if len(ra.In) > 0 {
 		r = false
 	}
@@ -187,36 +190,54 @@ func (ra *RulesArgument) validateTime(tx time.Time) (bool, error) {
 	r := true
 	if ra.Eq != nil {
 		r, err := ra.validateEqTime(tx)
+		if !r {
+			return r, nil
+		}
 		if err != nil {
 			return r, err
 		}
 	}
 	if ra.Gte != nil {
 		r, err := ra.validateGteTime(tx)
+		if !r {
+			return r, nil
+		}
 		if err != nil {
 			return r, err
 		}
 	}
 	if ra.Lte != nil {
 		r, err := ra.validateLteTime(tx)
+		if !r {
+			return r, nil
+		}
 		if err != nil {
 			return r, err
 		}
 	}
 	if ra.Gt != nil {
 		r, err := ra.validateGtTime(tx)
+		if !r {
+			return r, nil
+		}
 		if err != nil {
 			return r, err
 		}
 	}
 	if ra.Lt != nil {
 		r, err := ra.validateLtTime(tx)
+		if !r {
+			return r, nil
+		}
 		if err != nil {
 			return r, err
 		}
 	}
 	if ra.In != nil && len(ra.In) > 0 {
 		r, err := ra.validateInTime(tx)
+		if !r {
+			return r, nil
+		}
 		if err != nil {
 			return r, err
 		}
@@ -251,7 +272,7 @@ func (ra *RulesArgument) validateGteTime(tx time.Time) (bool, error) {
 func (ra *RulesArgument) validateLteTime(tx time.Time) (bool, error) {
 	r := false
 	//convert to time
-	t, err := stringToTime(fmt.Sprint(ra.Gte))
+	t, err := stringToTime(fmt.Sprint(ra.Lte))
 	if err != nil {
 		return r, err
 	}
@@ -263,7 +284,7 @@ func (ra *RulesArgument) validateLteTime(tx time.Time) (bool, error) {
 func (ra *RulesArgument) validateGtTime(tx time.Time) (bool, error) {
 	r := false
 	//convert to time
-	t, err := stringToTime(fmt.Sprint(ra.Gte))
+	t, err := stringToTime(fmt.Sprint(ra.Gt))
 	if err != nil {
 		return r, err
 	}
@@ -275,7 +296,7 @@ func (ra *RulesArgument) validateGtTime(tx time.Time) (bool, error) {
 func (ra *RulesArgument) validateLtTime(tx time.Time) (bool, error) {
 	r := false
 	//convert to time
-	t, err := stringToTime(fmt.Sprint(ra.Gte))
+	t, err := stringToTime(fmt.Sprint(ra.Lt))
 	if err != nil {
 		return r, err
 	}
@@ -288,9 +309,9 @@ func (ra *RulesArgument) validateInTime(tx time.Time) (bool, error) {
 	r := false
 	//convert to time
 	util.DEBUG("Start.....")
-	for _, value := range ra.In {
+	for k, value := range ra.In {
 		t, err := stringToTime(fmt.Sprint(value))
-		util.DEBUG("val:", value)
+		util.DEBUG("k:", k, "val:", value)
 		if err != nil {
 			return r, err
 		}
@@ -308,12 +329,18 @@ func (ra *RulesArgument) validateString(val string) (bool, error) {
 	r := true
 	if ra.Eq != nil {
 		r, err := ra.validateEqString(val)
+		if !r {
+			return r, nil
+		}
 		if err != nil {
 			return r, err
 		}
 	}
 	if ra.In != nil {
 		r, err := ra.validateInString(val)
+		if !r {
+			return r, nil
+		}
 		if err != nil {
 			return r, err
 		}
@@ -346,36 +373,54 @@ func (ra *RulesArgument) validateNumber(val interface{}) (bool, error) {
 	r := true
 	if ra.Eq != nil {
 		r, err := ra.validateEqNumber(val)
+		if !r {
+			return r, nil
+		}
 		if err != nil {
 			return r, err
 		}
 	}
 	if ra.Gte != nil {
 		r, err := ra.validateGteNumber(val)
+		if !r {
+			return r, nil
+		}
 		if err != nil {
 			return r, err
 		}
 	}
 	if ra.Lte != nil {
 		r, err := ra.validateLteNumber(val)
+		if !r {
+			return r, nil
+		}
 		if err != nil {
 			return r, err
 		}
 	}
 	if ra.Gt != nil {
 		r, err := ra.validateGtNumber(val)
+		if !r {
+			return r, nil
+		}
 		if err != nil {
 			return r, err
 		}
 	}
 	if ra.Lt != nil {
 		r, err := ra.validateLtNumber(val)
+		if !r {
+			return r, nil
+		}
 		if err != nil {
 			return r, err
 		}
 	}
 	if ra.In != nil {
 		r, err := ra.validateInNumber(val)
+		if !r {
+			return r, nil
+		}
 		if err != nil {
 			return r, err
 		}
@@ -571,12 +616,13 @@ func (rule *Rules) isNumberValid(opr string, val, exp int) bool {
 	return r
 }
 
-// ruleClaimValidityHour       = "rule_claim_validity_hour"
-// 	ruleClaimValidityDay        = "rule_claim_validity_day"
-// 	ruleClaimValidityDate       = "rule_claim_validity_date"
-// 	ruleClaimIsAccumulative     = "rule_claim_is_accumulative"
-// 	ruleClaimAccumulative       = "rule_claim_accumulative"
-// 	ruleClaimAccumulativePeriod = "rule_claim_accumulative_period"
+// x 	ruleClaimValidityHour       = "rule_claim_validity_hour"
+
+// x	ruleClaimValidityDay        = "rule_claim_validity_day"
+// x	ruleClaimValidityDate       = "rule_claim_validity_date"
+// x 	ruleClaimIsAccumulative     = "rule_claim_is_accumulative"
+// x 	ruleClaimAccumulative       = "rule_claim_accumulative"
+// z	ruleClaimAccumulativePeriod = "rule_claim_accumulative_period"
 // 	ruleClaimMinSpending        = "rule_claim_accumulative_spending"
 
 // 	ruleUseIsCrossProgram  = "rule_use_is_cross_program"
@@ -592,9 +638,12 @@ func (rule *Rules) isNumberValid(opr string, val, exp int) bool {
 // 	ruleUseUsagePeriod     = "rule_use_usage_period"
 
 //ValidateClaimValidity : checking time base validity of transaction
-func (rule RulesExpression) ValidateClaimValidity() (bool, error) {
+func (rule RulesExpression) ValidateClaim(datas map[string]string) (bool, error) {
 	r := true
 	t := time.Now()
+	accountID := datas["ACCOUNTID"]
+	programID := datas["PROGRAMID"]
+
 	ruleDate := rule.And[ruleClaimValidityDate]
 	if !ruleDate.isEmpty() {
 		r, err := ruleDate.validateTime(t)
@@ -602,6 +651,8 @@ func (rule RulesExpression) ValidateClaimValidity() (bool, error) {
 			return r, err
 		}
 	}
+	//util.DEBUG(ruleClaimValidityDate, "----> ", ruleDate, ":s:", len(ruleDate.In))
+
 	ruleDay := rule.And[ruleClaimValidityDay]
 	if !ruleDay.isEmpty() {
 		r, err := ruleDay.validateTime(t)
@@ -609,6 +660,8 @@ func (rule RulesExpression) ValidateClaimValidity() (bool, error) {
 			return r, err
 		}
 	}
+	//util.DEBUG(ruleClaimValidityDay, "----> ", ruleDay, ":s:", len(ruleDay.In))
+
 	ruleHour := rule.And[ruleClaimValidityHour]
 	if !ruleHour.isEmpty() {
 		r, err := ruleHour.validateTime(t)
@@ -616,6 +669,89 @@ func (rule RulesExpression) ValidateClaimValidity() (bool, error) {
 			return r, err
 		}
 	}
-	util.DEBUG("Cheecking", ruleDate, ruleDay, ruleHour)
+	//util.DEBUG(ruleClaimValidityHour, "----> ", ruleHour, ":s:", len(ruleHour.In))
+	//util.DEBUG("Cheecking", ruleDate, ruleDay, ruleHour)
+
+	accumulative, err := GetUserAccumulativeVoucher(accountID, programID)
+	if err != nil {
+		return false, err
+	}
+	ruleAccumulative := rule.And[ruleClaimAccumulative]
+	if !ruleAccumulative.isEmpty() {
+		r, err := ruleAccumulative.validateNumber(accumulative)
+		if !r {
+			return r, err
+		}
+	}
+
+	spending, err := GetUserSpendingTransaction(accountID)
+	if err != nil {
+		return false, err
+	}
+	ruleSpending := rule.And[ruleClaimMinSpending]
+	if !ruleSpending.isEmpty() {
+		r, err := ruleSpending.validateNumber(spending)
+		if !r {
+			return r, err
+		}
+	}
+
+	return r, nil
+}
+
+func (rule RulesExpression) ValidateUse(datas map[string]string) (bool, error) {
+	r := true
+	t := time.Now()
+	accountID := datas["ACCOUNTID"]
+	programID := datas["PROGRAMID"]
+
+	ruleDate := rule.And[ruleUseValidityDate]
+	if !ruleDate.isEmpty() {
+		r, err := ruleDate.validateTime(t)
+		if !r {
+			return r, err
+		}
+	}
+
+	ruleDay := rule.And[ruleUseValidityDay]
+	if !ruleDay.isEmpty() {
+		r, err := ruleDay.validateTime(t)
+		if !r {
+			return r, err
+		}
+	}
+
+	ruleHour := rule.And[ruleUseValidityHour]
+	if !ruleHour.isEmpty() {
+		r, err := ruleHour.validateTime(t)
+		if !r {
+			return r, err
+		}
+	}
+
+	usage, err := GetUserUsageVoucher(accountID, programID)
+	if err != nil {
+		return false, err
+	}
+	ruleUseMaxUsage := rule.And[ruleUseMaxUsage]
+	if !ruleUseMaxUsage.isEmpty() {
+		r, err := ruleUseMaxUsage.validateNumber(usage)
+		if !r {
+			return r, err
+		}
+	}
+
+	spending, err := GetUserSpendingTransaction(accountID)
+	if err != nil {
+		return false, err
+	}
+	ruleSpending := rule.And[ruleUseMinSpending]
+	if !ruleSpending.isEmpty() {
+		r, err := ruleSpending.validateNumber(spending)
+		if !r {
+			return r, err
+		}
+	}
+
 	return r, nil
 }

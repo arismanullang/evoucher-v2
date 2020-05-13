@@ -11,20 +11,21 @@ import (
 type (
 	//Voucher model
 	Voucher struct {
-		ID           string         `json:"id,omitempty" db:"id"`
-		Code         string         `json:"code,omitempty" db:"code"`
-		ReferenceNo  string         `json:"reference_no,omitempty" db:"reference_no"`
-		Holder       *string        `json:"holder,omitempty" db:"holder"`
-		HolderDetail types.JSONText `json:"holder_detail,omitempty" db:"holder_detail"`
-		ProgramID    string         `json:"program_id,omitempty" db:"program_id"`
-		ValidAt      *time.Time     `json:"valid_at,omitempty" db:"valid_at"`
-		ExpiredAt    *time.Time     `json:"expired_at,omitempty" db:"expired_at"`
-		State        string         `json:"state,omitempty" db:"state"`
-		CreatedBy    string         `json:"created_by,omitempty" db:"created_by"`
-		CreatedAt    *time.Time     `json:"created_at,omitempty" db:"created_at"`
-		UpdatedBy    *string        `json:"updated_by,omitempty" db:"updated_by"`
-		UpdatedAt    *time.Time     `json:"updated_at,omitempty" db:"updated_at"`
-		Status       string         `json:"status,omitempty" db:"status"`
+		ID            string         `json:"id,omitempty" db:"id"`
+		Code          string         `json:"code,omitempty" db:"code"`
+		ReferenceNo   string         `json:"reference_no,omitempty" db:"reference_no"`
+		Holder        *string        `json:"holder,omitempty" db:"holder"`
+		HolderDetail  types.JSONText `json:"holder_detail,omitempty" db:"holder_detail"`
+		ProgramID     string         `json:"program_id,omitempty" db:"program_id"`
+		ValidAt       *time.Time     `json:"valid_at,omitempty" db:"valid_at"`
+		ExpiredAt     *time.Time     `json:"expired_at,omitempty" db:"expired_at"`
+		State         string         `json:"state,omitempty" db:"state"`
+		CreatedBy     string         `json:"created_by,omitempty" db:"created_by"`
+		CreatedAt     *time.Time     `json:"created_at,omitempty" db:"created_at"`
+		UpdatedBy     *string        `json:"updated_by,omitempty" db:"updated_by"`
+		UpdatedAt     *time.Time     `json:"updated_at,omitempty" db:"updated_at"`
+		Status        string         `json:"status,omitempty" db:"status"`
+		VoucherAmount int            `json:"voucher_amount,omitempty"`
 	}
 	//Vouchers :
 	Vouchers []Voucher
@@ -37,8 +38,8 @@ type (
 	}
 )
 
-// GetVoucherByID :  get list vouchers by ID
-func GetVoucherByID(id string, qp *util.QueryParam) (*Vouchers, bool, error) {
+// GetVouchersByID :  get list vouchers by ID
+func GetVouchersByID(id string, qp *util.QueryParam) (*Vouchers, bool, error) {
 	return getVouchers("id", id, qp)
 }
 
@@ -50,6 +51,17 @@ func GetVouchers(qp *util.QueryParam) (*Vouchers, bool, error) {
 // GetVouchersByProgramID : get list vouchers by program.ID
 func GetVouchersByProgramID(programID string, qp *util.QueryParam) (*Vouchers, bool, error) {
 	return getVouchers("program_id", programID, qp)
+}
+
+func GetVoucherByID(id string, qp *util.QueryParam) (*Voucher, error) {
+
+	vouchers, _, err := getVouchers("id", id, qp)
+	if err != nil {
+		return &Voucher{}, err
+	}
+	voucher := &(*vouchers)[0]
+
+	return voucher, nil
 }
 
 func getVouchers(key, value string, qp *util.QueryParam) (*Vouchers, bool, error) {
@@ -81,6 +93,21 @@ func getVouchers(key, value string, qp *util.QueryParam) (*Vouchers, bool, error
 	}
 
 	return &resd, next, nil
+}
+
+//GetVoucherCreatedAmountByProgramID : Get amount voucher created & active from program
+func GetVoucherCreatedAmountByProgramID(programID string) (int, error) {
+
+	q := ` SELECT COUNT(*) amount FROM vouchers 
+			WHERE program_id = ? AND status != ?`
+
+	var r int
+	err := db.QueryRow(db.Rebind(q), programID, StatusDeleted).Scan(&r)
+	if err != nil {
+		return -1, err
+	}
+
+	return r, nil
 }
 
 //Insert : single row insert into table

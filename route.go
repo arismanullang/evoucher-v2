@@ -100,6 +100,7 @@ func init() {
 	v2.PostFunc("/:company/transaction/voucher/assign", c.PostVoucherAssignHolder)
 	v2.PostFunc("/:company/transaction/voucher/assignholder", c.PostVoucherAssignHolder)
 	v2.PostFunc("/:company/transaction/voucher/claim", c.PostVoucherClaim)
+	v2.PostFunc("/:company/transaction/voucher/use", c.PostVoucherUse)
 	// v2.PostFunc("/:company/transaction/voucher/redeem", c.PostVoucherRedeem)
 	v2.GetFunc("/:company/transaction", c.GetTransactions)
 	v2.GetFunc("/:company/transaction/:id", c.GetTransactionByID)
@@ -160,21 +161,21 @@ func AutoCORS(next http.Handler) http.Handler {
 }
 
 func checkJunoToken() {
-	// token, err := VerifyJWT(key)
-	// if err != nil {
-	// 	res.SetStatus(http.StatusUnauthorized)
-	// 	res.AddErrors(err)
-	// 	res.Write(w)
-	// 	return
-	// }
-
-	// claims, ok := token.Claims.(*JWTJunoClaims)
-	// if ok && token.Valid {
-	// 	// fmt.Printf("Key:%v", token.Header)
-	// } else {
-	// 	res.SetStatus(http.StatusUnauthorized)
-	// 	res.AddErrors(errors.New("key is invalid"))
-	// 	res.Write(w)
-	// 	return
-	// }
+	//token, err := VerifyJWT(key)
+	//if err != nil {
+	//	res.SetStatus(http.StatusUnauthorized)
+	//	res.AddErrors(err)
+	//	res.Write(w)
+	//	return
+	//}
+	//
+	//claims, ok := token.Claims.(*JWTJunoClaims)
+	//if ok && token.Valid {
+	//	// fmt.Printf("Key:%v", token.Header)
+	//} else {
+	//	res.SetStatus(http.StatusUnauthorized)
+	//	res.AddErrors(errors.New("key is invalid"))
+	//	res.Write(w)
+	//	return
+	//}
 }
