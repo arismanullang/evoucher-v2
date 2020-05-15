@@ -249,7 +249,7 @@ func (ra *RulesArgument) validateTime(tx time.Time) (bool, error) {
 func (ra *RulesArgument) validateEqTime(tx time.Time) (bool, error) {
 	r := false
 	//convert to time
-	t, err := stringToTime(fmt.Sprint(ra.Gte))
+	t, err := StringToTime(fmt.Sprint(ra.Gte))
 	if err != nil {
 		return r, err
 	}
@@ -261,7 +261,7 @@ func (ra *RulesArgument) validateEqTime(tx time.Time) (bool, error) {
 func (ra *RulesArgument) validateGteTime(tx time.Time) (bool, error) {
 	r := false
 	//convert to time
-	t, err := stringToTime(fmt.Sprint(ra.Gte))
+	t, err := StringToTime(fmt.Sprint(ra.Gte))
 	if err != nil {
 		return r, err
 	}
@@ -273,7 +273,7 @@ func (ra *RulesArgument) validateGteTime(tx time.Time) (bool, error) {
 func (ra *RulesArgument) validateLteTime(tx time.Time) (bool, error) {
 	r := false
 	//convert to time
-	t, err := stringToTime(fmt.Sprint(ra.Lte))
+	t, err := StringToTime(fmt.Sprint(ra.Lte))
 	if err != nil {
 		return r, err
 	}
@@ -285,7 +285,7 @@ func (ra *RulesArgument) validateLteTime(tx time.Time) (bool, error) {
 func (ra *RulesArgument) validateGtTime(tx time.Time) (bool, error) {
 	r := false
 	//convert to time
-	t, err := stringToTime(fmt.Sprint(ra.Gt))
+	t, err := StringToTime(fmt.Sprint(ra.Gt))
 	if err != nil {
 		return r, err
 	}
@@ -297,7 +297,7 @@ func (ra *RulesArgument) validateGtTime(tx time.Time) (bool, error) {
 func (ra *RulesArgument) validateLtTime(tx time.Time) (bool, error) {
 	r := false
 	//convert to time
-	t, err := stringToTime(fmt.Sprint(ra.Lt))
+	t, err := StringToTime(fmt.Sprint(ra.Lt))
 	if err != nil {
 		return r, err
 	}
@@ -311,7 +311,7 @@ func (ra *RulesArgument) validateInTime(tx time.Time) (bool, error) {
 	//convert to time
 	util.DEBUG("Start.....")
 	for k, value := range ra.In {
-		t, err := stringToTime(fmt.Sprint(value))
+		t, err := StringToTime(fmt.Sprint(value))
 		util.DEBUG("k:", k, "val:", value)
 		if err != nil {
 			return r, err
@@ -525,7 +525,7 @@ func (rule *Rules) checkActiveProgramPeriod(tx *time.Time, arg *RulesArgument) (
 	r := false
 	//convert to time
 	if arg.Gte != nil {
-		t, err := stringToTime(fmt.Sprint(arg.Gte))
+		t, err := StringToTime(fmt.Sprint(arg.Gte))
 		if err != nil {
 			return r, err
 		}
@@ -535,7 +535,7 @@ func (rule *Rules) checkActiveProgramPeriod(tx *time.Time, arg *RulesArgument) (
 	return r, nil
 }
 
-func stringToTime(value string) (time.Time, error) {
+func StringToTime(value string) (time.Time, error) {
 	t, err := time.Parse(time.RFC3339, value)
 	if err != nil {
 		return t, ErrorRuleUnexpectedTimeFormat

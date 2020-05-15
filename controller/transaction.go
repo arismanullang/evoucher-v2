@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gilkor/evoucher-v2/model"
 	u "github.com/gilkor/evoucher-v2/util"
@@ -320,10 +321,40 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 
 	var rules model.RulesExpression
 	program.Rule.Unmarshal(&rules)
+	voucherValidAt := time.Now()
+	voucherExpiredAt := time.Now()
+	fmt.Println("rules = ", rules)
 
-	// temp,_ := rules.
-	// voucherValidAt :=
-	// voucherExpiredAt :=
+	if ruleUseUsagePeriod, ok := rules.And["rule_use_usage_period"]; ok {
+
+		fmt.Println("ruleUseActiveVoucherPeriod = ", ruleUseUsagePeriod)
+		validTime, err := model.StringToTime(fmt.Sprint(ruleUseUsagePeriod.Gte))
+		if err != nil {
+			res.SetError(JSONErrBadRequest)
+			res.Error.SetMessage("failed to parse active voucher period")
+			res.JSON(w, res, JSONErrBadRequest.Status)
+			return
+		}
+
+		expiredTime, err := model.StringToTime(fmt.Sprint(ruleUseUsagePeriod.Lte))
+		if err != nil {
+			res.SetError(JSONErrBadRequest)
+			res.Error.SetMessage("failed to parse active voucher period")
+			res.JSON(w, res, JSONErrBadRequest.Status)
+			return
+		}
+
+		voucherValidAt = validTime
+		voucherExpiredAt = expiredTime
+		fmt.Println("voucherValidAt = ", voucherValidAt)
+		fmt.Println("voucherExpiredAt = ", voucherExpiredAt)
+	}
+
+	if ruleUseActiveVoucherPeriod, ok := rules.And["rule_use_active_voucher_period"]; ok && !ruleUseActiveVoucherPeriod.IsEmpty() {
+		voucherExpiredAt = voucherValidAt.AddDate(0, 0, int(ruleUseActiveVoucherPeriod.Eq.(float64)))
+		fmt.Println("voucherValidAt = ", voucherValidAt)
+		fmt.Println("voucherExpiredAt = ", voucherExpiredAt)
+	}
 
 	result, err := rules.ValidateClaim(datas)
 	if err != nil {
@@ -366,7 +397,6 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 		} else if vf.Type == "random" {
 			voucher.Code = vf.Prefix + u.RandomizeString(u.LENGTH, vf.Random) + vf.Postfix
 		}
-		fmt.Println("VOUCHER FORMAT = ", vf)
 
 		voucher.ReferenceNo = req.Reference
 		voucher.Holder = &accountID
@@ -376,8 +406,8 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 		voucher.UpdatedBy = "system"
 		voucher.Status = model.StatusCreated
 		voucher.State = model.VoucherStateCreated
-		// voucher.ValidAt =
-		// voucher.ExpiredAt = program.EndDate
+		voucher.ValidAt = &voucherValidAt
+		voucher.ExpiredAt = &voucherExpiredAt
 
 		vouchers = append(vouchers, *voucher)
 	}
