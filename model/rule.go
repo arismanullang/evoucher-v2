@@ -72,17 +72,18 @@ const (
 	ruleClaimAccumulativePeriod = "rule_claim_accumulative_period"
 	ruleClaimMinSpending        = "rule_claim_accumulative_spending"
 
-	ruleUseIsCrossProgram  = "rule_use_is_cross_program"
-	ruleUseCrossProgram    = "rule_use_cross_program"
-	ruleUseValidityHour    = "rule_use_validity_hour"
-	ruleUseValidityDay     = "rule_use_validity_day"
-	ruleUseValidityDate    = "rule_use_validity_date"
-	ruleUseActivePeriod    = "rule_use_active_period"
-	ruleUseOutlet          = "rule_use_outlet"
-	ruleUseDicountTreshold = "rule_use_discount_treshold"
-	ruleUseMinSpending     = "rule_use_min_spending"
-	ruleUseMaxUsage        = "rule_use_max_usage"
-	ruleUseUsagePeriod     = "rule_use_usage_period"
+	ruleUseIsCrossProgram      = "rule_use_is_cross_program"
+	ruleUseCrossProgram        = "rule_use_cross_program"
+	ruleUseValidityHour        = "rule_use_validity_hour"
+	ruleUseValidityDay         = "rule_use_validity_day"
+	ruleUseValidityDate        = "rule_use_validity_date"
+	ruleUseActivePeriod        = "rule_use_active_period"
+	ruleUseOutlet              = "rule_use_outlet"
+	ruleUseDicountTreshold     = "rule_use_discount_treshold"
+	ruleUseMinSpending         = "rule_use_min_spending"
+	ruleUseMaxUsage            = "rule_use_max_usage"
+	ruleUseUsagePeriod         = "rule_use_usage_period"          // voucher usage DATE period
+	ruleUseActiveVoucherPeriod = "rule_use_active_voucher_period" // voucher usage DAY period -> 30days after claimed
 )
 
 var (
