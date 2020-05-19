@@ -12,14 +12,12 @@ import (
 
 // VoucherFormat model
 type VoucherFormat struct {
-	Type       string `json:"type"`
-	Properties struct {
-		Code    string `json:"code,omitempty"`
-		Random  string `json:"random,omitempty"`
-		Prefix  string `json:"prefix,omitempty"`
-		Postfix string `json:"postfix,omitempty"`
-		Length  int    `json:"length,omitempty"`
-	} `json:"properties"`
+	Type    string `json:"type"`
+	Code    string `json:"code,omitempty"`
+	Random  string `json:"random,omitempty"`
+	Prefix  string `json:"prefix,omitempty"`
+	Postfix string `json:"postfix,omitempty"`
+	Length  int    `json:"length,omitempty"`
 }
 
 //ToString :
@@ -30,12 +28,12 @@ func (vf VoucherFormat) ToString() string {
 
 // IsSpecifiedCode type voucher specified code or random generated
 func (vf VoucherFormat) IsSpecifiedCode() bool {
-	return vf.Properties.Code != ""
+	return vf.Code != ""
 }
 
 // Letter return character set set by random type
 func (vf VoucherFormat) Letter() string {
-	switch vf.Properties.Random {
+	switch vf.Random {
 	case "alphabet":
 		return "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	case "numeric":
