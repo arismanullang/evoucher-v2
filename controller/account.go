@@ -33,7 +33,7 @@ func GetAccountByID(w http.ResponseWriter, r *http.Request) {
 
 	qp := u.NewQueryParam(r)
 	id := bone.GetValue(r, "id")
-	account, _, err := model.GetAccountByID(qp, id)
+	account, _, err := model.GetAccountsByID(qp, id)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)

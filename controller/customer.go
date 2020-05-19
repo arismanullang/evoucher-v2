@@ -46,7 +46,7 @@ func GetCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res.SetResponse(customers)                                                  
+	res.SetResponse(customers)
 	res.SetPagination(r, qp.Page, next)
 	res.JSON(w, res, http.StatusOK)
 }

@@ -2,9 +2,8 @@ package controller
 
 import (
 	"encoding/json"
-	"net/http"
-
 	"fmt"
+	"net/http"
 
 	"github.com/gilkor/evoucher-v2/model"
 	u "github.com/gilkor/evoucher-v2/util"
@@ -26,19 +25,55 @@ type (
 )
 
 //GetTransactions : GET list of partners
-func GetTransactions(w http.ResponseWriter, r *http.Request) {
+func GetTransactionsByOutlet(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
-
-	partners, next, err := model.GetTransactions(qp)
+	id := bone.GetValue(r, "id")
+	result, next, err := model.GetTransactionByPartner(qp, id)
 	if err != nil {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
-	res.SetResponse(partners)
+	res.SetResponse(result)
+	res.SetPagination(r, qp.Page, next)
+	res.JSON(w, res, http.StatusOK)
+}
+
+//GetTransactions : GET list of partners
+func GetTransactionsByProgram(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	qp := u.NewQueryParam(r)
+	id := bone.GetValue(r, "id")
+	result, next, err := model.GetTransactionByProgram(qp, id)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(result)
+	res.SetPagination(r, qp.Page, next)
+	res.JSON(w, res, http.StatusOK)
+}
+
+//GetTransactions : GET list of partners
+func GetTransactions(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	qp := u.NewQueryParam(r)
+
+	result, next, err := model.GetTransactions(qp)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(result)
 	res.SetPagination(r, qp.Page, next)
 	res.JSON(w, res, http.StatusOK)
 }
@@ -96,10 +131,37 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	var req UseTransaction
 	var rule model.Rules
 	var accountID string
-	accountID = r.FormValue("xx-token")
+	accountToken := r.FormValue("xx-token")
 	decoder := json.NewDecoder(r.Body)
 	qp := u.NewQueryParam(r)
 	err := decoder.Decode(&req)
+
+	token, err := VerifyJWT(accountToken)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
+
+	claims, ok := token.Claims.(*JWTJunoClaims)
+	if ok && token.Valid {
+		// fmt.Printf("Key:%v", token.Header)
+	} else {
+		u.DEBUG(err)
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
+
+	//getUser
+	account, err := model.GetAccountByID(qp, claims.AccountID)
+	if err != nil {
+		u.DEBUG(err, " User Not Found")
+		res.SetError(JSONErrForbidden)
+		res.JSON(w, res, JSONErrForbidden.Status)
+		return
+	}
 
 	voucher, err := model.GetVoucherByID(req.VoucherID, qp)
 	if err != nil {
@@ -110,7 +172,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	datas := make(map[string]string)
-	datas["ACCOUNTID"] = *voucher.Holder
+	datas["ACCOUNTID"] = account.ID
 	datas["PROGRAMID"] = voucher.ProgramID
 
 	//Validate Rule Program
@@ -147,7 +209,58 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	voucher.State = model.VoucherStateClaim
+	//Transaction struct {
+	//	ID              string     `db:"id",json:"id"`
+	//	CompanyId       string     `db:"company_id",json:"company_id"`
+	//	TransactionCode string     `db:"transaction_code",json:"transaction_code"`
+	//	TotalAmount     string     `db:"total_amount",json:"total_amount"`
+	//	Holder          string     `db:"holder",json:"holder"`
+	//	PartnerId       string     `db:"partner_id",json:"partner_id"`
+	//	CreatedBy       string     `db:"created_by",json:"created_by"`
+	//	CreatedAt       *time.Time `db:"created_at",json:"created_at"`
+	//	UpdatedBy       string     `db:"updated_by",json:"updated_by"`
+	//	UpdatedAt       *time.Time `db:"updated_at",json:"updated_at"`
+	//	Status          string     `db:"status",json:"status"`
+	//}
+	//Transactions      []Transaction
+	//TransactionDetail struct {
+	//	ID            string     `db:"id",json:"id"`
+	//	TransactionId string     `db:"transaction_id",json:"transaction_id"`
+	//	ProgramId     string     `db:"program_id",json:"program_id"`
+	//	VoucherId     string     `db:"voucher_id",json:"voucher_id"`
+	//	CreatedBy     string     `db:"created_by",json:"created_by"`
+	//	CreatedAt     *time.Time `db:"created_at",json:"created_at"`
+	//	UpdatedBy     string     `db:"updated_by",json:"updated_by"`
+	//	UpdatedAt     *time.Time `db:"updated_at",json:"updated_at"`
+	//	Status        string     `db:"status",json:"status"`
+	//}
+
+	var tx model.Transaction
+	var td model.TransactionDetail
+
+	td.ProgramId = program.ID
+	td.VoucherId = voucher.ID
+	td.CreatedBy = "system"
+	td.UpdatedBy = "system"
+
+	tx.TransactionDetails = append(tx.TransactionDetails, td)
+
+	tx.CompanyId = "system"
+	tx.TransactionCode = u.RandomizeString(8, u.ALPHANUMERIC)
+	tx.TotalAmount = "0"
+	tx.Holder = account.ID
+	tx.PartnerId = req.OutletID
+	tx.CreatedBy = "system"
+	tx.UpdatedBy = "system"
+
+	if _, err = tx.Insert(); err != nil {
+		u.DEBUG(err)
+		res.SetErrorWithDetail(JSONErrFatal, err)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	voucher.State = model.VoucherStateUsed
 	voucher.Holder = &accountID
 	if err = voucher.Update(); err != nil {
 		u.DEBUG(err)
@@ -155,6 +268,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
+
 	res.JSON(w, res, http.StatusCreated)
 }
 
@@ -249,14 +363,41 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	var req model.Voucher
 	var rule model.Rules
 	var accountID string
-	accountID = r.FormValue("xx-token")
+	accountToken := r.FormValue("xx-token")
 	decoder := json.NewDecoder(r.Body)
 	qp := u.NewQueryParam(r)
 	err := decoder.Decode(&req)
-	req.State = model.VoucherStateUsed
+	req.State = model.VoucherStateClaim
+
+	token, err := VerifyJWT(accountToken)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
+
+	claims, ok := token.Claims.(*JWTJunoClaims)
+	if ok && token.Valid {
+		// fmt.Printf("Key:%v", token.Header)
+	} else {
+		u.DEBUG(err)
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
+
+	//getUser
+	account, err := model.GetAccountByID(qp, claims.AccountID)
+	if err != nil {
+		u.DEBUG(err, " User Not Found")
+		res.SetError(JSONErrForbidden)
+		res.JSON(w, res, JSONErrForbidden.Status)
+		return
+	}
 
 	datas := make(map[string]string)
-	datas["ACCOUNTID"] = accountID
+	datas["ACCOUNTID"] = account.ID
 	datas["PROGRAMID"] = req.ProgramID
 
 	u.DEBUG("Claim.AccoundID:", accountID)
@@ -317,13 +458,14 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i >= req.VoucherAmount; i++ {
 		voucher := new(model.Voucher)
 		voucher.Code = vf.Properties.Prefix + u.RandomizeString(vf.Properties.Length, u.ALPHANUMERIC) + vf.Properties.Postfix
-		voucher.Holder = &accountID
+		voucher.Holder = &account.ID
 		voucher.ProgramID = program.ID
 		voucher.CreatedBy = "system"
-		*voucher.UpdatedBy = "system"
+		//*voucher.UpdatedBy = "system"
 		voucher.Status = model.StatusCreated
 		voucher.State = model.VoucherStateCreated
 		voucher.ExpiredAt = program.EndDate
+		voucher.HolderDetail.Scan(account)
 
 		vouchers = append(vouchers, *voucher)
 	}
