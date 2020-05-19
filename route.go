@@ -103,6 +103,8 @@ func init() {
 	v2.PostFunc("/:company/transaction/voucher/use", c.PostVoucherUse)
 	// v2.PostFunc("/:company/transaction/voucher/redeem", c.PostVoucherRedeem)
 	v2.GetFunc("/:company/transaction", c.GetTransactions)
+	v2.GetFunc("/:company/transaction/outlet/:id", c.GetTransactionsByOutlet)
+	v2.GetFunc("/:company/transaction/program/:id", c.GetTransactionsByProgram)
 	v2.GetFunc("/:company/transaction/:id", c.GetTransactionByID)
 
 	// v2.GetFunc("/:company/debug/pprof/", pprof.Index)

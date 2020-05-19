@@ -9,17 +9,18 @@ import (
 
 type (
 	Transaction struct {
-		ID              string     `db:"id",json:"id"`
-		CompanyId       string     `db:"company_id",json:"company_id"`
-		TransactionCode string     `db:"transaction_code",json:"transaction_code"`
-		TotalAmount     string     `db:"total_amount",json:"total_amount"`
-		Holder          string     `db:"holder",json:"holder"`
-		PartnerId       string     `db:"partner_id",json:"partner_id"`
-		CreatedBy       string     `db:"created_by",json:"created_by"`
-		CreatedAt       *time.Time `db:"created_at",json:"created_at"`
-		UpdatedBy       string     `db:"updated_by",json:"updated_by"`
-		UpdatedAt       *time.Time `db:"updated_at",json:"updated_at"`
-		Status          string     `db:"status",json:"status"`
+		ID                 string     `db:"id",json:"id"`
+		CompanyId          string     `db:"company_id",json:"company_id"`
+		TransactionCode    string     `db:"transaction_code",json:"transaction_code"`
+		TotalAmount        string     `db:"total_amount",json:"total_amount"`
+		Holder             string     `db:"holder",json:"holder"`
+		PartnerId          string     `db:"partner_id",json:"partner_id"`
+		CreatedBy          string     `db:"created_by",json:"created_by"`
+		CreatedAt          *time.Time `db:"created_at",json:"created_at"`
+		UpdatedBy          string     `db:"updated_by",json:"updated_by"`
+		UpdatedAt          *time.Time `db:"updated_at",json:"updated_at"`
+		Status             string     `db:"status",json:"status"`
+		TransactionDetails TransactionDetails
 	}
 	Transactions      []Transaction
 	TransactionDetail struct {
@@ -44,6 +45,16 @@ func GetTransactions(qp *util.QueryParam) (*Transactions, bool, error) {
 //GetTransactionByID : get partner by specified ID
 func GetTransactionByID(qp *util.QueryParam, id string) (*Transactions, bool, error) {
 	return getTransactions("id", id, qp)
+}
+
+//GetTransactionByProgram : get partner by specified ProgramID
+func GetTransactionByProgram(qp *util.QueryParam, val string) (*Transactions, bool, error) {
+	return getTransactions("program_id", val, qp)
+}
+
+//GetTransactionByPartner : get partner by specified PartnerID
+func GetTransactionByPartner(qp *util.QueryParam, val string) (*Transactions, bool, error) {
+	return getTransactions("partner_id", val, qp)
 }
 
 func getTransactions(k, v string, qp *util.QueryParam) (*Transactions, bool, error) {
@@ -89,13 +100,13 @@ func (t Transaction) Insert() (*[]Transaction, error) {
 	defer tx.Rollback()
 
 	q := `INSERT INTO 
-			transactions (company_id, transaction_code, total_amount, holder, partner_id, created_by, created_at, updated_by, updated_at, status)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			transactions (company_id, transaction_code, total_amount, holder, partner_id, created_by, updated_by, status)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 			RETURNING
 				id, company_id, transaction_code, total_amount, holder, partner_id, created_by, created_at, updated_by, updated_at, status
 	`
 	var res []Transaction
-	err = tx.Select(&res, tx.Rebind(q))
+	err = tx.Select(&res, tx.Rebind(q), t.CompanyId, t.TransactionCode, t.TotalAmount, t.Holder, t.PartnerId, t.CreatedBy, t.UpdatedBy, StatusCreated)
 	if err != nil {
 		return nil, err
 	}

@@ -38,8 +38,20 @@ func GetAccounts(qp *util.QueryParam) (*Accounts, bool, error) {
 }
 
 //GetAccountByID : get account by specified ID
-func GetAccountByID(qp *util.QueryParam, id string) (*Accounts, bool, error) {
+func GetAccountsByID(qp *util.QueryParam, id string) (*Accounts, bool, error) {
 	return getAccounts("id", id, qp)
+}
+
+// GetAccountByID :  get account
+func GetAccountByID(qp *util.QueryParam, id string) (*Account, error) {
+
+	accounts, _, err := getAccounts("id", id, qp)
+	if err != nil {
+		return &Account{}, err
+	}
+	account := &(*accounts)[0]
+
+	return account, nil
 }
 
 func getAccounts(k, v string, qp *util.QueryParam) (*Accounts, bool, error) {
