@@ -402,13 +402,13 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("datas = ", datas)
 
 	//Get Holder Detail
-	accounts, _, err := model.GetAccountByID(qp, accountID)
+	account, err := model.GetAccountByID(qp, accountID)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
 		return
 	}
-	account := &(*accounts)[0]
+
 	tmp := model.HolderDetail{
 		Name:  account.Name,
 		Phone: account.MobileNo,
