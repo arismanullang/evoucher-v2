@@ -11,21 +11,20 @@ import (
 type (
 	//Voucher model
 	Voucher struct {
-		ID            string         `json:"id,omitempty" db:"id"`
-		Code          string         `json:"code,omitempty" db:"code"`
-		ReferenceNo   string         `json:"reference_no,omitempty" db:"reference_no"`
-		Holder        *string        `json:"holder,omitempty" db:"holder"`
-		HolderDetail  types.JSONText `json:"holder_detail,omitempty" db:"holder_detail"`
-		ProgramID     string         `json:"program_id,omitempty" db:"program_id"`
-		ValidAt       *time.Time     `json:"valid_at,omitempty" db:"valid_at"`
-		ExpiredAt     *time.Time     `json:"expired_at,omitempty" db:"expired_at"`
-		State         string         `json:"state,omitempty" db:"state"`
-		CreatedBy     string         `json:"created_by,omitempty" db:"created_by"`
-		CreatedAt     *time.Time     `json:"created_at,omitempty" db:"created_at"`
-		UpdatedBy     *string        `json:"updated_by,omitempty" db:"updated_by"`
-		UpdatedAt     *time.Time     `json:"updated_at,omitempty" db:"updated_at"`
-		Status        string         `json:"status,omitempty" db:"status"`
-		VoucherAmount int            `json:"voucher_amount,omitempty"`
+		ID           string         `json:"id,omitempty" db:"id"`
+		Code         string         `json:"code,omitempty" db:"code"`
+		ReferenceNo  string         `json:"reference_no,omitempty" db:"reference_no"`
+		Holder       *string        `json:"holder,omitempty" db:"holder"`
+		HolderDetail types.JSONText `json:"holder_detail,omitempty" db:"holder_detail"`
+		ProgramID    string         `json:"program_id,omitempty" db:"program_id"`
+		ValidAt      *time.Time     `json:"valid_at,omitempty" db:"valid_at"`
+		ExpiredAt    *time.Time     `json:"expired_at,omitempty" db:"expired_at"`
+		State        string         `json:"state,omitempty" db:"state"`
+		CreatedBy    string         `json:"created_by,omitempty" db:"created_by"`
+		CreatedAt    *time.Time     `json:"created_at,omitempty" db:"created_at"`
+		UpdatedBy    string         `json:"updated_by,omitempty" db:"updated_by"`
+		UpdatedAt    *time.Time     `json:"updated_at,omitempty" db:"updated_at"`
+		Status       string         `json:"status,omitempty" db:"status"`
 	}
 	//Vouchers :
 	Vouchers []Voucher
@@ -303,8 +302,8 @@ func (vs *Vouchers) Insert() (*Vouchers, error) {
 	values := new(bytes.Buffer)
 	var args []interface{}
 	for _, v := range *vs {
-		values.WriteString("(?, ?, ?, ?, ?, ?, ?),")
-		args = append(args, v.Code, v.ReferenceNo, v.ProgramID, VoucherStateCreated, v.CreatedBy, v.UpdatedBy, StatusCreated)
+		values.WriteString("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?),")
+		args = append(args, v.Code, v.ReferenceNo, v.Holder, v.HolderDetail, v.ValidAt, v.ExpiredAt, v.ProgramID, VoucherStateCreated, v.CreatedBy, v.UpdatedBy, StatusCreated)
 	}
 
 	q := `INSERT INTO 
@@ -312,6 +311,10 @@ func (vs *Vouchers) Insert() (*Vouchers, error) {
 				( 				
 					 code
 					, reference_no
+					, holder
+					, holder_detail
+					, valid_at
+					, expired_at
 					, program_id
 					, state
 					, created_by
@@ -326,6 +329,13 @@ func (vs *Vouchers) Insert() (*Vouchers, error) {
 	q += `
 			RETURNING
 				id
+				, code
+				, reference_no
+				, holder
+				, holder_detail
+				, valid_at
+				, expired_at
+				, state
 				, program_id
 				, created_at
 				, created_by
