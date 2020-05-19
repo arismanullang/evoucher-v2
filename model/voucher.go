@@ -348,8 +348,6 @@ func (vs *Vouchers) Insert() (*Vouchers, error) {
 	if err != nil {
 		return nil, err
 	}
-	util.DEBUG("LAMHOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOT", q)
-	util.DEBUG("LAMHOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOT [", len(args), "args")
 	tx.Commit()
 	*vs = res
 	return &res, nil

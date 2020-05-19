@@ -677,7 +677,7 @@ func (rule RulesExpression) ValidateClaim(datas map[string]interface{}) (bool, e
 
 	maxAssignByDay := rule.And[ruleMaxAssignByDay]
 	if !maxAssignByDay.isEmpty() {
-		if holderVoucherByDay+quantity > maxAssignByDay.Eq.(int) {
+		if holderVoucherByDay+quantity > int(maxAssignByDay.Eq.(float64)) {
 			return false, err
 		}
 	}
