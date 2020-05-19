@@ -64,6 +64,9 @@ const (
 	// ruleMaxGetVoucher  = "max_get_voucher"  //2
 
 	//UPDATE NEW
+	ruleClaimPeriod             = "rule_assign_period" //rule_claim_period
+	ruleMaxAssignByDay          = "max_assign_by_day"
+	ruleMaxAssignByProgram      = "max_assign_by_program"
 	ruleClaimValidityHour       = "rule_claim_validity_hour"
 	ruleClaimValidityDay        = "rule_claim_validity_day"
 	ruleClaimValidityDate       = "rule_claim_validity_date"
@@ -639,61 +642,43 @@ func (rule *Rules) isNumberValid(opr string, val, exp int) bool {
 // 	ruleUseUsagePeriod     = "rule_use_usage_period"
 
 //ValidateClaimValidity : checking time base validity of transaction
-func (rule RulesExpression) ValidateClaim(datas map[string]string) (bool, error) {
+func (rule RulesExpression) ValidateClaim(datas map[string]interface{}) (bool, error) {
 	r := true
 	t := time.Now()
-	accountID := datas["ACCOUNTID"]
-	programID := datas["PROGRAMID"]
+	accountID := datas["ACCOUNTID"].(string)
+	programID := datas["PROGRAMID"].(string)
+	quantity := datas["QUANTITY"].(int)
 
-	ruleDate := rule.And[ruleClaimValidityDate]
+	ruleDate := rule.And[ruleClaimPeriod]
 	if !ruleDate.isEmpty() {
 		r, err := ruleDate.validateTime(t)
 		if !r {
 			return r, err
 		}
 	}
-	//util.DEBUG(ruleClaimValidityDate, "----> ", ruleDate, ":s:", len(ruleDate.In))
 
-	ruleDay := rule.And[ruleClaimValidityDay]
-	if !ruleDay.isEmpty() {
-		r, err := ruleDay.validateTime(t)
-		if !r {
-			return r, err
-		}
-	}
-	//util.DEBUG(ruleClaimValidityDay, "----> ", ruleDay, ":s:", len(ruleDay.In))
-
-	ruleHour := rule.And[ruleClaimValidityHour]
-	if !ruleHour.isEmpty() {
-		r, err := ruleHour.validateTime(t)
-		if !r {
-			return r, err
-		}
-	}
-	//util.DEBUG(ruleClaimValidityHour, "----> ", ruleHour, ":s:", len(ruleHour.In))
-	//util.DEBUG("Cheecking", ruleDate, ruleDay, ruleHour)
-
-	accumulative, err := GetUserAccumulativeVoucher(accountID, programID)
+	//max assign by program
+	holderVoucherByProgram, err := GetUserAccumulativeVoucherByProgram(accountID, programID)
 	if err != nil {
 		return false, err
 	}
-	ruleAccumulative := rule.And[ruleClaimAccumulative]
-	if !ruleAccumulative.isEmpty() {
-		r, err := ruleAccumulative.validateNumber(accumulative)
-		if !r {
-			return r, err
+
+	maxAssignByProgram := rule.And[ruleMaxAssignByProgram]
+	if !maxAssignByProgram.isEmpty() {
+		if holderVoucherByProgram+quantity > int(maxAssignByProgram.Eq.(float64)) {
+			return false, err
 		}
 	}
 
-	spending, err := GetUserSpendingTransaction(accountID)
+	holderVoucherByDay, err := GetUserAccumulativeVoucherByProgram(accountID, programID)
 	if err != nil {
 		return false, err
 	}
-	ruleSpending := rule.And[ruleClaimMinSpending]
-	if !ruleSpending.isEmpty() {
-		r, err := ruleSpending.validateNumber(spending)
-		if !r {
-			return r, err
+
+	maxAssignByDay := rule.And[ruleMaxAssignByDay]
+	if !maxAssignByDay.isEmpty() {
+		if holderVoucherByDay+quantity > maxAssignByDay.Eq.(int) {
+			return false, err
 		}
 	}
 

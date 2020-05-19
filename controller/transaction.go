@@ -279,9 +279,12 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	datas := make(map[string]string)
+	datas := make(map[string]interface{})
 	datas["ACCOUNTID"] = accountID
 	datas["PROGRAMID"] = req.ProgramID
+	datas["QUANTITY"] = req.Quantity
+
+	fmt.Println("datas = ", datas)
 
 	//Get Holder Detail
 	accounts, _, err := model.GetAccountByID(qp, accountID)
@@ -346,14 +349,10 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 
 		voucherValidAt = validTime
 		voucherExpiredAt = expiredTime
-		fmt.Println("voucherValidAt = ", voucherValidAt)
-		fmt.Println("voucherExpiredAt = ", voucherExpiredAt)
 	}
 
 	if ruleUseActiveVoucherPeriod, ok := rules.And["rule_use_active_voucher_period"]; ok && !ruleUseActiveVoucherPeriod.IsEmpty() {
 		voucherExpiredAt = voucherValidAt.AddDate(0, 0, int(ruleUseActiveVoucherPeriod.Eq.(float64)))
-		fmt.Println("voucherValidAt = ", voucherValidAt)
-		fmt.Println("voucherExpiredAt = ", voucherExpiredAt)
 	}
 
 	result, err := rules.ValidateClaim(datas)
@@ -371,15 +370,14 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Checking Amount : get current total voucher by programID
-	currentVoucherAmount, err := model.GetVoucherCreatedAmountByProgramID(program.ID)
+	currentClaimedVoucher, err := model.GetVoucherCreatedAmountByProgramID(program.ID)
 	if err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrFatal)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	if int64(currentVoucherAmount+req.Quantity) > program.Stock {
+	if int64(currentClaimedVoucher+req.Quantity) > program.Stock {
 		res.SetError(JSONErrExceedAmount)
 		res.JSON(w, res, http.StatusOK)
 		return
@@ -412,14 +410,17 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 		vouchers = append(vouchers, *voucher)
 	}
 
-	res.SetResponse(vouchers)
+	// res.SetResponse(vouchers)
 
-	// if _, err := vouchers.Insert(); err != nil {
-	// 	fmt.Println(err)
-	// 	res.SetError(JSONErrFatal.SetArgs(err.Error()))
-	// 	res.JSON(w, res, JSONErrFatal.Status)
-	// 	return
-	// }
+	response, err := vouchers.Insert()
+	if err != nil {
+		fmt.Println(err)
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(response)
 
 	res.JSON(w, res, http.StatusCreated)
 }

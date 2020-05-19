@@ -302,8 +302,8 @@ func (vs *Vouchers) Insert() (*Vouchers, error) {
 	values := new(bytes.Buffer)
 	var args []interface{}
 	for _, v := range *vs {
-		values.WriteString("(?, ?, ?, ?, ?, ?, ?),")
-		args = append(args, v.Code, v.ReferenceNo, v.ProgramID, VoucherStateCreated, v.CreatedBy, v.UpdatedBy, StatusCreated)
+		values.WriteString("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?),")
+		args = append(args, v.Code, v.ReferenceNo, v.Holder, v.HolderDetail, v.ValidAt, v.ExpiredAt, v.ProgramID, VoucherStateCreated, v.CreatedBy, v.UpdatedBy, StatusCreated)
 	}
 
 	q := `INSERT INTO 
@@ -311,6 +311,10 @@ func (vs *Vouchers) Insert() (*Vouchers, error) {
 				( 				
 					 code
 					, reference_no
+					, holder
+					, holder_detail
+					, valid_at
+					, expired_at
 					, program_id
 					, state
 					, created_by
@@ -325,6 +329,13 @@ func (vs *Vouchers) Insert() (*Vouchers, error) {
 	q += `
 			RETURNING
 				id
+				, code
+				, reference_no
+				, holder
+				, holder_detail
+				, valid_at
+				, expired_at
+				, state
 				, program_id
 				, created_at
 				, created_by
