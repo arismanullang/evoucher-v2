@@ -9,11 +9,18 @@ import (
 
 const (
 	// ALPHABET string
-	ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	ALPHABET = "alphabet"
 	// NUMERALS string
-	NUMERALS = "1234567890"
+	NUMERALS = "numeric"
 	// ALPHANUMERIC string
-	ALPHANUMERIC = ALPHABET + NUMERALS
+	ALPHANUMERIC = "alphanumeric"
+
+	AlphabetString     = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	NumeralsString     = "1234567890"
+	AlphaNumericString = AlphabetString + NumeralsString
+
+	// LENGTH = default random length number
+	LENGTH = 8
 )
 
 //StandardizeSpaces : trim redundant spaces
@@ -40,9 +47,9 @@ func ToStringOneLine(s interface{}) string {
 //RandomizeString : randomize string with custom length and random type
 func RandomizeString(ln int, fm string) string {
 	CharsType := map[string]string{
-		"Alphabet":     ALPHABET,
-		"Numerals":     NUMERALS,
-		"Alphanumeric": ALPHANUMERIC,
+		ALPHABET:     AlphabetString,
+		NUMERALS:     NumeralsString,
+		ALPHANUMERIC: AlphaNumericString,
 	}
 
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -51,5 +58,6 @@ func RandomizeString(ln int, fm string) string {
 	for i := 0; i < ln; i++ {
 		result[i] = chars[rand.Intn(len(chars))]
 	}
+
 	return string(result)
 }
