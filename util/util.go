@@ -19,8 +19,8 @@ const (
 	NumeralsString     = "1234567890"
 	AlphaNumericString = AlphabetString + NumeralsString
 
-	// LENGTH = default random length number
-	LENGTH = 8
+	// DEFAULT_LENGTH = default random length number
+	DEFAULT_LENGTH = 8
 )
 
 //StandardizeSpaces : trim redundant spaces

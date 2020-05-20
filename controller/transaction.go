@@ -147,18 +147,8 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	qp := u.NewQueryParam(r)
 	err := decoder.Decode(&req)
 
-	token, err := VerifyJWT(accountToken)
+	claims, err := model.VerifyAccountToken(accountToken)
 	if err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrUnauthorized)
-		res.JSON(w, res, JSONErrUnauthorized.Status)
-		return
-	}
-
-	claims, ok := token.Claims.(*JWTJunoClaims)
-	if ok && token.Valid {
-		// fmt.Printf("Key:%v", token.Header)
-	} else {
 		u.DEBUG(err)
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
@@ -257,7 +247,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	tx.TransactionDetails = append(tx.TransactionDetails, td)
 
 	tx.CompanyId = "system"
-	tx.TransactionCode = u.RandomizeString(8, u.ALPHANUMERIC)
+	tx.TransactionCode = u.RandomizeString(u.DEFAULT_LENGTH, u.ALPHANUMERIC)
 	tx.TotalAmount = "0"
 	tx.Holder = account.ID
 	tx.PartnerId = req.OutletID
@@ -374,25 +364,17 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	qp := u.NewQueryParam(r)
 	err := decoder.Decode(&req)
 
-	token, err := VerifyJWT(r.FormValue("token"))
-	if err != nil {
-		if err == model.ErrorForbidden {
-			u.NewResponse().SetError(JSONErrForbidden)
-			return
-		} else if err == model.ErrorInternalServer {
-			u.NewResponse().SetError(JSONErrFatal)
-			return
-		}
-	}
+	accountToken := r.FormValue("token")
 
-	claims, ok := token.Claims.(*JWTJunoClaims)
-	if ok {
-		accountID = claims.AccountID
-	} else {
-		res.SetError(JSONErrForbidden)
-		res.JSON(w, res, JSONErrForbidden.Status)
+	claims, err := model.VerifyAccountToken(accountToken)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
 		return
 	}
+
+	accountID = claims.AccountID
 
 	datas := make(map[string]interface{})
 	datas["ACCOUNTID"] = accountID
@@ -508,7 +490,7 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 		if vf.Type == "fix" {
 			voucher.Code = vf.Code
 		} else if vf.Type == "random" {
-			voucher.Code = vf.Prefix + u.RandomizeString(u.LENGTH, vf.Random) + vf.Postfix
+			voucher.Code = vf.Prefix + u.RandomizeString(u.DEFAULT_LENGTH, vf.Random) + vf.Postfix
 		}
 
 		voucher.ReferenceNo = req.Reference
