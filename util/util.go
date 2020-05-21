@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -60,4 +61,13 @@ func RandomizeString(ln int, fm string) string {
 	}
 
 	return string(result)
+}
+
+//StringToInt : convert string to int
+func StringToInt(s string) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return -1
+	}
+	return i
 }

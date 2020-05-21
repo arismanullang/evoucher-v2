@@ -142,7 +142,8 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	var req UseTransaction
 	var rule model.Rules
 	var accountID string
-	accountToken := r.FormValue("xx-token")
+	companyID := bone.GetValue(r, "company")
+	accountToken := r.FormValue("token")
 	decoder := json.NewDecoder(r.Body)
 	qp := u.NewQueryParam(r)
 	err := decoder.Decode(&req)
@@ -152,6 +153,15 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 		u.DEBUG(err)
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
+
+	//get config TimeZone
+	configs, err := model.GetConfigs(companyID, "company")
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+		res.Error.SetMessage("timezone config not found, please add timezone config")
+		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
 	}
 
@@ -175,6 +185,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	datas := make(map[string]string)
 	datas["ACCOUNTID"] = account.ID
 	datas["PROGRAMID"] = voucher.ProgramID
+	datas["TIMEZONE"] = fmt.Sprint(configs["timezone"])
 
 	//Validate Rule Program
 	program, err := model.GetProgramByID(voucher.ProgramID, qp)
@@ -210,32 +221,6 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Transaction struct {
-	//	ID              string     `db:"id",json:"id"`
-	//	CompanyId       string     `db:"company_id",json:"company_id"`
-	//	TransactionCode string     `db:"transaction_code",json:"transaction_code"`
-	//	TotalAmount     string     `db:"total_amount",json:"total_amount"`
-	//	Holder          string     `db:"holder",json:"holder"`
-	//	PartnerId       string     `db:"partner_id",json:"partner_id"`
-	//	CreatedBy       string     `db:"created_by",json:"created_by"`
-	//	CreatedAt       *time.Time `db:"created_at",json:"created_at"`
-	//	UpdatedBy       string     `db:"updated_by",json:"updated_by"`
-	//	UpdatedAt       *time.Time `db:"updated_at",json:"updated_at"`
-	//	Status          string     `db:"status",json:"status"`
-	//}
-	//Transactions      []Transaction
-	//TransactionDetail struct {
-	//	ID            string     `db:"id",json:"id"`
-	//	TransactionId string     `db:"transaction_id",json:"transaction_id"`
-	//	ProgramId     string     `db:"program_id",json:"program_id"`
-	//	VoucherId     string     `db:"voucher_id",json:"voucher_id"`
-	//	CreatedBy     string     `db:"created_by",json:"created_by"`
-	//	CreatedAt     *time.Time `db:"created_at",json:"created_at"`
-	//	UpdatedBy     string     `db:"updated_by",json:"updated_by"`
-	//	UpdatedAt     *time.Time `db:"updated_at",json:"updated_at"`
-	//	Status        string     `db:"status",json:"status"`
-	//}
-
 	var tx model.Transaction
 	var td model.TransactionDetail
 
@@ -254,21 +239,23 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	tx.CreatedBy = "system"
 	tx.UpdatedBy = "system"
 
-	if _, err = tx.Insert(); err != nil {
-		u.DEBUG(err)
-		res.SetErrorWithDetail(JSONErrFatal, err)
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
+	res.SetResponse(tx)
+
+	// if _, err = tx.Insert(); err != nil {
+	// 	u.DEBUG(err)
+	// 	res.SetErrorWithDetail(JSONErrFatal, err)
+	// 	res.JSON(w, res, JSONErrFatal.Status)
+	// 	return
+	// }
 
 	voucher.State = model.VoucherStateUsed
 	voucher.Holder = &accountID
-	if err = voucher.Update(); err != nil {
-		u.DEBUG(err)
-		res.SetErrorWithDetail(JSONErrFatal, err)
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
+	// if err = voucher.Update(); err != nil {
+	// 	u.DEBUG(err)
+	// 	res.SetErrorWithDetail(JSONErrFatal, err)
+	// 	res.JSON(w, res, JSONErrFatal.Status)
+	// 	return
+	// }
 
 	res.JSON(w, res, http.StatusCreated)
 }

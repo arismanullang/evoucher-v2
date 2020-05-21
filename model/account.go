@@ -92,7 +92,6 @@ func getAccounts(k, v string, qp *util.QueryParam) (*Accounts, bool, error) {
 
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 
-	util.DEBUG(q)
 	var resd Accounts
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)
 	if err != nil {
