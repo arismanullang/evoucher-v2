@@ -54,6 +54,27 @@ func GetAccountByID(qp *util.QueryParam, id string) (*Account, error) {
 	return account, nil
 }
 
+func VerifyAccountToken(accountToken string) (*JWTJunoClaims, error) {
+
+	// TODO: token not validated yet
+
+	token, err := VerifyJWT(accountToken)
+	// if err != nil {
+	// 	if err == ErrorForbidden {
+	// 		return nil, err
+	// 	} else if err == ErrorInternalServer {
+	// 		return nil, err
+	// 	}
+	// }
+
+	claims, ok := token.Claims.(*JWTJunoClaims)
+	if ok { // && token.Valid
+		return claims, nil
+	}
+
+	return nil, err
+}
+
 func getAccounts(k, v string, qp *util.QueryParam) (*Accounts, bool, error) {
 
 	q, err := qp.GetQueryByDefaultStruct(Account{})
@@ -71,7 +92,6 @@ func getAccounts(k, v string, qp *util.QueryParam) (*Accounts, bool, error) {
 
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 
-	util.DEBUG(q)
 	var resd Accounts
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)
 	if err != nil {
