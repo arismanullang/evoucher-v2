@@ -174,10 +174,31 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Validate VoucherID
 	voucher, err := model.GetVoucherByID(req.VoucherID, qp)
 	if err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrBadRequest)
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	} else if voucher.State == model.VoucherStateUsed {
+		res.SetError(JSONErrBadRequest)
+		res.Error.Message = "Voucher has been used"
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	} else if voucher.State == model.VoucherStatePaid {
+		res.SetError(JSONErrBadRequest)
+		res.Error.Message = "Voucher has been paid"
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	} else if !voucher.ExpiredAt.After(time.Now()) {
+		res.SetError(JSONErrBadRequest)
+		res.Error.Message = "Voucher has expired at " + voucher.ExpiredAt.String()
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	} else if !voucher.ValidAt.Before(time.Now()) {
+		res.SetError(JSONErrBadRequest)
+		res.Error.Message = "Voucher can be used at " + voucher.ValidAt.String()
 		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
 	}
@@ -185,6 +206,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	datas := make(map[string]string)
 	datas["ACCOUNTID"] = account.ID
 	datas["PROGRAMID"] = voucher.ProgramID
+	datas["OUTLETID"] = req.OutletID
 	datas["TIMEZONE"] = fmt.Sprint(configs["timezone"])
 
 	//Validate Rule Program
@@ -226,18 +248,18 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 
 	td.ProgramId = program.ID
 	td.VoucherId = voucher.ID
-	td.CreatedBy = "system"
-	td.UpdatedBy = "system"
+	td.CreatedBy = account.ID
+	td.UpdatedBy = account.ID
 
 	tx.TransactionDetails = append(tx.TransactionDetails, td)
 
-	tx.CompanyId = "system"
+	tx.CompanyId = companyID
 	tx.TransactionCode = u.RandomizeString(u.DEFAULT_LENGTH, u.ALPHANUMERIC)
 	tx.TotalAmount = "0"
 	tx.Holder = account.ID
 	tx.PartnerId = req.OutletID
-	tx.CreatedBy = "system"
-	tx.UpdatedBy = "system"
+	tx.CreatedBy = account.ID
+	tx.UpdatedBy = account.ID
 
 	res.SetResponse(tx)
 
@@ -256,6 +278,8 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	// 	res.JSON(w, res, JSONErrFatal.Status)
 	// 	return
 	// }
+
+	//send email confirmation
 
 	res.JSON(w, res, http.StatusCreated)
 }
