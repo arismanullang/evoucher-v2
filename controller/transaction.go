@@ -185,6 +185,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	datas := make(map[string]string)
 	datas["ACCOUNTID"] = account.ID
 	datas["PROGRAMID"] = voucher.ProgramID
+	datas["OUTLETID"] = req.OutletID
 	datas["TIMEZONE"] = fmt.Sprint(configs["timezone"])
 
 	//Validate Rule Program
@@ -226,18 +227,18 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 
 	td.ProgramId = program.ID
 	td.VoucherId = voucher.ID
-	td.CreatedBy = "system"
-	td.UpdatedBy = "system"
+	td.CreatedBy = account.ID
+	td.UpdatedBy = account.ID
 
 	tx.TransactionDetails = append(tx.TransactionDetails, td)
 
-	tx.CompanyId = "system"
+	tx.CompanyId = companyID
 	tx.TransactionCode = u.RandomizeString(u.DEFAULT_LENGTH, u.ALPHANUMERIC)
 	tx.TotalAmount = "0"
 	tx.Holder = account.ID
 	tx.PartnerId = req.OutletID
-	tx.CreatedBy = "system"
-	tx.UpdatedBy = "system"
+	tx.CreatedBy = account.ID
+	tx.UpdatedBy = account.ID
 
 	res.SetResponse(tx)
 

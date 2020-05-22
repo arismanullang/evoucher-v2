@@ -363,7 +363,6 @@ func (ra *RulesArgument) validateEqString(val string) (bool, error) {
 
 func (ra *RulesArgument) validateInString(val string) (bool, error) {
 	r := false
-	//convert to time
 	for _, value := range ra.In {
 		//validate rule
 		r = value == val
@@ -700,6 +699,7 @@ func (rule RulesExpression) ValidateUse(datas map[string]string) (bool, error) {
 	r := true
 	// accountID := datas["ACCOUNTID"]
 	// programID := datas["PROGRAMID"]
+	outletID := datas["OUTLETID"]
 	timezone := datas["TIMEZONE"]
 
 	loc, _ := time.LoadLocation(timezone)
@@ -708,12 +708,6 @@ func (rule RulesExpression) ValidateUse(datas map[string]string) (bool, error) {
 	// not validated yet
 	// "rule_use_max_usage_by_trx": {
 	// 	"$eq": 9
-	// },
-	// "outlet": {
-	// 	"$in": [
-	// 		"6zKw3ttj",
-	// 		"puRslJaa"
-	// 	]
 	// },
 
 	ruleDate := rule.And[ruleUseValidityDate]
@@ -742,6 +736,14 @@ func (rule RulesExpression) ValidateUse(datas map[string]string) (bool, error) {
 		ruleHour.Lte = endTime.Format(time.RFC3339)
 
 		r, err := ruleHour.validateTime(t)
+		if !r {
+			return r, err
+		}
+	}
+
+	ruleOutlet := rule.And[ruleUseOutlet]
+	if !ruleOutlet.isEmpty() {
+		r, err := ruleOutlet.validateInString(outletID)
 		if !r {
 			return r, err
 		}
