@@ -174,10 +174,31 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Validate VoucherID
 	voucher, err := model.GetVoucherByID(req.VoucherID, qp)
 	if err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrBadRequest)
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	} else if voucher.State == model.VoucherStateUsed {
+		res.SetError(JSONErrBadRequest)
+		res.Error.Message = "Voucher has been used"
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	} else if voucher.State == model.VoucherStatePaid {
+		res.SetError(JSONErrBadRequest)
+		res.Error.Message = "Voucher has been paid"
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	} else if !voucher.ExpiredAt.After(time.Now()) {
+		res.SetError(JSONErrBadRequest)
+		res.Error.Message = "Voucher has expired at " + voucher.ExpiredAt.String()
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	} else if !voucher.ValidAt.Before(time.Now()) {
+		res.SetError(JSONErrBadRequest)
+		res.Error.Message = "Voucher can be used at " + voucher.ValidAt.String()
 		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
 	}
@@ -257,6 +278,8 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	// 	res.JSON(w, res, JSONErrFatal.Status)
 	// 	return
 	// }
+
+	//send email confirmation
 
 	res.JSON(w, res, http.StatusCreated)
 }
