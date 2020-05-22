@@ -59,16 +59,16 @@ func VerifyAccountToken(accountToken string) (*JWTJunoClaims, error) {
 	// TODO: token not validated yet
 
 	token, err := VerifyJWT(accountToken)
-	// if err != nil {
-	// 	if err == ErrorForbidden {
-	// 		return nil, err
-	// 	} else if err == ErrorInternalServer {
-	// 		return nil, err
-	// 	}
-	// }
+	if err != nil {
+		if err == ErrorForbidden {
+			return nil, err
+		} else if err == ErrorInternalServer {
+			return nil, err
+		}
+	}
 
 	claims, ok := token.Claims.(*JWTJunoClaims)
-	if ok { // && token.Valid
+	if ok && token.Valid {
 		return claims, nil
 	}
 

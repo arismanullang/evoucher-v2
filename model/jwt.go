@@ -65,7 +65,7 @@ type (
 func VerifyJWT(tokenString string) (*jwt.Token, error) {
 	return jwt.ParseWithClaims(tokenString, &JWTJunoClaims{}, func(token *jwt.Token) (interface{}, error) {
 		urlFormat := os.Getenv("JUNO_PUBLIC_KEY_URL")
-		urlPath := fmt.Sprintf(urlFormat, token.Header["kid"])
+		urlPath := fmt.Sprintf(urlFormat + token.Header["kid"].(string))
 		res, err := http.Get(urlPath)
 		if err != nil {
 			util.DEBUG(err)
