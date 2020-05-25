@@ -97,7 +97,7 @@ func getPrograms(key, value string, qp *util.QueryParam) (*Programs, bool, error
 	}
 
 	next := false
-	if len(resd) > qp.Count {
+	if len(resd) > qp.Count && qp.Count > 0 {
 		next = true
 		resd = resd[:qp.Count]
 	}

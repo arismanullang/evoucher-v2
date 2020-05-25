@@ -37,6 +37,15 @@ type (
 	}
 )
 
+// GetVouchersByHolder : get list vouchers by Holder
+func GetVouchersByHolder(holder string, qp *util.QueryParam) (*Vouchers, error) {
+	vouchers, _, err := getVouchers("holder", holder, qp)
+	if err != nil {
+		return &Vouchers{}, err
+	}
+	return vouchers, nil
+}
+
 // GetVouchersByID :  get list vouchers by ID
 func GetVouchersByID(id string, qp *util.QueryParam) (*Vouchers, bool, error) {
 	return getVouchers("id", id, qp)
