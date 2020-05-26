@@ -654,10 +654,13 @@ func (rule *Rules) isNumberValid(opr string, val, exp int) bool {
 //ValidateClaimValidity : checking time base validity of transaction
 func (rule RulesExpression) ValidateClaim(datas map[string]interface{}) (bool, error) {
 	r := true
-	t := time.Now()
 	accountID := datas["ACCOUNTID"].(string)
 	programID := datas["PROGRAMID"].(string)
 	quantity := datas["QUANTITY"].(int)
+	timezone := datas["TIMEZONE"].(string)
+
+	loc, _ := time.LoadLocation(timezone)
+	t := time.Now().In(loc)
 
 	ruleDate := rule.And[ruleClaimPeriod]
 	if !ruleDate.isEmpty() {
@@ -680,7 +683,7 @@ func (rule RulesExpression) ValidateClaim(datas map[string]interface{}) (bool, e
 		}
 	}
 
-	holderVoucherByDay, err := GetUserAccumulativeVoucherByProgram(accountID, programID)
+	holderVoucherByDay, err := GetUserAccumulativeVoucherByDay(accountID, programID, t.Format("2006-01-02"))
 	if err != nil {
 		return false, err
 	}

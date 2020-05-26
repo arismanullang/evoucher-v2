@@ -2,7 +2,6 @@ package model
 
 import (
 	"database/sql"
-	"time"
 
 	"github.com/gilkor/evoucher-v2/util"
 )
@@ -24,16 +23,16 @@ func GetUserAccumulativeVoucherByProgram(accountID, programID string) (int, erro
 }
 
 //GetUserAccumulativeVoucherByDay : Getcount voucher by accountID, programID, and created_at date
-func GetUserAccumulativeVoucherByDay(accountID, programID string) (int, error) {
+func GetUserAccumulativeVoucherByDay(accountID, programID, currentDate string) (int, error) {
 
 	q := ` SELECT COUNT(*) acc FROM vouchers 
 			WHERE holder = ? 
-			AND created_at = ?
+			AND created_at >= ?
 			AND program_id = ? 
 			AND status = ? `
 
 	var r int
-	err := db.QueryRow(db.Rebind(q), accountID, time.Now().Date, programID, StatusCreated).Scan(&r)
+	err := db.QueryRow(db.Rebind(q), accountID, currentDate, programID, StatusCreated).Scan(&r)
 	if err != nil {
 		return -1, err
 	}
