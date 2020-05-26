@@ -191,7 +191,7 @@ func getQueryFromStruct(qp *QueryParam, tag string, i interface{}) (string, erro
 		tableField := field.Tag.Get(tag)
 		if len(param) > 1 {
 			for _, v := range param {
-				if tableField == v {
+				if tableField == strings.Trim(v, " ") {
 					q += qp.TableAlias + tableField + ` ,`
 					break
 				}
