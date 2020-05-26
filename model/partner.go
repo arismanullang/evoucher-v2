@@ -95,22 +95,20 @@ func getPartners(k, v string, qp *util.QueryParam) (*Partners, bool, error) {
 
 //GetPartnersByTags : get partner by tag.id
 func GetPartnersByTags(qp *util.QueryParam, v string) (*Partners, bool, error) {
-
 	q, err := qp.GetQueryByDefaultStruct(Partner{})
 	if err != nil {
 		return &Partners{}, false, err
 	}
-	// q := qp.GetQueryFields(PartnerFields)
 
 	q += `
 			FROM
-				partners Partner,
-				tag_holders t
+				m_partners partner,
+				object_tags object_tag
 			WHERE 
 				partner.status = ?
-			AND t.status = ?
-			AND partner.id = t.holder
-			AND t.tag = ?`
+			AND object_tag.status = ?
+			AND partner.id = object_tag.object_id
+			AND object_tag.tag_id = ?`
 
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	// fmt.Println(q)
