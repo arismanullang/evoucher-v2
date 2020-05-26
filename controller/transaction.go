@@ -375,6 +375,7 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	qp := u.NewQueryParam(r)
 	err := decoder.Decode(&req)
 
+	companyID := bone.GetValue(r, "company")
 	accountToken := r.FormValue("token")
 
 	claims, err := model.VerifyAccountToken(accountToken)
@@ -387,10 +388,20 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 
 	accountID = claims.AccountID
 
+	//get config TimeZone
+	configs, err := model.GetConfigs(companyID, "company")
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+		res.Error.SetMessage("timezone config not found, please add timezone config")
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
 	datas := make(map[string]interface{})
 	datas["ACCOUNTID"] = accountID
 	datas["PROGRAMID"] = req.ProgramID
 	datas["QUANTITY"] = req.Quantity
+	datas["TIMEZONE"] = fmt.Sprint(configs["timezone"])
 
 	fmt.Println("datas = ", datas)
 
@@ -432,13 +443,16 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 
 	var rules model.RulesExpression
 	program.Rule.Unmarshal(&rules)
-	voucherValidAt := time.Now()
-	voucherExpiredAt := time.Now()
+
+	loc, _ := time.LoadLocation(fmt.Sprint(configs["timezone"]))
+
+	voucherValidAt := time.Now().In(loc)
+	voucherExpiredAt := time.Date(voucherValidAt.Year(), voucherValidAt.Month(), voucherValidAt.Day(), 23, 59, 59, 59, loc)
+
 	fmt.Println("rules = ", rules)
 
 	if ruleUseUsagePeriod, ok := rules.And["rule_use_usage_period"]; ok {
 
-		fmt.Println("ruleUseActiveVoucherPeriod = ", ruleUseUsagePeriod)
 		validTime, err := model.StringToTime(fmt.Sprint(ruleUseUsagePeriod.Gte))
 		if err != nil {
 			res.SetError(JSONErrBadRequest)
@@ -460,7 +474,7 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if ruleUseActiveVoucherPeriod, ok := rules.And["rule_use_active_voucher_period"]; ok && !ruleUseActiveVoucherPeriod.IsEmpty() {
-		voucherExpiredAt = voucherValidAt.AddDate(0, 0, int(ruleUseActiveVoucherPeriod.Eq.(float64)))
+		voucherExpiredAt = voucherExpiredAt.AddDate(0, 0, int(ruleUseActiveVoucherPeriod.Eq.(float64)))
 	}
 
 	result, err := rules.ValidateClaim(datas)

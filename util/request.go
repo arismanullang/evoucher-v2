@@ -61,11 +61,18 @@ func (qp *QueryParam) GetQueryByDefaultStruct(i interface{}) (string, error) {
 }
 
 // GetQueryFields : get query field from custom QueryParam.Fields ,or default using model
-func (qp *QueryParam) GetQueryFields(stringFiels []string) string {
+func (qp *QueryParam) GetQueryFields(stringFields []string) string {
 	if len(strings.TrimSpace(qp.Fields)) > 0 {
-		return ` SElECT ` + qp.Fields
+		return ` SElECT ` + qp.TableAlias + qp.Fields
 	}
-	return ` SElECT ` + strings.Join(stringFiels, ",")
+
+	newFields := []string{}
+	for _, field := range stringFields {
+		field = qp.TableAlias + field
+		newFields = append(newFields, field)
+	}
+
+	return ` SElECT ` + strings.Join(newFields, ",")
 }
 
 //GetQuerySort : generate sql order syntax base on QueryParam.Sort field , default sort "ASC" ,
@@ -184,7 +191,7 @@ func getQueryFromStruct(qp *QueryParam, tag string, i interface{}) (string, erro
 		tableField := field.Tag.Get(tag)
 		if len(param) > 1 {
 			for _, v := range param {
-				if tableField == v {
+				if tableField == strings.Trim(v, " ") {
 					q += qp.TableAlias + tableField + ` ,`
 					break
 				}
