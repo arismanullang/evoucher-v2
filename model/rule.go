@@ -678,8 +678,9 @@ func (rule RulesExpression) ValidateClaim(datas map[string]interface{}) (bool, e
 
 	maxAssignByProgram := rule.And[ruleMaxAssignByProgram]
 	if !maxAssignByProgram.isEmpty() {
-		if holderVoucherByProgram+quantity > int(maxAssignByProgram.Eq.(float64)) {
-			return false, err
+		maxAssign := int(maxAssignByProgram.Eq.(float64))
+		if maxAssign != 0 && holderVoucherByProgram+quantity > maxAssign {
+			return false, ErrorMaxAssignByProgram
 		}
 	}
 
@@ -690,8 +691,9 @@ func (rule RulesExpression) ValidateClaim(datas map[string]interface{}) (bool, e
 
 	maxAssignByDay := rule.And[ruleMaxAssignByDay]
 	if !maxAssignByDay.isEmpty() {
-		if holderVoucherByDay+quantity > int(maxAssignByDay.Eq.(float64)) {
-			return false, err
+		maxAssign := int(maxAssignByDay.Eq.(float64))
+		if maxAssign != 0 && holderVoucherByDay+quantity > int(maxAssignByDay.Eq.(float64)) {
+			return false, ErrorMaxAssignByDay
 		}
 	}
 
