@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/gilkor/evoucher-v2/util"
@@ -268,6 +269,7 @@ func (ra *RulesArgument) validateGteTime(tx time.Time) (bool, error) {
 	if err != nil {
 		return r, err
 	}
+
 	//validate rule
 	r = tx.Equal(t) || tx.After(t)
 	return r, nil
@@ -546,6 +548,15 @@ func StringToTime(value string) (time.Time, error) {
 	return t, nil
 }
 
+// StringClockToTime : parse "03:04" string to current datetime
+func StringClockToTime(value string, t time.Time) time.Time {
+
+	clockTime := strings.Split(value, ":")
+	resultTime := time.Date(t.Year(), t.Month(), t.Day(), util.StringToInt(clockTime[0]), util.StringToInt(clockTime[1]), 0, 0, t.Location())
+
+	return resultTime
+}
+
 func toFloat(val interface{}) (float64, error) {
 	switch i := val.(type) {
 	case float64:
@@ -687,9 +698,23 @@ func (rule RulesExpression) ValidateClaim(datas map[string]interface{}) (bool, e
 
 func (rule RulesExpression) ValidateUse(datas map[string]string) (bool, error) {
 	r := true
-	t := time.Now()
-	accountID := datas["ACCOUNTID"]
-	programID := datas["PROGRAMID"]
+	// accountID := datas["ACCOUNTID"]
+	// programID := datas["PROGRAMID"]
+	timezone := datas["TIMEZONE"]
+
+	loc, _ := time.LoadLocation(timezone)
+	t := time.Now().In(loc)
+
+	// not validated yet
+	// "rule_use_max_usage_by_trx": {
+	// 	"$eq": 9
+	// },
+	// "outlet": {
+	// 	"$in": [
+	// 		"6zKw3ttj",
+	// 		"puRslJaa"
+	// 	]
+	// },
 
 	ruleDate := rule.And[ruleUseValidityDate]
 	if !ruleDate.isEmpty() {
@@ -701,7 +726,7 @@ func (rule RulesExpression) ValidateUse(datas map[string]string) (bool, error) {
 
 	ruleDay := rule.And[ruleUseValidityDay]
 	if !ruleDay.isEmpty() {
-		r, err := ruleDay.validateTime(t)
+		r, err := ruleDay.validateInNumber(int(t.Weekday()))
 		if !r {
 			return r, err
 		}
@@ -709,35 +734,42 @@ func (rule RulesExpression) ValidateUse(datas map[string]string) (bool, error) {
 
 	ruleHour := rule.And[ruleUseValidityHour]
 	if !ruleHour.isEmpty() {
+
+		startTime := StringClockToTime(fmt.Sprint(ruleHour.Gte), t)
+		endTime := StringClockToTime(fmt.Sprint(ruleHour.Lte), t)
+
+		ruleHour.Gte = startTime.Format(time.RFC3339)
+		ruleHour.Lte = endTime.Format(time.RFC3339)
+
 		r, err := ruleHour.validateTime(t)
 		if !r {
 			return r, err
 		}
 	}
 
-	usage, err := GetUserUsageVoucher(accountID, programID)
-	if err != nil {
-		return false, err
-	}
-	ruleUseMaxUsage := rule.And[ruleUseMaxUsage]
-	if !ruleUseMaxUsage.isEmpty() {
-		r, err := ruleUseMaxUsage.validateNumber(usage)
-		if !r {
-			return r, err
-		}
-	}
+	// usage, err := GetUserUsageVoucher(accountID, programID)
+	// if err != nil {
+	// 	return false, err
+	// }
+	// ruleUseMaxUsage := rule.And[ruleUseMaxUsage]
+	// if !ruleUseMaxUsage.isEmpty() {
+	// 	r, err := ruleUseMaxUsage.validateNumber(usage)
+	// 	if !r {
+	// 		return r, err
+	// 	}
+	// }
 
-	spending, err := GetUserSpendingTransaction(accountID)
-	if err != nil {
-		return false, err
-	}
-	ruleSpending := rule.And[ruleUseMinSpending]
-	if !ruleSpending.isEmpty() {
-		r, err := ruleSpending.validateNumber(spending)
-		if !r {
-			return r, err
-		}
-	}
+	// spending, err := GetUserSpendingTransaction(accountID)
+	// if err != nil {
+	// 	return false, err
+	// }
+	// ruleSpending := rule.And[ruleUseMinSpending]
+	// if !ruleSpending.isEmpty() {
+	// 	r, err := ruleSpending.validateNumber(spending)
+	// 	if !r {
+	// 		return r, err
+	// 	}
+	// }
 
 	return r, nil
 }

@@ -36,4 +36,8 @@ var (
 	ErrorInternalServer = errors.New("Internal Server Error")
 	// ErrorForbidden :
 	ErrorForbidden = errors.New("Forbidden")
+	// ErrorInvalidToken :
+	ErrorInvalidToken = errors.New("Invalid Token")
+	// ErrorExpiredToken :
+	ErrorExpiredToken = errors.New("Token has expired")
 )

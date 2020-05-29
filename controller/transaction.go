@@ -142,12 +142,13 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	var req UseTransaction
 	var rule model.Rules
 	var accountID string
-	accountToken := r.FormValue("xx-token")
+	companyID := bone.GetValue(r, "company")
+	accountToken := r.FormValue("token")
 	decoder := json.NewDecoder(r.Body)
 	qp := u.NewQueryParam(r)
 	err := decoder.Decode(&req)
 
-	token, err := VerifyJWT(accountToken)
+	claims, err := model.VerifyAccountToken(accountToken)
 	if err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrUnauthorized)
@@ -155,13 +156,12 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	claims, ok := token.Claims.(*JWTJunoClaims)
-	if ok && token.Valid {
-		// fmt.Printf("Key:%v", token.Header)
-	} else {
-		u.DEBUG(err)
-		res.SetError(JSONErrUnauthorized)
-		res.JSON(w, res, JSONErrUnauthorized.Status)
+	//get config TimeZone
+	configs, err := model.GetConfigs(companyID, "company")
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+		res.Error.SetMessage("timezone config not found, please add timezone config")
+		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
 	}
 
@@ -185,6 +185,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	datas := make(map[string]string)
 	datas["ACCOUNTID"] = account.ID
 	datas["PROGRAMID"] = voucher.ProgramID
+	datas["TIMEZONE"] = fmt.Sprint(configs["timezone"])
 
 	//Validate Rule Program
 	program, err := model.GetProgramByID(voucher.ProgramID, qp)
@@ -220,32 +221,6 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Transaction struct {
-	//	ID              string     `db:"id",json:"id"`
-	//	CompanyId       string     `db:"company_id",json:"company_id"`
-	//	TransactionCode string     `db:"transaction_code",json:"transaction_code"`
-	//	TotalAmount     string     `db:"total_amount",json:"total_amount"`
-	//	Holder          string     `db:"holder",json:"holder"`
-	//	PartnerId       string     `db:"partner_id",json:"partner_id"`
-	//	CreatedBy       string     `db:"created_by",json:"created_by"`
-	//	CreatedAt       *time.Time `db:"created_at",json:"created_at"`
-	//	UpdatedBy       string     `db:"updated_by",json:"updated_by"`
-	//	UpdatedAt       *time.Time `db:"updated_at",json:"updated_at"`
-	//	Status          string     `db:"status",json:"status"`
-	//}
-	//Transactions      []Transaction
-	//TransactionDetail struct {
-	//	ID            string     `db:"id",json:"id"`
-	//	TransactionId string     `db:"transaction_id",json:"transaction_id"`
-	//	ProgramId     string     `db:"program_id",json:"program_id"`
-	//	VoucherId     string     `db:"voucher_id",json:"voucher_id"`
-	//	CreatedBy     string     `db:"created_by",json:"created_by"`
-	//	CreatedAt     *time.Time `db:"created_at",json:"created_at"`
-	//	UpdatedBy     string     `db:"updated_by",json:"updated_by"`
-	//	UpdatedAt     *time.Time `db:"updated_at",json:"updated_at"`
-	//	Status        string     `db:"status",json:"status"`
-	//}
-
 	var tx model.Transaction
 	var td model.TransactionDetail
 
@@ -257,28 +232,30 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	tx.TransactionDetails = append(tx.TransactionDetails, td)
 
 	tx.CompanyId = "system"
-	tx.TransactionCode = u.RandomizeString(8, u.ALPHANUMERIC)
+	tx.TransactionCode = u.RandomizeString(u.DEFAULT_LENGTH, u.ALPHANUMERIC)
 	tx.TotalAmount = "0"
 	tx.Holder = account.ID
 	tx.PartnerId = req.OutletID
 	tx.CreatedBy = "system"
 	tx.UpdatedBy = "system"
 
-	if _, err = tx.Insert(); err != nil {
-		u.DEBUG(err)
-		res.SetErrorWithDetail(JSONErrFatal, err)
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
+	res.SetResponse(tx)
+
+	// if _, err = tx.Insert(); err != nil {
+	// 	u.DEBUG(err)
+	// 	res.SetErrorWithDetail(JSONErrFatal, err)
+	// 	res.JSON(w, res, JSONErrFatal.Status)
+	// 	return
+	// }
 
 	voucher.State = model.VoucherStateUsed
 	voucher.Holder = &accountID
-	if err = voucher.Update(); err != nil {
-		u.DEBUG(err)
-		res.SetErrorWithDetail(JSONErrFatal, err)
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
+	// if err = voucher.Update(); err != nil {
+	// 	u.DEBUG(err)
+	// 	res.SetErrorWithDetail(JSONErrFatal, err)
+	// 	res.JSON(w, res, JSONErrFatal.Status)
+	// 	return
+	// }
 
 	res.JSON(w, res, http.StatusCreated)
 }
@@ -370,13 +347,13 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	var rule model.Rules
 	var accountID string
 
-	accountToken := r.FormValue("xx-token")
 	decoder := json.NewDecoder(r.Body)
 	qp := u.NewQueryParam(r)
 	err := decoder.Decode(&req)
-	//req.State = model.VoucherStateClaim
 
-	token, err := VerifyJWT(accountToken)
+	accountToken := r.FormValue("token")
+
+	claims, err := model.VerifyAccountToken(accountToken)
 	if err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrUnauthorized)
@@ -384,24 +361,7 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	claims, ok := token.Claims.(*JWTJunoClaims)
-	if ok && token.Valid {
-		// fmt.Printf("Key:%v", token.Header)
-	} else {
-		u.DEBUG(err)
-		res.SetError(JSONErrUnauthorized)
-		res.JSON(w, res, JSONErrUnauthorized.Status)
-		return
-	}
-
-	//getUser
-	account, err := model.GetAccountByID(qp, claims.AccountID)
-	if err != nil {
-		u.DEBUG(err, " User Not Found")
-		res.SetError(JSONErrForbidden)
-		res.JSON(w, res, JSONErrForbidden.Status)
-		return
-	}
+	accountID = claims.AccountID
 
 	datas := make(map[string]interface{})
 	datas["ACCOUNTID"] = accountID
@@ -409,6 +369,14 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	datas["QUANTITY"] = req.Quantity
 
 	fmt.Println("datas = ", datas)
+
+	//Get Holder Detail
+	account, err := model.GetAccountByID(qp, accountID)
+	if err != nil {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
 
 	tmp := model.HolderDetail{
 		Name:  account.Name,
@@ -509,7 +477,7 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 		if vf.Type == "fix" {
 			voucher.Code = vf.Code
 		} else if vf.Type == "random" {
-			voucher.Code = vf.Prefix + u.RandomizeString(u.LENGTH, vf.Random) + vf.Postfix
+			voucher.Code = vf.Prefix + u.RandomizeString(u.DEFAULT_LENGTH, vf.Random) + vf.Postfix
 		}
 
 		voucher.ReferenceNo = req.Reference

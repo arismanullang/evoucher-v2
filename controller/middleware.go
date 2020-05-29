@@ -42,7 +42,7 @@ func VerifyJunoJWTAuthMiddleware() negroni.Handler {
 	return negroni.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 			tokenString := bone.GetValue(r, "token")
-			token, err := VerifyJWT(tokenString)
+			token, err := model.VerifyJWT(tokenString)
 			if err != nil {
 				if err == model.ErrorForbidden {
 					u.NewResponse().SetError(JSONErrForbidden)
@@ -52,7 +52,7 @@ func VerifyJunoJWTAuthMiddleware() negroni.Handler {
 					return
 				}
 			} else {
-				claims, ok := token.Claims.(*JWTJunoClaims)
+				claims, ok := token.Claims.(*model.JWTJunoClaims)
 				if ok && token.Valid {
 					// fmt.Printf("Key:%v", token.Header)
 					ctx := context.WithValue(r.Context(), KeyContextAuth, claims)

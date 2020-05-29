@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -19,8 +20,8 @@ const (
 	NumeralsString     = "1234567890"
 	AlphaNumericString = AlphabetString + NumeralsString
 
-	// LENGTH = default random length number
-	LENGTH = 8
+	// DEFAULT_LENGTH = default random length number
+	DEFAULT_LENGTH = 8
 )
 
 //StandardizeSpaces : trim redundant spaces
@@ -60,4 +61,13 @@ func RandomizeString(ln int, fm string) string {
 	}
 
 	return string(result)
+}
+
+//StringToInt : convert string to int
+func StringToInt(s string) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return -1
+	}
+	return i
 }
