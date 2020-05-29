@@ -111,6 +111,7 @@ func (t Transaction) Insert() (*[]Transaction, error) {
 		return nil, err
 	}
 
+	var resd []TransactionDetail
 	for _, td := range t.TransactionDetails {
 		q = `INSERT INTO 
 			transaction_details (transaction_id, program_id, voucher_id, created_by, updated_by, status)
@@ -118,12 +119,12 @@ func (t Transaction) Insert() (*[]Transaction, error) {
 			RETURNING
 				id, transaction_id, program_id, voucher_id, created_by, updated_by, status
 	`
-		var res []Transaction
-		err = tx.Select(&res, tx.Rebind(q), td.TransactionId, td.ProgramId, td.VoucherId, td.CreatedBy, td.UpdatedBy, StatusCreated)
+		err = tx.Select(&resd, tx.Rebind(q), td.TransactionId, td.ProgramId, td.VoucherId, td.CreatedBy, td.UpdatedBy, StatusCreated)
 		if err != nil {
 			return nil, err
 		}
 	}
+	res[0].TransactionDetails = resd
 
 	err = tx.Commit()
 	if err != nil {
