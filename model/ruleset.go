@@ -27,12 +27,12 @@ func GetUserAccumulativeVoucherByDay(accountID, programID, currentDate string) (
 
 	q := ` SELECT COUNT(*) acc FROM vouchers 
 			WHERE holder = ? 
-			AND created_at >= ?
+			AND (created_at >= ? OR assigned_at >= ?)
 			AND program_id = ? 
 			AND status = ? `
 
 	var r int
-	err := db.QueryRow(db.Rebind(q), accountID, currentDate, programID, StatusCreated).Scan(&r)
+	err := db.QueryRow(db.Rebind(q), accountID, currentDate, currentDate, programID, StatusCreated).Scan(&r)
 	if err != nil {
 		return -1, err
 	}

@@ -700,6 +700,28 @@ func (rule RulesExpression) ValidateClaim(datas map[string]interface{}) (bool, e
 	return r, nil
 }
 
+func (rule RulesExpression) ValidateAssign(datas map[string]interface{}) (bool, error) {
+	result, err := rule.ValidateClaim(datas)
+	if err != nil {
+		return false, err
+	}
+
+	programID := datas["PROGRAMID"].(string)
+	quantity := datas["QUANTITY"].(int)
+
+	availableVoucher, err := GetUnassignedVoucherByProgramID(programID)
+	if err != nil {
+		return false, ErrorInternalServer
+	}
+
+	if quantity > availableVoucher {
+		return false, ErrorStockEmpty
+	}
+
+	return result, nil
+
+}
+
 func (rule RulesExpression) ValidateUse(datas map[string]string) (bool, error) {
 	r := true
 	// accountID := datas["ACCOUNTID"]

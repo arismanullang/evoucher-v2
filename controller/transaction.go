@@ -107,27 +107,27 @@ func GetTransactionByID(w http.ResponseWriter, r *http.Request) {
 }
 
 //PostVoucherAssignHolder :
-func PostVoucherAssignHolder(w http.ResponseWriter, r *http.Request) {
-	res := u.NewResponse()
+// func PostVoucherAssignHolder(w http.ResponseWriter, r *http.Request) {
+// 	res := u.NewResponse()
 
-	var req model.Voucher
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&req)
-	req.State = model.VoucherStateUsed
-	if err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrBadRequest)
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
-	if err := req.Update(); err != nil {
-		u.DEBUG(err)
-		res.SetErrorWithDetail(JSONErrFatal, err)
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
-	res.JSON(w, res, http.StatusCreated)
-}
+// 	var req model.Voucher
+// 	decoder := json.NewDecoder(r.Body)
+// 	err := decoder.Decode(&req)
+// 	req.State = model.VoucherStateUsed
+// 	if err != nil {
+// 		u.DEBUG(err)
+// 		res.SetError(JSONErrBadRequest)
+// 		res.JSON(w, res, JSONErrBadRequest.Status)
+// 		return
+// 	}
+// 	if err := req.Update(); err != nil {
+// 		u.DEBUG(err)
+// 		res.SetErrorWithDetail(JSONErrFatal, err)
+// 		res.JSON(w, res, JSONErrFatal.Status)
+// 		return
+// 	}
+// 	res.JSON(w, res, http.StatusCreated)
+// }
 
 type UseTransaction struct {
 	OutletID    string            `db:"outlet_id" json:"outlet_id,omitempty"`
@@ -368,7 +368,6 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	var req VoucherClaimRequest
-	var rule model.Rules
 	var accountID string
 
 	decoder := json.NewDecoder(r.Body)
@@ -396,14 +395,6 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
 	}
-
-	datas := make(map[string]interface{})
-	datas["ACCOUNTID"] = accountID
-	datas["PROGRAMID"] = req.ProgramID
-	datas["QUANTITY"] = req.Quantity
-	datas["TIMEZONE"] = fmt.Sprint(configs["timezone"])
-
-	fmt.Println("datas = ", datas)
 
 	//Get Holder Detail
 	account, err := model.GetAccountByID(qp, accountID)
@@ -433,7 +424,17 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
 	}
-	err = rule.Unmarshal(program.Rule)
+
+	var rules model.RulesExpression
+	program.Rule.Unmarshal(&rules)
+
+	datas := make(map[string]interface{})
+	datas["ACCOUNTID"] = accountID
+	datas["PROGRAMID"] = req.ProgramID
+	datas["QUANTITY"] = req.Quantity
+	datas["TIMEZONE"] = fmt.Sprint(configs["timezone"])
+
+	result, err := rules.ValidateClaim(datas)
 	if err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrBadRequest)
@@ -441,15 +442,31 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var rules model.RulesExpression
-	program.Rule.Unmarshal(&rules)
+	currentClaimedVoucher, err := model.GetVoucherCreatedAmountByProgramID(req.ProgramID)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrBadRequest)
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+	if int64(currentClaimedVoucher+req.Quantity) > program.Stock {
+		u.DEBUG(err)
+		res.SetError(JSONErrExceedAmount)
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	if !result {
+		u.DEBUG(err)
+		res.SetError(JSONErrInvalidRule)
+		res.JSON(w, err, JSONErrInvalidRule.Status)
+		return
+	}
 
 	loc, _ := time.LoadLocation(fmt.Sprint(configs["timezone"]))
 
 	voucherValidAt := time.Now().In(loc)
 	voucherExpiredAt := time.Date(voucherValidAt.Year(), voucherValidAt.Month(), voucherValidAt.Day(), 23, 59, 59, 59, loc)
-
-	fmt.Println("rules = ", rules)
 
 	if ruleUseUsagePeriod, ok := rules.And["rule_use_usage_period"]; ok {
 
@@ -475,34 +492,6 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 
 	if ruleUseActiveVoucherPeriod, ok := rules.And["rule_use_active_voucher_period"]; ok && !ruleUseActiveVoucherPeriod.IsEmpty() {
 		voucherExpiredAt = voucherExpiredAt.AddDate(0, 0, int(ruleUseActiveVoucherPeriod.Eq.(float64)))
-	}
-
-	result, err := rules.ValidateClaim(datas)
-	if err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrBadRequest)
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
-
-	if !result {
-		u.DEBUG(err)
-		res.SetError(JSONErrInvalidRule)
-		res.JSON(w, res, JSONErrInvalidRule.Status)
-		return
-	}
-
-	currentClaimedVoucher, err := model.GetVoucherCreatedAmountByProgramID(program.ID)
-	if err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrFatal)
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
-	if int64(currentClaimedVoucher+req.Quantity) > program.Stock {
-		res.SetError(JSONErrExceedAmount)
-		res.JSON(w, res, http.StatusOK)
-		return
 	}
 
 	//Create Voucher

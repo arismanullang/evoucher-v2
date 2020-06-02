@@ -1,11 +1,186 @@
 package controller
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gilkor/evoucher-v2/model"
 	u "github.com/gilkor/evoucher-v2/util"
+	"github.com/go-zoo/bone"
 )
+
+//PostVoucherAssignHolder :
+func PostVoucherAssignHolder(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	var req model.AssignVoucherRequest
+	decoder := json.NewDecoder(r.Body)
+	qp := u.NewQueryParam(r)
+	err := decoder.Decode(&req)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrBadRequest)
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	companyID := bone.GetValue(r, "company")
+	accountToken := r.FormValue("token")
+
+	claims, err := model.VerifyAccountToken(accountToken)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
+
+	accountID := claims.AccountID
+	req.User = accountID
+
+	//get config TimeZone
+	configs, err := model.GetConfigs(companyID, "company")
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+		res.Error.SetMessage("timezone config not found, please add timezone config")
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	// validate each data
+	for idx, assignData := range req.Data {
+
+		//Validate Rule Program
+		program, err := model.GetProgramByID(assignData.ProgramID, qp)
+		if err != nil {
+			res.SetError(JSONErrBadRequest)
+			res.JSON(w, res, JSONErrBadRequest.Status)
+			return
+		}
+
+		datas := make(map[string]interface{})
+		datas["ACCOUNTID"] = req.HolderID
+		datas["PROGRAMID"] = assignData.ProgramID
+		datas["TIMEZONE"] = fmt.Sprint(configs["timezone"])
+		datas["QUANTITY"] = len(assignData.VoucherIDs)
+
+		var rules model.RulesExpression
+		program.Rule.Unmarshal(&rules)
+
+		result, err := rules.ValidateAssign(datas)
+		if err != nil {
+			res.SetErrorWithDetail(JSONErrBadRequest, err)
+			res.JSON(w, res, JSONErrBadRequest.Status)
+			return
+		}
+
+		//check voucher id status / availability
+		for _, voucherID := range assignData.VoucherIDs {
+			voucherDetail, err := model.GetVoucherByID(voucherID, qp)
+			if err != nil {
+				res.SetError(JSONErrBadRequest)
+				res.JSON(w, res, JSONErrBadRequest.Status)
+				return
+			}
+
+			// emptyString := ""
+
+			if *voucherDetail.Holder != "" {
+				res.SetError(JSONErrBadRequest)
+				res.Error.SetMessage("voucher with id " + voucherID + " has been assigned to " + *voucherDetail.Holder)
+				res.JSON(w, res, JSONErrBadRequest.Status)
+				return
+			}
+
+		}
+
+		if !result {
+			u.DEBUG(err)
+			res.SetError(JSONErrInvalidRule)
+			res.JSON(w, err, JSONErrInvalidRule.Status)
+			return
+		}
+
+		loc, _ := time.LoadLocation(fmt.Sprint(configs["timezone"]))
+
+		voucherValidAt := time.Now().In(loc)
+		voucherExpiredAt := time.Date(voucherValidAt.Year(), voucherValidAt.Month(), voucherValidAt.Day(), 23, 59, 59, 59, loc)
+
+		if ruleUseUsagePeriod, ok := rules.And["rule_use_usage_period"]; ok {
+
+			validTime, err := model.StringToTime(fmt.Sprint(ruleUseUsagePeriod.Gte))
+			if err != nil {
+				res.SetError(JSONErrBadRequest)
+				res.Error.SetMessage("failed to parse active voucher period")
+				res.JSON(w, res, JSONErrBadRequest.Status)
+				return
+			}
+
+			expiredTime, err := model.StringToTime(fmt.Sprint(ruleUseUsagePeriod.Lte))
+			if err != nil {
+				res.SetError(JSONErrBadRequest)
+				res.Error.SetMessage("failed to parse active voucher period")
+				res.JSON(w, res, JSONErrBadRequest.Status)
+				return
+			}
+
+			voucherValidAt = validTime
+			voucherExpiredAt = expiredTime
+		}
+
+		if ruleUseActiveVoucherPeriod, ok := rules.And["rule_use_active_voucher_period"]; ok && !ruleUseActiveVoucherPeriod.IsEmpty() {
+			voucherExpiredAt = voucherExpiredAt.AddDate(0, 0, int(ruleUseActiveVoucherPeriod.Eq.(float64)))
+		}
+
+		assignData.ValidAt = voucherValidAt
+		assignData.ExpiredAt = voucherExpiredAt
+
+		// update the request Data
+		req.Data[idx] = assignData
+	}
+
+	msg, err := req.AssignVoucher()
+	if err != nil {
+		fmt.Println("err = ", err)
+		res.SetError(JSONErrBadRequest)
+		res.Error.SetMessage("error assign voucher : " + err.Error())
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	res.SetResponse(msg)
+	res.JSON(w, res, http.StatusOK)
+
+	// msg, err := agr.AssignVoucher()
+	// if err == model.ErrResourceNotFound {
+	// 	status = http.StatusNotFound
+	// 	res.AddError(its(status), model.ErrCodeResourceNotFound, msg+model.ErrMessageInvalidVoucher, logger.TraceID)
+	// 	logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())
+	// 	render.JSON(w, res, status)
+	// 	return
+	// } else if err != nil {
+	// 	status = http.StatusInternalServerError
+	// 	res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"( failed to assign Voucher :"+err.Error()+")", logger.TraceID)
+	// 	logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())
+	// 	render.JSON(w, res, status)
+	// 	return
+	// }
+
+	// status = http.StatusOK
+	// res = NewResponse("Success")
+	// logger.SetStatus(status).Log("param :", agr, "response : ok")
+	// render.JSON(w, res, status)
+	// return
+	// if err := req.Update(); err != nil {
+	// 	u.DEBUG(err)
+	// 	res.SetErrorWithDetail(JSONErrFatal, err)
+	// 	res.JSON(w, res, JSONErrFatal.Status)
+	// 	return
+	// }
+	// res.JSON(w, res, http.StatusCreated)
+}
 
 //GetVoucherByHolder : GET list of program and vouchers by holder
 func GetVoucherByHolder(w http.ResponseWriter, r *http.Request) {
