@@ -73,6 +73,27 @@ func GetCashoutSummary(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
+//GetCashoutUsedVoucher : GET list of Cashout Summary
+func GetCashoutUsedVoucher(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	qp := u.NewQueryParam(r)
+	program_id := bone.GetValue(r, "id")
+	//add QueryParam Filter for used voucher
+	//qp.
+
+	usedVouchers, next, err := model.GetVouchersByProgramID(program_id, qp)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(r)
+	res.SetNewPagination(r, qp.Page, next, usedVouchers[0].Count)
+	res.JSON(w, res, http.StatusOK)
+}
+
 //GetCashoutByID : GET
 func GetCashoutByID(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
