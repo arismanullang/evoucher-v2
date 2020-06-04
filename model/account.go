@@ -90,6 +90,7 @@ func getAccounts(k, v string, qp *util.QueryParam) (*Accounts, bool, error) {
 				account.status = ?
 			AND ` + k + ` = ?`
 
+	q = qp.GetQueryWhereClause(q, qp.Q)
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 
 	var resd Accounts
