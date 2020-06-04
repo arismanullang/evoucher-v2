@@ -22,6 +22,9 @@ const (
 
 	// DEFAULT_LENGTH = default random length number
 	DEFAULT_LENGTH = 8
+
+	// TRANSACTION_CODE_LENGTH =
+	TRANSACTION_CODE_LENGTH = 10
 )
 
 //StandardizeSpaces : trim redundant spaces

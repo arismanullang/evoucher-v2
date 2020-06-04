@@ -141,7 +141,6 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 
 	var req UseTransaction
 	var rule model.Rules
-	var accountID string
 	companyID := bone.GetValue(r, "company")
 	accountToken := r.FormValue("token")
 	decoder := json.NewDecoder(r.Body)
@@ -254,33 +253,32 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	tx.TransactionDetails = append(tx.TransactionDetails, td)
 
 	tx.CompanyId = companyID
-	tx.TransactionCode = u.RandomizeString(u.DEFAULT_LENGTH, u.ALPHANUMERIC)
-	tx.TotalAmount = "0"
+	tx.TransactionCode = u.RandomizeString(u.TRANSACTION_CODE_LENGTH, u.NUMERALS)
+	// Multiply with total voucher used
+	tx.TotalAmount = fmt.Sprint(program.MaxValue)
 	tx.Holder = account.ID
 	tx.PartnerId = req.OutletID
 	tx.CreatedBy = account.ID
 	tx.UpdatedBy = account.ID
 
-	res.SetResponse(tx)
-
-	// if _, err = tx.Insert(); err != nil {
-	// 	u.DEBUG(err)
-	// 	res.SetErrorWithDetail(JSONErrFatal, err)
-	// 	res.JSON(w, res, JSONErrFatal.Status)
-	// 	return
-	// }
+	if _, err = tx.Insert(); err != nil {
+		u.DEBUG(err)
+		res.SetErrorWithDetail(JSONErrFatal, err)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
 
 	voucher.State = model.VoucherStateUsed
-	voucher.Holder = &accountID
-	// if err = voucher.Update(); err != nil {
-	// 	u.DEBUG(err)
-	// 	res.SetErrorWithDetail(JSONErrFatal, err)
-	// 	res.JSON(w, res, JSONErrFatal.Status)
-	// 	return
-	// }
+	if err = voucher.Update(); err != nil {
+		u.DEBUG(err)
+		res.SetErrorWithDetail(JSONErrFatal, err)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
 
 	//send email confirmation
 
+	res.SetResponse(tx)
 	res.JSON(w, res, http.StatusCreated)
 }
 
