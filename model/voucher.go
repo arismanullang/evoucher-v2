@@ -68,7 +68,7 @@ type (
 	VoucherClaimRequest struct {
 		Reference string `json:"reference,omitempty"`
 		ProgramID string `json:"program_id,omitempty"`
-		Quantity  int    `json:"quantity,omitempty"`
+		Quantity  int    `json:"quantity,omitempty" valid:"required~quantity is required"`
 	}
 )
 

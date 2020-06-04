@@ -29,7 +29,7 @@ func PostVoucherInjectByHolder(w http.ResponseWriter, r *http.Request) {
 	companyID := bone.GetValue(r, "company")
 	accountToken := r.FormValue("token")
 
-	claims, err := model.VerifyAccountToken(accountToken)
+	auth, err := model.VerifyAccountToken(accountToken)
 	if err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrUnauthorized)
@@ -37,7 +37,7 @@ func PostVoucherInjectByHolder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accountID := claims.AccountID
+	accountID := auth.AccountID
 	req.User = accountID
 
 	//get config TimeZone
@@ -65,7 +65,7 @@ func PostVoucherInjectByHolder(w http.ResponseWriter, r *http.Request) {
 		program.Rule.Unmarshal(&rules)
 
 		datas := make(map[string]interface{})
-		datas["ACCOUNTID"] = accountID
+		datas["ACCOUNTID"] = req.HolderID
 		datas["PROGRAMID"] = reqData.ProgramID
 		datas["QUANTITY"] = reqData.Quantity
 		datas["TIMEZONE"] = fmt.Sprint(configs["timezone"])
