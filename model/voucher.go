@@ -38,6 +38,7 @@ type (
 		Description string `json:"holder_description,omitempty"`
 	}
 
+	// AssignVoucherRequest : assign voucher to pre-generated vouchers
 	AssignVoucherRequest struct {
 		HolderID     string         `json:"holder_id" valid:"required~holder_id is required"`
 		HolderDetail types.JSONText `json:"holder_detail" valid:"required~holder_detail is required"`
@@ -46,11 +47,28 @@ type (
 		User         string         `json:"updated_by"`
 	}
 
+	// AssignData :
 	AssignData struct {
-		ProgramID  string    `json:"program_id" valid:"required~program_id is required`
-		VoucherIDs []string  `json:"voucher_ids" valid:"required~voucher_ids is required`
+		ProgramID  string    `json:"program_id" valid:"required~program_id is required"`
+		VoucherIDs []string  `json:"voucher_ids" valid:"required~voucher_ids is required"`
 		ValidAt    time.Time `json:"valid_at"`
 		ExpiredAt  time.Time `json:"expired_at"`
+	}
+
+	//InjectVoucherByHolderRequest :
+	InjectVoucherByHolderRequest struct {
+		HolderID     string                `json:"holder_id" valid:"required~holder_id is required"`
+		HolderDetail types.JSONText        `json:"holder_detail" valid:"required~holder_detail is required"`
+		ReferenceNo  string                `json:"reference_no" valid:"required~reference_no is required"`
+		Data         []VoucherClaimRequest `json:"data" valid:"required~data is required"`
+		User         string                `json:"updated_by"`
+	}
+
+	//VoucherClaimRequest : body struct of claim voucher request
+	VoucherClaimRequest struct {
+		Reference string `json:"reference,omitempty"`
+		ProgramID string `json:"program_id,omitempty"`
+		Quantity  int    `json:"quantity,omitempty"`
 	}
 )
 

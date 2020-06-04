@@ -13,12 +13,6 @@ import (
 )
 
 type (
-	//VoucherClaimRequest : body struct of claim voucher request
-	VoucherClaimRequest struct {
-		Reference string `json:'reference'`
-		ProgramID string `json:"program_id"`
-		Quantity  int    `json:"quantity"`
-	}
 
 	//VoucherUseRequest : body struct of use voucher request
 	VoucherUseRequest struct {
@@ -365,7 +359,7 @@ func PostVoucherUset(w http.ResponseWriter, r *http.Request) {
 func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
-	var req VoucherClaimRequest
+	var req model.VoucherClaimRequest
 	var accountID string
 
 	decoder := json.NewDecoder(r.Body)
