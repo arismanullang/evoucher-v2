@@ -107,6 +107,10 @@ func init() {
 	v2.GetFunc("/:company/transaction/program/:id", c.GetTransactionsByProgram)
 	v2.GetFunc("/:company/transaction/:id", c.GetTransactionByID)
 
+	v2.GetFunc("/:company/reimburse/summary", c.GetCashoutSummary)
+	v2.GetFunc("/:company/reimburse/list", c.GetCashouts)
+	v2.PostFunc("/:company/reimburse/partner", c.PostCashoutByPartner)
+
 	// v2.GetFunc("/:company/debug/pprof/", pprof.Index)
 	// v2.GetFunc("/:company/debug/pprof/cmdline", pprof.Cmdline)
 	// v2.GetFunc("/:company/debug/pprof/profile", pprof.Profile)
