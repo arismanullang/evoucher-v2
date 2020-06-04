@@ -314,34 +314,6 @@ func PostVoucherAssignHolder(w http.ResponseWriter, r *http.Request) {
 
 	res.SetResponse(msg)
 	res.JSON(w, res, http.StatusOK)
-
-	// msg, err := agr.AssignVoucher()
-	// if err == model.ErrResourceNotFound {
-	// 	status = http.StatusNotFound
-	// 	res.AddError(its(status), model.ErrCodeResourceNotFound, msg+model.ErrMessageInvalidVoucher, logger.TraceID)
-	// 	logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())
-	// 	render.JSON(w, res, status)
-	// 	return
-	// } else if err != nil {
-	// 	status = http.StatusInternalServerError
-	// 	res.AddError(its(status), model.ErrCodeInternalError, model.ErrMessageInternalError+"( failed to assign Voucher :"+err.Error()+")", logger.TraceID)
-	// 	logger.SetStatus(status).Log("param :", agr, "response :", res.Errors.ToString())
-	// 	render.JSON(w, res, status)
-	// 	return
-	// }
-
-	// status = http.StatusOK
-	// res = NewResponse("Success")
-	// logger.SetStatus(status).Log("param :", agr, "response : ok")
-	// render.JSON(w, res, status)
-	// return
-	// if err := req.Update(); err != nil {
-	// 	u.DEBUG(err)
-	// 	res.SetErrorWithDetail(JSONErrFatal, err)
-	// 	res.JSON(w, res, JSONErrFatal.Status)
-	// 	return
-	// }
-	// res.JSON(w, res, http.StatusCreated)
 }
 
 //GetVoucherByHolder : GET list of program and vouchers by holder
@@ -350,8 +322,6 @@ func GetVoucherByHolder(w http.ResponseWriter, r *http.Request) {
 	qp := u.NewQueryParam(r)
 	qp.Count = -1
 	accountToken := r.FormValue("token")
-
-	// var mobileVoucherData map[string]interface{}
 
 	claims, err := model.VerifyAccountToken(accountToken)
 	if err != nil {
@@ -435,5 +405,43 @@ func GetVoucherByHolder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res.SetResponse(listPrograms)
+	res.JSON(w, res, http.StatusOK)
+}
+
+// DeleteVoucher : Delete voucher by id
+func DeleteVoucher(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	qp := u.NewQueryParam(r)
+	id := bone.GetValue(r, "id")
+
+	accountToken := r.FormValue("token")
+
+	claims, err := model.VerifyAccountToken(accountToken)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
+
+	voucher, err := model.GetVoucherByID(id, qp)
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	voucher.UpdatedBy = claims.AccountID
+	// Delete voucher
+	fmt.Println("delete voucher ", voucher)
+	response, err := voucher.Delete()
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(response)
 	res.JSON(w, res, http.StatusOK)
 }

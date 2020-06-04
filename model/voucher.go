@@ -323,10 +323,10 @@ func (v *Voucher) Update() error {
 }
 
 //Delete : soft deleted data by updating row status to "deleted"
-func (v *Voucher) Delete() error {
+func (v *Voucher) Delete() (*Voucher, error) {
 	tx, err := db.Beginx()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback()
 
@@ -335,34 +335,38 @@ func (v *Voucher) Delete() error {
 				vouchers 
 			SET
 				updated_at = ?,
-				updated_by = ?
+				updated_by = ?,
 				status = ?			
 			WHERE 
 				id = ?	
 			RETURNING
-				id
-				, name
-				, mobile_pone 
-				, email 
-				, ref_id 
-				, company_id 
-				, created_at
-				, created_by
-				, updated_at
-				, updated_by
-				, status
+				id,
+				code,
+				reference_no,
+				holder,
+				holder_detail,
+				program_id,
+				valid_at,
+				expired_at,
+				state,
+				created_by,
+				created_at,
+				updated_by,
+				updated_at,
+				status
+
 	`
 	var res []Voucher
-	err = tx.Select(&res, tx.Rebind(q), t1, v.UpdatedBy, StatusDeleted)
+	err = tx.Select(&res, tx.Rebind(q), t1, v.UpdatedBy, StatusDeleted, v.ID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = tx.Commit()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &res[0], nil
 }
 
 //Insert : insert data, build query using string append
