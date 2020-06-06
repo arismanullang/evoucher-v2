@@ -224,7 +224,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	result, err := rules.ValidateUse(datas)
 	if err != nil {
 		u.DEBUG(err)
-		res.SetError(JSONErrBadRequest)
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
 	}
@@ -263,6 +263,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	voucher.State = model.VoucherStateUsed
+	voucher.UpdatedBy = account.ID
 	if err = voucher.Update(); err != nil {
 		u.DEBUG(err)
 		res.SetErrorWithDetail(JSONErrFatal, err)
@@ -434,6 +435,13 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !result {
+		u.DEBUG(err)
+		res.SetError(JSONErrInvalidRule)
+		res.JSON(w, err, JSONErrInvalidRule.Status)
+		return
+	}
+
 	currentClaimedVoucher, err := model.GetVoucherCreatedAmountByProgramID(req.ProgramID)
 	if err != nil {
 		u.DEBUG(err)
@@ -448,72 +456,22 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !result {
-		u.DEBUG(err)
-		res.SetError(JSONErrInvalidRule)
-		res.JSON(w, err, JSONErrInvalidRule.Status)
+	//Create Voucher
+	gvr := GenerateVoucherRequest{
+		ProgramID:    req.ProgramID,
+		Quantity:     req.Quantity,
+		ReferenceNo:  req.Reference,
+		HolderID:     accountID,
+		HolderDetail: holderDetail,
+		UpdatedBy:    accountID,
+	}
+
+	vouchers, err := gvr.GenerateVoucher(fmt.Sprint(configs["timezone"]), *program)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-
-	loc, _ := time.LoadLocation(fmt.Sprint(configs["timezone"]))
-
-	voucherValidAt := time.Now().In(loc)
-	voucherExpiredAt := time.Date(voucherValidAt.Year(), voucherValidAt.Month(), voucherValidAt.Day(), 23, 59, 59, 59, loc)
-
-	if ruleUseUsagePeriod, ok := rules.And["rule_use_usage_period"]; ok {
-
-		validTime, err := model.StringToTime(fmt.Sprint(ruleUseUsagePeriod.Gte))
-		if err != nil {
-			res.SetError(JSONErrBadRequest)
-			res.Error.SetMessage("failed to parse active voucher period")
-			res.JSON(w, res, JSONErrBadRequest.Status)
-			return
-		}
-
-		expiredTime, err := model.StringToTime(fmt.Sprint(ruleUseUsagePeriod.Lte))
-		if err != nil {
-			res.SetError(JSONErrBadRequest)
-			res.Error.SetMessage("failed to parse active voucher period")
-			res.JSON(w, res, JSONErrBadRequest.Status)
-			return
-		}
-
-		voucherValidAt = validTime
-		voucherExpiredAt = expiredTime
-	}
-
-	if ruleUseActiveVoucherPeriod, ok := rules.And["rule_use_active_voucher_period"]; ok && !ruleUseActiveVoucherPeriod.IsEmpty() {
-		voucherExpiredAt = voucherExpiredAt.AddDate(0, 0, int(ruleUseActiveVoucherPeriod.Eq.(float64)))
-	}
-
-	//Create Voucher
-	var vouchers model.Vouchers
-	var vf model.VoucherFormat
-	program.VoucherFormat.Unmarshal(&vf)
-
-	for i := 0; i < req.Quantity; i++ {
-		voucher := new(model.Voucher)
-		if vf.Type == "fix" {
-			voucher.Code = vf.Code
-		} else if vf.Type == "random" {
-			voucher.Code = vf.Prefix + u.RandomizeString(u.DEFAULT_LENGTH, vf.Random) + vf.Postfix
-		}
-
-		voucher.ReferenceNo = req.Reference
-		voucher.Holder = &accountID
-		voucher.HolderDetail = holderDetail
-		voucher.ProgramID = program.ID
-		voucher.CreatedBy = "system"
-		voucher.UpdatedBy = "system"
-		voucher.Status = model.StatusCreated
-		voucher.State = model.VoucherStateCreated
-		voucher.ValidAt = &voucherValidAt
-		voucher.ExpiredAt = &voucherExpiredAt
-
-		vouchers = append(vouchers, *voucher)
-	}
-
-	// res.SetResponse(vouchers)
 
 	response, err := vouchers.Insert()
 	if err != nil {

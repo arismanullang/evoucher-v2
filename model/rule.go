@@ -740,16 +740,22 @@ func (rule RulesExpression) ValidateUse(datas map[string]string) (bool, error) {
 	ruleDate := rule.And[ruleUseValidityDate]
 	if !ruleDate.isEmpty() {
 		r, err := ruleDate.validateTime(t)
-		if !r {
+		if err != nil {
 			return r, err
+		}
+		if !r {
+			return r, ErrorInvalidDate
 		}
 	}
 
 	ruleDay := rule.And[ruleUseValidityDay]
 	if !ruleDay.isEmpty() {
 		r, err := ruleDay.validateInNumber(int(t.Weekday()))
-		if !r {
+		if err != nil {
 			return r, err
+		}
+		if !r {
+			return r, ErrorInvalidDay
 		}
 	}
 
@@ -763,16 +769,22 @@ func (rule RulesExpression) ValidateUse(datas map[string]string) (bool, error) {
 		ruleHour.Lte = endTime.Format(time.RFC3339)
 
 		r, err := ruleHour.validateTime(t)
-		if !r {
+		if err != nil {
 			return r, err
+		}
+		if !r {
+			return r, ErrorInvalidTime
 		}
 	}
 
 	ruleOutlet := rule.And[ruleUseOutlet]
 	if !ruleOutlet.isEmpty() {
 		r, err := ruleOutlet.validateInString(outletID)
-		if !r {
+		if err != nil {
 			return r, err
+		}
+		if !r {
+			return r, ErrorInvalidOutlet
 		}
 	}
 

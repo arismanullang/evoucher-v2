@@ -9,6 +9,7 @@ import (
 	"github.com/gilkor/evoucher-v2/model"
 	u "github.com/gilkor/evoucher-v2/util"
 	"github.com/go-zoo/bone"
+	"github.com/jmoiron/sqlx/types"
 )
 
 //PostVoucherInjectByHolder : Inject voucher by holder
@@ -38,7 +39,7 @@ func PostVoucherInjectByHolder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	accountID := auth.AccountID
-	req.User = accountID
+	req.UpdatedBy = accountID
 
 	//get config TimeZone
 	configs, err := model.GetConfigs(companyID, "company")
@@ -99,65 +100,22 @@ func PostVoucherInjectByHolder(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		loc, _ := time.LoadLocation(fmt.Sprint(configs["timezone"]))
-
-		voucherValidAt := time.Now().In(loc)
-		voucherExpiredAt := time.Date(voucherValidAt.Year(), voucherValidAt.Month(), voucherValidAt.Day(), 23, 59, 59, 59, loc)
-
-		if ruleUseUsagePeriod, ok := rules.And["rule_use_usage_period"]; ok {
-
-			validTime, err := model.StringToTime(fmt.Sprint(ruleUseUsagePeriod.Gte))
-			if err != nil {
-				res.SetError(JSONErrBadRequest)
-				res.Error.SetMessage("failed to parse active voucher period")
-				res.JSON(w, res, JSONErrBadRequest.Status)
-				return
-			}
-
-			expiredTime, err := model.StringToTime(fmt.Sprint(ruleUseUsagePeriod.Lte))
-			if err != nil {
-				res.SetError(JSONErrBadRequest)
-				res.Error.SetMessage("failed to parse active voucher period")
-				res.JSON(w, res, JSONErrBadRequest.Status)
-				return
-			}
-
-			voucherValidAt = validTime
-			voucherExpiredAt = expiredTime
+		gvr := GenerateVoucherRequest{
+			ProgramID:    program.ID,
+			Quantity:     reqData.Quantity,
+			ReferenceNo:  req.ReferenceNo,
+			HolderID:     req.HolderID,
+			HolderDetail: req.HolderDetail,
+			UpdatedBy:    req.UpdatedBy,
 		}
 
-		if ruleUseActiveVoucherPeriod, ok := rules.And["rule_use_active_voucher_period"]; ok && !ruleUseActiveVoucherPeriod.IsEmpty() {
-			voucherExpiredAt = voucherExpiredAt.AddDate(0, 0, int(ruleUseActiveVoucherPeriod.Eq.(float64)))
+		vouchers, err := gvr.GenerateVoucher(fmt.Sprint(configs["timezone"]), *program)
+		if err != nil {
+			res.SetError(JSONErrFatal.SetArgs(err.Error()))
+			res.JSON(w, res, JSONErrFatal.Status)
 		}
 
-		//Create Voucher
-		var vouchers model.Vouchers
-		var vf model.VoucherFormat
-		program.VoucherFormat.Unmarshal(&vf)
-
-		for i := 0; i < reqData.Quantity; i++ {
-			voucher := new(model.Voucher)
-			if vf.Type == "fix" {
-				voucher.Code = vf.Code
-			} else if vf.Type == "random" {
-				voucher.Code = vf.Prefix + u.RandomizeString(u.DEFAULT_LENGTH, vf.Random) + vf.Postfix
-			}
-
-			voucher.ReferenceNo = req.ReferenceNo
-			voucher.Holder = &req.HolderID
-			voucher.HolderDetail = req.HolderDetail
-			voucher.ProgramID = program.ID
-			voucher.CreatedBy = req.User
-			voucher.UpdatedBy = req.User
-			voucher.Status = model.StatusCreated
-			voucher.State = model.VoucherStateCreated
-			voucher.ValidAt = &voucherValidAt
-			voucher.ExpiredAt = &voucherExpiredAt
-
-			vouchers = append(vouchers, *voucher)
-		}
-
-		totalVouchers = append(totalVouchers, vouchers...)
+		totalVouchers = append(totalVouchers, *vouchers...)
 	}
 
 	response, err := totalVouchers.Insert()
@@ -177,7 +135,7 @@ func PostVoucherInjectByHolder(w http.ResponseWriter, r *http.Request) {
 func PostVoucherAssignHolder(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
-	var req model.AssignVoucherRequest
+	var req model.InjectVoucherByHolderRequest
 	decoder := json.NewDecoder(r.Body)
 	qp := u.NewQueryParam(r)
 	err := decoder.Decode(&req)
@@ -200,7 +158,7 @@ func PostVoucherAssignHolder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	accountID := claims.AccountID
-	req.User = accountID
+	req.UpdatedBy = accountID
 
 	//get config TimeZone
 	configs, err := model.GetConfigs(companyID, "company")
@@ -212,7 +170,7 @@ func PostVoucherAssignHolder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// validate each data
-	for idx, assignData := range req.Data {
+	for idx, assignData := range req.AssignData {
 
 		//Validate Rule Program
 		program, err := model.GetProgramByID(assignData.ProgramID, qp)
@@ -246,8 +204,6 @@ func PostVoucherAssignHolder(w http.ResponseWriter, r *http.Request) {
 				res.JSON(w, res, JSONErrBadRequest.Status)
 				return
 			}
-
-			// emptyString := ""
 
 			if *voucherDetail.Holder != "" {
 				res.SetError(JSONErrBadRequest)
@@ -300,7 +256,7 @@ func PostVoucherAssignHolder(w http.ResponseWriter, r *http.Request) {
 		assignData.ExpiredAt = voucherExpiredAt
 
 		// update the request Data
-		req.Data[idx] = assignData
+		req.AssignData[idx] = assignData
 	}
 
 	msg, err := req.AssignVoucher()
@@ -406,6 +362,77 @@ func GetVoucherByHolder(w http.ResponseWriter, r *http.Request) {
 
 	res.SetResponse(listPrograms)
 	res.JSON(w, res, http.StatusOK)
+}
+
+type (
+	//GenerateVoucherRequest : generate voucher based on spesific program and holder
+	GenerateVoucherRequest struct {
+		ProgramID    string         `json:"program_id"`
+		Quantity     int            `json:"quantity"`
+		ReferenceNo  string         `json:"reference_no"`
+		UpdatedBy    string         `json:"updated_by"`
+		HolderID     string         `json:"holder_id"`
+		HolderDetail types.JSONText `json:"holder_detail"`
+	}
+)
+
+func (req *GenerateVoucherRequest) GenerateVoucher(timezone string, program model.Program) (*model.Vouchers, error) {
+
+	var rules model.RulesExpression
+	program.Rule.Unmarshal(&rules)
+
+	loc, _ := time.LoadLocation(timezone)
+
+	voucherValidAt := time.Now().In(loc)
+	voucherExpiredAt := time.Date(voucherValidAt.Year(), voucherValidAt.Month(), voucherValidAt.Day(), 23, 59, 59, 59, loc)
+
+	if ruleUseUsagePeriod, ok := rules.And["rule_use_usage_period"]; ok {
+
+		validTime, err := model.StringToTime(fmt.Sprint(ruleUseUsagePeriod.Gte))
+		if err != nil {
+			return &model.Vouchers{}, err
+		}
+
+		expiredTime, err := model.StringToTime(fmt.Sprint(ruleUseUsagePeriod.Lte))
+		if err != nil {
+			return &model.Vouchers{}, err
+		}
+
+		voucherValidAt = validTime
+		voucherExpiredAt = expiredTime
+	}
+
+	if ruleUseActiveVoucherPeriod, ok := rules.And["rule_use_active_voucher_period"]; ok && !ruleUseActiveVoucherPeriod.IsEmpty() {
+		voucherExpiredAt = voucherExpiredAt.AddDate(0, 0, int(ruleUseActiveVoucherPeriod.Eq.(float64)))
+	}
+
+	var vouchers model.Vouchers
+	var vf model.VoucherFormat
+	program.VoucherFormat.Unmarshal(&vf)
+
+	for i := 0; i < req.Quantity; i++ {
+		voucher := new(model.Voucher)
+		if vf.Type == "fix" {
+			voucher.Code = vf.Code
+		} else if vf.Type == "random" {
+			voucher.Code = vf.Prefix + u.RandomizeString(u.DEFAULT_LENGTH, vf.Random) + vf.Postfix
+		}
+
+		voucher.ReferenceNo = req.ReferenceNo
+		voucher.Holder = &req.HolderID
+		voucher.HolderDetail = req.HolderDetail
+		voucher.ProgramID = program.ID
+		voucher.CreatedBy = req.UpdatedBy
+		voucher.UpdatedBy = req.UpdatedBy
+		voucher.Status = model.StatusCreated
+		voucher.State = model.VoucherStateCreated
+		voucher.ValidAt = &voucherValidAt
+		voucher.ExpiredAt = &voucherExpiredAt
+
+		vouchers = append(vouchers, *voucher)
+	}
+
+	return &vouchers, nil
 }
 
 // DeleteVoucher : Delete voucher by id

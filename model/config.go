@@ -41,15 +41,20 @@ func GetConfigs(companyID, category string) (map[string]interface{}, error) {
 			WHERE 
 				status = ?
 			AND
-				company_id = ?
-			AND
-				category = ?
-			ORDER BY created_at`
+				company_id = ?`
+
+	if category != "" {
+		q += `AND category = '` + category + `'`
+	}
+	q += `ORDER BY created_at`
 
 	util.DEBUG(q)
 
 	// err := db.Select(&res, db.Rebind(q), StatusCreated, v)
-	rows, err := db.Query(db.Rebind(q), StatusCreated, companyID, category)
+	rows, err := db.Query(db.Rebind(q), StatusCreated, companyID)
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
 
 	cols, err := rows.Columns()
 	if err != nil {

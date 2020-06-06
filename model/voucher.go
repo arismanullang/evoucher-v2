@@ -32,22 +32,14 @@ type (
 	Vouchers []Voucher
 	//HolderDetail :type struct Voucher.types.JSONText.Unmarshal(&HolderDetail)
 	HolderDetail struct {
+		ID          string `json:"holder_id,omitempty"`
 		Name        string `json:"holder_name,omitempty"`
 		Phone       string `json:"holder_phone,omitempty"`
 		Email       string `json:"holder_email,omitempty"`
 		Description string `json:"holder_description,omitempty"`
 	}
 
-	// AssignVoucherRequest : assign voucher to pre-generated vouchers
-	AssignVoucherRequest struct {
-		HolderID     string         `json:"holder_id" valid:"required~holder_id is required"`
-		HolderDetail types.JSONText `json:"holder_detail" valid:"required~holder_detail is required"`
-		ReferenceNo  string         `json:"reference_no" valid:"required~reference_no is required"`
-		Data         []AssignData   `json:"data" valid:"required~data is required"`
-		User         string         `json:"updated_by"`
-	}
-
-	// AssignData :
+	// AssignData : voucherID's needed to find the pre-generated vouchers
 	AssignData struct {
 		ProgramID  string    `json:"program_id" valid:"required~program_id is required"`
 		VoucherIDs []string  `json:"voucher_ids" valid:"required~voucher_ids is required"`
@@ -55,13 +47,14 @@ type (
 		ExpiredAt  time.Time `json:"expired_at"`
 	}
 
-	//InjectVoucherByHolderRequest :
+	//InjectVoucherByHolderRequest : generate voucher to spesific holder on request by quantity
 	InjectVoucherByHolderRequest struct {
 		HolderID     string                `json:"holder_id" valid:"required~holder_id is required"`
 		HolderDetail types.JSONText        `json:"holder_detail" valid:"required~holder_detail is required"`
 		ReferenceNo  string                `json:"reference_no" valid:"required~reference_no is required"`
 		Data         []VoucherClaimRequest `json:"data" valid:"required~data is required"`
-		User         string                `json:"updated_by"`
+		AssignData   []AssignData          `json:"assign_data" valid:"required~assign_data is required"`
+		UpdatedBy    string                `json:"updated_by"`
 	}
 
 	//VoucherClaimRequest : body struct of claim voucher request
@@ -70,6 +63,13 @@ type (
 		ProgramID string `json:"program_id,omitempty"`
 		Quantity  int    `json:"quantity,omitempty" valid:"required~quantity is required"`
 	}
+
+	// CreateVoucherRequest struct {
+	// 	config,
+	// 	quantity,
+	// 	program,
+
+	// }
 )
 
 // GetVouchersByHolder : get list vouchers by Holder
@@ -428,7 +428,7 @@ func (vs *Vouchers) Insert() (*Vouchers, error) {
 }
 
 // AssignVoucher :
-func (avr *AssignVoucherRequest) AssignVoucher() (string, error) {
+func (ivr *InjectVoucherByHolderRequest) AssignVoucher() (string, error) {
 	tx, err := db.Beginx()
 	if err != nil {
 		return "", err
@@ -438,7 +438,7 @@ func (avr *AssignVoucherRequest) AssignVoucher() (string, error) {
 	var finalResult []string
 	var totalVoucherIDs []string
 
-	for _, assignData := range avr.Data {
+	for _, assignData := range ivr.AssignData {
 
 		q := `
 		UPDATE vouchers
@@ -468,7 +468,7 @@ func (avr *AssignVoucherRequest) AssignVoucher() (string, error) {
 	`
 		var result []string
 		totalVoucherIDs = append(totalVoucherIDs, assignData.VoucherIDs...)
-		if err := tx.Select(&result, tx.Rebind(q), avr.HolderID, avr.HolderDetail, avr.ReferenceNo, assignData.ValidAt, assignData.ExpiredAt, avr.User, time.Now(), time.Now(), assignData.ProgramID); err != nil {
+		if err := tx.Select(&result, tx.Rebind(q), ivr.HolderID, ivr.HolderDetail, ivr.ReferenceNo, assignData.ValidAt, assignData.ExpiredAt, ivr.UpdatedBy, time.Now(), time.Now(), assignData.ProgramID); err != nil {
 			return "", err
 		}
 
