@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/base64"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -83,4 +84,10 @@ func StringInSlice(str string, list []string) bool {
 		}
 	}
 	return false
+}
+
+// StrEncode : encode string with base64
+func StrEncode(s string) string {
+	base64.StdEncoding.DecodedLen(32)
+	return base64.StdEncoding.EncodeToString([]byte(s))
 }
