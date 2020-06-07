@@ -272,6 +272,78 @@ func PostVoucherAssignHolder(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
+//GetVoucherByID : GET list of program and vouchers by voucher_id
+func GetVoucherByID(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	qp := u.NewQueryParam(r)
+	qp.Count = -1
+	encodedVoucherID := r.FormValue("x")
+	// encodedCompanyID := r.FormValue("y")
+
+	voucherID := u.StrDecode(encodedVoucherID)
+	// companyID := u.StrDecode(encodedCompanyID)
+
+	voucher, err := model.GetVoucherByID(voucherID, qp)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrBadRequest)
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	program := model.Program{}
+	vouchers := model.Vouchers{}
+	partnersByProgram := model.Partners{}
+
+	detailProgram, err := model.GetProgramByID(voucher.ProgramID, qp)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrBadRequest)
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	program.ID = detailProgram.ID
+	program.Name = detailProgram.Name
+	program.Type = detailProgram.Type
+	program.Value = detailProgram.Value
+	program.MaxValue = detailProgram.MaxValue
+	program.StartDate = detailProgram.StartDate
+	program.EndDate = detailProgram.EndDate
+	program.Description = detailProgram.Description
+	program.ImageURL = detailProgram.ImageURL
+	program.Price = detailProgram.Price
+	program.ProgramChannels = detailProgram.ProgramChannels
+	program.State = detailProgram.State
+	program.Status = detailProgram.Status
+
+	tempVoucher := model.Voucher{
+		ID:        voucher.ID,
+		Code:      voucher.Code,
+		ExpiredAt: voucher.ExpiredAt,
+		ValidAt:   voucher.ValidAt,
+		State:     voucher.State,
+	}
+	vouchers = append(vouchers, tempVoucher)
+
+	program.Vouchers = vouchers
+
+	for _, outlet := range detailProgram.Partners {
+		tempOutlet := model.Partner{
+			ID:          outlet.ID,
+			Name:        outlet.Name,
+			Description: outlet.Description,
+			Status:      outlet.Status,
+		}
+		partnersByProgram = append(partnersByProgram, tempOutlet)
+	}
+
+	program.Partners = partnersByProgram
+
+	res.SetResponse(program)
+	res.JSON(w, res, http.StatusOK)
+}
+
 //GetVoucherByHolder : GET list of program and vouchers by holder
 func GetVoucherByHolder(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()

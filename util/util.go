@@ -3,6 +3,7 @@ package util
 import (
 	"encoding/base64"
 	"fmt"
+	"log"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -90,4 +91,13 @@ func StringInSlice(str string, list []string) bool {
 func StrEncode(s string) string {
 	base64.StdEncoding.DecodedLen(32)
 	return base64.StdEncoding.EncodeToString([]byte(s))
+}
+
+// StrDecode : decode encoded base64 string
+func StrDecode(s string) string {
+	data, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		log.Panic(err)
+	}
+	return string(data)
 }
