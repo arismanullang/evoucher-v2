@@ -485,3 +485,132 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 
 	res.JSON(w, res, http.StatusCreated)
 }
+
+//PostPublicVoucherUse : Post public voucher use without token validation
+func PostPublicVoucherUse(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	var req UseTransaction
+	var rule model.Rules
+	companyID := bone.GetValue(r, "company")
+	decoder := json.NewDecoder(r.Body)
+	qp := u.NewQueryParam(r)
+	err := decoder.Decode(&req)
+
+	//get config TimeZone
+	configs, err := model.GetConfigs(companyID, "company")
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+		res.Error.SetMessage("timezone config not found, please add timezone config")
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	//Validate VoucherID
+	voucher, err := model.GetVoucherByID(req.VoucherID, qp)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrBadRequest)
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	} else if voucher.State == model.VoucherStateUsed {
+		res.SetError(JSONErrBadRequest)
+		res.Error.Message = "Voucher has been used"
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	} else if voucher.State == model.VoucherStatePaid {
+		res.SetError(JSONErrBadRequest)
+		res.Error.Message = "Voucher has been paid"
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	} else if !voucher.ExpiredAt.After(time.Now()) {
+		res.SetError(JSONErrBadRequest)
+		res.Error.Message = "Voucher has expired at " + voucher.ExpiredAt.String()
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	} else if !voucher.ValidAt.Before(time.Now()) {
+		res.SetError(JSONErrBadRequest)
+		res.Error.Message = "Voucher can be used at " + voucher.ValidAt.String()
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	datas := make(map[string]string)
+	datas["PROGRAMID"] = voucher.ProgramID
+	datas["OUTLETID"] = req.OutletID
+	datas["TIMEZONE"] = fmt.Sprint(configs["timezone"])
+
+	//Validate Rule Program
+	program, err := model.GetProgramByID(voucher.ProgramID, qp)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrBadRequest)
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+	err = rule.Unmarshal(program.Rule)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrBadRequest)
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	var rules model.RulesExpression
+	program.Rule.Unmarshal(&rules)
+
+	result, err := rules.ValidateUse(datas)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	if !result {
+		u.DEBUG(err)
+		res.SetError(JSONErrInvalidRule)
+		res.JSON(w, res, JSONErrInvalidRule.Status)
+		return
+	}
+
+	var tx model.Transaction
+	var td model.TransactionDetail
+
+	td.ProgramId = program.ID
+	td.VoucherId = voucher.ID
+	td.CreatedBy = "web"
+	td.UpdatedBy = "web"
+
+	tx.TransactionDetails = append(tx.TransactionDetails, td)
+
+	tx.CompanyId = companyID
+	tx.TransactionCode = u.RandomizeString(u.TRANSACTION_CODE_LENGTH, u.NUMERALS)
+	// Multiply with total voucher used
+	tx.TotalAmount = fmt.Sprint(program.MaxValue)
+	tx.Holder = *voucher.Holder
+	tx.PartnerId = req.OutletID
+	tx.CreatedBy = "web"
+	tx.UpdatedBy = "web"
+
+	if _, err = tx.Insert(); err != nil {
+		u.DEBUG(err)
+		res.SetErrorWithDetail(JSONErrFatal, err)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	voucher.State = model.VoucherStateUsed
+	voucher.UpdatedBy = "web"
+	if err = voucher.Update(); err != nil {
+		u.DEBUG(err)
+		res.SetErrorWithDetail(JSONErrFatal, err)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	//send email confirmation
+
+	res.SetResponse(tx)
+	res.JSON(w, res, http.StatusCreated)
+}

@@ -29,7 +29,6 @@ func init() {
 	v2.GetFunc("/:company/vouchers/:id", ping)
 	v2.PutFunc("/:company/vouchers/:id", ping)
 	v2.DeleteFunc("/:company/vouchers/:id", c.DeleteVoucher)
-	v2.GetFunc("/:company/public/voucher", c.GetVoucherByID)
 
 	//programs
 	v2.PostFunc("/:company/programs", c.PostProgram)
@@ -127,6 +126,10 @@ func init() {
 	v2.GetFunc("/:company/config", c.GetConfigs)
 	v2.PostFunc("/:company/config/:category", c.SetConfig)
 	v2.PutFunc("/:company/config", c.UpdateConfig)
+
+	//public
+	v2.GetFunc("/:company/public/voucher", c.GetVoucherByID)
+	v2.PostFunc("/:company/public/voucher/use", c.PostPublicVoucherUse)
 
 	// GCS
 	v2.PostFunc("/:company/file/upload", c.UploadFile)
