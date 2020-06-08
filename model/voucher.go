@@ -27,6 +27,7 @@ type (
 		UpdatedBy    string         `json:"updated_by,omitempty" db:"updated_by"`
 		UpdatedAt    *time.Time     `json:"updated_at,omitempty" db:"updated_at"`
 		Status       string         `json:"status,omitempty" db:"status"`
+		Count        int            `db:"count" json:"-"`
 	}
 	//Vouchers :
 	Vouchers []Voucher
@@ -82,17 +83,17 @@ func GetVouchersByHolder(holder string, qp *util.QueryParam) (*Vouchers, error) 
 }
 
 // GetVouchersByID :  get list vouchers by ID
-func GetVouchersByID(id string, qp *util.QueryParam) (*Vouchers, bool, error) {
+func GetVouchersByID(id string, qp *util.QueryParam) ([]Voucher, bool, error) {
 	return getVouchers("id", id, qp)
 }
 
 // GetVouchers : list voucher
-func GetVouchers(qp *util.QueryParam) (*Vouchers, bool, error) {
+func GetVouchers(qp *util.QueryParam) ([]Voucher, bool, error) {
 	return getVouchers("1", "1", qp)
 }
 
 // GetVouchersByProgramID : get list vouchers by program.ID
-func GetVouchersByProgramID(programID string, qp *util.QueryParam) (*Vouchers, bool, error) {
+func GetVouchersByProgramID(programID string, qp *util.QueryParam) ([]Voucher, bool, error) {
 	return getVouchers("program_id", programID, qp)
 }
 
@@ -103,8 +104,8 @@ func GetVoucherByID(id string, qp *util.QueryParam) (*Voucher, error) {
 		return &Voucher{}, err
 	}
 
-	if len(*vouchers) > 0 {
-		voucher := &(*vouchers)[0]
+	if len(vouchers) > 0 {
+		voucher := &(vouchers)[0]
 		return voucher, nil
 	}
 
@@ -112,7 +113,38 @@ func GetVoucherByID(id string, qp *util.QueryParam) (*Voucher, error) {
 
 }
 
-func getVouchers(key, value string, qp *util.QueryParam) (*Vouchers, bool, error) {
+func getVouchers(key, value string, qp *util.QueryParam) ([]Voucher, bool, error) {
+	q, err := qp.GetQueryByDefaultStruct(Voucher{})
+	if err != nil {
+		return []Voucher{}, false, err
+	}
+	q += `
+			FROM
+				vouchers voucher
+			WHERE 
+				status = ?			
+			AND ` + key + ` = ?`
+
+	q += qp.GetQuerySort()
+	q += qp.GetQueryLimit()
+	var resd Vouchers
+	err = db.Select(&resd, db.Rebind(q), StatusCreated, value)
+	if err != nil {
+		return []Voucher{}, false, err
+	}
+
+	next := false
+	if len(resd) > qp.Count {
+		next = true
+	}
+	if len(resd) < qp.Count {
+		qp.Count = len(resd)
+	}
+
+	return resd, next, nil
+}
+
+func getUsedVouchers(key, value string, qp *util.QueryParam) (*Vouchers, bool, error) {
 	q, err := qp.GetQueryByDefaultStruct(Voucher{})
 	if err != nil {
 		return &Vouchers{}, false, err
@@ -127,7 +159,7 @@ func getVouchers(key, value string, qp *util.QueryParam) (*Vouchers, bool, error
 	q += qp.GetQuerySort()
 	q += qp.GetQueryLimit()
 	var resd Vouchers
-	err = db.Select(&resd, db.Rebind(q), StatusCreated, value)
+	err = db.Select(&resd, db.Rebind(q), VoucherStateUsed, value)
 	if err != nil {
 		return &Vouchers{}, false, err
 	}
