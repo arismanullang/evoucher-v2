@@ -17,6 +17,15 @@ func CreateEmailBlast(w http.ResponseWriter, r *http.Request) {
 	qp := u.NewQueryParam(r)
 
 	companyID := bone.GetValue(r, "company")
+	accountToken := r.FormValue("token")
+
+	auth, err := model.VerifyAccountToken(accountToken)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
 
 	var blast model.Blast
 	decoder := json.NewDecoder(r.Body)
@@ -34,7 +43,7 @@ func CreateEmailBlast(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	configs, err := model.GetConfigs(companyID, "blast")
+	configs, err := model.GetConfigs(companyID, "")
 	if err != nil {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
@@ -60,27 +69,85 @@ func CreateEmailBlast(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// validate program channel -> should be blast
-	// validate available voucher on program stock
-	// var availableVoucher = program.Stock - usedVoucher;
-	// if(){
-
+	// if program.ChannelID != "blast" {
+	// 	res.SetError(JSONErrBadRequest.SetMessage("Please choose channel blast"))
+	// 	res.JSON(w, res, JSONErrBadRequest.Status)
+	// 	return
 	// }
 
-	// for _, recipient := range blast.RecipientsData {
-	// 	// generate voucher for every recipient
-	// 	recipient.VoucherID = ""
-	// }
-
-	// insert blast
-	response, err := blast.Insert()
+	voucherCreated, err := model.GetVoucherCreatedAmountByProgramID(program.ID)
 	if err != nil {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
-		return
 	}
 
-	res.SetResponse(response)
-	res.JSON(w, res, http.StatusOK)
+	// validate available voucher on program stock
+	var availableVoucher = int(program.Stock) - voucherCreated
+	if availableVoucher >= len(blast.BlastRecipient) {
+
+		for idx, recipient := range blast.BlastRecipient {
+
+			tmp := model.HolderDetail{
+				Name:  recipient.HolderName,
+				Phone: recipient.HolderPhone,
+				Email: recipient.HolderEmail,
+			}
+
+			holderDetail, err := json.Marshal(tmp)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			gvr := GenerateVoucherRequest{
+				ProgramID:    program.ID,
+				Quantity:     1,
+				ReferenceNo:  "email-blast",
+				HolderID:     recipient.HolderEmail,
+				HolderDetail: holderDetail,
+				UpdatedBy:    auth.AccountID,
+			}
+
+			vouchers, err := gvr.GenerateVoucher(fmt.Sprint(configs["timezone"]), *program)
+			if err != nil {
+				res.SetError(JSONErrFatal.SetArgs(err.Error()))
+				res.JSON(w, res, JSONErrFatal.Status)
+			}
+
+			response, err := vouchers.Insert()
+			if err != nil {
+				fmt.Println(err)
+				res.SetError(JSONErrFatal.SetArgs(err.Error()))
+				res.JSON(w, res, JSONErrFatal.Status)
+				return
+			}
+
+			recipient.VoucherID = (&(*response)[0]).ID
+			recipient.UpdatedBy = auth.AccountID
+
+			// update the BlastRecipient Data
+			blast.BlastRecipient[idx] = recipient
+
+		}
+
+		blast.UpdatedBy = auth.AccountID
+
+		// insert blast
+		response, err := blast.Insert()
+		if err != nil {
+			res.SetError(JSONErrFatal.SetArgs(err.Error()))
+			res.JSON(w, res, JSONErrFatal.Status)
+			return
+		}
+
+		res.SetResponse(response)
+		res.JSON(w, res, http.StatusOK)
+
+	} else {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+	}
+
 }
 
 // UpdateBlast :
@@ -222,15 +289,9 @@ func SendEmailBlast(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// for _, recipient := range blast.BlastRecipient {
-	// 	// generate voucher for every recipient
-	// 	// recipient.VoucherID = ""
-	// }
-
 	if blast.Status == model.StatusCreated {
 		err := blast.SendEmailBlast()
 		if err != nil {
-			// rollback inserted blast
 			fmt.Println(err)
 			res.SetError(JSONErrFatal.SetArgs(err.Error()))
 			res.JSON(w, res, JSONErrFatal.Status)

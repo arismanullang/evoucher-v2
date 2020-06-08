@@ -28,7 +28,7 @@ func init() {
 	v2.GetFunc("/:company/vouchers", c.GetVoucherByHolder)
 	v2.GetFunc("/:company/vouchers/:id", ping)
 	v2.PutFunc("/:company/vouchers/:id", ping)
-	v2.DeleteFunc("/:company/vouchers/:id", ping)
+	v2.DeleteFunc("/:company/vouchers/:id", c.DeleteVoucher)
 
 	//programs
 	v2.PostFunc("/:company/programs", c.PostProgram)
@@ -98,10 +98,11 @@ func init() {
 
 	//transaction voucher
 	v2.PostFunc("/:company/transaction/voucher/assign", c.PostVoucherAssignHolder)
-	v2.PostFunc("/:company/transaction/voucher/assignholder", c.PostVoucherAssignHolder)
+	v2.PostFunc("/:company/transaction/voucher/inject/holder", c.PostVoucherInjectByHolder)
 	v2.PostFunc("/:company/transaction/voucher/claim", c.PostVoucherClaim)
 	v2.PostFunc("/:company/transaction/voucher/use", c.PostVoucherUse)
 	// v2.PostFunc("/:company/transaction/voucher/redeem", c.PostVoucherRedeem)
+
 	v2.GetFunc("/:company/transaction", c.GetTransactions)
 	v2.GetFunc("/:company/transaction/outlet/:id", c.GetTransactionsByOutlet)
 	v2.GetFunc("/:company/transaction/program/:id", c.GetTransactionsByProgram)
@@ -130,6 +131,10 @@ func init() {
 	v2.GetFunc("/:company/config", c.GetConfigs)
 	v2.PostFunc("/:company/config/:category", c.SetConfig)
 	v2.PutFunc("/:company/config", c.UpdateConfig)
+
+	//public
+	v2.GetFunc("/:company/public/voucher", c.GetVoucherByID)
+	v2.PostFunc("/:company/public/voucher/use", c.PostPublicVoucherUse)
 
 	// GCS
 	v2.PostFunc("/:company/file/upload", c.UploadFile)

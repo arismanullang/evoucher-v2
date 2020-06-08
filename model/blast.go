@@ -18,25 +18,25 @@ type (
 
 	// Blast : represent of blast table model
 	Blast struct {
-		ID             string          `db:"id" json:"id,omitempty"`
-		Sender         string          `db:"sender" json:"sender,omitempty"`
-		Subject        string          `db:"subject" json:"subject,omitempty"`
-		ProgramID      string          `db:"program_id" json:"program_id,omitempty"`
-		Program        *Program        `json:"program,omitempty"`
-		BlastProgram   types.JSONText  `db:"program" json:"-"`
-		CompanyID      string          `db:"company_id" json:"company_id,omitempty"`
-		ImageHeader    string          `db:"image_header" json:"image_header,omitempty"`
-		ImageFooter    string          `db:"image_footer" json:"image_footer,omitempty"`
-		EmailContent   string          `db:"email_content" json:"email_content,omitempty"`
-		Template       string          `db:"template" json:"template,omitempty"`
-		BlastRecipient BlastRecipients `json:"recipients,omitempty"`
-		Recipient      types.JSONText  `db:"recipients" json:"-"`
-		CreatedAt      *time.Time      `db:"created_at" json:"created_at,omitempty"`
-		CreatedBy      string          `db:"created_by" json:"created_by,omitempty"`
-		UpdatedAt      *time.Time      `db:"updated_at" json:"updated_at,omitempty"`
-		UpdatedBy      string          `db:"updated_by" json:"updated_by,omitempty"`
-		Status         string          `db:"status" json:"status,omitempty"`
-		Count          int             `db:"count" json:"-"`
+		ID              string          `db:"id" json:"id,omitempty"`
+		Sender          string          `db:"sender" json:"sender,omitempty"`
+		Subject         string          `db:"subject" json:"subject,omitempty"`
+		ProgramID       string          `db:"program_id" json:"program_id,omitempty"`
+		Program         *Program        `json:"program,omitempty"`
+		BlastProgram    types.JSONText  `db:"program" json:"-"`
+		CompanyID       string          `db:"company_id" json:"company_id,omitempty"`
+		ImageHeader     string          `db:"image_header" json:"image_header,omitempty"`
+		ImageFooter     string          `db:"image_footer" json:"image_footer,omitempty"`
+		EmailContent    string          `db:"email_content" json:"email_content,omitempty"`
+		Template        string          `db:"template" json:"template,omitempty"`
+		BlastRecipient  BlastRecipients `json:"recipients,omitempty"`
+		RecipientFromDB types.JSONText  `db:"recipients" json:"-"`
+		CreatedAt       *time.Time      `db:"created_at" json:"created_at,omitempty"`
+		CreatedBy       string          `db:"created_by" json:"created_by,omitempty"`
+		UpdatedAt       *time.Time      `db:"updated_at" json:"updated_at,omitempty"`
+		UpdatedBy       string          `db:"updated_by" json:"updated_by,omitempty"`
+		Status          string          `db:"status" json:"status,omitempty"`
+		Count           int             `db:"count" json:"-"`
 	}
 
 	// Blasts : List of Blast
@@ -50,7 +50,6 @@ type (
 		HolderName  string     `db:"name" json:"name,omitempty"`
 		HolderPhone string     `db:"mobile_no" json:"mobile_no,omitempty"`
 		VoucherID   string     `db:"voucher_id" json:"voucher_id,omitempty"`
-		VoucherObj  Voucher    `json:"voucher,omitempty"`
 		CreatedAt   *time.Time `db:"created_at" json:"created_at,omitempty"`
 		CreatedBy   string     `db:"created_by" json:"-"`
 		UpdatedAt   *time.Time `db:"updated_at" json:"updated_at,omitempty"`
@@ -86,6 +85,7 @@ type (
 		ImageFooter  string `json:"image_footer,omitempty"`
 		EmailContent string `json:"email_content,omitempty"`
 		EmailSubject string `json:"email_subject,omitempty"`
+		VoucherURL   string `json:"voucher_url,omitempty"`
 	}
 
 	Template struct {
@@ -205,8 +205,8 @@ func getBlasts(k, v string, qp *util.QueryParam) (*Blasts, bool, error) {
 		qp.Count = len(resd)
 	}
 
-	for i, _ := range resd {
-		err = json.Unmarshal([]byte(resd[i].Recipient), &resd[i].BlastRecipient)
+	for i := range resd {
+		err = json.Unmarshal([]byte(resd[i].RecipientFromDB), &resd[i].BlastRecipient)
 		if err != nil {
 			return &Blasts{}, false, err
 		}
@@ -266,7 +266,7 @@ func (b *Blast) Insert() (*Blasts, error) {
 	util.DEBUG(q)
 	var res Blasts
 
-	err = tx.Select(&res, tx.Rebind(q), b.CompanyID, b.Subject, b.Program.ID, b.ImageHeader, b.ImageFooter, b.EmailContent, b.Template, b.CreatedBy, b.UpdatedBy, StatusCreated)
+	err = tx.Select(&res, tx.Rebind(q), b.CompanyID, b.Subject, b.Program.ID, b.ImageHeader, b.ImageFooter, b.EmailContent, b.Template, b.UpdatedBy, b.UpdatedBy, StatusCreated)
 	if err != nil {
 		return nil, err
 	}
@@ -287,7 +287,7 @@ func (b *Blast) Insert() (*Blasts, error) {
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		`
 
-		_, err := tx.Exec(tx.Rebind(q), res[0].ID, r.HolderName, r.HolderEmail, r.HolderPhone, r.VoucherObj.ID, res[0].CreatedBy, res[0].UpdatedBy, StatusCreated)
+		_, err := tx.Exec(tx.Rebind(q), res[0].ID, r.HolderName, r.HolderEmail, r.HolderPhone, r.VoucherID, res[0].UpdatedBy, res[0].UpdatedBy, StatusCreated)
 		if err != nil {
 			return nil, err
 		}
@@ -374,23 +374,29 @@ func (b *Blast) Update() error {
 	return nil
 }
 
-// SendEmailBlast send email blast
-func (blast *Blast) SendEmailBlast() error {
+func generateLink(companyID, id string) string {
+	voucherURL := os.Getenv("VOUCHER_DOMAIN")
+	return voucherURL + "/public/usage" + "?x=" + util.StrEncode(id) + "&y=" + util.StrEncode(companyID)
+}
+
+// SendEmailBlast : send email blast
+func (b *Blast) SendEmailBlast() error {
 	recipients := []Recipient{}
 
-	imageHeader := blast.ImageHeader
-	imageVoucher := blast.Program.ImageURL
-	imageFooter := blast.ImageFooter
+	imageHeader := b.ImageHeader
+	imageVoucher := b.Program.ImageURL
+	imageFooter := b.ImageFooter
 
-	for _, recipientData := range blast.BlastRecipient {
+	for _, recipientData := range b.BlastRecipient {
 
 		data := RecipientRequestData{
-			ProgramName:  blast.Program.Name,
+			ProgramName:  b.Program.Name,
 			ImageHeader:  imageHeader,
 			ImageVoucher: imageVoucher,
 			ImageFooter:  imageFooter,
-			EmailContent: blast.EmailContent,
-			EmailSubject: blast.Subject,
+			EmailContent: b.EmailContent,
+			EmailSubject: b.Subject,
+			VoucherURL:   generateLink(b.CompanyID, recipientData.VoucherID),
 		}
 
 		recipient := Recipient{
@@ -403,9 +409,9 @@ func (blast *Blast) SendEmailBlast() error {
 
 	url := "/v3/email/messages?key="
 	param := BlastRequest{
-		From:     blast.Sender,
+		From:     b.Sender,
 		To:       recipients,
-		Template: blast.Template,
+		Template: b.Template,
 	}
 
 	jsonParam, _ := json.Marshal(param)
@@ -417,7 +423,7 @@ func (blast *Blast) SendEmailBlast() error {
 
 	if success {
 		// Update blast status
-		err = blast.UpdateBlastStatus()
+		err = b.UpdateBlastStatus()
 		if err != nil {
 			return errors.New("Failed when update blast status ," + err.Error())
 		}

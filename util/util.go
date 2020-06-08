@@ -1,7 +1,9 @@
 package util
 
 import (
+	"encoding/base64"
 	"fmt"
+	"log"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -22,6 +24,9 @@ const (
 
 	// DEFAULT_LENGTH = default random length number
 	DEFAULT_LENGTH = 8
+
+	// TRANSACTION_CODE_LENGTH =
+	TRANSACTION_CODE_LENGTH = 10
 )
 
 //StandardizeSpaces : trim redundant spaces
@@ -80,4 +85,19 @@ func StringInSlice(str string, list []string) bool {
 		}
 	}
 	return false
+}
+
+// StrEncode : encode string with base64
+func StrEncode(s string) string {
+	base64.StdEncoding.DecodedLen(32)
+	return base64.StdEncoding.EncodeToString([]byte(s))
+}
+
+// StrDecode : decode encoded base64 string
+func StrDecode(s string) string {
+	data, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		log.Panic(err)
+	}
+	return string(data)
 }
