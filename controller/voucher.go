@@ -368,7 +368,7 @@ func GetVoucherByHolder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	distinctProgram := []string{}
-	for _, v := range *vouchers {
+	for _, v := range vouchers {
 		if !u.StringInSlice(v.ProgramID, distinctProgram) {
 			distinctProgram = append(distinctProgram, v.ProgramID)
 		}
@@ -403,7 +403,7 @@ func GetVoucherByHolder(w http.ResponseWriter, r *http.Request) {
 		program.State = detailProgram.State
 		program.Status = detailProgram.Status
 
-		for _, voucher := range *vouchers {
+		for _, voucher := range vouchers {
 			if voucher.ProgramID == programID {
 				tempVoucher := model.Voucher{
 					ID:        voucher.ID,
