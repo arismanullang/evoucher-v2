@@ -85,8 +85,9 @@ type ProgramFilter struct {
 // GetProgram :
 func GetProgram(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
-
 	qp := u.NewQueryParam(r)
+
+	qp.SetCompanyID(bone.GetValue(r, "company"))
 
 	var decoder = schema.NewDecoder()
 	decoder.IgnoreUnknownKeys(true)

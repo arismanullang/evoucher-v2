@@ -35,29 +35,18 @@ import (
 type (
 	//JWTJunoClaims Juno format of claims
 	JWTJunoClaims struct {
-		Algorithm string `json:"alg"`
-		KeyID     string `json:"kid"`
-		Type      string `json:"typ"`
-		// SessionData SessionData `json:"session_data"`
-		CompanyID        string `json:"aud"`
-		AccountID        string `json:"account_id"`
-		Username         string `json:"username"`
-		Name             string `json:"name"`
-		MobileCalingCode string `json:"mobile_caling_code"`
-		MobileNo         string `json:"mobile_no"`
-		Email            string `json:"email"`
-		Gender           string `json:"gender"`
+		SessionData
 		jwt.StandardClaims
 	}
 	//SessionData token auth
 	SessionData struct {
-		AccountID        string `json:"account_id"`
-		Username         string `json:"username"`
-		Name             string `json:"name"`
-		MobileCalingCode string `json:"mobile_caling_code"`
-		MobileNo         string `json:"mobile_no"`
-		Email            string `json:"email"`
-		Gender           string `json:"gender"`
+		AccountID         string `json:"account_id"`
+		Username          string `json:"username"`
+		Name              string `json:"name"`
+		MobileCallingCode string `json:"mobile_caling_code"`
+		MobileNo          string `json:"mobile_no"`
+		Email             string `json:"email"`
+		Gender            string `json:"gender"`
 	}
 )
 
@@ -100,4 +89,25 @@ func VerifyJWT(tokenString string) (*jwt.Token, error) {
 
 		return key, nil
 	})
+}
+
+func GetSessionDataJWT(tokenString string) (SessionData, error) {
+	token, err := VerifyJWT(tokenString)
+	if err != nil {
+		return SessionData{}, err
+	}
+
+	if claims, ok := token.Claims.(*JWTJunoClaims); ok && token.Valid {
+		accData := SessionData{
+			AccountID:         claims.AccountID,
+			Username:          claims.Username,
+			Name:              claims.Name,
+			MobileCallingCode: claims.MobileCallingCode,
+			MobileNo:          claims.MobileNo,
+			Email:             claims.Email,
+			Gender:            claims.Gender,
+		}
+		return accData, nil
+	}
+	return SessionData{}, ErrorUnexpected
 }
