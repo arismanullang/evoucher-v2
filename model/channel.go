@@ -140,11 +140,11 @@ func (p *Channel) Insert() (*Channels, error) {
 	defer tx.Rollback()
 
 	q := `INSERT INTO 
-				channels ( name, description, is_super, created_by, updated_by, status)
+				channels ( name, description, company_id, is_super, created_by, updated_by, status)
 			VALUES 
-				( ?, ?, ?, ?, ?, ?)
+				( ?, ?, ?, ?, ?, ?, ?)
 			RETURNING
-				id, name, description, is_super, created_at, created_by, updated_at, updated_by, status
+				id, name, description, company_id, is_super, created_at, created_by, updated_at, updated_by, status
 	`
 	// bank, err := json.Marshal(p.Bank)
 	// if err != nil {
