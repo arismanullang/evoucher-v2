@@ -73,8 +73,8 @@ type (
 
 	// Recipient : recipient email and data for nudge
 	Recipient struct {
-		EmailAddress string               `json:"email_address"`
-		Data         RecipientRequestData `json:"data"`
+		EmailAddress string      `json:"email_address"`
+		Data         interface{} `json:"data"`
 	}
 
 	// RecipientRequestData : recipient data request

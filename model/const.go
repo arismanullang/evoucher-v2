@@ -25,6 +25,16 @@ const (
 	HolderTypePartner = "partner"
 	// HolderTypeCustomer tag
 	HolderTypeCustomer = "customer"
+
+	CompanyEmailSender   = "email_confirmation_sender"
+	CompanyEmailTemplate = "email_confirmation_template"
+	CompanyFinanceEmails = "finance_emails"
+	CompanyTimezone      = "timezone"
+
+	BlastSender      = "sender"
+	BlastTemplate    = "template_name"
+	BlastImageHeader = "image_header"
+	BlastImageFooter = "image_footer"
 )
 
 var (

@@ -15,7 +15,9 @@ type (
 		TransactionCode    string     `db:"transaction_code" json:"transaction_code"`
 		TotalAmount        string     `db:"total_amount" json:"total_amount"`
 		Holder             string     `db:"holder" json:"holder"`
-		Vouchers           Vouchers   `json:"vouchers"`
+		Vouchers           Vouchers   `json:"vouchers,omitempty"`
+		Programs           Programs   `json:"programs,omitempty"`
+		Partner            Partner    `json:"partner,omitempty"`
 		PartnerId          string     `db:"partner_id" json:"partner_id"`
 		CreatedBy          string     `db:"created_by" json:"created_by"`
 		CreatedAt          *time.Time `db:"created_at" json:"created_at"`

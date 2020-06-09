@@ -232,6 +232,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	// uniqueProgramID := u.UniqueString(listProgramID)
 	var totalDiscount = float64(0)
 
+	listPrograms := model.Programs{}
 	for programID, vouchers := range listProgramVouchersMap {
 		datas := make(map[string]string)
 		datas["ACCOUNTID"] = account.ID
@@ -274,12 +275,53 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 		}
 
 		totalDiscount += (program.MaxValue * float64(len(vouchers)))
+
+		tmpProgram := model.Program{}
+
+		tmpProgram.ID = program.ID
+		tmpProgram.Name = program.Name
+		tmpProgram.Type = program.Type
+		tmpProgram.Value = program.Value
+		tmpProgram.MaxValue = program.MaxValue
+		tmpProgram.StartDate = program.StartDate
+		tmpProgram.EndDate = program.EndDate
+		tmpProgram.Description = program.Description
+		tmpProgram.ImageURL = program.ImageURL
+		tmpProgram.Price = program.Price
+		tmpProgram.ProgramChannels = program.ProgramChannels
+		tmpProgram.State = program.State
+		tmpProgram.Status = program.Status
+
+		vouchersByProgram := model.Vouchers{}
+		for _, voucher := range listVoucherByID {
+			if voucher.ProgramID == programID {
+				tempVoucher := model.Voucher{
+					ID:        voucher.ID,
+					Code:      voucher.Code,
+					ExpiredAt: voucher.ExpiredAt,
+					ValidAt:   voucher.ValidAt,
+					State:     voucher.State,
+				}
+				vouchersByProgram = append(vouchersByProgram, tempVoucher)
+			}
+		}
+		tmpProgram.Vouchers = vouchersByProgram
+
+		listPrograms = append(listPrograms, tmpProgram)
 	}
+
+	partner, _, err := model.GetPartnerByID(qp, req.OutletID)
+	if err != nil {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
+
+	selectedPartner := *partner
 
 	tx.CompanyId = companyID
 	tx.TransactionCode = u.RandomizeString(u.TRANSACTION_CODE_LENGTH, u.NUMERALS)
 	tx.TotalAmount = fmt.Sprint(totalDiscount)
-	tx.Vouchers = listVoucherByID
 	tx.Holder = account.ID
 	tx.PartnerId = req.OutletID
 	tx.CreatedBy = account.ID
@@ -306,8 +348,16 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 
 	finalResponse := *resTrx
 	finalResponse[0].Vouchers = listVoucherByID
+	finalResponse[0].Programs = listPrograms
+	finalResponse[0].Partner = selectedPartner[0]
 
 	//send email confirmation
+	err = finalResponse[0].SendEmailConfirmation()
+	if err != nil {
+		res.SetErrorWithDetail(JSONErrFatal, err)
+		res.JSON(w, res, JSONErrFatal.Status)
+	}
+	// remove `Vouchers` field on transaction to use combine voucher -> use tx.Programs
 
 	res.SetResponse(finalResponse)
 	res.JSON(w, res, http.StatusCreated)
