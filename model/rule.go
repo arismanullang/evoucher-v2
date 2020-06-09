@@ -678,8 +678,9 @@ func (rule RulesExpression) ValidateClaim(datas map[string]interface{}) (bool, e
 
 	maxAssignByProgram := rule.And[ruleMaxAssignByProgram]
 	if !maxAssignByProgram.isEmpty() {
-		if holderVoucherByProgram+quantity > int(maxAssignByProgram.Eq.(float64)) {
-			return false, err
+		maxAssign := int(maxAssignByProgram.Eq.(float64))
+		if maxAssign != 0 && holderVoucherByProgram+quantity > maxAssign {
+			return false, ErrorMaxAssignByProgram
 		}
 	}
 
@@ -690,12 +691,35 @@ func (rule RulesExpression) ValidateClaim(datas map[string]interface{}) (bool, e
 
 	maxAssignByDay := rule.And[ruleMaxAssignByDay]
 	if !maxAssignByDay.isEmpty() {
-		if holderVoucherByDay+quantity > int(maxAssignByDay.Eq.(float64)) {
-			return false, err
+		maxAssign := int(maxAssignByDay.Eq.(float64))
+		if maxAssign != 0 && holderVoucherByDay+quantity > int(maxAssignByDay.Eq.(float64)) {
+			return false, ErrorMaxAssignByDay
 		}
 	}
 
 	return r, nil
+}
+
+func (rule RulesExpression) ValidateAssign(datas map[string]interface{}) (bool, error) {
+	result, err := rule.ValidateClaim(datas)
+	if err != nil {
+		return false, err
+	}
+
+	programID := datas["PROGRAMID"].(string)
+	quantity := datas["QUANTITY"].(int)
+
+	availableVoucher, err := GetUnassignedVoucherByProgramID(programID)
+	if err != nil {
+		return false, ErrorInternalServer
+	}
+
+	if quantity > availableVoucher {
+		return false, ErrorStockEmpty
+	}
+
+	return result, nil
+
 }
 
 func (rule RulesExpression) ValidateUse(datas map[string]string) (bool, error) {
@@ -716,16 +740,22 @@ func (rule RulesExpression) ValidateUse(datas map[string]string) (bool, error) {
 	ruleDate := rule.And[ruleUseValidityDate]
 	if !ruleDate.isEmpty() {
 		r, err := ruleDate.validateTime(t)
-		if !r {
+		if err != nil {
 			return r, err
+		}
+		if !r {
+			return r, ErrorInvalidDate
 		}
 	}
 
 	ruleDay := rule.And[ruleUseValidityDay]
 	if !ruleDay.isEmpty() {
 		r, err := ruleDay.validateInNumber(int(t.Weekday()))
-		if !r {
+		if err != nil {
 			return r, err
+		}
+		if !r {
+			return r, ErrorInvalidDay
 		}
 	}
 
@@ -739,16 +769,22 @@ func (rule RulesExpression) ValidateUse(datas map[string]string) (bool, error) {
 		ruleHour.Lte = endTime.Format(time.RFC3339)
 
 		r, err := ruleHour.validateTime(t)
-		if !r {
+		if err != nil {
 			return r, err
+		}
+		if !r {
+			return r, ErrorInvalidTime
 		}
 	}
 
 	ruleOutlet := rule.And[ruleUseOutlet]
 	if !ruleOutlet.isEmpty() {
 		r, err := ruleOutlet.validateInString(outletID)
-		if !r {
+		if err != nil {
 			return r, err
+		}
+		if !r {
+			return r, ErrorInvalidOutlet
 		}
 	}
 

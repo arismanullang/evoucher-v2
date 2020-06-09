@@ -110,6 +110,22 @@ func (t Transaction) Insert() (*[]Transaction, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	var resd []TransactionDetail
+	for _, td := range t.TransactionDetails {
+		q = `INSERT INTO 
+			transaction_details (transaction_id, program_id, voucher_id, created_by, updated_by, status)
+			VALUES (?, ?, ?, ?, ?, ?)
+			RETURNING
+				id, transaction_id, program_id, voucher_id, created_by, updated_by, status
+	`
+		err = tx.Select(&resd, tx.Rebind(q), td.TransactionId, td.ProgramId, td.VoucherId, td.CreatedBy, td.UpdatedBy, StatusCreated)
+		if err != nil {
+			return nil, err
+		}
+	}
+	res[0].TransactionDetails = resd
+
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
@@ -117,6 +133,38 @@ func (t Transaction) Insert() (*[]Transaction, error) {
 
 	return &res, nil
 }
+
+////Insert : transaction data
+//func (t TransactionDetail) Insert() (*[]TransactionDetail, error) {
+//	tx, err := db.Beginx()
+//	if err != nil {
+//		return nil, err
+//	}
+//	defer tx.Rollback()
+//
+//	q := `INSERT INTO
+//			transactions (company_id, transaction_code, total_amount, holder, partner_id, created_by, updated_by, status)
+//			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+//			RETURNING
+//				id, company_id, transaction_code, total_amount, holder, partner_id, created_by, created_at, updated_by, updated_at, status
+//	`
+//	var res []TransactionDetail
+//	err = tx.Select(&res, tx.Rebind(q), t.CompanyId, t.TransactionCode, t.TotalAmount, t.Holder, t.PartnerId, t.CreatedBy, t.UpdatedBy, StatusCreated)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	for i, i2 := range t.TransactionDetails {
+//
+//	}
+//
+//	err = tx.Commit()
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return &res, nil
+//}
 
 //Update : Transaction
 //There is no update for transaction yet.

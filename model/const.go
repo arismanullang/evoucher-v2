@@ -40,4 +40,19 @@ var (
 	ErrorInvalidToken = errors.New("Invalid Token")
 	// ErrorExpiredToken :
 	ErrorExpiredToken = errors.New("Token has expired")
+
+	// ErrorMaxAssignByDay :
+	ErrorMaxAssignByDay = errors.New("You have reach the maximum limit of voucher today, try again tomorrow")
+	// ErrorMaxAssignByProgram :
+	ErrorMaxAssignByProgram = errors.New("You have reach the maximum limit of voucher in this program")
+	// ErrorStockEmpty :
+	ErrorStockEmpty = errors.New("voucher stock is empty")
+	//ErrorInvalidDate :
+	ErrorInvalidDate = errors.New("voucher can't be used at current date")
+	//ErrorInvalidDay :
+	ErrorInvalidDay = errors.New("voucher can't be used at current day")
+	//ErrorInvalidTime :
+	ErrorInvalidTime = errors.New("voucher can't be used at current time")
+	//ErrorInvalidOutlet :
+	ErrorInvalidOutlet = errors.New("voucher can't be used at current outlet")
 )
