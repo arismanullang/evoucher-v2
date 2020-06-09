@@ -65,12 +65,18 @@ type (
 		Quantity  int    `json:"quantity,omitempty" valid:"required~quantity is required"`
 	}
 
-	// CreateVoucherRequest struct {
-	// 	config,
-	// 	quantity,
-	// 	program,
-
-	// }
+	// VoucherFilter : filter voucher
+	VoucherFilter struct {
+		ID        string `schema:"id" filter:"array"`
+		Name      string `schema:"name" filter:"string"`
+		ProgramID string `schema:"program_id" filter:"string"`
+		Holder    string `schema:"holder" filter:"string"`
+		CreatedAt string `schema:"created_at" filter:"date"`
+		CreatedBy string `schema:"created_by" filter:"string"`
+		UpdatedAt string `schema:"updated_at" filter:"date"`
+		UpdatedBy string `schema:"updated_by" filter:"string"`
+		Status    string `schema:"status" filter:"enum"`
+	}
 )
 
 // GetVouchersByHolder : get list vouchers by Holder
@@ -113,6 +119,21 @@ func GetVoucherByID(id string, qp *util.QueryParam) (*Voucher, error) {
 
 }
 
+// ValidateVoucher : Validate voucher status by voucherID
+func (v Voucher) ValidateVoucher() error {
+	if v.State == VoucherStateUsed {
+		return ErrorVoucherUsed
+	} else if v.State == VoucherStatePaid {
+		return ErrorVoucherPaid
+	} else if !v.ExpiredAt.After(time.Now()) {
+		return ErrorVoucherExpired
+	} else if !v.ValidAt.Before(time.Now()) {
+		return ErrorVoucherInvalidTime
+	}
+
+	return nil
+}
+
 func getVouchers(key, value string, qp *util.QueryParam) ([]Voucher, bool, error) {
 	q, err := qp.GetQueryByDefaultStruct(Voucher{})
 	if err != nil {
@@ -125,8 +146,7 @@ func getVouchers(key, value string, qp *util.QueryParam) ([]Voucher, bool, error
 				status = ?			
 			AND ` + key + ` = ?`
 
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
+	q = qp.GetQueryWhereClause(q, qp.Q)
 	var resd Vouchers
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, value)
 	if err != nil {

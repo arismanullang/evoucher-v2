@@ -99,11 +99,12 @@ func CreateEmailBlast(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
+			// need further discussion on Holder value for web voucher
 			gvr := GenerateVoucherRequest{
 				ProgramID:    program.ID,
 				Quantity:     1,
 				ReferenceNo:  "email-blast",
-				HolderID:     recipient.HolderEmail,
+				HolderID:     "",
 				HolderDetail: holderDetail,
 				UpdatedBy:    auth.AccountID,
 			}
