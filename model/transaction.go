@@ -1,38 +1,40 @@
 package model
 
 import (
-	"github.com/gilkor/evoucher-v2/util"
 	"time"
+
+	"github.com/gilkor/evoucher-v2/util"
 )
 
 // [UNDER CONSTRUCTION!!]
 
 type (
 	Transaction struct {
-		ID                 string     `db:"id",json:"id"`
-		CompanyId          string     `db:"company_id",json:"company_id"`
-		TransactionCode    string     `db:"transaction_code",json:"transaction_code"`
-		TotalAmount        string     `db:"total_amount",json:"total_amount"`
-		Holder             string     `db:"holder",json:"holder"`
-		PartnerId          string     `db:"partner_id",json:"partner_id"`
-		CreatedBy          string     `db:"created_by",json:"created_by"`
-		CreatedAt          *time.Time `db:"created_at",json:"created_at"`
-		UpdatedBy          string     `db:"updated_by",json:"updated_by"`
-		UpdatedAt          *time.Time `db:"updated_at",json:"updated_at"`
-		Status             string     `db:"status",json:"status"`
+		ID                 string     `db:"id" json:"id"`
+		CompanyId          string     `db:"company_id" json:"company_id"`
+		TransactionCode    string     `db:"transaction_code" json:"transaction_code"`
+		TotalAmount        string     `db:"total_amount" json:"total_amount"`
+		Holder             string     `db:"holder" json:"holder"`
+		Vouchers           Vouchers   `json:"vouchers"`
+		PartnerId          string     `db:"partner_id" json:"partner_id"`
+		CreatedBy          string     `db:"created_by" json:"created_by"`
+		CreatedAt          *time.Time `db:"created_at" json:"created_at"`
+		UpdatedBy          string     `db:"updated_by" json:"updated_by"`
+		UpdatedAt          *time.Time `db:"updated_at" json:"updated_at"`
+		Status             string     `db:"status" json:"status"`
 		TransactionDetails TransactionDetails
 	}
 	Transactions      []Transaction
 	TransactionDetail struct {
-		ID            string     `db:"id",json:"id"`
-		TransactionId string     `db:"transaction_id",json:"transaction_id"`
-		ProgramId     string     `db:"program_id",json:"program_id"`
-		VoucherId     string     `db:"voucher_id",json:"voucher_id"`
-		CreatedBy     string     `db:"created_by",json:"created_by"`
-		CreatedAt     *time.Time `db:"created_at",json:"created_at"`
-		UpdatedBy     string     `db:"updated_by",json:"updated_by"`
-		UpdatedAt     *time.Time `db:"updated_at",json:"updated_at"`
-		Status        string     `db:"status",json:"status"`
+		ID            string     `db:"id" json:"id"`
+		TransactionId string     `db:"transaction_id" json:"transaction_id"`
+		ProgramId     string     `db:"program_id" json:"program_id"`
+		VoucherId     string     `db:"voucher_id" json:"voucher_id"`
+		CreatedBy     string     `db:"created_by" json:"created_by"`
+		CreatedAt     *time.Time `db:"created_at" json:"created_at"`
+		UpdatedBy     string     `db:"updated_by" json:"updated_by"`
+		UpdatedAt     *time.Time `db:"updated_at" json:"updated_at"`
+		Status        string     `db:"status" json:"status"`
 	}
 	TransactionDetails []TransactionDetail
 )
@@ -113,11 +115,12 @@ func (t Transaction) Insert() (*[]Transaction, error) {
 
 	var resd []TransactionDetail
 	for _, td := range t.TransactionDetails {
+		td.TransactionId = res[0].ID
 		q = `INSERT INTO 
 			transaction_details (transaction_id, program_id, voucher_id, created_by, updated_by, status)
 			VALUES (?, ?, ?, ?, ?, ?)
 			RETURNING
-				id, transaction_id, program_id, voucher_id, created_by, updated_by, status
+				id, transaction_id, program_id, voucher_id, created_by, created_at, updated_by, updated_at, status
 	`
 		err = tx.Select(&resd, tx.Rebind(q), td.TransactionId, td.ProgramId, td.VoucherId, td.CreatedBy, td.UpdatedBy, StatusCreated)
 		if err != nil {

@@ -167,113 +167,149 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Validate VoucherID
-	voucher, err := model.GetVoucherByID(req.VoucherID, qp)
-	if err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrBadRequest)
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	} else if voucher.State == model.VoucherStateUsed {
-		res.SetError(JSONErrBadRequest)
-		res.Error.Message = "Voucher has been used"
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	} else if voucher.State == model.VoucherStatePaid {
-		res.SetError(JSONErrBadRequest)
-		res.Error.Message = "Voucher has been paid"
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	} else if !voucher.ExpiredAt.After(time.Now()) {
-		res.SetError(JSONErrBadRequest)
-		res.Error.Message = "Voucher has expired at " + voucher.ExpiredAt.String()
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	} else if !voucher.ValidAt.Before(time.Now()) {
-		res.SetError(JSONErrBadRequest)
-		res.Error.Message = "Voucher can be used at " + voucher.ValidAt.String()
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
-
-	datas := make(map[string]string)
-	datas["ACCOUNTID"] = account.ID
-	datas["PROGRAMID"] = voucher.ProgramID
-	datas["OUTLETID"] = req.OutletID
-	datas["TIMEZONE"] = fmt.Sprint(configs["timezone"])
-
-	//Validate Rule Program
-	program, err := model.GetProgramByID(voucher.ProgramID, qp)
-	if err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrBadRequest)
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
-	err = rule.Unmarshal(program.Rule)
-	if err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrBadRequest)
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
-
-	var rules model.RulesExpression
-	program.Rule.Unmarshal(&rules)
-
-	result, err := rules.ValidateUse(datas)
-	if err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
-
-	if !result {
-		u.DEBUG(err)
-		res.SetError(JSONErrInvalidRule)
-		res.JSON(w, res, JSONErrInvalidRule.Status)
-		return
-	}
-
 	var tx model.Transaction
-	var td model.TransactionDetail
 
-	td.ProgramId = program.ID
-	td.VoucherId = voucher.ID
-	td.CreatedBy = account.ID
-	td.UpdatedBy = account.ID
+	var f model.VoucherFilter
+	f.ID = req.VoucherID
 
-	tx.TransactionDetails = append(tx.TransactionDetails, td)
+	voucherQP := u.NewQueryParam(r)
+	voucherQP.SetFilterModel(f)
+	voucherQP.Count = -1
+
+	fmt.Println("voucher filter f value = ", f)
+
+	voucherQP.SetFilterModel(f)
+
+	listVoucherByID, _, err := model.GetVouchers(voucherQP)
+	if err != nil {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
+
+	// listProgramID := []string{}
+
+	listProgramVouchersMap := make(map[string][]string)
+
+	// =================================== Loop trough voucherID ===================================
+	for _, voucher := range listVoucherByID {
+		// Validate VoucherIDs
+		if voucher.State == model.VoucherStateUsed {
+			res.SetError(JSONErrBadRequest)
+			res.Error.Message = "Voucher has been used"
+			res.JSON(w, res, JSONErrBadRequest.Status)
+			return
+		} else if voucher.State == model.VoucherStatePaid {
+			res.SetError(JSONErrBadRequest)
+			res.Error.Message = "Voucher has been paid"
+			res.JSON(w, res, JSONErrBadRequest.Status)
+			return
+		} else if !voucher.ExpiredAt.After(time.Now()) {
+			res.SetError(JSONErrBadRequest)
+			res.Error.Message = "Voucher has expired at " + voucher.ExpiredAt.String()
+			res.JSON(w, res, JSONErrBadRequest.Status)
+			return
+		} else if !voucher.ValidAt.Before(time.Now()) {
+			res.SetError(JSONErrBadRequest)
+			res.Error.Message = "Voucher can be used at " + voucher.ValidAt.String()
+			res.JSON(w, res, JSONErrBadRequest.Status)
+			return
+		}
+
+		// listProgramID = append(listProgramID, voucher.ProgramID)
+		listProgramVouchersMap[voucher.ProgramID] = append(listProgramVouchersMap[voucher.ProgramID], voucher.ID)
+
+		var td model.TransactionDetail
+		td.ProgramId = voucher.ProgramID
+		td.VoucherId = voucher.ID
+		td.CreatedBy = account.ID
+		td.UpdatedBy = account.ID
+		tx.TransactionDetails = append(tx.TransactionDetails, td)
+	}
+
+	// =================================== Loop through programID ===================================
+
+	// uniqueProgramID := u.UniqueString(listProgramID)
+	var totalDiscount = float64(0)
+
+	for programID, vouchers := range listProgramVouchersMap {
+		datas := make(map[string]string)
+		datas["ACCOUNTID"] = account.ID
+		datas["PROGRAMID"] = programID
+		datas["OUTLETID"] = req.OutletID
+		datas["TIMEZONE"] = fmt.Sprint(configs["timezone"])
+
+		//Validate Rule Program
+		program, err := model.GetProgramByID(programID, qp)
+		if err != nil {
+			u.DEBUG(err)
+			res.SetError(JSONErrBadRequest)
+			res.JSON(w, res, JSONErrBadRequest.Status)
+			return
+		}
+		err = rule.Unmarshal(program.Rule)
+		if err != nil {
+			u.DEBUG(err)
+			res.SetError(JSONErrBadRequest)
+			res.JSON(w, res, JSONErrBadRequest.Status)
+			return
+		}
+
+		var rules model.RulesExpression
+		program.Rule.Unmarshal(&rules)
+
+		result, err := rules.ValidateUse(datas)
+		if err != nil {
+			u.DEBUG(err)
+			res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+			res.JSON(w, res, JSONErrBadRequest.Status)
+			return
+		}
+
+		if !result {
+			u.DEBUG(err)
+			res.SetError(JSONErrInvalidRule)
+			res.JSON(w, res, JSONErrInvalidRule.Status)
+			return
+		}
+
+		totalDiscount += (program.MaxValue * float64(len(vouchers)))
+	}
 
 	tx.CompanyId = companyID
 	tx.TransactionCode = u.RandomizeString(u.TRANSACTION_CODE_LENGTH, u.NUMERALS)
-	// Multiply with total voucher used
-	tx.TotalAmount = fmt.Sprint(program.MaxValue)
+	tx.TotalAmount = fmt.Sprint(totalDiscount)
+	tx.Vouchers = listVoucherByID
 	tx.Holder = account.ID
 	tx.PartnerId = req.OutletID
 	tx.CreatedBy = account.ID
 	tx.UpdatedBy = account.ID
 
-	if _, err = tx.Insert(); err != nil {
+	resTrx, err := tx.Insert()
+	if err != nil {
 		u.DEBUG(err)
 		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
-	voucher.State = model.VoucherStateUsed
-	voucher.UpdatedBy = account.ID
-	if err = voucher.Update(); err != nil {
-		u.DEBUG(err)
-		res.SetErrorWithDetail(JSONErrFatal, err)
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
+	for _, voucher := range listVoucherByID {
+		voucher.State = model.VoucherStateUsed
+		voucher.UpdatedBy = account.ID
+		if err = voucher.Update(); err != nil {
+			u.DEBUG(err)
+			res.SetErrorWithDetail(JSONErrFatal, err)
+			res.JSON(w, res, JSONErrFatal.Status)
+			return
+		}
 	}
+
+	finalResponse := *resTrx
+	finalResponse[0].Vouchers = listVoucherByID
 
 	//send email confirmation
 
-	res.SetResponse(tx)
+	res.SetResponse(finalResponse)
 	res.JSON(w, res, http.StatusCreated)
 }
 
