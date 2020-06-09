@@ -65,4 +65,9 @@ var (
 	ErrorInvalidTime = errors.New("voucher can't be used at current time")
 	//ErrorInvalidOutlet :
 	ErrorInvalidOutlet = errors.New("voucher can't be used at current outlet")
+
+	ErrorVoucherUsed        = errors.New("Voucher has been used")
+	ErrorVoucherPaid        = errors.New("Voucher has been paid")
+	ErrorVoucherExpired     = errors.New("Voucher has expired")
+	ErrorVoucherInvalidTime = errors.New("Voucher can't be used at current time, please check the terms & conditions")
 )

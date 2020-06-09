@@ -119,6 +119,21 @@ func GetVoucherByID(id string, qp *util.QueryParam) (*Voucher, error) {
 
 }
 
+// ValidateVoucher : Validate voucher status by voucherID
+func (v Voucher) ValidateVoucher() error {
+	if v.State == VoucherStateUsed {
+		return ErrorVoucherUsed
+	} else if v.State == VoucherStatePaid {
+		return ErrorVoucherPaid
+	} else if !v.ExpiredAt.After(time.Now()) {
+		return ErrorVoucherExpired
+	} else if !v.ValidAt.Before(time.Now()) {
+		return ErrorVoucherInvalidTime
+	}
+
+	return nil
+}
+
 func getVouchers(key, value string, qp *util.QueryParam) ([]Voucher, bool, error) {
 	q, err := qp.GetQueryByDefaultStruct(Voucher{})
 	if err != nil {

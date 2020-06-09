@@ -79,6 +79,7 @@ type (
 
 	// RecipientRequestData : recipient data request
 	RecipientRequestData struct {
+		HolderName   string `json:"name,omitempty"`
 		ProgramName  string `json:"program_name,omitempty"`
 		ImageHeader  string `json:"image_header,omitempty"`
 		ImageVoucher string `json:"image_voucher,omitempty"`
@@ -390,6 +391,7 @@ func (b *Blast) SendEmailBlast() error {
 	for _, recipientData := range b.BlastRecipient {
 
 		data := RecipientRequestData{
+			HolderName:   recipientData.HolderName,
 			ProgramName:  b.Program.Name,
 			ImageHeader:  imageHeader,
 			ImageVoucher: imageVoucher,

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gilkor/evoucher-v2/model"
 	u "github.com/gilkor/evoucher-v2/util"
@@ -193,25 +192,9 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 
 	// =================================== Loop trough voucherID ===================================
 	for _, voucher := range listVoucherByID {
-		// Validate VoucherIDs
-		if voucher.State == model.VoucherStateUsed {
-			res.SetError(JSONErrBadRequest)
-			res.Error.Message = "Voucher has been used"
-			res.JSON(w, res, JSONErrBadRequest.Status)
-			return
-		} else if voucher.State == model.VoucherStatePaid {
-			res.SetError(JSONErrBadRequest)
-			res.Error.Message = "Voucher has been paid"
-			res.JSON(w, res, JSONErrBadRequest.Status)
-			return
-		} else if !voucher.ExpiredAt.After(time.Now()) {
-			res.SetError(JSONErrBadRequest)
-			res.Error.Message = "Voucher has expired at " + voucher.ExpiredAt.String()
-			res.JSON(w, res, JSONErrBadRequest.Status)
-			return
-		} else if !voucher.ValidAt.Before(time.Now()) {
-			res.SetError(JSONErrBadRequest)
-			res.Error.Message = "Voucher can be used at " + voucher.ValidAt.String()
+		err := voucher.ValidateVoucher()
+		if err != nil {
+			res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
 			res.JSON(w, res, JSONErrBadRequest.Status)
 			return
 		}
@@ -599,24 +582,11 @@ func PostPublicVoucherUse(w http.ResponseWriter, r *http.Request) {
 		res.SetError(JSONErrBadRequest)
 		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
-	} else if voucher.State == model.VoucherStateUsed {
-		res.SetError(JSONErrBadRequest)
-		res.Error.Message = "Voucher has been used"
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	} else if voucher.State == model.VoucherStatePaid {
-		res.SetError(JSONErrBadRequest)
-		res.Error.Message = "Voucher has been paid"
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	} else if !voucher.ExpiredAt.After(time.Now()) {
-		res.SetError(JSONErrBadRequest)
-		res.Error.Message = "Voucher has expired at " + voucher.ExpiredAt.String()
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	} else if !voucher.ValidAt.Before(time.Now()) {
-		res.SetError(JSONErrBadRequest)
-		res.Error.Message = "Voucher can be used at " + voucher.ValidAt.String()
+	}
+
+	err = voucher.ValidateVoucher()
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
 	}
@@ -679,7 +649,15 @@ func PostPublicVoucherUse(w http.ResponseWriter, r *http.Request) {
 	tx.CreatedBy = "web"
 	tx.UpdatedBy = "web"
 
-	if _, err = tx.Insert(); err != nil {
+	partner, _, err := model.GetPartnerByID(qp, req.OutletID)
+	if err != nil {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
+
+	resTrx, err := tx.Insert()
+	if err != nil {
 		u.DEBUG(err)
 		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
@@ -696,6 +674,19 @@ func PostPublicVoucherUse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//send email confirmation
+	selectedPartner := *partner
+
+	finalResponse := *resTrx
+	finalResponse[0].Vouchers = model.Vouchers{*voucher}
+	finalResponse[0].Programs = model.Programs{*program}
+	finalResponse[0].Partner = selectedPartner[0]
+
+	//send email confirmation
+	err = finalResponse[0].SendEmailConfirmation()
+	if err != nil {
+		res.SetErrorWithDetail(JSONErrFatal, err)
+		res.JSON(w, res, JSONErrFatal.Status)
+	}
 
 	res.SetResponse(tx)
 	res.JSON(w, res, http.StatusCreated)

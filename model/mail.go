@@ -130,14 +130,16 @@ func (t Transaction) SendEmailConfirmation() error {
 		listVoucher = append(listVoucher, voucher.Code)
 	}
 
-	// partner, err := GetPartnerByID(n)
+	//HolderDetail :type struct Voucher.types.JSONText.Unmarshal(&HolderDetail)
+	holderDetail := HolderDetail{}
+	t.Vouchers[0].HolderDetail.Unmarshal(&holderDetail)
 
 	recipients := []Recipient{}
 
 	for _, emailRecipient := range listEmail {
 
 		data := ConfirmationEmailData{
-			Holder:          *t.Vouchers[0].Holder,
+			Holder:          holderDetail.Name,
 			ProgramName:     t.Programs[0].Name,
 			PartnerName:     t.Partner.Name,
 			TransactionCode: t.TransactionCode,
