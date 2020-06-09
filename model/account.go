@@ -10,7 +10,7 @@ type (
 	Account struct {
 		ID                string      `db:"id" json:"id"`
 		Name              string      `db:"name" json:"name"`
-		CompanyId         string      `db:"company_id" json:"company_id"`
+		CompanyID         string      `db:"company_id" json:"company_id"`
 		Gender            string      `db:"gender" json:"gender"`
 		Email             string      `db:"email" json:"email"`
 		MobileCallingCode string      `db:"mobile_calling_code" json:"mobile_calling_code"`
@@ -162,7 +162,7 @@ func (p *Account) Insert() (*Accounts, error) {
 		return nil, err
 	}
 	var res Accounts
-	err = tx.Select(&res, tx.Rebind(q), p.ID, p.Name, p.CompanyId, p.Gender, p.Email, p.MobileCallingCode, p.MobileNo, p.State, p.Status, p.CreatedAt, p.CreatedBy, p.UpdatedAt, p.UpdatedBy, p.DeletedAt, p.DeletedBy)
+	err = tx.Select(&res, tx.Rebind(q), p.ID, p.Name, p.CompanyID, p.Gender, p.Email, p.MobileCallingCode, p.MobileNo, p.State, p.Status, p.CreatedAt, p.CreatedBy, p.UpdatedAt, p.UpdatedBy, p.DeletedAt, p.DeletedBy)
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +219,7 @@ func (p *Account) Update() error {
 				deleted_by
 	`
 	var res []Account
-	err = tx.Select(&res, tx.Rebind(q), p.Name, p.CompanyId, p.Gender, p.Email, p.MobileCallingCode, p.MobileNo, p.Status, p.State, p.CreatedAt, p.CreatedBy, p.UpdatedAt, p.UpdatedBy, p.DeletedAt, p.DeletedBy, p.ID)
+	err = tx.Select(&res, tx.Rebind(q), p.Name, p.CompanyID, p.Gender, p.Email, p.MobileCallingCode, p.MobileNo, p.Status, p.State, p.CreatedAt, p.CreatedBy, p.UpdatedAt, p.UpdatedBy, p.DeletedAt, p.DeletedBy, p.ID)
 	if err != nil {
 		return err
 	}

@@ -50,7 +50,6 @@ type ChannelFilter struct {
 //GetChannels : GET list of channels
 func GetChannels(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
-
 	qp := u.NewQueryParam(r)
 
 	var decoder = schema.NewDecoder()

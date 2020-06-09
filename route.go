@@ -40,7 +40,7 @@ func init() {
 
 	//partners == outlets
 	v2.PostFunc("/:company/partners", c.PostPartner)
-	v2.GetFunc("/:company/partners", c.GetPartners)
+	v2.Get("/:company/partners", c.CheckFuncJWT(c.GetPartners, "outlet-view"))
 	v2.GetFunc("/:company/partners/:id", c.GetPartnerByID)
 	v2.PutFunc("/:company/partners/:id", c.UpdatePartner)
 	v2.DeleteFunc("/:company/partners/:id", c.DeletePartner)

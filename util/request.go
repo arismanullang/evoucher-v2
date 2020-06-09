@@ -26,6 +26,7 @@ type QueryParam struct {
 	Fields      string //Fields : for multyple field , using coma delimiter ex : id , name , etc ..
 	Sort        string
 	Q           string
+	CompanyID   string
 	Model       interface{}
 	FilterModel interface{}
 }
@@ -53,6 +54,11 @@ func (qp *QueryParam) SetModel(i interface{}) {
 //SetFilterModel : Set model of filter which will be used in search query
 func (qp *QueryParam) SetFilterModel(i interface{}) {
 	qp.FilterModel = i
+}
+
+//SetCompanyID : Set company id to be used in search query if needed
+func (qp *QueryParam) SetCompanyID(c string) {
+	qp.CompanyID = c
 }
 
 //GetQueryByDefaultStruct get query field from custom QueryParam.Fields ,or default using Struct Fileds
@@ -106,7 +112,11 @@ func (qp *QueryParam) GetQueryLimit() string {
 }
 
 func (qp *QueryParam) GetQueryWhereClause(q string, val string) string {
-	return q + getQClauseFromStruct(qp, val, qp.Model) + getWhereClauseFromStruct(qp, qp.FilterModel)
+	company := ``
+	if len(qp.CompanyID) > 0 {
+		company = ` AND company_id = '` + qp.CompanyID + `' `
+	}
+	return q + company + getQClauseFromStruct(qp, val, qp.Model) + getWhereClauseFromStruct(qp, qp.FilterModel)
 }
 
 func (qp *QueryParam) GetQueryWithPagination(q string, sort string, limit string) string {
