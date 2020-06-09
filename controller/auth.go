@@ -2,8 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 	"os"
 
@@ -28,7 +26,6 @@ func CheckJWT(f http.Handler, access string) http.Handler {
 
 		accData, err := model.GetSessionDataJWT(token)
 		if err != nil {
-			log.Panic(err)
 			res.SetError(JSONErrUnauthorized)
 			res.JSON(w, res, JSONErrUnauthorized.Status)
 			return
@@ -37,14 +34,12 @@ func CheckJWT(f http.Handler, access string) http.Handler {
 		urlPath := os.Getenv("JUNO_GET_ACCOUNT_PRIVILEGES_URL") + accData.AccountID + "?token=" + token
 		httpRes, err := http.Get(urlPath)
 		if err != nil {
-			log.Panic(err)
 			res.SetError(JSONErrUnauthorized)
 			res.JSON(w, res, JSONErrUnauthorized.Status)
 			return
 		}
 
 		if httpRes.StatusCode != 200 {
-			log.Panic(err)
 			res.SetError(JSONErrUnauthorized)
 			res.JSON(w, res, JSONErrUnauthorized.Status)
 			return
@@ -56,7 +51,6 @@ func CheckJWT(f http.Handler, access string) http.Handler {
 
 		hasAccess := false
 		for _, v := range scope.Data {
-			fmt.Println(v)
 			if v == access {
 				hasAccess = true
 				break
