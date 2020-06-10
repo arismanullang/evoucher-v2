@@ -77,6 +77,24 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for idx, trx := range *result {
+		partners, _, err := model.GetPartnerByID(qp, trx.PartnerId)
+		if err != nil {
+			res.SetError(JSONErrFatal.SetArgs(err.Error()))
+			res.JSON(w, res, JSONErrFatal.Status)
+			return
+		}
+		partner := *partners
+
+		selectedPartner := model.Partner{
+			ID:          partner[0].ID,
+			Name:        partner[0].Name,
+			Description: partner[0].Description,
+		}
+
+		(*result)[idx].Partner = selectedPartner
+	}
+
 	res.SetResponse(result)
 	res.SetPagination(r, qp.Page, next)
 	res.JSON(w, res, http.StatusOK)
@@ -98,29 +116,6 @@ func GetTransactionByID(w http.ResponseWriter, r *http.Request) {
 	res.SetResponse(partner)
 	res.JSON(w, res, http.StatusOK)
 }
-
-//PostVoucherAssignHolder :
-// func PostVoucherAssignHolder(w http.ResponseWriter, r *http.Request) {
-// 	res := u.NewResponse()
-
-// 	var req model.Voucher
-// 	decoder := json.NewDecoder(r.Body)
-// 	err := decoder.Decode(&req)
-// 	req.State = model.VoucherStateUsed
-// 	if err != nil {
-// 		u.DEBUG(err)
-// 		res.SetError(JSONErrBadRequest)
-// 		res.JSON(w, res, JSONErrBadRequest.Status)
-// 		return
-// 	}
-// 	if err := req.Update(); err != nil {
-// 		u.DEBUG(err)
-// 		res.SetErrorWithDetail(JSONErrFatal, err)
-// 		res.JSON(w, res, JSONErrFatal.Status)
-// 		return
-// 	}
-// 	res.JSON(w, res, http.StatusCreated)
-// }
 
 type UseTransaction struct {
 	OutletID    string            `db:"outlet_id" json:"outlet_id,omitempty"`
@@ -293,14 +288,21 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 		listPrograms = append(listPrograms, tmpProgram)
 	}
 
-	partner, _, err := model.GetPartnerByID(qp, req.OutletID)
+	partners, _, err := model.GetPartnerByID(qp, req.OutletID)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
 		return
 	}
 
-	selectedPartner := *partner
+	//send email confirmation
+	partner := *partners
+
+	selectedPartner := model.Partner{
+		ID:          partner[0].ID,
+		Name:        partner[0].Name,
+		Description: partner[0].Description,
+	}
 
 	tx.CompanyId = companyID
 	tx.TransactionCode = u.RandomizeString(u.TRANSACTION_CODE_LENGTH, u.NUMERALS)
@@ -332,7 +334,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	finalResponse := *resTrx
 	finalResponse[0].Vouchers = listVoucherByID
 	finalResponse[0].Programs = listPrograms
-	finalResponse[0].Partner = selectedPartner[0]
+	finalResponse[0].Partner = selectedPartner
 
 	//send email confirmation
 	err = finalResponse[0].SendEmailConfirmation()
@@ -649,7 +651,7 @@ func PostPublicVoucherUse(w http.ResponseWriter, r *http.Request) {
 	tx.CreatedBy = "web"
 	tx.UpdatedBy = "web"
 
-	partner, _, err := model.GetPartnerByID(qp, req.OutletID)
+	partners, _, err := model.GetPartnerByID(qp, req.OutletID)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
@@ -674,12 +676,36 @@ func PostPublicVoucherUse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//send email confirmation
-	selectedPartner := *partner
+	partner := *partners
+
+	selectedPartner := model.Partner{
+		ID:          partner[0].ID,
+		Name:        partner[0].Name,
+		Description: partner[0].Description,
+	}
+
+	tmpProgram := model.Program{}
+
+	tmpProgram.ID = program.ID
+	tmpProgram.Name = program.Name
+	tmpProgram.Type = program.Type
+	tmpProgram.Value = program.Value
+	tmpProgram.MaxValue = program.MaxValue
+	tmpProgram.StartDate = program.StartDate
+	tmpProgram.EndDate = program.EndDate
+	tmpProgram.Description = program.Description
+	tmpProgram.ImageURL = program.ImageURL
+	tmpProgram.Price = program.Price
+	tmpProgram.ProgramChannels = program.ProgramChannels
+	tmpProgram.State = program.State
+	tmpProgram.Status = program.Status
+
+	tmpProgram.Vouchers = model.Vouchers{*voucher}
 
 	finalResponse := *resTrx
 	finalResponse[0].Vouchers = model.Vouchers{*voucher}
-	finalResponse[0].Programs = model.Programs{*program}
-	finalResponse[0].Partner = selectedPartner[0]
+	finalResponse[0].Programs = model.Programs{tmpProgram}
+	finalResponse[0].Partner = selectedPartner
 
 	//send email confirmation
 	err = finalResponse[0].SendEmailConfirmation()
@@ -688,6 +714,6 @@ func PostPublicVoucherUse(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 	}
 
-	res.SetResponse(tx)
+	res.SetResponse(finalResponse[0])
 	res.JSON(w, res, http.StatusCreated)
 }
