@@ -78,18 +78,17 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for idx, trx := range *result {
-		partners, _, err := model.GetPartnerByID(qp, trx.PartnerId)
+		partner, _, err := model.GetPartnerByID(qp, trx.PartnerId)
 		if err != nil {
 			res.SetError(JSONErrFatal.SetArgs(err.Error()))
 			res.JSON(w, res, JSONErrFatal.Status)
 			return
 		}
-		partner := *partners
 
 		selectedPartner := model.Partner{
-			ID:          partner[0].ID,
-			Name:        partner[0].Name,
-			Description: partner[0].Description,
+			ID:          partner.ID,
+			Name:        partner.Name,
+			Description: partner.Description,
 		}
 
 		(*result)[idx].Partner = selectedPartner
@@ -106,14 +105,81 @@ func GetTransactionByID(w http.ResponseWriter, r *http.Request) {
 
 	qp := u.NewQueryParam(r)
 	id := bone.GetValue(r, "id")
-	partner, _, err := model.GetTransactionByID(qp, id)
+	transaction, _, err := model.GetTransactionByID(qp, id)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
 		return
 	}
 
-	res.SetResponse(partner)
+	// partner
+	resPartner, _, err := model.GetPartnerByID(qp, transaction.PartnerId)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	partner := model.Partner{
+		ID:          resPartner.ID,
+		Name:        resPartner.Name,
+		Description: resPartner.Description,
+		Tags:        resPartner.Tags,
+	}
+
+	transaction.Partner = partner
+
+	listProgramVouchersMap := make(map[string]model.Vouchers)
+	listPrograms := model.Programs{}
+	listVouchers := model.Vouchers{}
+	for _, trxDetail := range transaction.TransactionDetails {
+		program, err := model.GetProgramByID(trxDetail.ProgramId, qp)
+		if err != nil {
+			res.SetError(JSONErrFatal.SetArgs(err.Error()))
+			res.JSON(w, res, JSONErrFatal.Status)
+			return
+		}
+		tmpProgram := model.Program{}
+
+		tmpProgram.ID = program.ID
+		tmpProgram.Name = program.Name
+		tmpProgram.Type = program.Type
+		tmpProgram.Value = program.Value
+		tmpProgram.MaxValue = program.MaxValue
+		tmpProgram.StartDate = program.StartDate
+		tmpProgram.EndDate = program.EndDate
+		tmpProgram.Description = program.Description
+		tmpProgram.ImageURL = program.ImageURL
+		tmpProgram.Price = program.Price
+		tmpProgram.ProgramChannels = program.ProgramChannels
+		tmpProgram.State = program.State
+		tmpProgram.Status = program.Status
+
+		listPrograms = append(listPrograms, tmpProgram)
+
+		voucher, err := model.GetVoucherByID(trxDetail.VoucherId, qp)
+		if err != nil {
+			res.SetError(JSONErrFatal.SetArgs(err.Error()))
+			res.JSON(w, res, JSONErrFatal.Status)
+			return
+		}
+
+		listVouchers = append(listVouchers, *voucher)
+
+		if trxDetail.ProgramId == voucher.ProgramID {
+			listProgramVouchersMap[trxDetail.ProgramId] = append(listProgramVouchersMap[voucher.ProgramID], *voucher)
+		}
+
+	}
+	// program
+
+	for idx, program := range listPrograms {
+		listPrograms[idx].Vouchers = listProgramVouchersMap[program.ID]
+	}
+
+	transaction.Programs = listPrograms
+
+	res.SetResponse(transaction)
 	res.JSON(w, res, http.StatusOK)
 }
 
@@ -288,7 +354,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 		listPrograms = append(listPrograms, tmpProgram)
 	}
 
-	partners, _, err := model.GetPartnerByID(qp, req.OutletID)
+	partner, _, err := model.GetPartnerByID(qp, req.OutletID)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
@@ -296,12 +362,11 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//send email confirmation
-	partner := *partners
 
 	selectedPartner := model.Partner{
-		ID:          partner[0].ID,
-		Name:        partner[0].Name,
-		Description: partner[0].Description,
+		ID:          partner.ID,
+		Name:        partner.Name,
+		Description: partner.Description,
 	}
 
 	tx.CompanyId = companyID
@@ -651,7 +716,7 @@ func PostPublicVoucherUse(w http.ResponseWriter, r *http.Request) {
 	tx.CreatedBy = "web"
 	tx.UpdatedBy = "web"
 
-	partners, _, err := model.GetPartnerByID(qp, req.OutletID)
+	partner, _, err := model.GetPartnerByID(qp, req.OutletID)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
@@ -676,12 +741,11 @@ func PostPublicVoucherUse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//send email confirmation
-	partner := *partners
 
 	selectedPartner := model.Partner{
-		ID:          partner[0].ID,
-		Name:        partner[0].Name,
-		Description: partner[0].Description,
+		ID:          partner.ID,
+		Name:        partner.Name,
+		Description: partner.Description,
 	}
 
 	tmpProgram := model.Program{}
