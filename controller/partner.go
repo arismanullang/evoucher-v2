@@ -91,7 +91,7 @@ func GetPartnerByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res.SetResponse(partner)
+	res.SetResponse(model.Partners{*partner})
 	res.JSON(w, res, http.StatusOK)
 }
 
