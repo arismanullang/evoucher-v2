@@ -39,8 +39,9 @@ type (
 		Channels        Channels       `json:"channels,omitempty"`
 		ProgramChannels types.JSONText `db:"program_channels" json:"program_channels,omitempty"`
 		Count           int            `db:"count" json:"-"`
-		ClaimedVoucher  int            `db:"claimed_voucher" json:"claimed_voucher"`
-		UsedVoucher     int            `db:"used_voucher" json:"used_voucher"`
+		ClaimedVoucher  int            `db:"claimed" json:"claimed"`
+		UsedVoucher     int            `db:"used" json:"used"`
+		PaidVoucher     int            `db:"paid" json:"paid"`
 		// WithTransactionCount bool       `json:"with_transaction_count,omitempty"`
 	}
 	// Programs : base model
