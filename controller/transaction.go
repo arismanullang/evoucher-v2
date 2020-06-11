@@ -28,6 +28,24 @@ type (
 	}
 )
 
+//GetTransactionsByHolder : GET list transaction history by Holder
+func GetTransactionsByHolder(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	qp := u.NewQueryParam(r)
+
+	id := bone.GetValue(r, "id")
+	result, next, err := model.GetTransactionByHolder(qp, id)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(result)
+	res.SetPagination(r, qp.Page, next)
+	res.JSON(w, res, http.StatusOK)
+}
+
 //GetTransactions : GET list of partners
 func GetTransactionsByOutlet(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()

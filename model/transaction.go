@@ -65,12 +65,30 @@ func GetTransactionByID(qp *util.QueryParam, id string) (Transaction, bool, erro
 	return Transaction{}, false, ErrorResourceNotFound
 }
 
-//GetTransactionByProgram : get partner by specified ProgramID
+//GetTransactionByHolder : get transaction by specified Holder
+func GetTransactionByHolder(qp *util.QueryParam, val string) (*Transactions, bool, error) {
+	// SELECT DISTINCT
+	// 		t.id,
+	// 		t.created_at,
+	// 		t.discount_value,
+	// 		t.transaction_code,
+	// 		pt.id as partner_id,
+	// 		pt.name	as partner_name
+	// 	FROM transactions as t
+	// 	JOIN partners as pt
+	// 		ON t.partner_id = pt.id
+	// 	WHERE t.status = ?
+	// 	AND t.holder = ?
+	// 	ORDER BY t.created_at DESC`
+	return getTransactions("holder", val, qp)
+}
+
+//GetTransactionByProgram : get transaction by specified ProgramID
 func GetTransactionByProgram(qp *util.QueryParam, val string) (*Transactions, bool, error) {
 	return getTransactions("program_id", val, qp)
 }
 
-//GetTransactionByPartner : get partner by specified PartnerID
+//GetTransactionByPartner : get transaction by specified PartnerID
 func GetTransactionByPartner(qp *util.QueryParam, val string) (*Transactions, bool, error) {
 	return getTransactions("partner_id", val, qp)
 }

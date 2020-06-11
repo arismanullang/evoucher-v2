@@ -41,6 +41,7 @@ func init() {
 	//partners == outlets
 	v2.PostFunc("/:company/partners", c.PostPartner)
 	v2.Get("/:company/partners", c.CheckFuncJWT(c.GetPartners, "outlet-view"))
+	// v2.GetFunc("/:company/partners", c.GetPartners)
 	v2.GetFunc("/:company/partners/:id", c.GetPartnerByID)
 	v2.PutFunc("/:company/partners/:id", c.UpdatePartner)
 	v2.DeleteFunc("/:company/partners/:id", c.DeletePartner)
@@ -104,6 +105,7 @@ func init() {
 	// v2.PostFunc("/:company/transaction/voucher/redeem", c.PostVoucherRedeem)
 
 	v2.GetFunc("/:company/transaction", c.GetTransactions)
+	v2.GetFunc("/:company/transaction/holder/:id", c.GetTransactionsByHolder)
 	v2.GetFunc("/:company/transaction/outlet/:id", c.GetTransactionsByOutlet)
 	v2.GetFunc("/:company/transaction/program/:id", c.GetTransactionsByProgram)
 	v2.GetFunc("/:company/transaction/:id", c.GetTransactionByID)
