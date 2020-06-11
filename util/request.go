@@ -290,11 +290,12 @@ func getWhereClauseFromStruct(qp *QueryParam, i interface{}) string {
 					}
 				}
 			case "date":
+				//still hardcode +7 timezone -> need to fix this
 				if len(param) > 1 {
 					for _, v := range param {
 						if tableField == v {
 							dates := strings.Split(value.String(), ",")
-							q += ` BETWEEN '` + dates[0] + ` 00:00:00+07'::timestamp AND '` + dates[1] + ` 23:59:59+07'::timestamp `
+							q += qp.TableAlias + tableField + ` BETWEEN '` + dates[0] + ` 00:00:00+07'::timestamp AND '` + dates[1] + ` 23:59:59+07'::timestamp `
 							break
 						}
 					}
@@ -302,7 +303,7 @@ func getWhereClauseFromStruct(qp *QueryParam, i interface{}) string {
 				} else {
 					if len(tableField) > 0 {
 						dates := strings.Split(value.String(), ",")
-						q += ` BETWEEN '` + dates[0] + ` 00:00:00+07'::timestamp AND '` + dates[1] + ` 23:59:59+07'::timestamp `
+						q += qp.TableAlias + tableField + ` BETWEEN '` + dates[0] + ` 00:00:00+07'::timestamp AND '` + dates[1] + ` 23:59:59+07'::timestamp `
 						break
 					}
 				}
