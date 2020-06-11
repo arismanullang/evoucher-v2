@@ -112,6 +112,7 @@ func init() {
 	v2.GetFunc("/:company/reimburse/list", c.GetCashouts)
 	v2.PostFunc("/:company/reimburse/partner", c.PostCashoutByPartner)
 	v2.GetFunc("/:company/reimburse/voucher/:program_id", c.GetCashoutUsedVoucher)
+	v2.GetFunc("/:company/reimburse/unpaid/", c.GetCashoutsUnpaid)
 
 	// v2.GetFunc("/:company/debug/pprof/", pprof.Index)
 	// v2.GetFunc("/:company/debug/pprof/cmdline", pprof.Cmdline)

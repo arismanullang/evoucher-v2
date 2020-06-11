@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jmoiron/sqlx/types"
 )
@@ -294,7 +295,7 @@ func getWhereClauseFromStruct(qp *QueryParam, i interface{}) string {
 					for _, v := range param {
 						if tableField == v {
 							dates := strings.Split(value.String(), ",")
-							q += ` BETWEEN '` + dates[0] + ` 00:00:00+07'::timestamp AND '` + dates[1] + ` 23:59:59+07'::timestamp `
+							q += qp.TableAlias + tableField + ` BETWEEN '` + dates[0] + ` 00:00:00+07'::timestamp AND '` + dates[1] + ` 23:59:59+07'::timestamp `
 							break
 						}
 					}
@@ -302,7 +303,7 @@ func getWhereClauseFromStruct(qp *QueryParam, i interface{}) string {
 				} else {
 					if len(tableField) > 0 {
 						dates := strings.Split(value.String(), ",")
-						q += ` BETWEEN '` + dates[0] + ` 00:00:00+07'::timestamp AND '` + dates[1] + ` 23:59:59+07'::timestamp `
+						q += qp.TableAlias + tableField + ` BETWEEN '` + dates[0] + ` 00:00:00+07'::timestamp AND '` + dates[1] + ` 23:59:59+07'::timestamp `
 						break
 					}
 				}
@@ -472,3 +473,8 @@ type (
 		obj map[string]interface{}
 	}
 )
+
+type BetweenDate struct {
+	From *time.Time `json:"from"`
+	To   *time.Time `json:"to"`
+}

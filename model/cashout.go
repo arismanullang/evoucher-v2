@@ -11,15 +11,25 @@ type (
 	CashoutSummary struct {
 		Date          *time.Time `db:"date" json:"date,omitempty"`
 		PartnerID     string     `db:"partner_id" json:"partner_id,omitempty"`
+		PartnerName   string     `db:"partner_name" json:"partner_name,omitempty"`
 		UnpaidAmount  float64    `db:"unpaid_amount" json:"unpaid_amount,omitempty"`
 		CashoutAmount float64    `db:"cashout_amount" json:"cashout_amount,omitempty"`
+		TotalAmount   float64    `db:"total_amount" json:"total_amount,omitempty"`
 		VoucherQty    int        `db:"voucher_qty" json:"voucher_aty,omitempty"`
 		Count         int        `db:"count" json:"-"`
+	}
+	CashoutUnpaid struct {
+		Date           *time.Time `db:"date" json:"date,omitempty"`
+		PartnerID      string     `db:"partner_id" json:"partner_id,omitempty"`
+		PartnerName    string     `db:"partner_name" json:"partner_name,omitempty"`
+		TransactionQty int64      `db:"transaction_qty" json:"transaction_qty,omitempty"`
+		TotalValue     float64    `db:"total_value" json:"total_value,omitempty"`
+		Count          int        `db:"count" json:"-"`
 	}
 	//Cashout : represent of cashout table model
 	Cashout struct {
 		ID             string         `db:"id" json:"id,omitempty"`
-		AccountID      string         `db:"account_id" json:"account_id,omitempty"`
+		Holder         string         `db:"holder" json:"holder,omitempty"`
 		Code           string         `db:"code" json:"code,omitempty"`
 		PartnerID      string         `db:"partner_id" json:"partner_id,omitempty"`
 		BankAccount    string         `db:"bank_account" json:"bank_account,omitempty"`
@@ -89,6 +99,42 @@ func getCashouts(qp *util.QueryParam, key, value string) (*Cashouts, bool, error
 	return &resd, next, nil
 }
 
+// GetCashoutUnpaid : list Cashout Unpaid
+func GetCashoutUnpaid(qp *util.QueryParam) ([]CashoutUnpaid, bool, error) {
+	return getCashoutUnpaid(qp, "1", "1")
+}
+
+func getCashoutUnpaid(qp *util.QueryParam, key, value string) ([]CashoutUnpaid, bool, error) {
+	q, err := qp.GetQueryByDefaultStruct(CashoutSummary{})
+	if err != nil {
+		return []CashoutUnpaid{}, false, err
+	}
+	q += `
+			FROM
+				m_cashout_unpaid
+			WHERE 		
+			 ` + key + ` = ? `
+
+	q += qp.GetQuerySort()
+	q += qp.GetQueryLimit()
+	fmt.Println(q)
+	var resd []CashoutUnpaid
+	err = db.Select(&resd, db.Rebind(q), value)
+	if err != nil {
+		return []CashoutUnpaid{}, false, err
+	}
+
+	next := false
+	if len(resd) > qp.Count {
+		next = true
+	}
+	if len(resd) < qp.Count {
+		qp.Count = len(resd)
+	}
+
+	return resd, next, nil
+}
+
 // GetCashouts : list Cashout Summary
 func GetCashoutSummary(qp *util.QueryParam) ([]CashoutSummary, bool, error) {
 	return getCashoutSummary(qp, "1", "1")
@@ -101,16 +147,15 @@ func getCashoutSummary(qp *util.QueryParam, key, value string) ([]CashoutSummary
 	}
 	q += `
 			FROM
-				v_cashout_summary
-			WHERE 
-				status = ?			
-			AND ` + key + ` = ?`
+				m_cashout_summary
+			WHERE 		
+			 ` + key + ` = ? `
 
 	q += qp.GetQuerySort()
 	q += qp.GetQueryLimit()
 	fmt.Println(q)
 	var resd []CashoutSummary
-	err = db.Select(&resd, db.Rebind(q), StatusCreated, value)
+	err = db.Select(&resd, db.Rebind(q), value)
 	if err != nil {
 		return []CashoutSummary{}, false, err
 	}
@@ -163,7 +208,7 @@ func (c *Cashout) Insert() (*[]Cashout, error) {
 	`
 
 	var res []Cashout
-	err = tx.Select(&res, tx.Rebind(q), c.AccountID, c.Code, c.PartnerID, c.BankAccount, c.Amount, c.PaymentMethod, c.CreatedBy, c.UpdatedBy, StatusCreated)
+	err = tx.Select(&res, tx.Rebind(q), c.Holder, c.Code, c.PartnerID, c.BankAccount, c.Amount, c.PaymentMethod, c.CreatedBy, c.UpdatedBy, StatusCreated)
 	if err != nil {
 		return nil, err
 	}
