@@ -64,6 +64,7 @@ func getBanks(k, v string, qp *util.QueryParam) (*Banks, bool, error) {
 				status = ?
 			AND ` + k + ` = ?`
 
+	q = qp.GetQueryWhereClause(q, qp.Q)
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	var resd Banks
 	util.DEBUG(q)

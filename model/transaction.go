@@ -107,8 +107,8 @@ func getTransactions(k, v string, qp *util.QueryParam) (*Transactions, bool, err
 				status = ?
 			AND ` + k + ` = ?`
 
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
+	q = qp.GetQueryWhereClause(q, qp.Q)
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	var resd Transactions
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)
 	if err != nil {

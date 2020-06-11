@@ -93,6 +93,7 @@ func getTags(k, v string, qp *util.QueryParam) (*Tags, bool, error) {
 				status = ?
 			AND ` + k + ` = ?`
 
+	q = qp.GetQueryWhereClause(q, qp.Q)
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	// fmt.Println(q)
 	var resd Tags
@@ -163,9 +164,10 @@ func (t *Tag) Insert() (*Tags, error) {
 					tags
 				WHERE 
 					key = ?
+					AND company_id = ?
 					AND status != ?`
 	var res Tags
-	err = tx.Select(&res, tx.Rebind(q), util.SimplifyKeyString(t.Name), StatusDeleted)
+	err = tx.Select(&res, tx.Rebind(q), util.SimplifyKeyString(t.Name), t.CompanyID, StatusDeleted)
 	if err != nil {
 		return nil, err
 	}
