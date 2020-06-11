@@ -26,6 +26,7 @@ func init() {
 	//voucher
 	v2.PostFunc("/:company/vouchers", ping)
 	v2.Get("/:company/vouchers", c.CheckFuncJWT(c.GetVoucherByHolder, "voucher-view"))
+	v2.Get("/:company/vouchers/program/:id", c.CheckFuncJWT(c.GetVoucherByProgramID, "voucher-view"))
 	v2.GetFunc("/:company/vouchers/:id", ping)
 	v2.PutFunc("/:company/vouchers/:id", ping)
 	v2.Delete("/:company/vouchers/:id", c.CheckFuncJWT(c.DeleteVoucher, "voucher-delete"))
@@ -41,6 +42,7 @@ func init() {
 	//partners == outlets
 	v2.Post("/:company/partners", c.CheckFuncJWT(c.PostPartner, "outlet-create"))
 	v2.Get("/:company/partners", c.CheckFuncJWT(c.GetPartners, "outlet-view"))
+	// v2.GetFunc("/:company/partners", c.GetPartners)
 	v2.Get("/:company/partners/:id", c.CheckFuncJWT(c.GetPartnerByID, "outlet-view"))
 	v2.Put("/:company/partners/:id", c.CheckFuncJWT(c.UpdatePartner, "outlet-edit"))
 	v2.Delete("/:company/partners/:id", c.CheckFuncJWT(c.DeletePartner, "outlet-delete"))
@@ -105,6 +107,7 @@ func init() {
 
 	v2.Get("/:company/transaction", c.CheckFuncJWT(c.GetTransactions, "transaction-view"))
 	v2.Get("/:company/transaction/outlet/:id", c.CheckFuncJWT(c.GetTransactionsByOutlet, "transaction-view"))
+	v2.Get("/:company/transaction/holder/:id", c.CheckFuncJWT(c.GetTransactionsByHolder, "transaction-view"))
 	v2.Get("/:company/transaction/program/:id", c.CheckFuncJWT(c.GetTransactionsByProgram, "transaction-view"))
 	v2.Get("/:company/transaction/:id", c.CheckFuncJWT(c.GetTransactionByID, "transaction-view"))
 
