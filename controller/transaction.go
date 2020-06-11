@@ -8,6 +8,7 @@ import (
 	"github.com/gilkor/evoucher-v2/model"
 	u "github.com/gilkor/evoucher-v2/util"
 	"github.com/go-zoo/bone"
+	"github.com/gorilla/schema"
 	// "github.com/go-zoo/bone"
 )
 
@@ -64,6 +65,20 @@ func GetTransactionsByProgram(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
+type TransactionFilter struct {
+	ID              string `schema:"id" filter:"array"`
+	CompanyId       string `schema:"company_id" filter:"string"`
+	TransactionCode string `schema:"transaction_code" filter:"array"`
+	TotalAmount     string `schema:"total_amount" filter:"number"`
+	Holder          string `schema:"holder" filter:"string"`
+	PartnerId       string `schema:"partner_id" filter:"string"`
+	CreatedBy       string `schema:"created_by" filter:"string"`
+	CreatedAt       string `schema:"created_at" filter:"date"`
+	UpdatedBy       string `schema:"updated_by" filter:"string"`
+	UpdatedAt       string `schema:"updated_at" filter:"date"`
+	Status          string `schema:"status" filter:"enum"`
+}
+
 //GetTransactions : GET list of partners
 func GetTransactions(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
@@ -85,8 +100,22 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 //GetTransactionByID : GET
 func GetTransactionByID(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
-
 	qp := u.NewQueryParam(r)
+
+	qp.SetCompanyID(bone.GetValue(r, "company"))
+
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+
+	var f TransactionFilter
+	if err := decoder.Decode(&f, r.Form); err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	qp.SetFilterModel(f)
+
 	id := bone.GetValue(r, "id")
 	partner, _, err := model.GetTransactionByID(qp, id)
 	if err != nil {
