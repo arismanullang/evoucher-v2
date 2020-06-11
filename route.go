@@ -26,6 +26,7 @@ func init() {
 	//voucher
 	v2.PostFunc("/:company/vouchers", ping)
 	v2.GetFunc("/:company/vouchers", c.GetVoucherByHolder)
+	v2.GetFunc("/:company/vouchers/program/:id", c.GetVoucherByProgramID)
 	v2.GetFunc("/:company/vouchers/:id", ping)
 	v2.PutFunc("/:company/vouchers/:id", ping)
 	v2.DeleteFunc("/:company/vouchers/:id", c.DeleteVoucher)

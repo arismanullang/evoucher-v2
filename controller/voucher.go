@@ -544,3 +544,35 @@ func DeleteVoucher(w http.ResponseWriter, r *http.Request) {
 	res.SetResponse(response)
 	res.JSON(w, res, http.StatusOK)
 }
+
+// GetVoucherByProgramID : get list of vouchers by programID
+func GetVoucherByProgramID(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	qp := u.NewQueryParam(r)
+
+	// qp.SetCompanyID(bone.GetValue(r, "company"))
+	programID := bone.GetValue(r, "id")
+
+	// var decoder = schema.NewDecoder()
+	// decoder.IgnoreUnknownKeys(true)
+
+	// var f ProgramFilter
+	// if err := decoder.Decode(&f, r.Form); err != nil {
+	// 	res.SetError(JSONErrFatal.SetArgs(err.Error()))
+	// 	res.JSON(w, res, JSONErrFatal.Status)
+	// 	return
+	// }
+
+	// qp.SetFilterModel(f)
+
+	vouchers, next, err := model.GetVouchersByProgramID(programID, qp)
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	res.SetResponse(vouchers)
+	res.SetNewPagination(r, qp.Page, next, (vouchers)[0].Count)
+	res.JSON(w, res, http.StatusOK)
+}
