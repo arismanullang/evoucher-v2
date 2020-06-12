@@ -28,6 +28,7 @@ type (
 		Status               string             `db:"status" json:"status"`
 		TransactionDetailsDB types.JSONText     `db:"transaction_details" json:"-"`
 		TransactionDetails   TransactionDetails `json:"transaction_details,omitempty"`
+		Count                int                `db:"count" json:"-"`
 	}
 	Transactions      []Transaction
 	TransactionDetail struct {
