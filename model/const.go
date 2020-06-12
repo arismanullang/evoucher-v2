@@ -49,7 +49,8 @@ var (
 	// ErrorInvalidToken :
 	ErrorInvalidToken = errors.New("Invalid Token")
 	// ErrorExpiredToken :
-	ErrorExpiredToken = errors.New("Token has expired")
+	ErrorExpiredToken  = errors.New("Token has expired")
+	ErrorTokenNotFound = errors.New("Token not found")
 
 	// ErrorMaxAssignByDay :
 	ErrorMaxAssignByDay = errors.New("You have reach the maximum limit of voucher today, try again tomorrow")
