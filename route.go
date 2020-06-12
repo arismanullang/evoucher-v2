@@ -131,9 +131,9 @@ func init() {
 	v2.Get("/:company/template/:name", c.CheckFuncJWT(c.GetTemplateByName, "blast-view"))
 
 	// config
-	v2.Get("/:company/config", c.CheckFuncJWT(c.GetConfigs, "setting"))
-	v2.Post("/:company/config/:category", c.CheckFuncJWT(c.SetConfig, "setting"))
-	v2.Put("/:company/config", c.CheckFuncJWT(c.UpdateConfig, "setting"))
+	v2.Get("/:company/config", c.CheckFuncJWT(c.GetConfigs, "setting-view"))
+	v2.Post("/:company/config/:category", c.CheckFuncJWT(c.SetConfig, "setting-create"))
+	v2.Put("/:company/config", c.CheckFuncJWT(c.UpdateConfig, "setting-edit"))
 
 	//public
 	v2.Get("/:company/public/voucher", c.CheckFuncJWT(c.GetVoucherByID, "voucher-view"))
@@ -141,10 +141,10 @@ func init() {
 
 	// GCS
 	v2.Post("/:company/file/upload", c.CheckFuncJWT(c.UploadFile, "file-create"))
-	v2.Get("/:company/file/delete", c.CheckFuncJWT(c.DeleteFile, "file-view"))
+	v2.Get("/:company/file/delete", c.CheckFuncJWT(c.DeleteFile, "file-delete"))
 
-	v2.Get("/:company/accounts", c.CheckFuncJWT(c.GetAccounts, "account-view"))
-	v2.Get("/:company/accounts/:id", c.CheckFuncJWT(c.GetAccountByID, "account-view"))
+	v2.Get("/:company/accounts", c.CheckFuncJWT(c.GetAccounts, "member-view"))
+	v2.Get("/:company/accounts/:id", c.CheckFuncJWT(c.GetAccountByID, "member-view"))
 
 	router = r
 }
