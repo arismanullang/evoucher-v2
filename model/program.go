@@ -183,7 +183,7 @@ func (p *Program) Insert() (*Programs, error) {
 		util.DEBUG(channelID)
 		err = tx.Select(&res, tx.Rebind(q), p.CompanyID, p.Name, p.Type, p.Value, p.Price, p.MaxValue, p.StartDate, p.EndDate,
 			p.Description, p.ImageURL, p.Template, util.StandardizeSpaces(p.Rule.String()), p.State, p.Stock, p.IsReimburse, channelID,
-			util.StandardizeSpaces(p.VoucherFormat.String()), p.CreatedBy, p.UpdatedBy, StatusCreated)
+			util.StandardizeSpaces(p.VoucherFormat.String()), p.CreatedBy, p.CreatedBy, StatusCreated)
 		if err != nil {
 			return nil, err
 		}
@@ -229,6 +229,8 @@ func (p *Program) Update() error {
 					, rule = ?
 					, state = ?
 					, stock = ?
+					, is_reimburse = ?
+					, updated_at = now()
 					, updated_by = ?		
 			WHERE 
 				id = ?
@@ -263,7 +265,7 @@ func (p *Program) Update() error {
 	util.DEBUG(q)
 	var res []Program
 	err = tx.Select(&res, tx.Rebind(q), p.CompanyID, p.Name, p.Type, p.Value, p.Price, p.MaxValue, p.StartDate, p.EndDate,
-		p.Description, p.ImageURL, p.Template, p.Rule, p.State, p.Stock, p.UpdatedBy, p.ID)
+		p.Description, p.ImageURL, p.Template, p.Rule, p.State, p.Stock, p.IsReimburse, p.UpdatedBy, p.ID)
 	if err != nil {
 		return err
 	}

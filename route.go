@@ -25,9 +25,11 @@ func init() {
 
 	//voucher
 	v2.PostFunc("/:company/vouchers", ping)
+
 	v2.Get("/:company/vouchers", c.CheckFuncJWT(c.GetVoucherByHolder, "voucher-view"))
 	v2.Get("/:company/vouchers/program/:id", c.CheckFuncJWT(c.GetVoucherByProgramID, "voucher-view"))
-	v2.GetFunc("/:company/vouchers/:id", ping)
+	v2.Get("/:company/vouchers/:id", c.CheckFuncJWT(c.GetVoucherByID, "voucher-view"))
+
 	v2.PutFunc("/:company/vouchers/:id", ping)
 	v2.Delete("/:company/vouchers/:id", c.CheckFuncJWT(c.DeleteVoucher, "voucher-delete"))
 
@@ -42,7 +44,6 @@ func init() {
 	//partners == outlets
 	v2.Post("/:company/partners", c.CheckFuncJWT(c.PostPartner, "outlet-create"))
 	v2.Get("/:company/partners", c.CheckFuncJWT(c.GetPartners, "outlet-view"))
-	// v2.GetFunc("/:company/partners", c.GetPartners)
 	v2.Get("/:company/partners/:id", c.CheckFuncJWT(c.GetPartnerByID, "outlet-view"))
 	v2.Put("/:company/partners/:id", c.CheckFuncJWT(c.UpdatePartner, "outlet-edit"))
 	v2.Delete("/:company/partners/:id", c.CheckFuncJWT(c.DeletePartner, "outlet-delete"))
@@ -60,11 +61,11 @@ func init() {
 	v2.PostFunc("/:company/outlets/tags/:holder", c.PostPartnerTags)
 
 	// partner/outlet bank
-	v2.Post("/:company/banks/:pid", c.CheckFuncJWT(c.PostBank, "bank-create"))
-	v2.Get("/:company/banks", c.CheckFuncJWT(c.GetBanks, "bank-view"))
-	v2.Get("/:company/banks/:pid", c.CheckFuncJWT(c.GetBankByPartnerID, "bank-view"))
-	v2.Put("/:company/banks/:pid", c.CheckFuncJWT(c.UpdateBank, "bank-edit"))
-	v2.Delete("/:company/banks/:pid", c.CheckFuncJWT(c.DeleteBank, "bank-delete"))
+	v2.Post("/:company/banks/:pid", c.CheckFuncJWT(c.PostBank, "outlet-create"))
+	v2.Get("/:company/banks", c.CheckFuncJWT(c.GetBanks, "outlet-view"))
+	v2.Get("/:company/banks/:pid", c.CheckFuncJWT(c.GetBankByPartnerID, "outlet-view"))
+	v2.Put("/:company/banks/:pid", c.CheckFuncJWT(c.UpdateBank, "outlet-edit"))
+	v2.Delete("/:company/banks/:pid", c.CheckFuncJWT(c.DeleteBank, "outlet-delete"))
 
 	//channel
 	v2.Post("/:company/channels", c.CheckFuncJWT(c.PostChannel, "channel-create"))
@@ -137,7 +138,7 @@ func init() {
 	v2.Put("/:company/config", c.CheckFuncJWT(c.UpdateConfig, "setting-edit"))
 
 	//public
-	v2.Get("/:company/public/voucher", c.CheckFuncJWT(c.GetVoucherByID, "voucher-view"))
+	v2.Get("/:company/public/voucher", c.CheckFuncJWT(c.GetPublicVoucherByID, "voucher-view"))
 	v2.Post("/:company/public/voucher/use", c.CheckFuncJWT(c.PostPublicVoucherUse, "voucher-edit"))
 
 	// GCS

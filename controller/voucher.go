@@ -12,6 +12,31 @@ import (
 	"github.com/jmoiron/sqlx/types"
 )
 
+//GetVoucherByID : get voucher by id
+func GetVoucherByID(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	qp := u.NewQueryParam(r)
+
+	id := bone.GetValue(r, "id")
+
+	vouchers, err := model.GetVoucherByID(id, qp)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	td, err := model.GetTransactionDetailByVoucherID(qp, id)
+	if err == nil {
+		fmt.Println("vouchers = ", td)
+		vouchers.TransactionDetail = td
+	}
+
+	res.SetResponse(vouchers)
+	res.JSON(w, res, http.StatusOK)
+}
+
 //PostVoucherInjectByHolder : Inject voucher by holder
 func PostVoucherInjectByHolder(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
@@ -272,8 +297,8 @@ func PostVoucherAssignHolder(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-//GetVoucherByID : GET list of program and vouchers by voucher_id
-func GetVoucherByID(w http.ResponseWriter, r *http.Request) {
+//GetPublicVoucherByID : GET list of program and vouchers by voucher_id
+func GetPublicVoucherByID(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	qp := u.NewQueryParam(r)
 	qp.Count = -1
@@ -572,7 +597,10 @@ func GetVoucherByProgramID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(vouchers) > 0 {
+		res.SetNewPagination(r, qp.Page, next, (vouchers)[0].Count)
+	}
+
 	res.SetResponse(vouchers)
-	res.SetNewPagination(r, qp.Page, next, (vouchers)[0].Count)
 	res.JSON(w, res, http.StatusOK)
 }
