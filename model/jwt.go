@@ -92,6 +92,9 @@ func VerifyJWT(tokenString string) (*jwt.Token, error) {
 }
 
 func GetSessionDataJWT(tokenString string) (SessionData, error) {
+	if len(tokenString) < 1 {
+		return SessionData{}, ErrorTokenNotFound
+	}
 	token, err := VerifyJWT(tokenString)
 	if err != nil {
 		return SessionData{}, err
