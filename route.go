@@ -133,9 +133,9 @@ func init() {
 	v2.Get("/:company/template/:name", c.CheckFuncJWT(c.GetTemplateByName, "blast-view"))
 
 	// config
-	v2.Get("/:company/config", c.CheckFuncJWT(c.GetConfigs, "setting"))
-	v2.Post("/:company/config/:category", c.CheckFuncJWT(c.SetConfig, "setting"))
-	v2.Put("/:company/config", c.CheckFuncJWT(c.UpdateConfig, "setting"))
+	v2.Get("/:company/config", c.CheckFuncJWT(c.GetConfigs, "setting-view"))
+	v2.Post("/:company/config/:category", c.CheckFuncJWT(c.SetConfig, "setting-create"))
+	v2.Put("/:company/config", c.CheckFuncJWT(c.UpdateConfig, "setting-edit"))
 
 	//public
 	v2.Get("/:company/public/voucher", c.CheckFuncJWT(c.GetPublicVoucherByID, "voucher-view"))
