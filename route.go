@@ -25,28 +25,30 @@ func init() {
 
 	//voucher
 	v2.PostFunc("/:company/vouchers", ping)
-	v2.GetFunc("/:company/vouchers", c.GetVoucherByHolder)
+	v2.Get("/:company/vouchers", c.CheckFuncJWT(c.GetVoucherByHolder, "voucher-view"))
+	v2.Get("/:company/vouchers/program/:id", c.CheckFuncJWT(c.GetVoucherByProgramID, "voucher-view"))
 	v2.GetFunc("/:company/vouchers/:id", ping)
 	v2.PutFunc("/:company/vouchers/:id", ping)
-	v2.DeleteFunc("/:company/vouchers/:id", c.DeleteVoucher)
+	v2.Delete("/:company/vouchers/:id", c.CheckFuncJWT(c.DeleteVoucher, "voucher-delete"))
 
 	//programs
-	v2.PostFunc("/:company/programs", c.PostProgram)
-	v2.GetFunc("/:company/programs", c.GetProgram)
-	v2.GetFunc("/:company/programs/:id", c.GetProgramByID)
-	v2.PostFunc("/:company/programs/image/:id", c.UploadProgramImage)
-	v2.PutFunc("/:company/programs/:id", c.UpdateProgram)
-	v2.DeleteFunc("/:company/programs/:id", c.DeleteProgram)
+	v2.Post("/:company/programs", c.CheckFuncJWT(c.PostProgram, "program-create"))
+	v2.Get("/:company/programs", c.CheckFuncJWT(c.GetProgram, "program-view"))
+	v2.Get("/:company/programs/:id", c.CheckFuncJWT(c.GetProgramByID, "program-view"))
+	v2.Post("/:company/programs/image/:id", c.CheckFuncJWT(c.UploadProgramImage, "program-edit"))
+	v2.Put("/:company/programs/:id", c.CheckFuncJWT(c.UpdateProgram, "program-edit"))
+	v2.Delete("/:company/programs/:id", c.CheckFuncJWT(c.DeleteProgram, "program_delete"))
 
 	//partners == outlets
-	v2.PostFunc("/:company/partners", c.PostPartner)
+	v2.Post("/:company/partners", c.CheckFuncJWT(c.PostPartner, "outlet-create"))
 	v2.Get("/:company/partners", c.CheckFuncJWT(c.GetPartners, "outlet-view"))
-	v2.GetFunc("/:company/partners/:id", c.GetPartnerByID)
-	v2.PutFunc("/:company/partners/:id", c.UpdatePartner)
-	v2.DeleteFunc("/:company/partners/:id", c.DeletePartner)
+	// v2.GetFunc("/:company/partners", c.GetPartners)
+	v2.Get("/:company/partners/:id", c.CheckFuncJWT(c.GetPartnerByID, "outlet-view"))
+	v2.Put("/:company/partners/:id", c.CheckFuncJWT(c.UpdatePartner, "outlet-edit"))
+	v2.Delete("/:company/partners/:id", c.CheckFuncJWT(c.DeletePartner, "outlet-delete"))
 
-	v2.GetFunc("/:company/partners/tags/:tag_id", c.GetPartnerByTags)
-	v2.PostFunc("/:company/partners/tags/:holder", c.PostPartnerTags)
+	v2.Get("/:company/partners/tags/:tag_id", c.CheckFuncJWT(c.GetPartnerByTags, "tag-view"))
+	v2.Post("/:company/partners/tags/:holder", c.CheckFuncJWT(c.PostPartnerTags, "tag-edit"))
 
 	v2.PostFunc("/:company/outlets", c.PostPartner)
 	v2.GetFunc("/:company/outlets", c.GetPartners)
@@ -58,34 +60,34 @@ func init() {
 	v2.PostFunc("/:company/outlets/tags/:holder", c.PostPartnerTags)
 
 	// partner/outlet bank
-	v2.PostFunc("/:company/banks/:pid", c.PostBank)
-	v2.GetFunc("/:company/banks", c.GetBanks)
-	v2.GetFunc("/:company/banks/:pid", c.GetBankByPartnerID)
-	v2.PutFunc("/:company/banks/:pid", c.UpdateBank)
-	v2.DeleteFunc("/:company/banks/:pid", c.DeleteBank)
+	v2.Post("/:company/banks/:pid", c.CheckFuncJWT(c.PostBank, "bank-create"))
+	v2.Get("/:company/banks", c.CheckFuncJWT(c.GetBanks, "bank-view"))
+	v2.Get("/:company/banks/:pid", c.CheckFuncJWT(c.GetBankByPartnerID, "bank-view"))
+	v2.Put("/:company/banks/:pid", c.CheckFuncJWT(c.UpdateBank, "bank-edit"))
+	v2.Delete("/:company/banks/:pid", c.CheckFuncJWT(c.DeleteBank, "bank-delete"))
 
 	//channel
-	v2.PostFunc("/:company/channels", c.PostChannel)
-	v2.GetFunc("/:company/channels", c.GetChannels)
-	v2.GetFunc("/:company/channels/:id", c.GetChannelByID)
-	v2.PutFunc("/:company/channels/:id", c.UpdateChannel)
-	v2.DeleteFunc("/:company/channels/:id", c.DeleteChannel)
+	v2.Post("/:company/channels", c.CheckFuncJWT(c.PostChannel, "channel-create"))
+	v2.Get("/:company/channels", c.CheckFuncJWT(c.GetChannels, "channel-view"))
+	v2.Get("/:company/channels/:id", c.CheckFuncJWT(c.GetChannelByID, "channel-view"))
+	v2.Put("/:company/channels/:id", c.CheckFuncJWT(c.UpdateChannel, "channel-edit"))
+	v2.Delete("/:company/channels/:id", c.CheckFuncJWT(c.DeleteChannel, "channel-delete"))
 
 	//users
 	// v2.GetFunc("/:company/login", ping)
 
 	//tags
-	v2.PostFunc("/:company/tags", c.PostTag)
-	v2.GetFunc("/:company/tags", c.GetTags)
-	v2.GetFunc("/:company/tags/:id", c.GetTagByID)
-	v2.GetFunc("/:company/tags/key/:key", c.GetTagByKey)
-	v2.GetFunc("/:company/tags/category/:category", c.GetTagByKey)
+	v2.Post("/:company/tags", c.CheckFuncJWT(c.PostTag, "tag-create"))
+	v2.Get("/:company/tags", c.CheckFuncJWT(c.GetTags, "tag-view"))
+	v2.Get("/:company/tags/:id", c.CheckFuncJWT(c.GetTagByID, "tag-view"))
+	v2.Get("/:company/tags/key/:key", c.CheckFuncJWT(c.GetTagByKey, "tag-view"))
+	v2.Get("/:company/tags/category/:category", c.CheckFuncJWT(c.GetTagByKey, "tag-view"))
 	// v2.GetFunc("/:company/tags/category/:key", c.GetTagByKey)
-	v2.PutFunc("/:company/tags/:id", c.UpdateTag)
-	v2.DeleteFunc("/:company/tags/:id", c.DeleteTag)
+	v2.Put("/:company/tags/:id", c.CheckFuncJWT(c.UpdateTag, "tag-edit"))
+	v2.Delete("/:company/tags/:id", c.CheckFuncJWT(c.DeleteTag, "tag-delete"))
 
-	v2.PostFunc("/:company/tags/assign/:id", c.PostObjectTags)
-	v2.PostFunc("/:company/tags/assign", c.PostObjectTags)
+	v2.Post("/:company/tags/assign/:id", c.CheckFuncJWT(c.PostObjectTags, "tag-edit"))
+	v2.Post("/:company/tags/assign", c.CheckFuncJWT(c.PostObjectTags, "tag-edit"))
 
 	//customers
 	v2.PostFunc("/:company/customers", c.PostCustomer)
@@ -97,22 +99,23 @@ func init() {
 	v2.PostFunc("/:company/customers/tags/:id", c.PostCustomerTags)
 
 	//transaction voucher
-	v2.PostFunc("/:company/transaction/voucher/assign", c.PostVoucherAssignHolder)
-	v2.PostFunc("/:company/transaction/voucher/inject/holder", c.PostVoucherInjectByHolder)
-	v2.PostFunc("/:company/transaction/voucher/claim", c.PostVoucherClaim)
-	v2.PostFunc("/:company/transaction/voucher/use", c.PostVoucherUse)
+	v2.Post("/:company/transaction/voucher/assign", c.CheckFuncJWT(c.PostVoucherAssignHolder, "transaction-create"))
+	v2.Post("/:company/transaction/voucher/inject/holder", c.CheckFuncJWT(c.PostVoucherInjectByHolder, "transaction-create"))
+	v2.Post("/:company/transaction/voucher/claim", c.CheckFuncJWT(c.PostVoucherClaim, "transaction-edit"))
+	v2.Post("/:company/transaction/voucher/use", c.CheckFuncJWT(c.PostVoucherUse, "transaction-edit"))
 	// v2.PostFunc("/:company/transaction/voucher/redeem", c.PostVoucherRedeem)
 
-	v2.GetFunc("/:company/transaction", c.GetTransactions)
-	v2.GetFunc("/:company/transaction/outlet/:id", c.GetTransactionsByOutlet)
-	v2.GetFunc("/:company/transaction/program/:id", c.GetTransactionsByProgram)
-	v2.GetFunc("/:company/transaction/:id", c.GetTransactionByID)
+	v2.Get("/:company/transaction", c.CheckFuncJWT(c.GetTransactions, "transaction-view"))
+	v2.Get("/:company/transaction/outlet/:id", c.CheckFuncJWT(c.GetTransactionsByOutlet, "transaction-view"))
+	v2.Get("/:company/transaction/holder/:id", c.CheckFuncJWT(c.GetTransactionsByHolder, "transaction-view"))
+	v2.Get("/:company/transaction/program/:id", c.CheckFuncJWT(c.GetTransactionsByProgram, "transaction-view"))
+	v2.Get("/:company/transaction/:id", c.CheckFuncJWT(c.GetTransactionByID, "transaction-view"))
 
-	v2.GetFunc("/:company/reimburse/summary", c.GetCashoutSummary)
-	v2.GetFunc("/:company/reimburse/list", c.GetCashouts)
-	v2.PostFunc("/:company/reimburse/partner", c.PostCashoutByPartner)
-	v2.GetFunc("/:company/reimburse/voucher/:program_id", c.GetCashoutUsedVoucher)
-	v2.GetFunc("/:company/reimburse/unpaid/", c.GetCashoutsUnpaid)
+	v2.Get("/:company/reimburse/summary", c.CheckFuncJWT(c.GetCashoutSummary, "reimburse-view"))
+	v2.Get("/:company/reimburse/list", c.CheckFuncJWT(c.GetCashouts, "reimburse-view"))
+	v2.Post("/:company/reimburse/partner", c.CheckFuncJWT(c.PostCashoutByPartner, "reimburse-create"))
+	v2.Get("/:company/reimburse/voucher/:program_id", c.CheckFuncJWT(c.GetCashoutUsedVoucher, "reimburse-create"))
+	v2.Get("/:company/reimburse/unpaid/", c.CheckFuncJWT(c.GetCashoutsUnpaid, "reimburse-create"))
 
 	// v2.GetFunc("/:company/debug/pprof/", pprof.Index)
 	// v2.GetFunc("/:company/debug/pprof/cmdline", pprof.Cmdline)
@@ -121,28 +124,28 @@ func init() {
 	// v2.GetFunc("/:company/debug/pprof/trace", pprof.Trace)
 
 	// blast
-	v2.GetFunc("/:company/blasts", c.GetBlasts)
-	v2.GetFunc("/:company/blasts/:id", c.GetBlastByID)
-	v2.PostFunc("/:company/blasts/create", c.CreateEmailBlast)
-	v2.PostFunc("/:company/blasts/send/:id", c.SendEmailBlast)
-	v2.GetFunc("/:company/blasts/template/:id", c.GetBlastsTemplate)
-	v2.GetFunc("/:company/template/:name", c.GetTemplateByName)
+	v2.Get("/:company/blasts", c.CheckFuncJWT(c.GetBlasts, "blast-view"))
+	v2.Get("/:company/blasts/:id", c.CheckFuncJWT(c.GetBlastByID, "blast-view"))
+	v2.Post("/:company/blasts/create", c.CheckFuncJWT(c.CreateEmailBlast, "blast-create"))
+	v2.Post("/:company/blasts/send/:id", c.CheckFuncJWT(c.SendEmailBlast, "blast-edit"))
+	v2.Get("/:company/blasts/template/:id", c.CheckFuncJWT(c.GetBlastsTemplate, "blast-view"))
+	v2.Get("/:company/template/:name", c.CheckFuncJWT(c.GetTemplateByName, "blast-view"))
 
 	// config
-	v2.GetFunc("/:company/config", c.GetConfigs)
-	v2.PostFunc("/:company/config/:category", c.SetConfig)
-	v2.PutFunc("/:company/config", c.UpdateConfig)
+	v2.Get("/:company/config", c.CheckFuncJWT(c.GetConfigs, "setting"))
+	v2.Post("/:company/config/:category", c.CheckFuncJWT(c.SetConfig, "setting"))
+	v2.Put("/:company/config", c.CheckFuncJWT(c.UpdateConfig, "setting"))
 
 	//public
-	v2.GetFunc("/:company/public/voucher", c.GetVoucherByID)
-	v2.PostFunc("/:company/public/voucher/use", c.PostPublicVoucherUse)
+	v2.Get("/:company/public/voucher", c.CheckFuncJWT(c.GetVoucherByID, "voucher-view"))
+	v2.Post("/:company/public/voucher/use", c.CheckFuncJWT(c.PostPublicVoucherUse, "voucher-edit"))
 
 	// GCS
-	v2.PostFunc("/:company/file/upload", c.UploadFile)
-	v2.GetFunc("/:company/file/delete", c.DeleteFile)
+	v2.Post("/:company/file/upload", c.CheckFuncJWT(c.UploadFile, "file-create"))
+	v2.Get("/:company/file/delete", c.CheckFuncJWT(c.DeleteFile, "file-view"))
 
-	v2.GetFunc("/:company/accounts", c.GetAccounts)
-	v2.GetFunc("/:company/accounts/:id", c.GetAccountByID)
+	v2.Get("/:company/accounts", c.CheckFuncJWT(c.GetAccounts, "account-view"))
+	v2.Get("/:company/accounts/:id", c.CheckFuncJWT(c.GetAccountByID, "account-view"))
 
 	router = r
 }

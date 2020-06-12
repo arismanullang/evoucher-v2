@@ -7,6 +7,7 @@ import (
 	"github.com/gilkor/evoucher-v2/model"
 	u "github.com/gilkor/evoucher-v2/util"
 	"github.com/go-zoo/bone"
+	"github.com/gorilla/schema"
 )
 
 //PostTag : POST Tag data
@@ -31,11 +32,30 @@ func PostTag(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusCreated)
 }
 
+type TagFilter struct {
+	ID   string `schema:"id" filter:"string"`
+	Name string `schema:"name" filter:"string"`
+}
+
 //GetTags : GET list of Tags
 func GetTags(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
-
 	qp := u.NewQueryParam(r)
+
+	qp.SetCompanyID(bone.GetValue(r, "company"))
+
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+
+	var f TagFilter
+	if err := decoder.Decode(&f, r.Form); err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	qp.SetFilterModel(f)
+
 	tags, next, err := model.GetTags(qp)
 	if err != nil {
 		u.DEBUG(err)

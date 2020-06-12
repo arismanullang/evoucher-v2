@@ -50,8 +50,18 @@ func GetPartners(qp *util.QueryParam) (*Partners, bool, error) {
 }
 
 //GetPartnerByID : get partner by specified ID
-func GetPartnerByID(qp *util.QueryParam, id string) (*Partners, bool, error) {
-	return getPartners("id", id, qp)
+func GetPartnerByID(qp *util.QueryParam, id string) (*Partner, bool, error) {
+	partners, _, err := getPartners("id", id, qp)
+	if err != nil {
+		return &Partner{}, false, err
+	}
+
+	if len(*partners) > 0 {
+		partner := (*partners)[0]
+		return &partner, false, nil
+	}
+
+	return &Partner{}, false, ErrorResourceNotFound
 }
 
 func getPartners(k, v string, qp *util.QueryParam) (*Partners, bool, error) {

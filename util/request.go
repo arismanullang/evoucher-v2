@@ -291,6 +291,7 @@ func getWhereClauseFromStruct(qp *QueryParam, i interface{}) string {
 					}
 				}
 			case "date":
+				//still hardcode +7 timezone -> need to fix this
 				if len(param) > 1 {
 					for _, v := range param {
 						if tableField == v {
