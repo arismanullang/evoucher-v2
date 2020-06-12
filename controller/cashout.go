@@ -55,6 +55,49 @@ func GetCashouts(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
+type (
+	CashoutSummaryFilter struct {
+		Date        *time.Time `schema:"date" filter:"date"`
+		PartnerID   string     `schema:"partner_id" filter:"array"`
+		PartnerName string     `schema:"partner_name" filter:"string"`
+	}
+	CashoutUnpaidFilter struct {
+		Date        *time.Time `schema:"date" filter:"date"`
+		PartnerID   string     `schema:"partner_id" filter:"array"`
+		PartnerName string     `schema:"partner_name" filter:"string"`
+	}
+)
+
+//GetCashoutsUnpaid : GET list of Unpaid Cashouts
+func GetCashoutsUnpaid(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	qp := u.NewQueryParam(r)
+
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+
+	var f CashoutUnpaidFilter
+	if err := decoder.Decode(&f, r.Form); err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	qp.SetFilterModel(f)
+
+	cashout, next, err := model.GetCashoutUnpaid(qp)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(cashout)
+	res.SetNewPagination(r, qp.Page, next, cashout[0].Count)
+	res.JSON(w, res, http.StatusOK)
+}
+
 //GetCashoutSummary : GET list of Cashout Summary
 func GetCashoutSummary(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
@@ -78,7 +121,28 @@ func GetCashoutUsedVoucher(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
-	program_id := bone.GetValue(r, "id")
+	program_id := bone.GetValue(r, "program_id")
+	//add QueryParam Filter for used voucher
+	//qp.
+
+	usedVouchers, next, err := model.GetVouchersByProgramID(program_id, qp)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(r)
+	res.SetNewPagination(r, qp.Page, next, usedVouchers[0].Count)
+	res.JSON(w, res, http.StatusOK)
+}
+
+//GetCashoutUsedVoucherDate : GET list of Cashout Summary by date
+func GetCashoutUsedVoucherDate(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	qp := u.NewQueryParam(r)
+	program_id := bone.GetValue(r, "program_id")
 	//add QueryParam Filter for used voucher
 	//qp.
 

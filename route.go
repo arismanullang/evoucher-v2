@@ -115,6 +115,7 @@ func init() {
 	v2.Get("/:company/reimburse/list", c.CheckFuncJWT(c.GetCashouts, "reimburse-view"))
 	v2.Post("/:company/reimburse/partner", c.CheckFuncJWT(c.PostCashoutByPartner, "reimburse-create"))
 	v2.Get("/:company/reimburse/voucher/:program_id", c.CheckFuncJWT(c.GetCashoutUsedVoucher, "reimburse-create"))
+	v2.Get("/:company/reimburse/unpaid/", c.CheckFuncJWT(c.GetCashoutsUnpaid, "reimburse-create"))
 
 	// v2.GetFunc("/:company/debug/pprof/", pprof.Index)
 	// v2.GetFunc("/:company/debug/pprof/cmdline", pprof.Cmdline)
