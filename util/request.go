@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jmoiron/sqlx/types"
 )
@@ -473,3 +474,8 @@ type (
 		obj map[string]interface{}
 	}
 )
+
+type BetweenDate struct {
+	From *time.Time `json:"from"`
+	To   *time.Time `json:"to"`
+}
