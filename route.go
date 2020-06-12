@@ -143,10 +143,10 @@ func init() {
 
 	// GCS
 	v2.Post("/:company/file/upload", c.CheckFuncJWT(c.UploadFile, "file-create"))
-	v2.Get("/:company/file/delete", c.CheckFuncJWT(c.DeleteFile, "file-view"))
+	v2.Get("/:company/file/delete", c.CheckFuncJWT(c.DeleteFile, "file-delete"))
 
-	v2.Get("/:company/accounts", c.CheckFuncJWT(c.GetAccounts, "account-view"))
-	v2.Get("/:company/accounts/:id", c.CheckFuncJWT(c.GetAccountByID, "account-view"))
+	v2.Get("/:company/accounts", c.CheckFuncJWT(c.GetAccounts, "member-view"))
+	v2.Get("/:company/accounts/:id", c.CheckFuncJWT(c.GetAccountByID, "member-view"))
 
 	router = r
 }
