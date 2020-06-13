@@ -87,8 +87,9 @@ func SetConfig(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseMultipartForm(2 << 20)
 	if err != nil {
-		res.SetError(JSONErrBadRequest.SetArgs(err.Error(), "err parse form"))
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
+		return
 	}
 
 	configs := model.Configs{}
@@ -100,6 +101,8 @@ func SetConfig(w http.ResponseWriter, r *http.Request) {
 				res.JSON(w, res, JSONErrFatal.Status)
 				return
 			}
+
+			fmt.Println("key-> "+key+" = ", sourceURL)
 
 			configs = append(configs, model.Config{
 				CompanyID: companyID,
