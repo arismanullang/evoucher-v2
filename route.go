@@ -100,11 +100,9 @@ func init() {
 	v2.PostFunc("/:company/customers/tags/:id", c.PostCustomerTags)
 
 	//transaction voucher
-	v2.Post("/:company/transaction/voucher/assign", c.CheckFuncJWT(c.PostVoucherAssignHolder, "transaction-create"))
 	v2.Post("/:company/transaction/voucher/inject/holder", c.CheckFuncJWT(c.PostVoucherInjectByHolder, "transaction-create"))
 	v2.Post("/:company/transaction/voucher/claim", c.CheckFuncJWT(c.PostVoucherClaim, "transaction-edit"))
 	v2.Post("/:company/transaction/voucher/use", c.CheckFuncJWT(c.PostVoucherUse, "transaction-edit"))
-	// v2.PostFunc("/:company/transaction/voucher/redeem", c.PostVoucherRedeem)
 
 	v2.Get("/:company/transaction", c.CheckFuncJWT(c.GetTransactions, "transaction-view"))
 	v2.Get("/:company/transaction/outlet/:id", c.CheckFuncJWT(c.GetTransactionsByOutlet, "transaction-view"))
