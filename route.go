@@ -138,8 +138,8 @@ func init() {
 	v2.Put("/:company/config", c.CheckFuncJWT(c.UpdateConfig, "setting-edit"))
 
 	//public
-	v2.Get("/:company/public/voucher", c.CheckFuncJWT(c.GetPublicVoucherByID, "voucher-view"))
-	v2.Post("/:company/public/voucher/use", c.CheckFuncJWT(c.PostPublicVoucherUse, "voucher-edit"))
+	v2.GetFunc("/:company/public/voucher", c.GetPublicVoucherByID)
+	v2.PostFunc("/:company/public/voucher/use", c.PostPublicVoucherUse)
 
 	// GCS
 	v2.Post("/:company/file/upload", c.CheckFuncJWT(c.UploadFile, "file-create"))
