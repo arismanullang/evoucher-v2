@@ -2,8 +2,6 @@ package model
 
 import (
 	"bytes"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/gilkor/evoucher-v2/util"
@@ -22,6 +20,9 @@ type (
 		ValidAt           *time.Time         `json:"valid_at,omitempty" db:"valid_at"`
 		ExpiredAt         *time.Time         `json:"expired_at,omitempty" db:"expired_at"`
 		State             string             `json:"state,omitempty" db:"state"`
+		ProgramName       string             `json:"program_name,omitempty" db:"program_name"`
+		ProgramValue      float64            `json:"program_value,omitempty" db:"program_value"`
+		ProgramMaxValue   float64            `json:"program_max_value,omitempty" db:"program_max_value"`
 		CreatedBy         string             `json:"created_by,omitempty" db:"created_by"`
 		CreatedAt         *time.Time         `json:"created_at,omitempty" db:"created_at"`
 		UpdatedBy         string             `json:"updated_by,omitempty" db:"updated_by"`
@@ -142,7 +143,7 @@ func getVouchers(key, value string, qp *util.QueryParam) ([]Voucher, bool, error
 	}
 	q += `
 			FROM
-				vouchers voucher
+				m_vouchers voucher
 			WHERE 
 				status = ?			
 			AND ` + key + ` = ?`
@@ -478,70 +479,4 @@ func (vs *Vouchers) Insert() (*Vouchers, error) {
 	tx.Commit()
 	*vs = res
 	return &res, nil
-}
-
-// AssignVoucher :
-func (ivr *InjectVoucherByHolderRequest) AssignVoucher() (string, error) {
-	tx, err := db.Beginx()
-	if err != nil {
-		return "", err
-	}
-	defer tx.Rollback()
-
-	var finalResult []string
-	var totalVoucherIDs []string
-
-	for _, assignData := range ivr.AssignData {
-
-		q := `
-		UPDATE vouchers
-		SET
-			holder = ?
-			, holder_detail = ?
-			, reference_no = ?
-			, valid_at = ?
-			, expired_at = ?
-			, updated_by = ?
-			, updated_at = ?
-			, assigned_at = ?
-		WHERE
-			id IN (`
-
-		for idx, value := range assignData.VoucherIDs {
-			if idx != 0 {
-				q += `,`
-			}
-			q += `'` + value + `'`
-		}
-
-		q += `) 
-			AND holder = ''
-			AND program_id = ?
-		RETURNING id
-	`
-		var result []string
-		totalVoucherIDs = append(totalVoucherIDs, assignData.VoucherIDs...)
-		if err := tx.Select(&result, tx.Rebind(q), ivr.HolderID, ivr.HolderDetail, ivr.ReferenceNo, assignData.ValidAt, assignData.ExpiredAt, ivr.UpdatedBy, time.Now(), time.Now(), assignData.ProgramID); err != nil {
-			return "", err
-		}
-
-		//add result to finalResult for checking purpose
-		if len(result) > 0 {
-			finalResult = append(finalResult, result...)
-		} else if len(result) == 0 {
-			return strings.Join(totalVoucherIDs, ","), ErrorResourceNotFound
-		}
-	}
-
-	// check if all requested vouchers is accepted
-	if len(finalResult) != len(totalVoucherIDs) {
-		return "", ErrorInternalServer
-	}
-
-	if err := tx.Commit(); err != nil {
-		fmt.Println("err commit = ", err)
-		return "", err
-	}
-
-	return strings.Join(finalResult, ","), nil
 }

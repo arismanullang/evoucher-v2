@@ -136,6 +136,9 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 func GetTransactionByID(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	qp := u.NewQueryParam(r)
+	//add new queryparam for voucher -> without companyID
+	voucherQP := u.NewQueryParam(r)
+	voucherQP.Count = -1
 
 	qp.SetCompanyID(bone.GetValue(r, "company"))
 
@@ -204,7 +207,7 @@ func GetTransactionByID(w http.ResponseWriter, r *http.Request) {
 
 		listPrograms = append(listPrograms, tmpProgram)
 
-		voucher, err := model.GetVoucherByID(trxDetail.VoucherId, qp)
+		voucher, err := model.GetVoucherByID(trxDetail.VoucherId, voucherQP)
 		if err != nil {
 			res.SetError(JSONErrFatal.SetArgs(err.Error()))
 			res.JSON(w, res, JSONErrFatal.Status)

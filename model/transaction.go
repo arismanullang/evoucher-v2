@@ -95,10 +95,10 @@ func GetTransactionByPartner(qp *util.QueryParam, val string) (*Transactions, bo
 }
 
 //GetTransactionDetailByVoucherID : get transaction detail by voucher ID
-func GetTransactionDetailByVoucherID(qp *util.QueryParam, voucherID string) (*TransactionDetail, error) {
+func GetTransactionDetailByVoucherID(qp *util.QueryParam, voucherID string) (*[]TransactionDetail, error) {
 	q, err := qp.GetQueryByDefaultStruct(TransactionDetail{})
 	if err != nil {
-		return &TransactionDetail{}, err
+		return &[]TransactionDetail{}, err
 	}
 
 	q += `
@@ -111,14 +111,14 @@ func GetTransactionDetailByVoucherID(qp *util.QueryParam, voucherID string) (*Tr
 	var resd []TransactionDetail
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, voucherID)
 	if err != nil {
-		return &TransactionDetail{}, err
+		return &[]TransactionDetail{}, err
 	}
 
 	if len(resd) < 1 {
-		return &TransactionDetail{}, ErrorResourceNotFound
+		return &[]TransactionDetail{}, ErrorResourceNotFound
 	}
 
-	return &resd[0], nil
+	return &resd, nil
 }
 
 func getTransactions(k, v string, qp *util.QueryParam) (*Transactions, bool, error) {

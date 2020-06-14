@@ -353,7 +353,7 @@ func DeleteBank(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := bone.GetValue(r, "id")
-	p := model.Bank{ID: id}
+	p := model.Bank{ID: u.StringToInt(id)}
 	p.UpdatedBy = accData.AccountID
 	if err := p.Delete(); err != nil {
 		res.SetError(JSONErrResourceNotFound)
@@ -361,4 +361,25 @@ func DeleteBank(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	res.JSON(w, res, http.StatusOK)
+}
+
+func GetPartnerBanks(r *http.Request, partnerID string) ([]model.Bank, error) {
+
+	qp := u.NewQueryParam(r)
+	partner, _, err := model.GetPartnerByID(qp, partnerID)
+	if err != nil {
+		return []model.Bank{}, err
+	}
+
+	partnerBank := []model.Bank{}
+	err = json.Unmarshal([]byte(partner.Banks), &partnerBank)
+	if err != nil {
+		return []model.Bank{}, err
+	}
+
+	if len(partnerBank) < 1 {
+		return []model.Bank{}, model.ErrorBankNotFound
+	}
+
+	return partnerBank, nil
 }
