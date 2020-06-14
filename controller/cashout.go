@@ -13,18 +13,18 @@ import (
 
 type (
 	CashoutFilter struct {
-		ID            string     `schema:"id" filter:"array"`
-		AccountID     string     `schema:"account_id" filter:"string"`
-		Code          string     `schema:"code" filter:"string"`
-		PartnerID     string     `schema:"partner_id" filter:"string"`
-		BankAccount   string     `schema:"bank_account" filter:"string"`
-		Amount        float64    `schema:"amount" filter:"string"`
-		PaymentMethod string     `schema:"payment_method" filter:"string"`
-		CreatedAt     *time.Time `schema:"created_at" filter:"string"`
-		CreatedBy     string     `schema:"created_by" filter:"string"`
-		UpdatedAt     *time.Time `schema:"updated_at" filter:"date"`
-		UpdatedBy     string     `schema:"updated_by" filter:"date"`
-		Status        string     `schema:"status" filter:"enum"`
+		ID            string `schema:"id" filter:"array"`
+		AccountID     string `schema:"account_id" filter:"string"`
+		Code          string `schema:"code" filter:"string"`
+		PartnerID     string `schema:"partner_id" filter:"string"`
+		BankAccount   string `schema:"bank_account" filter:"string"`
+		Amount        string `schema:"amount" filter:"string"`
+		PaymentMethod string `schema:"payment_method" filter:"string"`
+		CreatedAt     string `schema:"created_at" filter:"date"`
+		CreatedBy     string `schema:"created_by" filter:"string"`
+		UpdatedAt     string `schema:"updated_at" filter:"date"`
+		UpdatedBy     string `schema:"updated_by" filter:"string"`
+		Status        string `schema:"status" filter:"enum"`
 	}
 
 	//CashoutRequest : cashout request struct
@@ -53,15 +53,17 @@ func GetCashouts(w http.ResponseWriter, r *http.Request) {
 
 	qp.SetFilterModel(f)
 
-	Cashouts, next, err := model.GetCashouts(qp)
+	cashouts, next, err := model.GetCashouts(qp)
 	if err != nil {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
-	res.SetResponse(Cashouts)
-	res.SetNewPagination(r, qp.Page, next, (*Cashouts)[0].Count)
+	res.SetResponse(&cashouts)
+	if len(*cashouts) > 0 {
+		res.SetNewPagination(r, qp.Page, next, (*cashouts)[0].Count)
+	}
 	res.JSON(w, res, http.StatusOK)
 }
 

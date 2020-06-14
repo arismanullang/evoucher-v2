@@ -113,13 +113,18 @@ func getCashouts(qp *util.QueryParam, key, value string) (*Cashouts, bool, error
 				status = ?			
 			AND ` + key + ` = ?`
 
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
+	q = qp.GetQueryWhereClause(q, qp.Q)
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
+
 	fmt.Println(q)
 	var resd Cashouts
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, value)
 	if err != nil {
 		return &Cashouts{}, false, err
+	}
+
+	if len(resd) < 1 {
+		return &Cashouts{}, false, nil
 	}
 
 	next := false
