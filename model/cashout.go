@@ -347,7 +347,7 @@ func GetUnpaidReimburse(qp *util.QueryParam, startDate, endDate string) ([]Unpai
 			p.description AS partner_description,
 			p.emails AS partner_emails,
 			p.company_id,
-			count(t.id) AS transaction_qty,
+			count(DISTINCT t.id) AS transaction_qty,
 			COALESCE(sum(
 				CASE
 					WHEN v.state = 'used'::voucher_state THEN 1
