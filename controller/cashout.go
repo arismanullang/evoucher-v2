@@ -38,8 +38,12 @@ type (
 //GetCashouts : GET list of Cashouts
 func GetCashouts(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
-
 	qp := u.NewQueryParam(r)
+
+	// startDate := r.FormValue("start_date")
+	// endDate := r.FormValue("end_date")
+
+	qp.SetCompanyID(bone.GetValue(r, "company"))
 
 	var decoder = schema.NewDecoder()
 	decoder.IgnoreUnknownKeys(true)

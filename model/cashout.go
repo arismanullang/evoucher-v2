@@ -130,6 +130,7 @@ func getCashouts(qp *util.QueryParam, key, value string) (*Cashouts, bool, error
 	next := false
 	if len(resd) > qp.Count {
 		next = true
+		resd = resd[:qp.Count]
 	}
 	if len(resd) < qp.Count {
 		qp.Count = len(resd)
