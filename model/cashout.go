@@ -230,7 +230,6 @@ func (c *Cashout) Insert() (*[]Cashout, error) {
 					, amount 
 					, payment_method
 					, created_by
-					, updated_at
 					, updated_by
 					, status
 				)
