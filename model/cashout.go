@@ -60,6 +60,7 @@ type (
 		ID              string         `db:"id" json:"id,omitempty"`
 		CompanyID       string         `db:"company_id" json:"company_id,omitempty"`
 		Code            string         `db:"code" json:"code,omitempty"`
+		PartnerName     string         `db:"partner_name" json:"partner_name,omitempty"`
 		PartnerID       string         `db:"partner_id" json:"partner_id,omitempty"`
 		BankName        string         `db:"bank_name" json:"bank_name,omitempty"`
 		BankCompanyName string         `db:"bank_company_name" json:"bank_company_name"`
@@ -107,7 +108,7 @@ func getCashouts(qp *util.QueryParam, key, value string) (*Cashouts, bool, error
 	}
 	q += `
 			FROM
-				cashout
+				m_cashouts cashout
 			WHERE 
 				status = ?			
 			AND ` + key + ` = ?`

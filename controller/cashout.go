@@ -227,14 +227,14 @@ func GetCashoutByID(w http.ResponseWriter, r *http.Request) {
 
 	qp := u.NewQueryParam(r)
 	id := bone.GetValue(r, "id")
-	Cashout, _, err := model.GetCashoutByID(id, qp)
+	cashout, _, err := model.GetCashoutByID(id, qp)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
 		return
 	}
 
-	res.SetResponse(Cashout)
+	res.SetResponse(cashout)
 	res.JSON(w, res, http.StatusOK)
 }
 

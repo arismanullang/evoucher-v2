@@ -116,11 +116,12 @@ func init() {
 	// v2.Get("/:company/reimburse/voucher/:program_id", c.CheckFuncJWT(c.GetCashoutUsedVoucher, "reimburse-create"))
 	// v2.Get("/:company/reimburse/unpaid/", c.CheckFuncJWT(c.GetCashoutsUnpaid, "reimburse-create"))
 
-	v2.Get("/:company/reimburse/unpaid", c.CheckFuncJWT(c.GetUnpaidReimburse, "transaction-view"))
+	v2.Get("/:company/reimburse/unpaid/list", c.CheckFuncJWT(c.GetUnpaidReimburse, "transaction-view"))
 	v2.Get("/:company/reimburse/unpaid/vouchers/:partner_id", c.CheckFuncJWT(c.GetUnpaidVouchersByOutlet, "transaction-view"))
 	v2.Post("/:company/reimburse/create", c.CheckFuncJWT(c.PostCashout, "transaction-view"))
 	v2.Get("/:company/reimburse/vouchers/:id", c.CheckFuncJWT(c.GetCashoutVouchers, "transaction-view"))
-	// v2.Get("/:company/reimburse/list", c.CheckFuncJWT(c.GetCashouts, "reimburse-view"))
+	v2.Get("/:company/reimburse/:id", c.CheckFuncJWT(c.GetCashoutByID, "transaction-view"))
+	v2.Get("/:company/reimburse/paid/list", c.CheckFuncJWT(c.GetCashouts, "transaction-view"))
 	// v2.Post("/:company/reimburse/void", c.CheckFuncJWT(c.VoidCashout, "reimburse-view"))
 	// v2.Put("/:company/reimburse/approval", c.CheckFuncJWT(c.PutApproveReimburse, "reimburse-approval"))
 
