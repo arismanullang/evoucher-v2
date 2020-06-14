@@ -2,12 +2,13 @@ package controller
 
 import (
 	"encoding/json"
+	"net/http"
+	"time"
+
 	"github.com/gilkor/evoucher-v2/model"
 	u "github.com/gilkor/evoucher-v2/util"
 	"github.com/go-zoo/bone"
 	"github.com/gorilla/schema"
-	"net/http"
-	"time"
 )
 
 type CashoutFilter struct {
@@ -95,6 +96,59 @@ func GetCashoutsUnpaid(w http.ResponseWriter, r *http.Request) {
 
 	res.SetResponse(cashout)
 	res.SetNewPagination(r, qp.Page, next, cashout[0].Count)
+	res.JSON(w, res, http.StatusOK)
+}
+
+//GetUnpaidReimburse : GET list of unpaid reimburse
+func GetUnpaidReimburse(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	qp := u.NewQueryParam(r)
+
+	startDate := r.FormValue("start_date")
+	endDate := r.FormValue("end_date")
+
+	qp.SetCompanyID(bone.GetValue(r, "company"))
+
+	unpaidReimburse, next, err := model.GetUnpaidReimburse(qp, startDate, endDate)
+	if err != nil && err != model.ErrorResourceNotFound {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	list := []model.UnpaidReimburse{}
+	list = append(list, unpaidReimburse...)
+	res.SetResponse(list)
+	if len(unpaidReimburse) > 0 {
+		res.SetNewPagination(r, qp.Page, next, (unpaidReimburse)[0].Count)
+	}
+	res.JSON(w, res, http.StatusOK)
+}
+
+//GetUnpaidVouchersByOutlet : GET list of unpaid vouchers by outlet
+func GetUnpaidVouchersByOutlet(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	qp := u.NewQueryParam(r)
+
+	partnerID := bone.GetValue(r, "partner_id")
+	startDate := r.FormValue("start_date")
+	endDate := r.FormValue("end_date")
+
+	qp.SetCompanyID(bone.GetValue(r, "company"))
+
+	unpaidVouchers, next, err := model.GetUnpaidVouchersByOutlet(qp, partnerID, startDate, endDate)
+	if err != nil && err != model.ErrorResourceNotFound {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	list := []model.UnpaidVouchers{}
+	list = append(list, unpaidVouchers...)
+	res.SetResponse(list)
+	if len(unpaidVouchers) > 0 {
+		res.SetNewPagination(r, qp.Page, next, (unpaidVouchers)[0].Count)
+	}
 	res.JSON(w, res, http.StatusOK)
 }
 
