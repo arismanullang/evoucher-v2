@@ -57,21 +57,25 @@ type (
 
 	//Cashout : represent of cashout table model
 	Cashout struct {
-		ID             string         `db:"id" json:"id,omitempty"`
-		Holder         string         `db:"holder" json:"holder,omitempty"`
-		Code           string         `db:"code" json:"code,omitempty"`
-		PartnerID      string         `db:"partner_id" json:"partner_id,omitempty"`
-		BankAccount    string         `db:"bank_account" json:"bank_account,omitempty"`
-		Amount         float64        `db:"amount" json:"amount,omitempty"`
-		PaymentMethod  string         `db:"payment_method" json:"payment_method,omitempty"`
-		CreatedAt      *time.Time     `db:"created_at" json:"created_at,omitempty"`
-		CreatedBy      string         `db:"created_by" json:"created_by,omitempty"`
-		UpdatedAt      *time.Time     `db:"updated_at" json:"updated_at,omitempty"`
-		UpdatedBy      string         `db:"updated_by" json:"updated_by,omitempty"`
-		Status         string         `db:"status" json:"status,omitempty"`
-		CashoutDetails CashoutDetails `json:"cashout_details,omitempty"`
-		Count          int            `db:"count" json:"-"`
+		ID              string         `db:"id" json:"id,omitempty"`
+		CompanyID       string         `db:"company_id" json:"company_id,omitempty"`
+		Code            string         `db:"code" json:"code,omitempty"`
+		PartnerID       string         `db:"partner_id" json:"partner_id,omitempty"`
+		BankName        string         `db:"bank_name" json:"bank_name,omitempty"`
+		BankCompanyName string         `db:"bank_company_name" json:"bank_company_name"`
+		BankAccount     string         `db:"bank_account" json:"bank_account,omitempty"`
+		ReferenceNo     string         `db:"reference_no" json:"reference_no,omitempty"`
+		Amount          float64        `db:"amount" json:"amount,omitempty"`
+		PaymentMethod   string         `db:"payment_method" json:"payment_method,omitempty"`
+		CreatedAt       *time.Time     `db:"created_at" json:"created_at,omitempty"`
+		CreatedBy       string         `db:"created_by" json:"created_by,omitempty"`
+		UpdatedAt       *time.Time     `db:"updated_at" json:"updated_at,omitempty"`
+		UpdatedBy       string         `db:"updated_by" json:"updated_by,omitempty"`
+		Status          string         `db:"status" json:"status,omitempty"`
+		CashoutDetails  CashoutDetails `json:"cashout_details,omitempty"`
+		Count           int            `db:"count" json:"-"`
 	}
+
 	Cashouts      []Cashout
 	CashoutDetail struct {
 		ID        int        `db:"id" json:"id,omitempty"`
@@ -208,27 +212,32 @@ func (c *Cashout) Insert() (*[]Cashout, error) {
 	}
 	defer tx.Rollback()
 
-	q := `INSERT INTO 
-				cashouts 
-				( 
-					account_id
+	q := `INSERT INTO cashouts ( 
+					company_id
 					, code 
 					, partner_id 
+					, bank_name
+					, bank_company_name
 					, bank_account
+					, reference_no
 					, amount 
 					, payment_method
 					, created_by
+					, updated_at
 					, updated_by
 					, status
 				)
 			VALUES 
-				( ?, ?, ?, ?, ?, ?, ?, ?)
+				( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 			RETURNING
 				id
-				, account_id
+				, company_id
 				, code 
 				, partner_id 
+				, bank_name
+				, bank_company_name
 				, bank_account
+				, reference_no
 				, amount 
 				, payment_method
 				, created_by
@@ -237,7 +246,7 @@ func (c *Cashout) Insert() (*[]Cashout, error) {
 	`
 
 	var res []Cashout
-	err = tx.Select(&res, tx.Rebind(q), c.Holder, c.Code, c.PartnerID, c.BankAccount, c.Amount, c.PaymentMethod, c.CreatedBy, c.UpdatedBy, StatusCreated)
+	err = tx.Select(&res, tx.Rebind(q), c.CompanyID, c.Code, c.PartnerID, c.BankName, c.BankCompanyName, c.BankAccount, c.ReferenceNo, c.Amount, c.PaymentMethod, c.CreatedBy, c.UpdatedBy, StatusCreated)
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +259,7 @@ func (c *Cashout) Insert() (*[]Cashout, error) {
 			RETURNING
 				id, cashout_id, voucher_id, created_by, updated_by, status
 	`
-		err = tx.Select(&res, tx.Rebind(q), cd.CashoutID, cd.VoucherID, cd.CreatedBy, cd.UpdatedBy, StatusCreated)
+		err = tx.Select(&resd, tx.Rebind(q), res[0].ID, cd.VoucherID, cd.CreatedBy, cd.UpdatedBy, StatusCreated)
 		if err != nil {
 			return nil, err
 		}

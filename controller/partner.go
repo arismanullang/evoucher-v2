@@ -353,7 +353,7 @@ func DeleteBank(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := bone.GetValue(r, "id")
-	p := model.Bank{ID: id}
+	p := model.Bank{ID: u.StringToInt(id)}
 	p.UpdatedBy = accData.AccountID
 	if err := p.Delete(); err != nil {
 		res.SetError(JSONErrResourceNotFound)

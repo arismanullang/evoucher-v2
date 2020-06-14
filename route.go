@@ -110,11 +110,21 @@ func init() {
 	v2.Get("/:company/transaction/program/:id", c.CheckFuncJWT(c.GetTransactionsByProgram, "transaction-view"))
 	v2.Get("/:company/transaction/:id", c.CheckFuncJWT(c.GetTransactionByID, "transaction-view"))
 
-	v2.Get("/:company/reimburse/summary", c.CheckFuncJWT(c.GetCashoutSummary, "reimburse-view"))
-	v2.Get("/:company/reimburse/list", c.CheckFuncJWT(c.GetCashouts, "reimburse-view"))
-	v2.Post("/:company/reimburse/partner", c.CheckFuncJWT(c.PostCashoutByPartner, "reimburse-create"))
-	v2.Get("/:company/reimburse/voucher/:program_id", c.CheckFuncJWT(c.GetCashoutUsedVoucher, "reimburse-create"))
-	v2.Get("/:company/reimburse/unpaid/", c.CheckFuncJWT(c.GetCashoutsUnpaid, "reimburse-create"))
+	// v2.Get("/:company/reimburse/summary", c.CheckFuncJWT(c.GetCashoutSummary, "reimburse-view"))
+	// v2.Get("/:company/reimburse/list", c.CheckFuncJWT(c.GetCashouts, "reimburse-view"))
+	// v2.Post("/:company/reimburse/partner", c.CheckFuncJWT(c.PostCashoutByPartner, "reimburse-create"))
+	// v2.Get("/:company/reimburse/voucher/:program_id", c.CheckFuncJWT(c.GetCashoutUsedVoucher, "reimburse-create"))
+	// v2.Get("/:company/reimburse/unpaid/", c.CheckFuncJWT(c.GetCashoutsUnpaid, "reimburse-create"))
+
+	v2.Get("/:company/reimburse/unpaid", c.CheckFuncJWT(c.GetUnpaidReimburse, "transaction-view"))
+	v2.Get("/:company/reimburse/unpaid/vouchers/:partner_id", c.CheckFuncJWT(c.GetUnpaidVouchersByOutlet, "transaction-view"))
+	v2.Post("/:company/reimburse/create", c.CheckFuncJWT(c.PostCashout, "transaction-view"))
+	// v2.Get("/:company/reimburse/invoice", c.CheckFuncJWT(c.GetReimburseInvoice, "reimburse-view"))
+	// v2.Get("/:company/reimburse/list", c.CheckFuncJWT(c.GetCashouts, "reimburse-view"))
+	// v2.Post("/:company/reimburse/void", c.CheckFuncJWT(c.VoidCashout, "reimburse-view"))
+	// v2.Put("/:company/reimburse/approval", c.CheckFuncJWT(c.PutApproveReimburse, "reimburse-approval"))
+
+	// v2.GetFunc("/:company/vouchers/report", c.GetVoucherReport)
 
 	// v2.GetFunc("/:company/debug/pprof/", pprof.Index)
 	// v2.GetFunc("/:company/debug/pprof/cmdline", pprof.Cmdline)

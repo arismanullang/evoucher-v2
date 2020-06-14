@@ -30,7 +30,8 @@ func GetVoucherByID(w http.ResponseWriter, r *http.Request) {
 	td, err := model.GetTransactionDetailByVoucherID(qp, id)
 	if err == nil {
 		fmt.Println("vouchers = ", td)
-		vouchers.TransactionDetail = td
+		transactionDetail := *td
+		vouchers.TransactionDetail = &transactionDetail[0]
 	}
 
 	res.SetResponse(vouchers)
@@ -434,20 +435,9 @@ func GetVoucherByProgramID(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	qp := u.NewQueryParam(r)
 
+	// need to check program company_id
 	// qp.SetCompanyID(bone.GetValue(r, "company"))
 	programID := bone.GetValue(r, "id")
-
-	// var decoder = schema.NewDecoder()
-	// decoder.IgnoreUnknownKeys(true)
-
-	// var f ProgramFilter
-	// if err := decoder.Decode(&f, r.Form); err != nil {
-	// 	res.SetError(JSONErrFatal.SetArgs(err.Error()))
-	// 	res.JSON(w, res, JSONErrFatal.Status)
-	// 	return
-	// }
-
-	// qp.SetFilterModel(f)
 
 	vouchers, next, err := model.GetVouchersByProgramID(programID, qp)
 	if err != nil {

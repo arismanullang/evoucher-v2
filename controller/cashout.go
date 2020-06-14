@@ -11,20 +11,29 @@ import (
 	"github.com/gorilla/schema"
 )
 
-type CashoutFilter struct {
-	ID            string     `schema:"id" filter:"array"`
-	AccountID     string     `schema:"account_id" filter:"string"`
-	Code          string     `schema:"code" filter:"string"`
-	PartnerID     string     `schema:"partner_id" filter:"string"`
-	BankAccount   string     `schema:"bank_account" filter:"string"`
-	Amount        float64    `schema:"amount" filter:"string"`
-	PaymentMethod string     `schema:"payment_method" filter:"string"`
-	CreatedAt     *time.Time `schema:"created_at" filter:"string"`
-	CreatedBy     string     `schema:"created_by" filter:"string"`
-	UpdatedAt     *time.Time `schema:"updated_at" filter:"date"`
-	UpdatedBy     string     `schema:"updated_by" filter:"date"`
-	Status        string     `schema:"status" filter:"enum"`
-}
+type (
+	CashoutFilter struct {
+		ID            string     `schema:"id" filter:"array"`
+		AccountID     string     `schema:"account_id" filter:"string"`
+		Code          string     `schema:"code" filter:"string"`
+		PartnerID     string     `schema:"partner_id" filter:"string"`
+		BankAccount   string     `schema:"bank_account" filter:"string"`
+		Amount        float64    `schema:"amount" filter:"string"`
+		PaymentMethod string     `schema:"payment_method" filter:"string"`
+		CreatedAt     *time.Time `schema:"created_at" filter:"string"`
+		CreatedBy     string     `schema:"created_by" filter:"string"`
+		UpdatedAt     *time.Time `schema:"updated_at" filter:"date"`
+		UpdatedBy     string     `schema:"updated_by" filter:"date"`
+		Status        string     `schema:"status" filter:"enum"`
+	}
+
+	//CashoutRequest : cashout request struct
+	CashoutRequest struct {
+		PartnerID   string `json:"partner_id"`
+		ReferenceNo string `json:"reference_no"`
+		VoucherIDs  string `json:"voucher_ids"`
+	}
+)
 
 //GetCashouts : GET list of Cashouts
 func GetCashouts(w http.ResponseWriter, r *http.Request) {
@@ -243,11 +252,21 @@ func DeleteCashout(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-//PostCashoutByPartner : POST Cashout by partner
-func PostCashoutByPartner(w http.ResponseWriter, r *http.Request) {
+//PostCashout : POST Cashout by partner
+func PostCashout(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
+	token := r.FormValue("token")
 
-	var req model.Cashout
+	companyID := bone.GetValue(r, "company")
+
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
+
+	var req CashoutRequest
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&req); err != nil {
 		u.DEBUG(err)
@@ -255,13 +274,116 @@ func PostCashoutByPartner(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	// reqCashout.ID = bone.GetValue(r, "holder")
-	response, err := req.Insert()
+
+	qp := u.NewQueryParam(r)
+	partner, _, err := model.GetPartnerByID(qp, req.PartnerID)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	// err = partner.Banks.Unmarshal(&partnerBank)
+	partnerBank := []model.Bank{}
+	err = json.Unmarshal([]byte(partner.Banks), &partnerBank)
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	if len(partnerBank) < 1 {
+		res.SetError(JSONErrBadRequest.SetArgs("Please complete the outlet bank details"))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	seedCode := u.RandomizeString(u.DEFAULT_LENGTH, u.NUMERALS)
+	csCode := seedCode + u.RandomizeString(u.CASHOUT_CODE_LENGTH, u.NUMERALS)
+
+	cashout := model.Cashout{
+		CompanyID:       companyID,
+		Code:            csCode,
+		PartnerID:       req.PartnerID,
+		BankName:        partnerBank[0].BankName,
+		BankCompanyName: partnerBank[0].CompanyName,
+		BankAccount:     partnerBank[0].BankAccount,
+		ReferenceNo:     req.ReferenceNo,
+		PaymentMethod:   "bank_transfer",
+		CreatedBy:       accData.AccountID,
+		UpdatedBy:       accData.AccountID,
+	}
+
+	var f model.VoucherFilter
+	f.ID = req.VoucherIDs
+	voucherQP := u.NewQueryParam(r)
+	voucherQP.SetFilterModel(f)
+	voucherQP.Count = -1
+	voucherQP.SetFilterModel(f)
+
+	listVoucherByID, _, err := model.GetVouchers(voucherQP)
+	if err != nil {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
+
+	// transactionDetails, err := model.GetTransactionDetailByVoucherID(qp, req.VoucherIDs)
+	// if err != nil {
+	// 	res.SetError(JSONErrResourceNotFound)
+	// 	res.JSON(w, res, JSONErrResourceNotFound.Status)
+	// 	return
+	// }
+
+	// for _, td := range *transactionDetails{
+	// 	transaction, err := model.GetTransactionByID(qp, td.TransactionId)
+	// 	if err != nil {
+	// Do we need to check if the vouchers used in the right partner?
+	// 	}
+	// }
+
+	totalAmount := float64(0)
+
+	for _, voucher := range listVoucherByID {
+		if voucher.State == model.VoucherStatePaid {
+			res.SetError(JSONErrBadRequest.SetArgs("voucher has been paid"))
+			res.JSON(w, res, JSONErrBadRequest.Status)
+			return
+		} else if voucher.State == model.VoucherStateCreated {
+			res.SetError(JSONErrBadRequest.SetArgs("voucher has not been used yet"))
+			res.JSON(w, res, JSONErrBadRequest.Status)
+			return
+		}
+
+		totalAmount += voucher.ProgramMaxValue
+
+		cashoutDetail := model.CashoutDetail{
+			VoucherID: voucher.ID,
+			CreatedBy: accData.AccountID,
+			UpdatedBy: accData.AccountID,
+		}
+		cashout.CashoutDetails = append(cashout.CashoutDetails, cashoutDetail)
+	}
+
+	cashout.Amount = totalAmount
+
+	response, err := cashout.Insert()
 	if err != nil {
 		u.DEBUG(err)
 		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
+	} else {
+		for _, voucher := range listVoucherByID {
+			voucher.State = model.VoucherStatePaid
+			voucher.UpdatedBy = accData.AccountID
+			if err = voucher.Update(); err != nil {
+				u.DEBUG(err)
+				res.SetErrorWithDetail(JSONErrFatal, err)
+				res.JSON(w, res, JSONErrFatal.Status)
+				return
+			}
+		}
 	}
 
 	res.SetResponse(response)

@@ -20,6 +20,9 @@ type (
 		ValidAt           *time.Time         `json:"valid_at,omitempty" db:"valid_at"`
 		ExpiredAt         *time.Time         `json:"expired_at,omitempty" db:"expired_at"`
 		State             string             `json:"state,omitempty" db:"state"`
+		ProgramName       string             `json:"program_name,omitempty" db:"program_name"`
+		ProgramValue      float64            `json:"program_value,omitempty" db:"program_value"`
+		ProgramMaxValue   float64            `json:"program_max_value,omitempty" db:"program_max_value"`
 		CreatedBy         string             `json:"created_by,omitempty" db:"created_by"`
 		CreatedAt         *time.Time         `json:"created_at,omitempty" db:"created_at"`
 		UpdatedBy         string             `json:"updated_by,omitempty" db:"updated_by"`
@@ -140,7 +143,7 @@ func getVouchers(key, value string, qp *util.QueryParam) ([]Voucher, bool, error
 	}
 	q += `
 			FROM
-				vouchers voucher
+				m_vouchers voucher
 			WHERE 
 				status = ?			
 			AND ` + key + ` = ?`
