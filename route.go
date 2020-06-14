@@ -119,7 +119,7 @@ func init() {
 	v2.Get("/:company/reimburse/unpaid", c.CheckFuncJWT(c.GetUnpaidReimburse, "transaction-view"))
 	v2.Get("/:company/reimburse/unpaid/vouchers/:partner_id", c.CheckFuncJWT(c.GetUnpaidVouchersByOutlet, "transaction-view"))
 	v2.Post("/:company/reimburse/create", c.CheckFuncJWT(c.PostCashout, "transaction-view"))
-	// v2.Get("/:company/reimburse/invoice", c.CheckFuncJWT(c.GetReimburseInvoice, "reimburse-view"))
+	v2.Get("/:company/reimburse/vouchers/:id", c.CheckFuncJWT(c.GetCashoutVouchers, "transaction-view"))
 	// v2.Get("/:company/reimburse/list", c.CheckFuncJWT(c.GetCashouts, "reimburse-view"))
 	// v2.Post("/:company/reimburse/void", c.CheckFuncJWT(c.VoidCashout, "reimburse-view"))
 	// v2.Put("/:company/reimburse/approval", c.CheckFuncJWT(c.PutApproveReimburse, "reimburse-approval"))

@@ -41,8 +41,8 @@ type (
 		Count              int            `db:"count" json:"-"`
 	}
 
-	// UnpaidVouchers : unpaid vouchers
-	UnpaidVouchers struct {
+	// VoucherTransaction : voucher with transaction detail
+	VoucherTransaction struct {
 		VoucherID       string    `db:"voucher_id" json:"voucher_id,omitempty"`
 		VoucherCode     string    `db:"voucher_code" json:"voucher_code,omitempty"`
 		TransactionID   string    `db:"transaction_id" json:"transaction_id,omitempty"`
@@ -389,7 +389,7 @@ func GetUnpaidReimburse(qp *util.QueryParam, startDate, endDate string) ([]Unpai
 }
 
 // GetUnpaidVouchersByOutlet : Get list of unpaid vouchers by outlet transaction
-func GetUnpaidVouchersByOutlet(qp *util.QueryParam, partnerID, startDate, endDate string) ([]UnpaidVouchers, bool, error) {
+func GetUnpaidVouchersByOutlet(qp *util.QueryParam, partnerID, startDate, endDate string) ([]VoucherTransaction, bool, error) {
 
 	q := `
 		SELECT DISTINCT
@@ -419,8 +419,58 @@ func GetUnpaidVouchersByOutlet(qp *util.QueryParam, partnerID, startDate, endDat
 
 	util.DEBUG("query struct :", q)
 
-	var resv []UnpaidVouchers
+	var resv []VoucherTransaction
 	if err := db.Select(&resv, db.Rebind(q), qp.CompanyID, partnerID, startDate, endDate); err != nil {
+		fmt.Println(err.Error())
+		return resv, false, err
+	}
+
+	if len(resv) < 1 {
+		return resv, false, ErrorResourceNotFound
+	}
+
+	next := false
+	if len(resv) > qp.Count {
+		next = true
+		resv = resv[:qp.Count]
+	}
+	if len(resv) < qp.Count {
+		qp.Count = len(resv)
+	}
+	return resv, next, nil
+}
+
+// GetCashoutVouchers : Get list of paid vouchers by cashoutID
+func GetCashoutVouchers(qp *util.QueryParam, cashoutID string) ([]VoucherTransaction, bool, error) {
+
+	q := `
+		SELECT
+			v.id as voucher_id
+			, v.code as voucher_code
+			, p.name as program_name
+			, p.value as program_value
+			, p.max_value as program_max_value
+			, v.created_at as claimed_at
+			, t.created_at as used_at
+			, t.id as transaction_id
+			, t.transaction_code as transaction_code
+		FROM vouchers v
+			JOIN transaction_details td ON v.id = td.voucher_id
+			JOIN transactions t ON t.id = td.transaction_id
+			JOIN programs p ON v.program_id = p.id
+			JOIN cashout_details cd ON cd.voucher_id = v.id
+			JOIN cashouts c ON c.id = cd.cashout_id
+		WHERE v.state = 'paid'
+			AND p.company_id = ?
+			AND c.id = ?
+			`
+
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
+
+	util.DEBUG("query struct :", q)
+
+	var resv []VoucherTransaction
+	if err := db.Select(&resv, db.Rebind(q), qp.CompanyID, cashoutID); err != nil {
 		fmt.Println(err.Error())
 		return resv, false, err
 	}

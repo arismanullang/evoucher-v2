@@ -362,3 +362,24 @@ func DeleteBank(w http.ResponseWriter, r *http.Request) {
 	}
 	res.JSON(w, res, http.StatusOK)
 }
+
+func GetPartnerBanks(r *http.Request, partnerID string) ([]model.Bank, error) {
+
+	qp := u.NewQueryParam(r)
+	partner, _, err := model.GetPartnerByID(qp, partnerID)
+	if err != nil {
+		return []model.Bank{}, err
+	}
+
+	partnerBank := []model.Bank{}
+	err = json.Unmarshal([]byte(partner.Banks), &partnerBank)
+	if err != nil {
+		return []model.Bank{}, err
+	}
+
+	if len(partnerBank) < 1 {
+		return []model.Bank{}, model.ErrorBankNotFound
+	}
+
+	return partnerBank, nil
+}

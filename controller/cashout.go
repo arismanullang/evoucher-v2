@@ -152,7 +152,7 @@ func GetUnpaidVouchersByOutlet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	list := []model.UnpaidVouchers{}
+	list := []model.VoucherTransaction{}
 	list = append(list, unpaidVouchers...)
 	res.SetResponse(list)
 	if len(unpaidVouchers) > 0 {
@@ -275,25 +275,9 @@ func PostCashout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	qp := u.NewQueryParam(r)
-	partner, _, err := model.GetPartnerByID(qp, req.PartnerID)
-	if err != nil {
-		res.SetError(JSONErrFatal.SetArgs(err.Error()))
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
-
-	// err = partner.Banks.Unmarshal(&partnerBank)
-	partnerBank := []model.Bank{}
-	err = json.Unmarshal([]byte(partner.Banks), &partnerBank)
+	partnerBank, err := GetPartnerBanks(r, req.PartnerID)
 	if err != nil {
 		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
-
-	if len(partnerBank) < 1 {
-		res.SetError(JSONErrBadRequest.SetArgs("Please complete the outlet bank details"))
 		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
 	}
@@ -317,7 +301,6 @@ func PostCashout(w http.ResponseWriter, r *http.Request) {
 	var f model.VoucherFilter
 	f.ID = req.VoucherIDs
 	voucherQP := u.NewQueryParam(r)
-	voucherQP.SetFilterModel(f)
 	voucherQP.Count = -1
 	voucherQP.SetFilterModel(f)
 
@@ -378,14 +361,38 @@ func PostCashout(w http.ResponseWriter, r *http.Request) {
 			voucher.State = model.VoucherStatePaid
 			voucher.UpdatedBy = accData.AccountID
 			if err = voucher.Update(); err != nil {
-				u.DEBUG(err)
-				res.SetErrorWithDetail(JSONErrFatal, err)
-				res.JSON(w, res, JSONErrFatal.Status)
+				res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+				res.JSON(w, res, JSONErrBadRequest.Status)
 				return
 			}
 		}
 	}
 
 	res.SetResponse(response)
+	res.JSON(w, res, http.StatusCreated)
+}
+
+//GetCashoutVouchers : Get Reimburse Invoice / Detail
+func GetCashoutVouchers(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	companyID := bone.GetValue(r, "company")
+	id := bone.GetValue(r, "id")
+	qp := u.NewQueryParam(r)
+
+	qp.SetCompanyID(companyID)
+
+	voucherTransactions, next, err := model.GetCashoutVouchers(qp, id)
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	if len(voucherTransactions) > 0 {
+		res.SetNewPagination(r, qp.Page, next, (voucherTransactions)[0].Count)
+	}
+
+	res.SetResponse(voucherTransactions)
 	res.JSON(w, res, http.StatusCreated)
 }

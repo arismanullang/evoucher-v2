@@ -71,4 +71,6 @@ var (
 	ErrorVoucherPaid        = errors.New("Voucher has been paid")
 	ErrorVoucherExpired     = errors.New("Voucher has expired")
 	ErrorVoucherInvalidTime = errors.New("Voucher can't be used at current time, please check the terms & conditions")
+
+	ErrorBankNotFound = errors.New("Please complete the outlet bank details")
 )
