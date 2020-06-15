@@ -12,6 +12,7 @@ type (
 	Partner struct {
 		ID          string         `db:"id" json:"id,omitempty"`
 		Name        string         `db:"name" json:"name,omitempty"`
+		Emails      *string        `db:"emails" json:"emails,omitempty"`
 		Description types.JSONText `db:"description" json:"description,omitempty"`
 		CompanyID   string         `db:"company_id" json:"company_id,omitempty"`
 		CreatedAt   *time.Time     `db:"created_at" json:"created_at,omitempty"`
@@ -151,11 +152,11 @@ func (p *Partner) Insert() (*Partners, error) {
 	defer tx.Rollback()
 
 	q := `INSERT INTO 
-				partners ( name, description, company_id, created_by, updated_by, status)
+				partners ( name, description, emails, company_id, created_by, updated_by, status)
 			VALUES 
-				( ?, ?, ?, ?, ?, ?)
+				( ?, ?, ?, ?, ?, ?, ?)
 			RETURNING
-				id, name, description, company_id, created_at, created_by, updated_at, updated_by, status
+				id, name, description, emails, company_id, created_at, created_by, updated_at, updated_by, status
 	`
 	// bank, err := json.Marshal(p.Bank)
 	// if err != nil {
@@ -163,7 +164,7 @@ func (p *Partner) Insert() (*Partners, error) {
 	// }
 	var res Partners
 	util.DEBUG(q)
-	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Description, p.CompanyID, p.CreatedBy, p.CreatedBy, StatusCreated)
+	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Description, p.Emails, p.CompanyID, p.CreatedBy, p.CreatedBy, StatusCreated)
 	if err != nil {
 		util.DEBUG(`la1-->`, err)
 		return nil, err
@@ -189,16 +190,17 @@ func (p *Partner) Update() error {
 				partners 
 			SET
 				name = ?,
+				emails = ?,
 				description = ?,
 				updated_at = now(),
 				updated_by = ?				
 			WHERE 
 				id = ?	
 			RETURNING
-			id, name, created_at, created_by, updated_at, updated_by, status
+			id, name, emails, created_at, created_by, updated_at, updated_by, status
 	`
 	var res []Partner
-	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Description, p.UpdatedBy, p.ID)
+	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Emails, p.Description, p.UpdatedBy, p.ID)
 	if err != nil {
 		return err
 	}

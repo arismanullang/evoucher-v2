@@ -15,6 +15,15 @@ import (
 func PostPartner(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
+	token := r.FormValue("token")
+
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
+
 	var reqPartner model.Partner
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqPartner); err != nil {
@@ -22,6 +31,8 @@ func PostPartner(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
+	reqPartner.CreatedBy = accData.AccountID
+	reqPartner.UpdatedBy = accData.AccountID
 	response, err := reqPartner.Insert()
 	if err != nil {
 		res.SetErrorWithDetail(JSONErrFatal, err)
@@ -99,6 +110,15 @@ func GetPartnerByID(w http.ResponseWriter, r *http.Request) {
 func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
+	token := r.FormValue("token")
+
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
+
 	id := bone.GetValue(r, "id")
 	var reqPartner model.Partner
 	decoder := json.NewDecoder(r.Body)
@@ -108,7 +128,8 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	reqPartner.ID = id
-	err := reqPartner.Update()
+	reqPartner.UpdatedBy = accData.AccountID
+	err = reqPartner.Update()
 	if err != nil {
 		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
@@ -121,9 +142,18 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 //DeletePartner : remove partner
 func DeletePartner(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
+	token := r.FormValue("token")
+
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
 
 	id := bone.GetValue(r, "id")
 	p := model.Partner{ID: id}
+	p.UpdatedBy = accData.AccountID
 	if err := p.Delete(); err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
@@ -135,6 +165,14 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 //PostPartnerTags : POST tags of partner
 func PostPartnerTags(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
+	token := r.FormValue("token")
+
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
 
 	var req model.ObjectTag
 	decoder := json.NewDecoder(r.Body)
@@ -145,6 +183,7 @@ func PostPartnerTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// reqPartner.ID = bone.GetValue(r, "holder")
+	req.CreatedBy = accData.AccountID
 	response, err := req.Insert()
 	if err != nil {
 		u.DEBUG(err)
@@ -179,6 +218,14 @@ func GetPartnerByTags(w http.ResponseWriter, r *http.Request) {
 //PostBank : POST bank data
 func PostBank(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
+	token := r.FormValue("token")
+
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
 
 	var reqBank model.Bank
 	decoder := json.NewDecoder(r.Body)
@@ -189,6 +236,8 @@ func PostBank(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	reqBank.PartnerID = bone.GetValue(r, "pid")
+	reqBank.CreatedBy = accData.AccountID
+	reqBank.UpdatedBy = accData.AccountID
 	response, err := reqBank.Insert()
 	if err != nil {
 		u.DEBUG(err)
@@ -263,6 +312,15 @@ func GetBankByPartnerID(w http.ResponseWriter, r *http.Request) {
 func UpdateBank(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
+	token := r.FormValue("token")
+
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
+
 	id := bone.GetValue(r, "pid")
 	var reqBank model.Bank
 	decoder := json.NewDecoder(r.Body)
@@ -272,7 +330,8 @@ func UpdateBank(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	reqBank.PartnerID = id
-	err := reqBank.Update()
+	reqBank.UpdatedBy = accData.AccountID
+	err = reqBank.Update()
 	if err != nil {
 		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
@@ -285,13 +344,42 @@ func UpdateBank(w http.ResponseWriter, r *http.Request) {
 //DeleteBank : remove bank
 func DeleteBank(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
+	token := r.FormValue("token")
 
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
 	id := bone.GetValue(r, "id")
-	p := model.Bank{ID: id}
+	p := model.Bank{ID: u.StringToInt(id)}
+	p.UpdatedBy = accData.AccountID
 	if err := p.Delete(); err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
 		return
 	}
 	res.JSON(w, res, http.StatusOK)
+}
+
+func GetPartnerBanks(r *http.Request, partnerID string) ([]model.Bank, error) {
+
+	qp := u.NewQueryParam(r)
+	partner, _, err := model.GetPartnerByID(qp, partnerID)
+	if err != nil {
+		return []model.Bank{}, err
+	}
+
+	partnerBank := []model.Bank{}
+	err = json.Unmarshal([]byte(partner.Banks), &partnerBank)
+	if err != nil {
+		return []model.Bank{}, err
+	}
+
+	if len(partnerBank) < 1 {
+		return []model.Bank{}, model.ErrorBankNotFound
+	}
+
+	return partnerBank, nil
 }

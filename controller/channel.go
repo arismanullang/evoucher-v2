@@ -13,6 +13,14 @@ import (
 //PostChannel : POST channel data
 func PostChannel(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
+	token := r.FormValue("token")
+
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
 
 	var reqChannel model.Channel
 	decoder := json.NewDecoder(r.Body)
@@ -22,6 +30,8 @@ func PostChannel(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
+	reqChannel.CreatedBy = accData.AccountID
+	reqChannel.UpdatedBy = accData.AccountID
 	response, err := reqChannel.Insert()
 	if err != nil {
 		u.DEBUG(err)
@@ -98,6 +108,14 @@ func GetChannelByID(w http.ResponseWriter, r *http.Request) {
 // UpdateChannel :
 func UpdateChannel(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
+	token := r.FormValue("token")
+
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
 
 	id := bone.GetValue(r, "id")
 	var reqChannel model.Channel
@@ -108,7 +126,8 @@ func UpdateChannel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	reqChannel.ID = id
-	err := reqChannel.Update()
+	reqChannel.UpdatedBy = accData.AccountID
+	err = reqChannel.Update()
 	if err != nil {
 		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
@@ -121,10 +140,18 @@ func UpdateChannel(w http.ResponseWriter, r *http.Request) {
 //DeleteChannel : remove channel
 func DeleteChannel(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
+	token := r.FormValue("token")
+
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
 
 	id := bone.GetValue(r, "id")
 	p := model.Channel{ID: id}
-
+	p.UpdatedBy = accData.AccountID
 	qp := u.NewQueryParam(r)
 	datas, _, err := model.GetChannelByID(qp, id)
 	if err != nil {

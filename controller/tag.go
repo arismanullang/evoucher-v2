@@ -14,6 +14,15 @@ import (
 func PostTag(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
+	token := r.FormValue("token")
+
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
+
 	var reqTag model.Tag
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&reqTag); err != nil {
@@ -21,6 +30,9 @@ func PostTag(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
+
+	reqTag.CreatedBy = accData.AccountID
+	reqTag.UpdatedBy = accData.AccountID
 	response, err := reqTag.Insert()
 	if err != nil {
 		res.SetErrorWithDetail(JSONErrFatal, err)
@@ -123,6 +135,14 @@ func GetTagByCategory(w http.ResponseWriter, r *http.Request) {
 // UpdateTag :
 func UpdateTag(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
+	token := r.FormValue("token")
+
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
 
 	id := bone.GetValue(r, "id")
 	var reqTag model.Tag
@@ -133,7 +153,8 @@ func UpdateTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	reqTag.ID = id
-	err := reqTag.Update()
+	reqTag.UpdatedBy = accData.AccountID
+	err = reqTag.Update()
 	if err != nil {
 		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
@@ -146,9 +167,18 @@ func UpdateTag(w http.ResponseWriter, r *http.Request) {
 //DeleteTag : remove Tag
 func DeleteTag(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
+	token := r.FormValue("token")
+
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
 
 	id := bone.GetValue(r, "id")
 	p := model.Tag{ID: id}
+	p.UpdatedBy = accData.AccountID
 	if err := p.Delete(); err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrResourceNotFound)

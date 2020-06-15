@@ -121,13 +121,18 @@ func (qp *QueryParam) GetQueryWhereClause(q string, val string) string {
 }
 
 func (qp *QueryParam) GetQueryWithPagination(q string, sort string, limit string) string {
+	// return `WITH tbl AS (` + q + sort + `)
+	// 		SELECT *
+	// 		FROM  (
+	// 			TABLE  tbl
+	// 			` + limit + `
+	// 			) sub
+	// 		RIGHT  JOIN (SELECT count(*) FROM tbl) c("count") ON true`
+
 	return `WITH tbl AS (` + q + sort + `)
-			SELECT *
-			FROM  (
-				TABLE  tbl
-				` + limit + `
-				) sub
-			RIGHT  JOIN (SELECT count(*) FROM tbl) c("count") ON true`
+			SELECT *, count(*) OVER() AS count
+			FROM tbl
+				` + limit
 }
 
 func defaultQueryParam(r *http.Request) *QueryParam {

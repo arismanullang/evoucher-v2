@@ -12,6 +12,32 @@ import (
 	"github.com/jmoiron/sqlx/types"
 )
 
+//GetVoucherByID : get voucher by id
+func GetVoucherByID(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	qp := u.NewQueryParam(r)
+
+	id := bone.GetValue(r, "id")
+
+	vouchers, err := model.GetVoucherByID(id, qp)
+	if err != nil {
+		u.DEBUG(err)
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	td, err := model.GetTransactionDetailByVoucherID(qp, id)
+	if err == nil {
+		fmt.Println("vouchers = ", td)
+		transactionDetail := *td
+		vouchers.TransactionDetail = &transactionDetail[0]
+	}
+
+	res.SetResponse(vouchers)
+	res.JSON(w, res, http.StatusOK)
+}
+
 //PostVoucherInjectByHolder : Inject voucher by holder
 func PostVoucherInjectByHolder(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
@@ -131,149 +157,8 @@ func PostVoucherInjectByHolder(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusCreated)
 }
 
-//PostVoucherAssignHolder :
-func PostVoucherAssignHolder(w http.ResponseWriter, r *http.Request) {
-	res := u.NewResponse()
-
-	var req model.InjectVoucherByHolderRequest
-	decoder := json.NewDecoder(r.Body)
-	qp := u.NewQueryParam(r)
-	err := decoder.Decode(&req)
-	if err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrBadRequest)
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
-
-	companyID := bone.GetValue(r, "company")
-	accountToken := r.FormValue("token")
-
-	claims, err := model.VerifyAccountToken(accountToken)
-	if err != nil {
-		u.DEBUG(err)
-		res.SetError(JSONErrUnauthorized)
-		res.JSON(w, res, JSONErrUnauthorized.Status)
-		return
-	}
-
-	accountID := claims.AccountID
-	req.UpdatedBy = accountID
-
-	//get config TimeZone
-	configs, err := model.GetConfigs(companyID, "company")
-	if err != nil {
-		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
-		res.Error.SetMessage("timezone config not found, please add timezone config")
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
-
-	// validate each data
-	for idx, assignData := range req.AssignData {
-
-		//Validate Rule Program
-		program, err := model.GetProgramByID(assignData.ProgramID, qp)
-		if err != nil {
-			res.SetError(JSONErrBadRequest)
-			res.JSON(w, res, JSONErrBadRequest.Status)
-			return
-		}
-
-		datas := make(map[string]interface{})
-		datas["ACCOUNTID"] = req.HolderID
-		datas["PROGRAMID"] = assignData.ProgramID
-		datas["TIMEZONE"] = fmt.Sprint(configs["timezone"])
-		datas["QUANTITY"] = len(assignData.VoucherIDs)
-
-		var rules model.RulesExpression
-		program.Rule.Unmarshal(&rules)
-
-		result, err := rules.ValidateAssign(datas)
-		if err != nil {
-			res.SetErrorWithDetail(JSONErrBadRequest, err)
-			res.JSON(w, res, JSONErrBadRequest.Status)
-			return
-		}
-
-		//check voucher id status / availability
-		for _, voucherID := range assignData.VoucherIDs {
-			voucherDetail, err := model.GetVoucherByID(voucherID, qp)
-			if err != nil {
-				res.SetError(JSONErrBadRequest)
-				res.JSON(w, res, JSONErrBadRequest.Status)
-				return
-			}
-
-			if *voucherDetail.Holder != "" {
-				res.SetError(JSONErrBadRequest)
-				res.Error.SetMessage("voucher with id " + voucherID + " has been assigned to " + *voucherDetail.Holder)
-				res.JSON(w, res, JSONErrBadRequest.Status)
-				return
-			}
-
-		}
-
-		if !result {
-			u.DEBUG(err)
-			res.SetError(JSONErrInvalidRule)
-			res.JSON(w, err, JSONErrInvalidRule.Status)
-			return
-		}
-
-		loc, _ := time.LoadLocation(fmt.Sprint(configs["timezone"]))
-
-		voucherValidAt := time.Now().In(loc)
-		voucherExpiredAt := time.Date(voucherValidAt.Year(), voucherValidAt.Month(), voucherValidAt.Day(), 23, 59, 59, 59, loc)
-
-		if ruleUseUsagePeriod, ok := rules.And["rule_use_usage_period"]; ok {
-
-			validTime, err := model.StringToTime(fmt.Sprint(ruleUseUsagePeriod.Gte))
-			if err != nil {
-				res.SetError(JSONErrBadRequest)
-				res.Error.SetMessage("failed to parse active voucher period")
-				res.JSON(w, res, JSONErrBadRequest.Status)
-				return
-			}
-
-			expiredTime, err := model.StringToTime(fmt.Sprint(ruleUseUsagePeriod.Lte))
-			if err != nil {
-				res.SetError(JSONErrBadRequest)
-				res.Error.SetMessage("failed to parse active voucher period")
-				res.JSON(w, res, JSONErrBadRequest.Status)
-				return
-			}
-
-			voucherValidAt = validTime
-			voucherExpiredAt = expiredTime
-		}
-
-		if ruleUseActiveVoucherPeriod, ok := rules.And["rule_use_active_voucher_period"]; ok && !ruleUseActiveVoucherPeriod.IsEmpty() {
-			voucherExpiredAt = voucherExpiredAt.AddDate(0, 0, int(ruleUseActiveVoucherPeriod.Eq.(float64)))
-		}
-
-		assignData.ValidAt = voucherValidAt
-		assignData.ExpiredAt = voucherExpiredAt
-
-		// update the request Data
-		req.AssignData[idx] = assignData
-	}
-
-	msg, err := req.AssignVoucher()
-	if err != nil {
-		fmt.Println("err = ", err)
-		res.SetError(JSONErrBadRequest)
-		res.Error.SetMessage("error assign voucher : " + err.Error())
-		res.JSON(w, res, JSONErrBadRequest.Status)
-		return
-	}
-
-	res.SetResponse(msg)
-	res.JSON(w, res, http.StatusOK)
-}
-
-//GetVoucherByID : GET list of program and vouchers by voucher_id
-func GetVoucherByID(w http.ResponseWriter, r *http.Request) {
+//GetPublicVoucherByID : GET list of program and vouchers by voucher_id
+func GetPublicVoucherByID(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	qp := u.NewQueryParam(r)
 	qp.Count = -1
@@ -550,20 +435,9 @@ func GetVoucherByProgramID(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	qp := u.NewQueryParam(r)
 
+	// need to check program company_id
 	// qp.SetCompanyID(bone.GetValue(r, "company"))
 	programID := bone.GetValue(r, "id")
-
-	// var decoder = schema.NewDecoder()
-	// decoder.IgnoreUnknownKeys(true)
-
-	// var f ProgramFilter
-	// if err := decoder.Decode(&f, r.Form); err != nil {
-	// 	res.SetError(JSONErrFatal.SetArgs(err.Error()))
-	// 	res.JSON(w, res, JSONErrFatal.Status)
-	// 	return
-	// }
-
-	// qp.SetFilterModel(f)
 
 	vouchers, next, err := model.GetVouchersByProgramID(programID, qp)
 	if err != nil {
@@ -572,7 +446,10 @@ func GetVoucherByProgramID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(vouchers) > 0 {
+		res.SetNewPagination(r, qp.Page, next, (vouchers)[0].Count)
+	}
+
 	res.SetResponse(vouchers)
-	res.SetNewPagination(r, qp.Page, next, (vouchers)[0].Count)
 	res.JSON(w, res, http.StatusOK)
 }

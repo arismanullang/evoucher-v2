@@ -28,6 +28,7 @@ type (
 		Status               string             `db:"status" json:"status"`
 		TransactionDetailsDB types.JSONText     `db:"transaction_details" json:"-"`
 		TransactionDetails   TransactionDetails `json:"transaction_details,omitempty"`
+		Count                int                `db:"count" json:"-"`
 	}
 	Transactions      []Transaction
 	TransactionDetail struct {
@@ -91,6 +92,33 @@ func GetTransactionByProgram(qp *util.QueryParam, val string) (*Transactions, bo
 //GetTransactionByPartner : get transaction by specified PartnerID
 func GetTransactionByPartner(qp *util.QueryParam, val string) (*Transactions, bool, error) {
 	return getTransactions("partner_id", val, qp)
+}
+
+//GetTransactionDetailByVoucherID : get transaction detail by voucher ID
+func GetTransactionDetailByVoucherID(qp *util.QueryParam, voucherID string) (*[]TransactionDetail, error) {
+	q, err := qp.GetQueryByDefaultStruct(TransactionDetail{})
+	if err != nil {
+		return &[]TransactionDetail{}, err
+	}
+
+	q += `
+			FROM
+				transaction_details as TransactionDetail
+			WHERE 
+				status = ?
+			AND voucher_id = ?`
+
+	var resd []TransactionDetail
+	err = db.Select(&resd, db.Rebind(q), StatusCreated, voucherID)
+	if err != nil {
+		return &[]TransactionDetail{}, err
+	}
+
+	if len(resd) < 1 {
+		return &[]TransactionDetail{}, ErrorResourceNotFound
+	}
+
+	return &resd, nil
 }
 
 func getTransactions(k, v string, qp *util.QueryParam) (*Transactions, bool, error) {
