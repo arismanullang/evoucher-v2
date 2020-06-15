@@ -91,7 +91,7 @@ func GetPartnerByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res.SetResponse(partner)
+	res.SetResponse(model.Partners{*partner})
 	res.JSON(w, res, http.StatusOK)
 }
 
@@ -201,11 +201,34 @@ func PostBank(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusCreated)
 }
 
+type BankFilter struct {
+	ID              string `schema:"id" filter:"array"`
+	PartnerID       string `schema:"partner_id" filter:"array"`
+	BankName        string `schema:"bank_name" filter:"string"`
+	BankBranch      string `schema:"bank_branch" filter:"string"`
+	BankAccountName string `schema:"bank_account_name" filter:"string"`
+	CompanyName     string `schema:"company_name" filter:"string"`
+	Name            string `schema:"name" filter:"string"`
+	Phone           string `schema:"phone" filter:"string"`
+	Email           string `schema:"email" filter:"string"`
+}
+
 //GetBanks : GET list of banks
 func GetBanks(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
-
 	qp := u.NewQueryParam(r)
+
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+
+	var f BankFilter
+	if err := decoder.Decode(&f, r.Form); err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	qp.SetFilterModel(f)
 
 	banks, next, err := model.GetBanks(qp)
 	if err != nil {

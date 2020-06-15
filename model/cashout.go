@@ -79,8 +79,8 @@ func getCashouts(qp *util.QueryParam, key, value string) (*Cashouts, bool, error
 				status = ?			
 			AND ` + key + ` = ?`
 
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
+	q = qp.GetQueryWhereClause(q, qp.Q)
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	fmt.Println(q)
 	var resd Cashouts
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, value)
@@ -105,21 +105,23 @@ func GetCashoutUnpaid(qp *util.QueryParam) ([]CashoutUnpaid, bool, error) {
 }
 
 func getCashoutUnpaid(qp *util.QueryParam, key, value string) ([]CashoutUnpaid, bool, error) {
-	q, err := qp.GetQueryByDefaultStruct(CashoutSummary{})
-	if err != nil {
-		return []CashoutUnpaid{}, false, err
-	}
-	q += `
+	//q, err := qp.GetQueryByDefaultStruct(CashoutSummary{})
+	//if err != nil {
+	//	return []CashoutUnpaid{}, false, err
+	//}
+	q := ` SELECT
+				partner_id, partner_name, sum(transaction_qty), sum(total_value)
 			FROM
 				m_cashout_unpaid
 			WHERE 		
 			 ` + key + ` = ? `
 
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
+	q = qp.GetQueryWhereClause(q, qp.Q)
+	q += ` GROUP BY partner_id, partner_name `
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	fmt.Println(q)
 	var resd []CashoutUnpaid
-	err = db.Select(&resd, db.Rebind(q), value)
+	err := db.Select(&resd, db.Rebind(q), value)
 	if err != nil {
 		return []CashoutUnpaid{}, false, err
 	}
