@@ -133,6 +133,18 @@ func init() {
 	// v2.GetFunc("/:company/debug/pprof/symbol", pprof.Symbol)
 	// v2.GetFunc("/:company/debug/pprof/trace", pprof.Trace)
 
+	//Dashboard
+	v2.GetFunc("/:company/dashboard/topoutlet", c.GetDashboardTopOutlet)
+	v2.GetFunc("/:company/dashboard/topprogram", c.GetDashboardTopProgram)
+	v2.GetFunc("/:company/dashboard/voucherusage", c.GetDashboardVoucherUsage)
+
+	//REPORT
+	v2.GetFunc("/:company/report/outlet-transaction", c.GetReportDailyVoucherTransactionWithPartner)
+	v2.GetFunc("/:company/report/topoutlet", c.GetReportDailyVoucherTransaction)
+	v2.GetFunc("/:company/report/", c.GetReportDailyPartnerTransaction)
+	v2.GetFunc("/:company/report/topoutlet", c.GetReportMonthlyOutletTransaction)
+	v2.GetFunc("/:company/report/topoutlet", c.GetReportYearlyOutletTransaction)
+
 	// blast
 	v2.Get("/:company/blasts", c.CheckFuncJWT(c.GetBlasts, "blast-view"))
 	v2.Get("/:company/blasts/:id", c.CheckFuncJWT(c.GetBlastByID, "blast-view"))
