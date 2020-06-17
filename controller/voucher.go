@@ -9,6 +9,7 @@ import (
 	"github.com/gilkor/evoucher-v2/model"
 	u "github.com/gilkor/evoucher-v2/util"
 	"github.com/go-zoo/bone"
+	"github.com/gorilla/schema"
 	"github.com/jmoiron/sqlx/types"
 )
 
@@ -239,6 +240,16 @@ func GetVoucherByToken(w http.ResponseWriter, r *http.Request) {
 	token := r.FormValue("token")
 
 	qp.SetCompanyID(bone.GetValue(r, "company"))
+	var f model.VoucherFilter
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+	if err := decoder.Decode(&f, r.Form); err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	qp.SetFilterModel(f)
 
 	accData, err := model.GetSessionDataJWT(token)
 	if err != nil {

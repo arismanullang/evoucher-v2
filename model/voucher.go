@@ -75,6 +75,7 @@ type (
 		Name      string `schema:"name" filter:"string"`
 		ProgramID string `schema:"program_id" filter:"string"`
 		Holder    string `schema:"holder" filter:"string"`
+		State     string `schema:"state" filter:"enum"`
 		CreatedAt string `schema:"created_at" filter:"date"`
 		CreatedBy string `schema:"created_by" filter:"string"`
 		UpdatedAt string `schema:"updated_at" filter:"date"`
