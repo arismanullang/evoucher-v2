@@ -45,6 +45,9 @@ type (
 //PartnerFields : default table field
 var PartnerFields = []string{"id", "name", "description", "created_at", "created_by", "updated_at", "updated_by", "status"}
 
+//MOutletFields : fields for 3rd party api
+var MOutletFields = "id,name,description"
+
 //GetPartners : get list company by custom filter
 func GetPartners(qp *util.QueryParam) (*Partners, bool, error) {
 	return getPartners("1", "1", qp)

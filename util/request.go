@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -201,6 +202,7 @@ func getQueryFromStruct(qp *QueryParam, tag string, i interface{}) (string, erro
 	qp.SetTableAlias(t.Name())
 
 	q := `SELECT `
+
 	param := strings.Split(qp.Fields, ",")
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
@@ -218,6 +220,7 @@ func getQueryFromStruct(qp *QueryParam, tag string, i interface{}) (string, erro
 			}
 		}
 	}
+	fmt.Println("q = ", q[:len(q)-1])
 	return q[:len(q)-1], nil
 }
 
@@ -268,7 +271,6 @@ func getWhereClauseFromStruct(qp *QueryParam, i interface{}) string {
 	tv := reflect.ValueOf(i)
 
 	q := ` AND `
-	param := strings.Split(qp.Fields, ",")
 
 	if t.NumField() < 1 {
 		return ``
@@ -282,66 +284,26 @@ func getWhereClauseFromStruct(qp *QueryParam, i interface{}) string {
 		if value.String() != "" {
 			switch tableType {
 			case "string":
-				if len(param) > 1 {
-					for _, v := range param {
-						if tableField == v {
-							q += qp.TableAlias + tableField + ` ILIKE '%` + value.String() + `%' `
-							break
-						}
-					}
-
-				} else {
-					if len(tableField) > 0 {
-						q += qp.TableAlias + tableField + ` ILIKE '%` + value.String() + `%' `
-					}
+				if len(tableField) > 0 {
+					q += qp.TableAlias + tableField + ` ILIKE '%` + value.String() + `%' `
 				}
 			case "date":
 				//still hardcode +7 timezone -> need to fix this
-				if len(param) > 1 {
-					for _, v := range param {
-						if tableField == v {
-							dates := strings.Split(value.String(), ",")
-							q += qp.TableAlias + tableField + ` BETWEEN '` + dates[0] + ` 00:00:00+07'::timestamp AND '` + dates[1] + ` 23:59:59+07'::timestamp `
-							break
-						}
-					}
-
-				} else {
-					if len(tableField) > 0 {
-						dates := strings.Split(value.String(), ",")
-						q += qp.TableAlias + tableField + ` BETWEEN '` + dates[0] + ` 00:00:00+07'::timestamp AND '` + dates[1] + ` 23:59:59+07'::timestamp `
-						break
-					}
+				if len(tableField) > 0 {
+					dates := strings.Split(value.String(), ",")
+					q += qp.TableAlias + tableField + ` BETWEEN '` + dates[0] + ` 00:00:00+07'::timestamp AND '` + dates[1] + ` 23:59:59+07'::timestamp `
+					break
 				}
+
 			case "array":
 				val := arrayToQueryString(strings.Split(value.String(), ","))
-				if len(param) > 1 {
-					for _, v := range param {
-						if tableField == v {
-							q += qp.TableAlias + tableField + ` IN (` + val + `) `
-							break
-						}
-					}
-
-				} else {
-					if len(tableField) > 0 {
-						q += qp.TableAlias + tableField + ` IN (` + val + `) `
-					}
+				if len(tableField) > 0 {
+					q += qp.TableAlias + tableField + ` IN (` + val + `) `
 				}
 			case "json":
 				val := arrayToQueryString(strings.Split(value.String(), ","))
-				if len(param) > 1 {
-					for _, v := range param {
-						if tableField == v {
-							q += ` json_array_elements (` + qp.TableAlias + tableField + `) @> ARRAY(` + val + `) `
-							break
-						}
-					}
-
-				} else {
-					if len(tableField) > 0 {
-						q += ` json_array_elements (` + qp.TableAlias + tableField + `) IN (` + val + `) `
-					}
+				if len(tableField) > 0 {
+					q += ` json_array_elements (` + qp.TableAlias + tableField + `) IN (` + val + `) `
 				}
 			case "json_array":
 				fName := `json_array_` + tableField
@@ -352,18 +314,8 @@ func getWhereClauseFromStruct(qp *QueryParam, i interface{}) string {
 				elem := strings.Split(value.String(), ",")
 				for _, e := range elem {
 					data := strings.Split(e, ":")
-					if len(param) > 1 {
-						for _, v := range param {
-							if tableField == v {
-								q += fName + `->>'` + data[0] + `' ILIKE '%` + data[1] + `%' `
-								break
-							}
-						}
-
-					} else {
-						if len(tableField) > 0 {
-							q += fName + `->>'` + data[0] + `' ILIKE '%` + data[1] + `%' `
-						}
+					if len(tableField) > 0 {
+						q += fName + `->>'` + data[0] + `' ILIKE '%` + data[1] + `%' `
 					}
 					q += `AND `
 				}
@@ -373,35 +325,15 @@ func getWhereClauseFromStruct(qp *QueryParam, i interface{}) string {
 				elem := strings.Split(value.String(), ",")
 				for _, e := range elem {
 					data := strings.Split(e, ":")
-					if len(param) > 1 {
-						for _, v := range param {
-							if tableField == v {
-								q += qp.TableAlias + tableField + `->>'` + data[0] + `' ILIKE '%` + data[1] + `%' `
-								break
-							}
-						}
-
-					} else {
-						if len(tableField) > 0 {
-							q += qp.TableAlias + tableField + `->>'` + data[0] + `' ILIKE '%` + data[1] + `%' `
-						}
+					if len(tableField) > 0 {
+						q += qp.TableAlias + tableField + `->>'` + data[0] + `' ILIKE '%` + data[1] + `%' `
 					}
 					q += `AND `
 				}
 				q = q[:len(q)-4]
 			default:
-				if len(param) > 1 {
-					for _, v := range param {
-						if tableField == v {
-							q += qp.TableAlias + tableField + ` = '` + value.String() + `' `
-							break
-						}
-					}
-
-				} else {
-					if len(tableField) > 0 {
-						q += qp.TableAlias + tableField + ` = '` + value.String() + `' `
-					}
+				if len(tableField) > 0 {
+					q += qp.TableAlias + tableField + ` = '` + value.String() + `' `
 				}
 			}
 			q += `AND `
@@ -409,6 +341,7 @@ func getWhereClauseFromStruct(qp *QueryParam, i interface{}) string {
 	}
 
 	q = q[:len(q)-4]
+	fmt.Println("getWhereClauseFromStruct = ", q)
 	return q
 }
 

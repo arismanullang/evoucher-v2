@@ -46,8 +46,8 @@ func GetPartnerByProgramID(programID string, qp *util.QueryParam) (*Partners, bo
 			AND 
 				ProgramPartner.program_id = ?
 		`
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
+	// q += qp.GetQuerySort()
+	// q += qp.GetQueryLimit()
 	var resd Partners
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, programID)
 	if err != nil {

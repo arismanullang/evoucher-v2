@@ -20,6 +20,7 @@ type (
 		ValidAt           *time.Time         `json:"valid_at,omitempty" db:"valid_at"`
 		ExpiredAt         *time.Time         `json:"expired_at,omitempty" db:"expired_at"`
 		State             string             `json:"state,omitempty" db:"state"`
+		ProgramImageURL   string             `json:"program_img_url,omitempty" db:"program_img_url"`
 		ProgramName       string             `json:"program_name,omitempty" db:"program_name"`
 		ProgramValue      float64            `json:"program_value,omitempty" db:"program_value"`
 		ProgramMaxValue   float64            `json:"program_max_value,omitempty" db:"program_max_value"`
