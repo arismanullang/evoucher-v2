@@ -542,7 +542,7 @@ func PostVoucherUset(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusCreated)
 }
 
-//PostVoucherClaim :
+//PostVoucherClaim : claim voucher by juno token
 func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
@@ -554,17 +554,15 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&req)
 
 	companyID := bone.GetValue(r, "company")
-	accountToken := r.FormValue("token")
+	token := r.FormValue("token")
 
-	claims, err := model.VerifyAccountToken(accountToken)
+	accData, err := model.GetSessionDataJWT(token)
 	if err != nil {
-		u.DEBUG(err)
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
 		return
 	}
-
-	accountID = claims.AccountID
+	accountID = accData.AccountID
 
 	//get config TimeZone
 	configs, err := model.GetConfigs(companyID, "company")

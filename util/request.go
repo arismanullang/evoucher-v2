@@ -220,7 +220,6 @@ func getQueryFromStruct(qp *QueryParam, tag string, i interface{}) (string, erro
 			}
 		}
 	}
-	fmt.Println("q = ", q[:len(q)-1])
 	return q[:len(q)-1], nil
 }
 

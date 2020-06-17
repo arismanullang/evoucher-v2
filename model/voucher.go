@@ -2,6 +2,7 @@ package model
 
 import (
 	"bytes"
+	"fmt"
 	"time"
 
 	"github.com/gilkor/evoucher-v2/util"
@@ -82,13 +83,38 @@ type (
 	}
 )
 
+//MVoucherFields : fields for 3rd party api
+var MVoucherFields = "id, code, reference, valid_at, expired_at, state"
+
 // GetVouchersByHolder : get list vouchers by Holder
-func GetVouchersByHolder(holder string, qp *util.QueryParam) (Vouchers, error) {
-	vouchers, _, err := getVouchers("holder", holder, qp)
+func GetVouchersByHolder(holder string, qp *util.QueryParam) ([]Voucher, error) {
+	q, err := qp.GetQueryByDefaultStruct(Voucher{})
 	if err != nil {
 		return Vouchers{}, err
 	}
-	return vouchers, nil
+
+	q += `
+		FROM 
+			m_vouchers voucher
+		WHERE holder = ?
+			AND expired_at >= NOW() - INTERVAL '30 days'
+			`
+
+	q = qp.GetQueryWhereClause(q, qp.Q)
+	util.DEBUG("query struct :", q)
+
+	var resv Vouchers
+	err = db.Select(&resv, db.Rebind(q), holder)
+	if err != nil {
+		fmt.Println("err = ", err)
+		return Vouchers{}, err
+	}
+
+	if len(resv) < 1 {
+		return Vouchers{}, nil
+	}
+
+	return resv, err
 }
 
 // GetVouchersByID :  get list vouchers by ID

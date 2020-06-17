@@ -229,22 +229,26 @@ func GetPublicVoucherByID(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-//GetVoucherByHolder : GET list of program and vouchers by holder
-func GetVoucherByHolder(w http.ResponseWriter, r *http.Request) {
+//GetVoucherByToken : GET list of program and vouchers by holder juno token
+func GetVoucherByToken(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
+	// r.Form.Set("fields", model.MVoucherFields)
 	qp := u.NewQueryParam(r)
 	qp.Count = -1
-	accountToken := r.FormValue("token")
+	qp.Sort = "expired_at-"
+	token := r.FormValue("token")
 
-	claims, err := model.VerifyAccountToken(accountToken)
+	qp.SetCompanyID(bone.GetValue(r, "company"))
+
+	accData, err := model.GetSessionDataJWT(token)
 	if err != nil {
-		u.DEBUG(err)
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
 		return
 	}
 
-	vouchers, err := model.GetVouchersByHolder(claims.AccountID, qp)
+	// vouchers, _, err := model.GetVouchers(qp)
+	vouchers, err := model.GetVouchersByHolder(accData.AccountID, qp)
 	if err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrBadRequest)
@@ -252,72 +256,75 @@ func GetVoucherByHolder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	distinctProgram := []string{}
-	for _, v := range vouchers {
-		if !u.StringInSlice(v.ProgramID, distinctProgram) {
-			distinctProgram = append(distinctProgram, v.ProgramID)
-		}
-	}
+	// r.Form.Set("fields", model.MProgramFields)
+	// qp2 := u.NewQueryParam(r)
 
-	listPrograms := model.Programs{}
-	for _, programID := range distinctProgram {
+	// distinctProgram := []string{}
+	// for _, v := range vouchers {
+	// 	if !u.StringInSlice(v.ProgramID, distinctProgram) {
+	// 		distinctProgram = append(distinctProgram, v.ProgramID)
+	// 	}
+	// }
 
-		program := model.Program{}
-		vouchersByProgram := model.Vouchers{}
-		partnersByProgram := model.Partners{}
+	// listPrograms := model.Programs{}
+	// for _, programID := range distinctProgram {
 
-		detailProgram, err := model.GetProgramByID(programID, qp)
-		if err != nil {
-			u.DEBUG(err)
-			res.SetError(JSONErrBadRequest)
-			res.JSON(w, res, JSONErrBadRequest.Status)
-			return
-		}
+	// 	program := model.Program{}
+	// 	vouchersByProgram := model.Vouchers{}
+	// 	partnersByProgram := model.Partners{}
 
-		program.ID = detailProgram.ID
-		program.Name = detailProgram.Name
-		program.Type = detailProgram.Type
-		program.Value = detailProgram.Value
-		program.MaxValue = detailProgram.MaxValue
-		program.StartDate = detailProgram.StartDate
-		program.EndDate = detailProgram.EndDate
-		program.Description = detailProgram.Description
-		program.ImageURL = detailProgram.ImageURL
-		program.Price = detailProgram.Price
-		program.ProgramChannels = detailProgram.ProgramChannels
-		program.State = detailProgram.State
-		program.Status = detailProgram.Status
+	// 	detailProgram, err := model.GetProgramByID(programID, qp)
+	// 	if err != nil {
+	// 		u.DEBUG(err)
+	// 		res.SetError(JSONErrBadRequest)
+	// 		res.JSON(w, res, JSONErrBadRequest.Status)
+	// 		return
+	// 	}
 
-		for _, voucher := range vouchers {
-			if voucher.ProgramID == programID {
-				tempVoucher := model.Voucher{
-					ID:        voucher.ID,
-					Code:      voucher.Code,
-					ExpiredAt: voucher.ExpiredAt,
-					ValidAt:   voucher.ValidAt,
-					State:     voucher.State,
-				}
-				vouchersByProgram = append(vouchersByProgram, tempVoucher)
-			}
-		}
-		program.Vouchers = vouchersByProgram
+	// 	program.ID = detailProgram.ID
+	// 	program.Name = detailProgram.Name
+	// 	program.Type = detailProgram.Type
+	// 	program.Value = detailProgram.Value
+	// 	program.MaxValue = detailProgram.MaxValue
+	// 	program.StartDate = detailProgram.StartDate
+	// 	program.EndDate = detailProgram.EndDate
+	// 	program.Description = detailProgram.Description
+	// 	program.ImageURL = detailProgram.ImageURL
+	// 	program.Price = detailProgram.Price
+	// 	program.ProgramChannels = detailProgram.ProgramChannels
+	// 	program.State = detailProgram.State
+	// 	program.Status = detailProgram.Status
 
-		for _, outlet := range detailProgram.Partners {
-			tempOutlet := model.Partner{
-				ID:          outlet.ID,
-				Name:        outlet.Name,
-				Description: outlet.Description,
-				Status:      outlet.Status,
-			}
-			partnersByProgram = append(partnersByProgram, tempOutlet)
-		}
+	// 	for _, voucher := range vouchers {
+	// 		if voucher.ProgramID == programID {
+	// 			tempVoucher := model.Voucher{
+	// 				ID:        voucher.ID,
+	// 				Code:      voucher.Code,
+	// 				ExpiredAt: voucher.ExpiredAt,
+	// 				ValidAt:   voucher.ValidAt,
+	// 				State:     voucher.State,
+	// 			}
+	// 			vouchersByProgram = append(vouchersByProgram, tempVoucher)
+	// 		}
+	// 	}
+	// 	program.Vouchers = vouchersByProgram
 
-		program.Partners = partnersByProgram
+	// 	for _, outlet := range detailProgram.Partners {
+	// 		tempOutlet := model.Partner{
+	// 			ID:          outlet.ID,
+	// 			Name:        outlet.Name,
+	// 			Description: outlet.Description,
+	// 			Status:      outlet.Status,
+	// 		}
+	// 		partnersByProgram = append(partnersByProgram, tempOutlet)
+	// 	}
 
-		listPrograms = append(listPrograms, program)
-	}
+	// 	program.Partners = partnersByProgram
 
-	res.SetResponse(listPrograms)
+	// 	listPrograms = append(listPrograms, program)
+	// }
+
+	res.SetResponse(vouchers)
 	res.JSON(w, res, http.StatusOK)
 }
 
