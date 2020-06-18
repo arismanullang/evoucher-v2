@@ -48,11 +48,11 @@ type ObjectTagCategory string
 
 //OTGPrograms : programs
 //OTGChannels : channels
-//OTGPartners : partners
+//OTGOutlets : outlets
 const (
 	OTGPrograms ObjectTagCategory = "programs"
 	OTGChannels ObjectTagCategory = "channels"
-	OTGPartners ObjectTagCategory = "partners"
+	OTGOutlets  ObjectTagCategory = "outlets"
 )
 
 //GetTags : get list company by custom filter
@@ -264,8 +264,7 @@ func (t *Tag) Delete() error {
 // ObjectTags ###
 func getObjectTags(k, v string, qp *util.QueryParam) (*ObjectTags, bool, error) {
 
-	// q := qp.GetQueryByDefaultStruct(Partner{})
-	q := qp.GetQueryFields(PartnerFields)
+	q := qp.GetQueryFields(OutletFields)
 	q += `
 			FROM
 				object_tags object_tags

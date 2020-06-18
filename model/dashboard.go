@@ -1,8 +1,9 @@
 package model
 
 import (
-	"github.com/gilkor/evoucher-v2/util"
 	"time"
+
+	"github.com/gilkor/evoucher-v2/util"
 )
 
 type (
@@ -23,8 +24,8 @@ type (
 	}
 	DashboardTopOutlet struct {
 		TransactionDate *time.Time `db:"transaction_date" json:"transaction_date,omitempty"`
-		PartnerID       string     `db:"partner_id" json:"partner_id,omitempty"`
-		PartnerName     string     `db:"partner_name" json:"partner_name,omitempty"`
+		OutletID        string     `db:"outlet_id" json:"outlet_id,omitempty"`
+		OutletName      string     `db:"outlet_name" json:"outlet_name,omitempty"`
 		VoucherQty      int64      `db:"voucher_qty" json:"voucher_qty,omitempty"`
 		TransactionQty  int64      `db:"transaction_qty" json:"transaction_qty,omitempty"`
 		TotalAmount     float64    `db:"total_amount" json:"total_amount,omitempty"`
@@ -106,12 +107,12 @@ func GetDashboardTopProgram(dateFrom, dateTo string, qp *util.QueryParam) ([]Das
 
 func GetDashboardTopOutlet(dateFrom, dateTo string, qp *util.QueryParam) ([]DashboardTopOutlet, bool, error) {
 	q := `
-			SELECT date as transaction_date, id as partner_id, name as partner_name, sum(trans) as transaction_qty, sum(vouc) as voucher_qty, sum(amount) as total_amount
+			SELECT date as transaction_date, id as outlet_id, name as outlet_name, sum(trans) as transaction_qty, sum(vouc) as voucher_qty, sum(amount) as total_amount
 			FROM (
 					 SELECT date(t.created_at) as date, p.id, p.name, sum(1) as trans, 0 as vouc, sum(t.discount_value) as amount
 					 FROM transactions t,
-						  partners p
-					 WHERE t.partner_id = p.id
+						  outlets p
+					 WHERE t.outlet_id = p.id
 					   AND t.status = 'created'
 					   AND p.status = 'created'
 					   AND t.created_at BETWEEN '` + dateFrom + ` 00:00:00+07'::timestamp AND '` + dateTo + ` 23:59:59+07'::timestamp 
@@ -120,8 +121,8 @@ func GetDashboardTopOutlet(dateFrom, dateTo string, qp *util.QueryParam) ([]Dash
 					 SELECT date(t.created_at) as date, p.id, p.name, 0 as trans, sum(1) as vouc, 0 as amount
 					 FROM transactions t,
 						  transaction_details td,
-						  partners p
-					 WHERE t.partner_id = p.id
+						  outlets p
+					 WHERE t.outlet_id = p.id
 					   AND t.id = td.transaction_id
 					   AND t.status = 'created'
 					   AND td.status = 'created'

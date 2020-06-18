@@ -11,8 +11,38 @@ import (
 	u "github.com/gilkor/evoucher-v2/util"
 )
 
-//PostPartner : POST partner data
-func PostPartner(w http.ResponseWriter, r *http.Request) {
+type (
+	//OutletFilter : an interface that used as an outlet filter
+	OutletFilter struct {
+		ID          string `schema:"id" filter:"array"`
+		Name        string `schema:"name" filter:"string"`
+		Description string `schema:"description" filter:"record"`
+		CompanyID   string `schema:"company_id" filter:"string"`
+		CreatedAt   string `schema:"created_at" filter:"date"`
+		CreatedBy   string `schema:"created_by" filter:"string"`
+		UpdatedAt   string `schema:"updated_at" filter:"date"`
+		UpdatedBy   string `schema:"updated_by" filter:"string"`
+		Status      string `schema:"status" filter:"enum"`
+		Banks       string `schema:"outlet_banks" filter:"json"`
+		Tags        string `schema:"outlet_tags" filter:"json"`
+	}
+
+	//BankFilter : an interface that used as an bank filter
+	BankFilter struct {
+		ID              string `schema:"id" filter:"array"`
+		OutletID        string `schema:"outlet_id" filter:"array"`
+		BankName        string `schema:"bank_name" filter:"string"`
+		BankBranch      string `schema:"bank_branch" filter:"string"`
+		BankAccountName string `schema:"bank_account_name" filter:"string"`
+		CompanyName     string `schema:"company_name" filter:"string"`
+		Name            string `schema:"name" filter:"string"`
+		Phone           string `schema:"phone" filter:"string"`
+		Email           string `schema:"email" filter:"string"`
+	}
+)
+
+//PostOutlet : POST outlet data
+func PostOutlet(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	token := r.FormValue("token")
@@ -24,16 +54,16 @@ func PostPartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var reqPartner model.Partner
+	var reqOutlet model.Outlet
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&reqPartner); err != nil {
+	if err := decoder.Decode(&reqOutlet); err != nil {
 		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	reqPartner.CreatedBy = accData.AccountID
-	reqPartner.UpdatedBy = accData.AccountID
-	response, err := reqPartner.Insert()
+	reqOutlet.CreatedBy = accData.AccountID
+	reqOutlet.UpdatedBy = accData.AccountID
+	response, err := reqOutlet.Insert()
 	if err != nil {
 		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
@@ -44,22 +74,8 @@ func PostPartner(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusCreated)
 }
 
-type PartnerFilter struct {
-	ID          string `schema:"id" filter:"array"`
-	Name        string `schema:"name" filter:"string"`
-	Description string `schema:"description" filter:"record"`
-	CompanyID   string `schema:"company_id" filter:"string"`
-	CreatedAt   string `schema:"created_at" filter:"date"`
-	CreatedBy   string `schema:"created_by" filter:"string"`
-	UpdatedAt   string `schema:"updated_at" filter:"date"`
-	UpdatedBy   string `schema:"updated_by" filter:"string"`
-	Status      string `schema:"status" filter:"enum"`
-	Banks       string `schema:"partner_banks" filter:"json"`
-	Tags        string `schema:"partner_tags" filter:"json"`
-}
-
-//GetPartners : GET list of partners
-func GetPartners(w http.ResponseWriter, r *http.Request) {
+//GetOutlets : GET list of outlets
+func GetOutlets(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	qp := u.NewQueryParam(r)
 
@@ -68,7 +84,7 @@ func GetPartners(w http.ResponseWriter, r *http.Request) {
 	var decoder = schema.NewDecoder()
 	decoder.IgnoreUnknownKeys(true)
 
-	var f PartnerFilter
+	var f OutletFilter
 	if err := decoder.Decode(&f, r.Form); err != nil {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
@@ -77,37 +93,37 @@ func GetPartners(w http.ResponseWriter, r *http.Request) {
 
 	qp.SetFilterModel(f)
 
-	partners, next, err := model.GetPartners(qp)
+	outlets, next, err := model.GetOutlets(qp)
 	if err != nil {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
-	res.SetResponse(partners)
-	res.SetNewPagination(r, qp.Page, next, (*partners)[0].Count)
+	res.SetResponse(outlets)
+	res.SetNewPagination(r, qp.Page, next, (*outlets)[0].Count)
 	res.JSON(w, res, http.StatusOK)
 }
 
-//GetPartnerByID : GET
-func GetPartnerByID(w http.ResponseWriter, r *http.Request) {
+//GetOutletByID : GET
+func GetOutletByID(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
 	id := bone.GetValue(r, "id")
-	partner, _, err := model.GetPartnerByID(qp, id)
+	outlet, _, err := model.GetOutletByID(qp, id)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
 		return
 	}
 
-	res.SetResponse(model.Partners{*partner})
+	res.SetResponse(model.Outlets{*outlet})
 	res.JSON(w, res, http.StatusOK)
 }
 
-// UpdatePartner :
-func UpdatePartner(w http.ResponseWriter, r *http.Request) {
+// UpdateOutlet :
+func UpdateOutlet(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	token := r.FormValue("token")
@@ -120,27 +136,27 @@ func UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := bone.GetValue(r, "id")
-	var reqPartner model.Partner
+	var reqOutlet model.Outlet
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&reqPartner); err != nil {
+	if err := decoder.Decode(&reqOutlet); err != nil {
 		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	reqPartner.ID = id
-	reqPartner.UpdatedBy = accData.AccountID
-	err = reqPartner.Update()
+	reqOutlet.ID = id
+	reqOutlet.UpdatedBy = accData.AccountID
+	err = reqOutlet.Update()
 	if err != nil {
 		res.SetErrorWithDetail(JSONErrFatal, err)
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	res.SetResponse(model.Partners{reqPartner})
+	res.SetResponse(model.Outlets{reqOutlet})
 	res.JSON(w, res, http.StatusOK)
 }
 
-//DeletePartner : remove partner
-func DeletePartner(w http.ResponseWriter, r *http.Request) {
+//DeleteOutlet : remove outlet
+func DeleteOutlet(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	token := r.FormValue("token")
 
@@ -152,7 +168,7 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := bone.GetValue(r, "id")
-	p := model.Partner{ID: id}
+	p := model.Outlet{ID: id}
 	p.UpdatedBy = accData.AccountID
 	if err := p.Delete(); err != nil {
 		res.SetError(JSONErrResourceNotFound)
@@ -162,8 +178,8 @@ func DeletePartner(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-//PostPartnerTags : POST tags of partner
-func PostPartnerTags(w http.ResponseWriter, r *http.Request) {
+//PostOutletTags : POST tags of outlet
+func PostOutletTags(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	token := r.FormValue("token")
 
@@ -182,7 +198,7 @@ func PostPartnerTags(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	// reqPartner.ID = bone.GetValue(r, "holder")
+	// reqOutlet.ID = bone.GetValue(r, "holder")
 	req.CreatedBy = accData.AccountID
 	response, err := req.Insert()
 	if err != nil {
@@ -196,13 +212,13 @@ func PostPartnerTags(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusCreated)
 }
 
-//GetPartnerByTags : GET
-func GetPartnerByTags(w http.ResponseWriter, r *http.Request) {
+//GetOutletByTags : GET
+func GetOutletByTags(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
 	id := bone.GetValue(r, "tag_id")
-	partners, next, err := model.GetPartnersByTags(qp, id)
+	outlets, next, err := model.GetOutletsByTags(qp, id)
 	if err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrResourceNotFound)
@@ -210,8 +226,8 @@ func GetPartnerByTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res.SetResponse(partners)
-	res.SetNewPagination(r, qp.Page, next, (*partners)[0].Count)
+	res.SetResponse(outlets)
+	res.SetNewPagination(r, qp.Page, next, (*outlets)[0].Count)
 	res.JSON(w, res, http.StatusOK)
 }
 
@@ -235,7 +251,7 @@ func PostBank(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	reqBank.PartnerID = bone.GetValue(r, "pid")
+	reqBank.OutletID = bone.GetValue(r, "pid")
 	reqBank.CreatedBy = accData.AccountID
 	reqBank.UpdatedBy = accData.AccountID
 	response, err := reqBank.Insert()
@@ -248,18 +264,6 @@ func PostBank(w http.ResponseWriter, r *http.Request) {
 
 	res.SetResponse(response)
 	res.JSON(w, res, http.StatusCreated)
-}
-
-type BankFilter struct {
-	ID              string `schema:"id" filter:"array"`
-	PartnerID       string `schema:"partner_id" filter:"array"`
-	BankName        string `schema:"bank_name" filter:"string"`
-	BankBranch      string `schema:"bank_branch" filter:"string"`
-	BankAccountName string `schema:"bank_account_name" filter:"string"`
-	CompanyName     string `schema:"company_name" filter:"string"`
-	Name            string `schema:"name" filter:"string"`
-	Phone           string `schema:"phone" filter:"string"`
-	Email           string `schema:"email" filter:"string"`
 }
 
 //GetBanks : GET list of banks
@@ -291,13 +295,13 @@ func GetBanks(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-//GetBankByPartnerID : GET bank by partner id
-func GetBankByPartnerID(w http.ResponseWriter, r *http.Request) {
+//GetBankByOutletID : GET bank by outlet id
+func GetBankByOutletID(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
-	partnerID := bone.GetValue(r, "pid")
-	bank, _, err := model.GetBankByPartnerID(qp, partnerID)
+	outletID := bone.GetValue(r, "pid")
+	bank, _, err := model.GetBankByOutletID(qp, outletID)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
@@ -329,7 +333,7 @@ func UpdateBank(w http.ResponseWriter, r *http.Request) {
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
-	reqBank.PartnerID = id
+	reqBank.OutletID = id
 	reqBank.UpdatedBy = accData.AccountID
 	err = reqBank.Update()
 	if err != nil {
@@ -353,7 +357,7 @@ func DeleteBank(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := bone.GetValue(r, "id")
-	p := model.Bank{ID: u.StringToInt(id)}
+	p := model.Bank{ID: id}
 	p.UpdatedBy = accData.AccountID
 	if err := p.Delete(); err != nil {
 		res.SetError(JSONErrResourceNotFound)
@@ -363,23 +367,24 @@ func DeleteBank(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-func GetPartnerBanks(r *http.Request, partnerID string) ([]model.Bank, error) {
+//GetOutletBanks : get outlet banks
+func GetOutletBanks(r *http.Request, outletID string) ([]model.Bank, error) {
 
 	qp := u.NewQueryParam(r)
-	partner, _, err := model.GetPartnerByID(qp, partnerID)
+	outlet, _, err := model.GetOutletByID(qp, outletID)
 	if err != nil {
 		return []model.Bank{}, err
 	}
 
-	partnerBank := []model.Bank{}
-	err = json.Unmarshal([]byte(partner.Banks), &partnerBank)
+	outletBank := []model.Bank{}
+	err = json.Unmarshal([]byte(outlet.Banks), &outletBank)
 	if err != nil {
 		return []model.Bank{}, err
 	}
 
-	if len(partnerBank) < 1 {
+	if len(outletBank) < 1 {
 		return []model.Bank{}, model.ErrorBankNotFound
 	}
 
-	return partnerBank, nil
+	return outletBank, nil
 }

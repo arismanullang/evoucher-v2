@@ -40,29 +40,23 @@ func init() {
 	v2.Put("/:company/web/programs/:id", c.CheckFuncJWT(c.UpdateProgram, "program-edit"))
 	v2.Delete("/:company/web/programs/:id", c.CheckFuncJWT(c.DeleteProgram, "program_delete"))
 
-	//partners == outlets
-	v2.Post("/:company/web/partners", c.CheckFuncJWT(c.PostPartner, "outlet-create"))
-	v2.Get("/:company/web/partners", c.CheckFuncJWT(c.GetPartners, "outlet-view"))
-	v2.Get("/:company/web/partners/:id", c.CheckFuncJWT(c.GetPartnerByID, "outlet-view"))
-	v2.Put("/:company/web/partners/:id", c.CheckFuncJWT(c.UpdatePartner, "outlet-edit"))
-	v2.Delete("/:company/web/partners/:id", c.CheckFuncJWT(c.DeletePartner, "outlet-delete"))
+	//outlets
+	v2.Post("/:company/web/outlets", c.CheckFuncJWT(c.PostOutlet, "outlet-create"))
+	v2.Get("/:company/web/outlets", c.CheckFuncJWT(c.GetOutlets, "outlet-view"))
+	v2.Get("/:company/web/outlets/:id", c.CheckFuncJWT(c.GetOutletByID, "outlet-view"))
+	v2.Put("/:company/web/outlets/:id", c.CheckFuncJWT(c.UpdateOutlet, "outlet-edit"))
+	v2.Delete("/:company/web/outlets/:id", c.CheckFuncJWT(c.DeleteOutlet, "outlet-delete"))
 
-	v2.Get("/:company/web/partners/tags/:tag_id", c.CheckFuncJWT(c.GetPartnerByTags, "tag-view"))
-	v2.Post("/:company/web/partners/tags/:holder", c.CheckFuncJWT(c.PostPartnerTags, "tag-edit"))
+	v2.Get("/:company/web/outlets/tags/:tag_id", c.CheckFuncJWT(c.GetOutletByTags, "tag-view"))
+	v2.Post("/:company/web/outlets/tags/:holder", c.CheckFuncJWT(c.PostOutletTags, "tag-edit"))
 
-	v2.PostFunc("/:company/web/outlets", c.PostPartner)
-	v2.GetFunc("/:company/web/outlets", c.GetPartners)
-	v2.GetFunc("/:company/web/outlets/:id", c.GetPartnerByID)
-	v2.PutFunc("/:company/web/outlets/:id", c.UpdatePartner)
-	v2.DeleteFunc("/:company/web/outlets/:id", c.DeletePartner)
+	v2.GetFunc("/:company/web/outlets/tags/:tag_id", c.GetOutletByTags)
+	v2.PostFunc("/:company/web/outlets/tags/:holder", c.PostOutletTags)
 
-	v2.GetFunc("/:company/web/outlets/tags/:tag_id", c.GetPartnerByTags)
-	v2.PostFunc("/:company/web/outlets/tags/:holder", c.PostPartnerTags)
-
-	// partner/outlet bank
+	// outlet bank
 	v2.Post("/:company/web/banks/:pid", c.CheckFuncJWT(c.PostBank, "outlet-create"))
 	v2.Get("/:company/web/banks", c.CheckFuncJWT(c.GetBanks, "outlet-view"))
-	v2.Get("/:company/web/banks/:pid", c.CheckFuncJWT(c.GetBankByPartnerID, "outlet-view"))
+	v2.Get("/:company/web/banks/:pid", c.CheckFuncJWT(c.GetBankByOutletID, "outlet-view"))
 	v2.Put("/:company/web/banks/:pid", c.CheckFuncJWT(c.UpdateBank, "outlet-edit"))
 	v2.Delete("/:company/web/banks/:pid", c.CheckFuncJWT(c.DeleteBank, "outlet-delete"))
 
@@ -113,7 +107,7 @@ func init() {
 	// v2.Get("/:company/web/reimburse/unpaid/", c.CheckFuncJWT(c.GetCashoutsUnpaid, "reimburse-create")) -> still grouped by date
 
 	v2.Get("/:company/web/reimburse/unpaid/list", c.CheckFuncJWT(c.GetUnpaidReimburse, "transaction-view"))
-	v2.Get("/:company/web/reimburse/unpaid/vouchers/:partner_id", c.CheckFuncJWT(c.GetUnpaidVouchersByOutlet, "transaction-view"))
+	v2.Get("/:company/web/reimburse/unpaid/vouchers/:outlet_id", c.CheckFuncJWT(c.GetUnpaidVouchersByOutlet, "transaction-view"))
 	v2.Post("/:company/web/reimburse/create", c.CheckFuncJWT(c.PostCashout, "transaction-view"))
 	v2.Get("/:company/web/reimburse/vouchers/:id", c.CheckFuncJWT(c.GetCashoutVouchers, "transaction-view"))
 	v2.Get("/:company/web/reimburse/:id", c.CheckFuncJWT(c.GetCashoutByID, "transaction-view"))
@@ -135,9 +129,9 @@ func init() {
 	v2.GetFunc("/:company/dashboard/voucherusage", c.GetDashboardVoucherUsage)
 
 	//REPORT
-	v2.GetFunc("/:company/report/outlet-transaction", c.GetReportDailyVoucherTransactionWithPartner)
+	v2.GetFunc("/:company/report/outlet-transaction", c.GetReportDailyVoucherTransactionWithOutlet)
 	v2.GetFunc("/:company/report/topoutlet", c.GetReportDailyVoucherTransaction)
-	v2.GetFunc("/:company/report/", c.GetReportDailyPartnerTransaction)
+	v2.GetFunc("/:company/report/", c.GetReportDailyOutletTransaction)
 	v2.GetFunc("/:company/report/topoutlet", c.GetReportMonthlyOutletTransaction)
 	v2.GetFunc("/:company/report/topoutlet", c.GetReportYearlyOutletTransaction)
 

@@ -16,7 +16,7 @@ type (
 		ID            string `schema:"id" filter:"array"`
 		AccountID     string `schema:"account_id" filter:"string"`
 		Code          string `schema:"code" filter:"string"`
-		PartnerID     string `schema:"partner_id" filter:"string"`
+		OutletID      string `schema:"outlet_id" filter:"string"`
 		BankAccount   string `schema:"bank_account" filter:"string"`
 		Amount        string `schema:"amount" filter:"string"`
 		PaymentMethod string `schema:"payment_method" filter:"string"`
@@ -29,7 +29,7 @@ type (
 
 	//CashoutRequest : cashout request struct
 	CashoutRequest struct {
-		PartnerID   string `json:"partner_id"`
+		OutletID    string `json:"outlet_id"`
 		ReferenceNo string `json:"reference_no"`
 		VoucherIDs  string `json:"voucher_ids"`
 	}
@@ -73,14 +73,14 @@ func GetCashouts(w http.ResponseWriter, r *http.Request) {
 
 type (
 	CashoutSummaryFilter struct {
-		Date        *time.Time `schema:"date" filter:"date"`
-		PartnerID   string     `schema:"partner_id" filter:"array"`
-		PartnerName string     `schema:"partner_name" filter:"string"`
+		Date       *time.Time `schema:"date" filter:"date"`
+		OutletID   string     `schema:"outlet_id" filter:"array"`
+		OutletName string     `schema:"outlet_name" filter:"string"`
 	}
 	CashoutUnpaidFilter struct {
-		Date        *time.Time `schema:"date" filter:"date"`
-		PartnerID   string     `schema:"partner_id" filter:"array"`
-		PartnerName string     `schema:"partner_name" filter:"string"`
+		Date       *time.Time `schema:"date" filter:"date"`
+		OutletID   string     `schema:"outlet_id" filter:"array"`
+		OutletName string     `schema:"outlet_name" filter:"string"`
 	}
 )
 
@@ -145,13 +145,13 @@ func GetUnpaidVouchersByOutlet(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	qp := u.NewQueryParam(r)
 
-	partnerID := bone.GetValue(r, "partner_id")
+	outletID := bone.GetValue(r, "outlet_id")
 	startDate := r.FormValue("start_date")
 	endDate := r.FormValue("end_date")
 
 	qp.SetCompanyID(bone.GetValue(r, "company"))
 
-	unpaidVouchers, next, err := model.GetUnpaidVouchersByOutlet(qp, partnerID, startDate, endDate)
+	unpaidVouchers, next, err := model.GetUnpaidVouchersByOutlet(qp, outletID, startDate, endDate)
 	if err != nil && err != model.ErrorResourceNotFound {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
@@ -258,7 +258,7 @@ func DeleteCashout(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-//PostCashout : POST Cashout by partner
+//PostCashout : POST Cashout by outlet
 func PostCashout(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	token := r.FormValue("token")
@@ -281,7 +281,7 @@ func PostCashout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	partnerBank, err := GetPartnerBanks(r, req.PartnerID)
+	outletBank, err := GetOutletBanks(r, req.OutletID)
 	if err != nil {
 		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrBadRequest.Status)
@@ -294,10 +294,10 @@ func PostCashout(w http.ResponseWriter, r *http.Request) {
 	cashout := model.Cashout{
 		CompanyID:       companyID,
 		Code:            csCode,
-		PartnerID:       req.PartnerID,
-		BankName:        partnerBank[0].BankName,
-		BankCompanyName: partnerBank[0].CompanyName,
-		BankAccount:     partnerBank[0].BankAccount,
+		OutletID:        req.OutletID,
+		BankName:        outletBank[0].BankName,
+		BankCompanyName: outletBank[0].CompanyName,
+		BankAccount:     outletBank[0].BankAccount,
 		ReferenceNo:     req.ReferenceNo,
 		PaymentMethod:   "bank_transfer",
 		CreatedBy:       accData.AccountID,
@@ -327,7 +327,7 @@ func PostCashout(w http.ResponseWriter, r *http.Request) {
 	// for _, td := range *transactionDetails{
 	// 	transaction, err := model.GetTransactionByID(qp, td.TransactionId)
 	// 	if err != nil {
-	// Do we need to check if the vouchers used in the right partner?
+	// Do we need to check if the vouchers used in the right outlet?
 	// 	}
 	// }
 

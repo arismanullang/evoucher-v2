@@ -17,9 +17,9 @@ type (
 		TotalAmount        string             `db:"total_amount" json:"total_amount"`
 		Holder             string             `db:"holder" json:"holder"`
 		Vouchers           Vouchers           `json:"vouchers,omitempty"`
-		PartnerID          string             `db:"partner_id" json:"partner_id"`
-		PartnerName        string             `db:"partner_name" json:"partner_name"`
-		PartnerDescription types.JSONText     `db:"partner_description" json:"partner_description,omitempty"`
+		OutletID           string             `db:"outlet_id" json:"outlet_id"`
+		OutletName         string             `db:"outlet_name" json:"outlet_name"`
+		OutletDescription  types.JSONText     `db:"outlet_description" json:"outlet_description,omitempty"`
 		CreatedBy          string             `db:"created_by" json:"created_by"`
 		CreatedAt          *time.Time         `db:"created_at" json:"created_at"`
 		UpdatedBy          string             `db:"updated_by" json:"updated_by"`
@@ -48,7 +48,7 @@ func GetTransactions(qp *util.QueryParam) (*Transactions, bool, error) {
 	return getTransactions("1", "1", qp)
 }
 
-//GetTransactionByID : get partner by specified ID
+//GetTransactionByID : get outlet by specified ID
 func GetTransactionByID(qp *util.QueryParam, id string) (Transaction, error) {
 	// return
 	transactions, _, err := getTransactions("id", id, qp)
@@ -75,9 +75,9 @@ func GetTransactionByProgram(qp *util.QueryParam, val string) (*Transactions, bo
 	return getTransactions("program_id", val, qp)
 }
 
-//GetTransactionByPartner : get transaction by specified PartnerID
-func GetTransactionByPartner(qp *util.QueryParam, val string) (*Transactions, bool, error) {
-	return getTransactions("partner_id", val, qp)
+//GetTransactionByOutlet : get transaction by specified OutletID
+func GetTransactionByOutlet(qp *util.QueryParam, val string) (*Transactions, bool, error) {
+	return getTransactions("outlet_id", val, qp)
 }
 
 //GetTransactionDetailByVoucherID : get transaction detail by voucher ID
@@ -182,13 +182,13 @@ func (t Transaction) Insert() (*[]Transaction, error) {
 	defer tx.Rollback()
 
 	q := `INSERT INTO 
-			transactions (company_id, transaction_code, total_amount, holder, partner_id, created_by, updated_by, status)
+			transactions (company_id, transaction_code, total_amount, holder, outlet_id, created_by, updated_by, status)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 			RETURNING
-				id, company_id, transaction_code, total_amount, holder, partner_id, created_by, created_at, updated_by, updated_at, status
+				id, company_id, transaction_code, total_amount, holder, outlet_id, created_by, created_at, updated_by, updated_at, status
 	`
 	var res []Transaction
-	err = tx.Select(&res, tx.Rebind(q), t.CompanyID, t.TransactionCode, t.TotalAmount, t.Holder, t.PartnerID, t.CreatedBy, t.UpdatedBy, StatusCreated)
+	err = tx.Select(&res, tx.Rebind(q), t.CompanyID, t.TransactionCode, t.TotalAmount, t.Holder, t.OutletID, t.CreatedBy, t.UpdatedBy, StatusCreated)
 	if err != nil {
 		return nil, err
 	}
@@ -226,13 +226,13 @@ func (t Transaction) Insert() (*[]Transaction, error) {
 //	defer tx.Rollback()
 //
 //	q := `INSERT INTO
-//			transactions (company_id, transaction_code, total_amount, holder, partner_id, created_by, updated_by, status)
+//			transactions (company_id, transaction_code, total_amount, holder, outlet_id, created_by, updated_by, status)
 //			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 //			RETURNING
-//				id, company_id, transaction_code, total_amount, holder, partner_id, created_by, created_at, updated_by, updated_at, status
+//				id, company_id, transaction_code, total_amount, holder, outlet_id, created_by, created_at, updated_by, updated_at, status
 //	`
 //	var res []TransactionDetail
-//	err = tx.Select(&res, tx.Rebind(q), t.CompanyId, t.TransactionCode, t.TotalAmount, t.Holder, t.PartnerId, t.CreatedBy, t.UpdatedBy, StatusCreated)
+//	err = tx.Select(&res, tx.Rebind(q), t.CompanyId, t.TransactionCode, t.TotalAmount, t.Holder, t.OutletId, t.CreatedBy, t.UpdatedBy, StatusCreated)
 //	if err != nil {
 //		return nil, err
 //	}

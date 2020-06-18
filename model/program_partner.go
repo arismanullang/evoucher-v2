@@ -12,49 +12,47 @@ import (
 )
 
 type (
-	// ProgramPartner model
-	ProgramPartner struct {
+	// ProgramOutlet model
+	ProgramOutlet struct {
 		ID        string     `db:"id" json:"id,omitempty"`
 		ProgramID string     `db:"program_id" json:"program_id,omitempty"`
-		PartnerID string     `db:"partner_id" json:"partner_id,omitempty"`
+		OutletID  string     `db:"outlet_id" json:"outlet_id,omitempty"`
 		CreatedAt *time.Time `db:"created_at" json:"created_at,omitempty"`
 		CreatedBy string     `db:"created_by" json:"created_by,omitempty"`
 		UpdatedAt *time.Time `db:"updated_at" json:"updated_at,omitempty"`
 		UpdatedBy string     `db:"updated_by" json:"updated_by,omitempty"`
 		Status    string     `db:"status" json:"status,omitempty"`
-		Programs  Programs
-		Partners  Programs
 	}
-	//ProgramPartners model
-	ProgramPartners []ProgramPartner
+	//ProgramOutlets model
+	ProgramOutlets []ProgramOutlet
 )
 
-// GetPartnerByProgramID :
-func GetPartnerByProgramID(programID string, qp *util.QueryParam) (*Partners, bool, error) {
-	q, err := qp.GetQueryByDefaultStruct(Partner{})
+// GetOutletByProgramID :
+func GetOutletByProgramID(programID string, qp *util.QueryParam) (*Outlets, bool, error) {
+	q, err := qp.GetQueryByDefaultStruct(Outlet{})
 	if err != nil {
-		return &Partners{}, false, err
+		return &Outlets{}, false, err
 	}
 	q += `
 			FROM
-				program_partners ProgramPartner
-				INNER JOIN m_partners partner ON ProgramPartner.partner_id = partner.id
-				INNER JOIN programs program ON ProgramPartner.program_id = program.id
+				program_outlets ProgramOutlet
+				INNER JOIN m_outlets outlet ON ProgramOutlet.outlet_id = outlet.id
+				INNER JOIN programs program ON ProgramOutlet.program_id = program.id
 
 			WHERE 
-				ProgramPartner.status = ?
+				ProgramOutlet.status = ?
 			AND 
-				ProgramPartner.program_id = ?
+				ProgramOutlet.program_id = ?
 		`
 	// q += qp.GetQuerySort()
 	// q += qp.GetQueryLimit()
-	var resd Partners
+	var resd Outlets
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, programID)
 	if err != nil {
-		return &Partners{}, false, err
+		return &Outlets{}, false, err
 	}
 	if len(resd) < 1 {
-		return &Partners{}, false, ErrorResourceNotFound
+		return &Outlets{}, false, ErrorResourceNotFound
 	}
 	next := false
 	if len(resd) > qp.Count {
@@ -66,22 +64,22 @@ func GetPartnerByProgramID(programID string, qp *util.QueryParam) (*Partners, bo
 	return &resd, next, nil
 }
 
-// GetProgramByPartnerID :
-func GetProgramByPartnerID(programID string, qp *util.QueryParam) (*Programs, bool, error) {
+// GetProgramByOutletID :
+func GetProgramByOutletID(programID string, qp *util.QueryParam) (*Programs, bool, error) {
 	q, err := qp.GetQueryByDefaultStruct(Program{})
 	if err != nil {
 		return &Programs{}, false, err
 	}
 	q += `
 			FROM
-				program_partners ProgramPartner
-				INNER JOIN partners partner ON ProgramPartner.partner_id = partner.id
-				INNER JOIN programs program ON ProgramPartner.program_id = program.id
+				program_outlets ProgramOutlet
+				INNER JOIN outlets outlet ON ProgramOutlet.outlet_id = outlet.id
+				INNER JOIN programs program ON ProgramOutlet.program_id = program.id
 
 			WHERE 
-				ProgramPartner.status = ?
+				ProgramOutlet.status = ?
 			AND 
-				ProgramPartner.program_id = ?
+				ProgramOutlet.program_id = ?
 		`
 	q += qp.GetQuerySort()
 	q += qp.GetQueryLimit()
@@ -105,30 +103,30 @@ func GetProgramByPartnerID(programID string, qp *util.QueryParam) (*Programs, bo
 	return &resd, next, nil
 }
 
-//NewProgramPartners : initiate Program partners obj
-func NewProgramPartners(programID string, partners Partners) *ProgramPartners {
-	pp := make(ProgramPartners, len(partners))
-	for k, v := range partners {
+//NewProgramOutlets : initiate Program outlets obj
+func NewProgramOutlets(programID string, outlets Outlets) *ProgramOutlets {
+	pp := make(ProgramOutlets, len(outlets))
+	for k, v := range outlets {
 		pp[k].ProgramID = programID
-		pp[k].PartnerID = v.ID
+		pp[k].OutletID = v.ID
 	}
 	return &pp
 }
 
 //Upsert : insert data using upsert/append query
-func (pp *ProgramPartners) Upsert(tx *sqlx.Tx) error {
+func (pp *ProgramOutlets) Upsert(tx *sqlx.Tx) error {
 	values := new(bytes.Buffer)
 	var args []interface{}
 	for _, v := range *pp {
 		values.WriteString("(?, ?, ?, ?, ?),")
-		args = append(args, v.ProgramID, v.PartnerID, v.CreatedBy, v.UpdatedBy, StatusCreated)
+		args = append(args, v.ProgramID, v.OutletID, v.CreatedBy, v.UpdatedBy, StatusCreated)
 	}
 
 	q := `INSERT INTO 
-				program_partners
+				program_outlets
 				( 				
 					 program_id
-					, partner_id	
+					, outlet_id	
 					, created_by
 					, updated_by
 					, status
@@ -140,17 +138,17 @@ func (pp *ProgramPartners) Upsert(tx *sqlx.Tx) error {
 
 	q += ` 	
 			ON CONFLICT 
-				( program_id , partner_id ) 
+				( program_id , outlet_id ) 
 			DO UPDATE 
 			SET
 				program_id = excluded.program_id
-				,partner_id = excluded.partner_id
+				,outlet_id = excluded.outlet_id
 				,updated_at = now()
 				,status = excluded.status
 			RETURNING
 				id
 				, program_id
-				, partner_id
+				, outlet_id
 				, created_at
 				, created_by
 				, updated_at
@@ -160,7 +158,7 @@ func (pp *ProgramPartners) Upsert(tx *sqlx.Tx) error {
 	// fmt.Println("pp query : ", q)
 	util.DEBUG(q, args)
 
-	var res ProgramPartners
+	var res ProgramOutlets
 	err := tx.Select(&res, tx.Rebind(q), args...)
 	if err != nil {
 		return err
@@ -171,11 +169,11 @@ func (pp *ProgramPartners) Upsert(tx *sqlx.Tx) error {
 	return nil
 }
 
-// Delete : delete program partners by program ID
-func (pp *ProgramPartners) Delete(tx *sqlx.Tx) error {
+// Delete : delete program outlets by program ID
+func (pp *ProgramOutlets) Delete(tx *sqlx.Tx) error {
 
 	q := `UPDATE
-				program_partners 
+				program_outlets 
 			SET
 				updated_at = now()
 				, status = ?
@@ -184,7 +182,7 @@ func (pp *ProgramPartners) Delete(tx *sqlx.Tx) error {
 			RETURNING
 			id
 			, program_id
-			, partner_id
+			, outlet_id
 			, created_at
 			, created_by
 			, updated_at
@@ -194,10 +192,10 @@ func (pp *ProgramPartners) Delete(tx *sqlx.Tx) error {
 
 	programID := (*pp)[0].ProgramID
 
-	var res ProgramPartners
+	var res ProgramOutlets
 	err := tx.Select(&res, tx.Rebind(q), StatusDeleted, programID)
 	if err != nil {
-		return errors.New("Failed when delete program partner ," + ErrorNoDataAffected.Error() + " , " + err.Error())
+		return errors.New("Failed when delete program outlet ," + ErrorNoDataAffected.Error() + " , " + err.Error())
 	}
 
 	*pp = res

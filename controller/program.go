@@ -32,9 +32,9 @@ func PostProgram(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// TO-DO
-	//validate partners(?)
-	for _, v := range program.Partners {
-		_, _, err := model.GetPartnerByID(qp, v.ID)
+	//validate outlets(?)
+	for _, v := range program.Outlets {
+		_, _, err := model.GetOutletByID(qp, v.ID)
 		if err != nil {
 			u.DEBUG(JSONErrBadRequest.Message, " OutletID:", v.ID)
 			res.SetError(JSONErrBadRequest.SetMessage(err.Error()))
@@ -52,7 +52,7 @@ func PostProgram(w http.ResponseWriter, r *http.Request) {
 	//ras := (rules.And["some"])
 	//u.DEBUG("isempty", ras.IsEmpty())
 
-	//insert program -> partners
+	//insert program -> outlets
 	program.CreatedBy = accData.AccountID
 	response, err := program.Insert()
 	if err != nil {
@@ -297,14 +297,14 @@ func GetMProgramByID(w http.ResponseWriter, r *http.Request) {
 	qp2 := u.NewQueryParam(r)
 	r.Form.Set("fields", model.MOutletFields)
 	qp2.SetCompanyID(companyID)
-	partners, _, err := model.GetPartnerByProgramID(id, qp2)
+	outlets, _, err := model.GetOutletByProgramID(id, qp2)
 	if err != nil {
 		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
 	}
 
-	program.Partners = *partners
+	program.Outlets = *outlets
 
 	res.SetResponse(program)
 	res.JSON(w, res, http.StatusOK)

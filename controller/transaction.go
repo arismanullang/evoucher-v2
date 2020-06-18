@@ -27,6 +27,20 @@ type (
 		TotalAmount float64 `json:"total_amount"`
 		Details     string  `json:"details"`
 	}
+
+	TransactionFilter struct {
+		ID              string `schema:"id" filter:"array"`
+		CompanyID       string `schema:"company_id" filter:"string"`
+		TransactionCode string `schema:"transaction_code" filter:"array"`
+		TotalAmount     string `schema:"total_amount" filter:"number"`
+		Holder          string `schema:"holder" filter:"array"`
+		OutletID        string `schema:"outlet_id" filter:"string"`
+		CreatedBy       string `schema:"created_by" filter:"string"`
+		CreatedAt       string `schema:"created_at" filter:"date"`
+		UpdatedBy       string `schema:"updated_by" filter:"string"`
+		UpdatedAt       string `schema:"updated_at" filter:"date"`
+		Status          string `schema:"status" filter:"enum"`
+	}
 )
 
 //GetHolderTrxHistoryDetail : GET history detail by trx_id
@@ -101,13 +115,13 @@ func GetHolderTrxHistory(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-//GetTransactions : GET list of partners
+//GetTransactions : GET list of outlets
 func GetTransactionsByOutlet(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
 	id := bone.GetValue(r, "id")
-	result, next, err := model.GetTransactionByPartner(qp, id)
+	result, next, err := model.GetTransactionByOutlet(qp, id)
 	if err != nil {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
@@ -119,7 +133,7 @@ func GetTransactionsByOutlet(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-//GetTransactions : GET list of partners
+//GetTransactions : GET list of outlets
 func GetTransactionsByProgram(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
@@ -137,21 +151,7 @@ func GetTransactionsByProgram(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-type TransactionFilter struct {
-	ID              string `schema:"id" filter:"array"`
-	CompanyID       string `schema:"company_id" filter:"string"`
-	TransactionCode string `schema:"transaction_code" filter:"array"`
-	TotalAmount     string `schema:"total_amount" filter:"number"`
-	Holder          string `schema:"holder" filter:"array"`
-	PartnerID       string `schema:"partner_id" filter:"string"`
-	CreatedBy       string `schema:"created_by" filter:"string"`
-	CreatedAt       string `schema:"created_at" filter:"date"`
-	UpdatedBy       string `schema:"updated_by" filter:"string"`
-	UpdatedAt       string `schema:"updated_at" filter:"date"`
-	Status          string `schema:"status" filter:"enum"`
-}
-
-//GetTransactions : GET list of partners
+//GetTransactions : GET list of outlets
 func GetTransactions(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
@@ -341,7 +341,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	partner, _, err := model.GetPartnerByID(qp, req.OutletID)
+	outlet, _, err := model.GetOutletByID(qp, req.OutletID)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
@@ -354,9 +354,9 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	tx.TransactionCode = u.RandomizeString(u.TRANSACTION_CODE_LENGTH, u.NUMERALS)
 	tx.TotalAmount = fmt.Sprint(totalDiscount)
 	tx.Holder = account.ID
-	tx.PartnerID = req.OutletID
-	tx.PartnerName = partner.Name
-	tx.PartnerDescription = partner.Description
+	tx.OutletID = req.OutletID
+	tx.OutletName = outlet.Name
+	tx.OutletDescription = outlet.Description
 	tx.CreatedBy = account.ID
 	tx.UpdatedBy = account.ID
 
@@ -380,8 +380,8 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	finalResponse := *resTrx
-	finalResponse[0].PartnerName = partner.Name
-	finalResponse[0].PartnerDescription = partner.Description
+	finalResponse[0].OutletName = outlet.Name
+	finalResponse[0].OutletDescription = outlet.Description
 	finalResponse[0].Vouchers = listVoucherByID
 
 	//send email confirmation
@@ -693,11 +693,11 @@ func PostPublicVoucherUse(w http.ResponseWriter, r *http.Request) {
 	// Multiply with total voucher used
 	tx.TotalAmount = fmt.Sprint(program.MaxValue)
 	tx.Holder = *voucher.Holder
-	tx.PartnerID = req.OutletID
+	tx.OutletID = req.OutletID
 	tx.CreatedBy = "web"
 	tx.UpdatedBy = "web"
 
-	partner, _, err := model.GetPartnerByID(qp, req.OutletID)
+	outlet, _, err := model.GetOutletByID(qp, req.OutletID)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
@@ -725,9 +725,9 @@ func PostPublicVoucherUse(w http.ResponseWriter, r *http.Request) {
 
 	finalResponse := *resTrx
 	finalResponse[0].Vouchers = model.Vouchers{*voucher}
-	finalResponse[0].PartnerID = partner.ID
-	finalResponse[0].PartnerName = partner.Name
-	finalResponse[0].PartnerDescription = partner.Description
+	finalResponse[0].OutletID = outlet.ID
+	finalResponse[0].OutletName = outlet.Name
+	finalResponse[0].OutletDescription = outlet.Description
 
 	//send email confirmation
 	err = finalResponse[0].SendEmailConfirmation()

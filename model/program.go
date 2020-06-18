@@ -30,7 +30,7 @@ type (
 		UpdatedAt       *time.Time     `db:"updated_at" json:"updated_at,omitempty"`
 		UpdatedBy       string         `db:"updated_by" json:"updated_by,omitempty"`
 		Status          string         `db:"status" json:"status,omitempty"`
-		Partners        Partners       `json:"partners,omitempty"`
+		Outlets         Outlets        `json:"outlets,omitempty"`
 		Vouchers        Vouchers       `json:"vouchers,omitempty"`
 		VoucherFormat   types.JSONText `db:"voucher_format" json:"voucher_format,omitempty"`
 		IsReimburse     bool           `db:"is_reimburse" json:"is_reimburse,omitempty"`
@@ -192,9 +192,9 @@ func (p *Program) Insert() (*Programs, error) {
 
 	//update returning ID into obj program
 	p.ID = res[0].ID
-	//insert program partners
-	if err := NewProgramPartners(p.ID, p.Partners).Upsert(tx); err != nil {
-		return nil, errors.New("Failed when insert new partners ," + err.Error())
+	//insert program outlets
+	if err := NewProgramOutlets(p.ID, p.Outlets).Upsert(tx); err != nil {
+		return nil, errors.New("Failed when insert new outlets ," + err.Error())
 	}
 
 	err = tx.Commit()
@@ -287,9 +287,9 @@ func (p *Program) Delete() error {
 	}
 	defer tx.Rollback()
 
-	//delete partners
-	if err := NewProgramPartners(p.ID, p.Partners).Delete(tx); err != nil {
-		return errors.New("Failed when delete partners ," + err.Error())
+	//delete outlets
+	if err := NewProgramOutlets(p.ID, p.Outlets).Delete(tx); err != nil {
+		return errors.New("Failed when delete outlets ," + err.Error())
 	}
 
 	q := `UPDATE
