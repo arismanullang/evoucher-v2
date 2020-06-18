@@ -76,7 +76,6 @@ type (
 		CashoutDetails  CashoutDetails `json:"cashout_details,omitempty"`
 		Count           int            `db:"count" json:"-"`
 	}
-
 	Cashouts      []Cashout
 	CashoutDetail struct {
 		ID        int        `db:"id" json:"id,omitempty"`

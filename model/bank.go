@@ -12,7 +12,7 @@ type (
 	//Bank :
 	Bank struct {
 		// Bank            string `json:"bank,omitempty"`
-		ID              int        `db:"id" json:"id,omitempty"`
+		ID              string     `db:"id" json:"id,omitempty"`
 		PartnerID       string     `db:"partner_id" json:"partner_id"`
 		BankName        string     `db:"bank_name" json:"bank_name,omitempty"`
 		BankBranch      string     `db:"bank_branch" json:"bank_branch,omitempty"`
