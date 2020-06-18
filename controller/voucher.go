@@ -164,10 +164,12 @@ func GetPublicVoucherByID(w http.ResponseWriter, r *http.Request) {
 	qp := u.NewQueryParam(r)
 	qp.Count = -1
 	encodedVoucherID := r.FormValue("x")
-	// encodedCompanyID := r.FormValue("y")
+	encodedCompanyID := r.FormValue("y")
 
 	voucherID := u.StrDecode(encodedVoucherID)
-	// companyID := u.StrDecode(encodedCompanyID)
+	companyID := u.StrDecode(encodedCompanyID)
+
+	qp.SetCompanyID(companyID)
 
 	voucher, err := model.GetVoucherByID(voucherID, qp)
 	if err != nil {
@@ -177,11 +179,12 @@ func GetPublicVoucherByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	program := model.Program{}
 	vouchers := model.Vouchers{}
-	partnersByProgram := model.Partners{}
 
-	detailProgram, err := model.GetProgramByID(voucher.ProgramID, qp)
+	r.Form.Set("fields", model.MProgramFields)
+	qp2 := u.NewQueryParam(r)
+	qp2.SetCompanyID(companyID)
+	program, err := model.GetProgramByID(voucher.ProgramID, qp2)
 	if err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrBadRequest)
@@ -189,42 +192,19 @@ func GetPublicVoucherByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	program.ID = detailProgram.ID
-	program.Name = detailProgram.Name
-	program.Type = detailProgram.Type
-	program.Value = detailProgram.Value
-	program.MaxValue = detailProgram.MaxValue
-	program.StartDate = detailProgram.StartDate
-	program.EndDate = detailProgram.EndDate
-	program.Description = detailProgram.Description
-	program.ImageURL = detailProgram.ImageURL
-	program.Price = detailProgram.Price
-	program.ProgramChannels = detailProgram.ProgramChannels
-	program.State = detailProgram.State
-	program.Status = detailProgram.Status
-
-	tempVoucher := model.Voucher{
-		ID:        voucher.ID,
-		Code:      voucher.Code,
-		ExpiredAt: voucher.ExpiredAt,
-		ValidAt:   voucher.ValidAt,
-		State:     voucher.State,
+	r.Form.Set("fields", model.MOutletFields)
+	qp3 := u.NewQueryParam(r)
+	qp3.SetCompanyID(companyID)
+	partners, _, err := model.GetPartnerByProgramID(voucher.ProgramID, qp3)
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
 	}
-	vouchers = append(vouchers, tempVoucher)
 
+	program.Partners = *partners
+	vouchers = append(vouchers, *voucher)
 	program.Vouchers = vouchers
-
-	for _, outlet := range detailProgram.Partners {
-		tempOutlet := model.Partner{
-			ID:          outlet.ID,
-			Name:        outlet.Name,
-			Description: outlet.Description,
-			Status:      outlet.Status,
-		}
-		partnersByProgram = append(partnersByProgram, tempOutlet)
-	}
-
-	program.Partners = partnersByProgram
 
 	res.SetResponse(program)
 	res.JSON(w, res, http.StatusOK)
