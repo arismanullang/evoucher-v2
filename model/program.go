@@ -49,7 +49,7 @@ type (
 )
 
 //MProgramFields : fields for 3rd party api
-var MProgramFields = "id, name, type, value, max_value, start_date, end_date, description, image_url, stock, is_reimburse, claimed, used"
+var MProgramFields = "id, name, type, value, max_value, rule, start_date, end_date, description, image_url, stock, is_reimburse, claimed, used"
 
 // GetProgramByHolder :
 func GetProgramByHolder(id string, qp *util.QueryParam) (*Programs, bool, error) {

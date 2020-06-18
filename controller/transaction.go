@@ -29,21 +29,75 @@ type (
 	}
 )
 
-//GetTransactionsByHolder : GET list transaction history by Holder
-func GetTransactionsByHolder(w http.ResponseWriter, r *http.Request) {
+//GetHolderTrxHistoryDetail : GET history detail by trx_id
+func GetHolderTrxHistoryDetail(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	qp := u.NewQueryParam(r)
+	//add new queryparam for voucher -> without companyID
+	voucherQP := u.NewQueryParam(r)
+	voucherQP.Count = -1
 
-	id := bone.GetValue(r, "id")
-	result, next, err := model.GetTransactionByHolder(qp, id)
-	if err != nil {
+	holder := bone.GetValue(r, "holder")
+	trxID := bone.GetValue(r, "trx_id")
+
+	qp.SetCompanyID(bone.GetValue(r, "company"))
+
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+
+	var f TransactionFilter
+	if err := decoder.Decode(&f, r.Form); err != nil {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
+	f.Holder = holder
+
+	qp.SetFilterModel(f)
+
+	transaction, err := model.GetTransactionByID(qp, trxID)
+	if err != nil {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
+
+	res.SetResponse(transaction)
+	res.JSON(w, res, http.StatusOK)
+}
+
+//GetHolderTrxHistory : GET list transaction history by Holder
+func GetHolderTrxHistory(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	qp := u.NewQueryParam(r)
+
+	holder := bone.GetValue(r, "holder")
+	qp.SetCompanyID(bone.GetValue(r, "company"))
+
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+
+	var f TransactionFilter
+	if err := decoder.Decode(&f, r.Form); err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+	f.Holder = holder
+	qp.SetFilterModel(f)
+
+	result, next, err := model.GetTransactions(qp)
+	if err != nil {
+		res.SetError(JSONErrResourceNotFound.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
+
 	res.SetResponse(result)
-	res.SetPagination(r, qp.Page, next)
+	if len(*result) > 0 {
+		res.SetNewPagination(r, qp.Page, next, (*result)[0].Count)
+	}
 	res.JSON(w, res, http.StatusOK)
 }
 
@@ -85,11 +139,11 @@ func GetTransactionsByProgram(w http.ResponseWriter, r *http.Request) {
 
 type TransactionFilter struct {
 	ID              string `schema:"id" filter:"array"`
-	CompanyId       string `schema:"company_id" filter:"string"`
+	CompanyID       string `schema:"company_id" filter:"string"`
 	TransactionCode string `schema:"transaction_code" filter:"array"`
 	TotalAmount     string `schema:"total_amount" filter:"number"`
-	Holder          string `schema:"holder" filter:"string"`
-	PartnerId       string `schema:"partner_id" filter:"string"`
+	Holder          string `schema:"holder" filter:"array"`
+	PartnerID       string `schema:"partner_id" filter:"string"`
 	CreatedBy       string `schema:"created_by" filter:"string"`
 	CreatedAt       string `schema:"created_at" filter:"date"`
 	UpdatedBy       string `schema:"updated_by" filter:"string"`
@@ -110,25 +164,11 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for idx, trx := range *result {
-		partner, _, err := model.GetPartnerByID(qp, trx.PartnerId)
-		if err != nil {
-			res.SetError(JSONErrFatal.SetArgs(err.Error()))
-			res.JSON(w, res, JSONErrFatal.Status)
-			return
-		}
-
-		selectedPartner := model.Partner{
-			ID:          partner.ID,
-			Name:        partner.Name,
-			Description: partner.Description,
-		}
-
-		(*result)[idx].Partner = selectedPartner
-	}
-
 	res.SetResponse(result)
-	res.SetPagination(r, qp.Page, next)
+
+	if len(*result) > 0 {
+		res.SetNewPagination(r, qp.Page, next, (*result)[0].Count)
+	}
 	res.JSON(w, res, http.StatusOK)
 }
 
@@ -155,79 +195,12 @@ func GetTransactionByID(w http.ResponseWriter, r *http.Request) {
 	qp.SetFilterModel(f)
 
 	id := bone.GetValue(r, "id")
-	transaction, _, err := model.GetTransactionByID(qp, id)
+	transaction, err := model.GetTransactionByID(qp, id)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
 		return
 	}
-
-	// partner
-	resPartner, _, err := model.GetPartnerByID(qp, transaction.PartnerId)
-	if err != nil {
-		res.SetError(JSONErrFatal.SetArgs(err.Error()))
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
-
-	partner := model.Partner{
-		ID:          resPartner.ID,
-		Name:        resPartner.Name,
-		Description: resPartner.Description,
-		Tags:        resPartner.Tags,
-	}
-
-	transaction.Partner = partner
-
-	listProgramVouchersMap := make(map[string]model.Vouchers)
-	listPrograms := model.Programs{}
-	listVouchers := model.Vouchers{}
-	for _, trxDetail := range transaction.TransactionDetails {
-		program, err := model.GetProgramByID(trxDetail.ProgramId, qp)
-		if err != nil {
-			res.SetError(JSONErrFatal.SetArgs(err.Error()))
-			res.JSON(w, res, JSONErrFatal.Status)
-			return
-		}
-		tmpProgram := model.Program{}
-
-		tmpProgram.ID = program.ID
-		tmpProgram.Name = program.Name
-		tmpProgram.Type = program.Type
-		tmpProgram.Value = program.Value
-		tmpProgram.MaxValue = program.MaxValue
-		tmpProgram.StartDate = program.StartDate
-		tmpProgram.EndDate = program.EndDate
-		tmpProgram.Description = program.Description
-		tmpProgram.ImageURL = program.ImageURL
-		tmpProgram.Price = program.Price
-		tmpProgram.ProgramChannels = program.ProgramChannels
-		tmpProgram.State = program.State
-		tmpProgram.Status = program.Status
-
-		listPrograms = append(listPrograms, tmpProgram)
-
-		voucher, err := model.GetVoucherByID(trxDetail.VoucherId, voucherQP)
-		if err != nil {
-			res.SetError(JSONErrFatal.SetArgs(err.Error()))
-			res.JSON(w, res, JSONErrFatal.Status)
-			return
-		}
-
-		listVouchers = append(listVouchers, *voucher)
-
-		if trxDetail.ProgramId == voucher.ProgramID {
-			listProgramVouchersMap[trxDetail.ProgramId] = append(listProgramVouchersMap[voucher.ProgramID], *voucher)
-		}
-
-	}
-	// program
-
-	for idx, program := range listPrograms {
-		listPrograms[idx].Vouchers = listProgramVouchersMap[program.ID]
-	}
-
-	transaction.Programs = listPrograms
 
 	res.SetResponse(transaction)
 	res.JSON(w, res, http.StatusOK)
@@ -246,14 +219,13 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	var req UseTransaction
 	var rule model.Rules
 	companyID := bone.GetValue(r, "company")
-	accountToken := r.FormValue("token")
+	token := r.FormValue("token")
 	decoder := json.NewDecoder(r.Body)
 	qp := u.NewQueryParam(r)
 	err := decoder.Decode(&req)
 
-	claims, err := model.VerifyAccountToken(accountToken)
+	accData, err := model.GetSessionDataJWT(token)
 	if err != nil {
-		u.DEBUG(err)
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
 		return
@@ -269,7 +241,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//getUser
-	account, err := model.GetAccountByID(qp, claims.AccountID)
+	account, err := model.GetAccountByID(qp, accData.AccountID)
 	if err != nil {
 		u.DEBUG(err, " User Not Found")
 		res.SetError(JSONErrForbidden)
@@ -314,8 +286,8 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 		listProgramVouchersMap[voucher.ProgramID] = append(listProgramVouchersMap[voucher.ProgramID], voucher.ID)
 
 		var td model.TransactionDetail
-		td.ProgramId = voucher.ProgramID
-		td.VoucherId = voucher.ID
+		td.ProgramID = voucher.ProgramID
+		td.VoucherID = voucher.ID
 		td.CreatedBy = account.ID
 		td.UpdatedBy = account.ID
 		tx.TransactionDetails = append(tx.TransactionDetails, td)
@@ -323,10 +295,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 
 	// =================================== Loop through programID ===================================
 
-	// uniqueProgramID := u.UniqueString(listProgramID)
 	var totalDiscount = float64(0)
-
-	listPrograms := model.Programs{}
 	for programID, vouchers := range listProgramVouchersMap {
 		datas := make(map[string]string)
 		datas["ACCOUNTID"] = account.ID
@@ -370,38 +339,6 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 
 		totalDiscount += (program.MaxValue * float64(len(vouchers)))
 
-		tmpProgram := model.Program{}
-
-		tmpProgram.ID = program.ID
-		tmpProgram.Name = program.Name
-		tmpProgram.Type = program.Type
-		tmpProgram.Value = program.Value
-		tmpProgram.MaxValue = program.MaxValue
-		tmpProgram.StartDate = program.StartDate
-		tmpProgram.EndDate = program.EndDate
-		tmpProgram.Description = program.Description
-		tmpProgram.ImageURL = program.ImageURL
-		tmpProgram.Price = program.Price
-		tmpProgram.ProgramChannels = program.ProgramChannels
-		tmpProgram.State = program.State
-		tmpProgram.Status = program.Status
-
-		vouchersByProgram := model.Vouchers{}
-		for _, voucher := range listVoucherByID {
-			if voucher.ProgramID == programID {
-				tempVoucher := model.Voucher{
-					ID:        voucher.ID,
-					Code:      voucher.Code,
-					ExpiredAt: voucher.ExpiredAt,
-					ValidAt:   voucher.ValidAt,
-					State:     voucher.State,
-				}
-				vouchersByProgram = append(vouchersByProgram, tempVoucher)
-			}
-		}
-		tmpProgram.Vouchers = vouchersByProgram
-
-		listPrograms = append(listPrograms, tmpProgram)
 	}
 
 	partner, _, err := model.GetPartnerByID(qp, req.OutletID)
@@ -413,17 +350,13 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 
 	//send email confirmation
 
-	selectedPartner := model.Partner{
-		ID:          partner.ID,
-		Name:        partner.Name,
-		Description: partner.Description,
-	}
-
-	tx.CompanyId = companyID
+	tx.CompanyID = companyID
 	tx.TransactionCode = u.RandomizeString(u.TRANSACTION_CODE_LENGTH, u.NUMERALS)
 	tx.TotalAmount = fmt.Sprint(totalDiscount)
 	tx.Holder = account.ID
-	tx.PartnerId = req.OutletID
+	tx.PartnerID = req.OutletID
+	tx.PartnerName = partner.Name
+	tx.PartnerDescription = partner.Description
 	tx.CreatedBy = account.ID
 	tx.UpdatedBy = account.ID
 
@@ -447,9 +380,9 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	finalResponse := *resTrx
+	finalResponse[0].PartnerName = partner.Name
+	finalResponse[0].PartnerDescription = partner.Description
 	finalResponse[0].Vouchers = listVoucherByID
-	finalResponse[0].Programs = listPrograms
-	finalResponse[0].Partner = selectedPartner
 
 	//send email confirmation
 	err = finalResponse[0].SendEmailConfirmation()
@@ -748,19 +681,19 @@ func PostPublicVoucherUse(w http.ResponseWriter, r *http.Request) {
 	var tx model.Transaction
 	var td model.TransactionDetail
 
-	td.ProgramId = program.ID
-	td.VoucherId = voucher.ID
+	td.ProgramID = program.ID
+	td.VoucherID = voucher.ID
 	td.CreatedBy = "web"
 	td.UpdatedBy = "web"
 
 	tx.TransactionDetails = append(tx.TransactionDetails, td)
 
-	tx.CompanyId = companyID
+	tx.CompanyID = companyID
 	tx.TransactionCode = u.RandomizeString(u.TRANSACTION_CODE_LENGTH, u.NUMERALS)
 	// Multiply with total voucher used
 	tx.TotalAmount = fmt.Sprint(program.MaxValue)
 	tx.Holder = *voucher.Holder
-	tx.PartnerId = req.OutletID
+	tx.PartnerID = req.OutletID
 	tx.CreatedBy = "web"
 	tx.UpdatedBy = "web"
 
@@ -790,34 +723,11 @@ func PostPublicVoucherUse(w http.ResponseWriter, r *http.Request) {
 
 	//send email confirmation
 
-	selectedPartner := model.Partner{
-		ID:          partner.ID,
-		Name:        partner.Name,
-		Description: partner.Description,
-	}
-
-	tmpProgram := model.Program{}
-
-	tmpProgram.ID = program.ID
-	tmpProgram.Name = program.Name
-	tmpProgram.Type = program.Type
-	tmpProgram.Value = program.Value
-	tmpProgram.MaxValue = program.MaxValue
-	tmpProgram.StartDate = program.StartDate
-	tmpProgram.EndDate = program.EndDate
-	tmpProgram.Description = program.Description
-	tmpProgram.ImageURL = program.ImageURL
-	tmpProgram.Price = program.Price
-	tmpProgram.ProgramChannels = program.ProgramChannels
-	tmpProgram.State = program.State
-	tmpProgram.Status = program.Status
-
-	tmpProgram.Vouchers = model.Vouchers{*voucher}
-
 	finalResponse := *resTrx
 	finalResponse[0].Vouchers = model.Vouchers{*voucher}
-	finalResponse[0].Programs = model.Programs{tmpProgram}
-	finalResponse[0].Partner = selectedPartner
+	finalResponse[0].PartnerID = partner.ID
+	finalResponse[0].PartnerName = partner.Name
+	finalResponse[0].PartnerDescription = partner.Description
 
 	//send email confirmation
 	err = finalResponse[0].SendEmailConfirmation()

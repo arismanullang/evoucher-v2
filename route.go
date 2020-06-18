@@ -28,7 +28,6 @@ func init() {
 
 	v2.Get("/:company/web/vouchers/program/:id", c.CheckFuncJWT(c.GetVoucherByProgramID, "voucher-view"))
 	v2.Get("/:company/web/vouchers/:id", c.CheckFuncJWT(c.GetVoucherByID, "voucher-view"))
-	v2.Get("/:company/web/vouchers", c.CheckFuncJWT(c.GetVoucherByHolder, "voucher-view"))
 
 	v2.PutFunc("/:company/web/vouchers/:id", ping)
 	v2.Delete("/:company/web/vouchers/:id", c.CheckFuncJWT(c.DeleteVoucher, "voucher-delete"))
@@ -101,14 +100,11 @@ func init() {
 
 	//transaction voucher
 	v2.Post("/:company/web/transaction/voucher/inject/holder", c.CheckFuncJWT(c.PostVoucherInjectByHolder, "transaction-create"))
-	v2.Post("/:company/web/transaction/voucher/claim", c.CheckFuncJWT(c.PostVoucherClaim, "transaction-edit"))
-	v2.Post("/:company/web/transaction/voucher/use", c.CheckFuncJWT(c.PostVoucherUse, "transaction-edit"))
 
-	v2.Get("/:company/web/transaction", c.CheckFuncJWT(c.GetTransactions, "transaction-view"))
+	v2.Get("/:company/web/transaction", c.CheckFuncJWT(c.GetTransactions, "transaction-view")) // cumicumi
 	v2.Get("/:company/web/transaction/outlet/:id", c.CheckFuncJWT(c.GetTransactionsByOutlet, "transaction-view"))
-	v2.Get("/:company/web/transaction/holder/:id", c.CheckFuncJWT(c.GetTransactionsByHolder, "transaction-view"))
 	v2.Get("/:company/web/transaction/program/:id", c.CheckFuncJWT(c.GetTransactionsByProgram, "transaction-view"))
-	v2.Get("/:company/web/transaction/:id", c.CheckFuncJWT(c.GetTransactionByID, "transaction-view"))
+	v2.Get("/:company/web/transaction/:id", c.CheckFuncJWT(c.GetTransactionByID, "transaction-view")) // cumicumi
 
 	// v2.Get("/:company/web/reimburse/summary", c.CheckFuncJWT(c.GetCashoutSummary, "reimburse-view"))
 	// v2.Get("/:company/web/reimburse/list", c.CheckFuncJWT(c.GetCashouts, "reimburse-view"))
@@ -147,8 +143,17 @@ func init() {
 	v2.Put("/:company/web/config", c.CheckFuncJWT(c.UpdateConfig, "setting-edit"))
 
 	// public
-	v2.GetFunc("/:company/public/voucher", c.GetPublicVoucherByID)
-	v2.PostFunc("/:company/public/voucher/use", c.PostPublicVoucherUse)
+	v2.GetFunc("/:company/web/public/voucher", c.GetPublicVoucherByID)      // cumicumi
+	v2.PostFunc("/:company/web/public/voucher/use", c.PostPublicVoucherUse) // cumicumi
+
+	// Mobile / 3rd party
+	v2.Get("/:company/programs/channel/:channel_id", c.CheckFuncJWT(c.GetProgramsByChannel, "program-view"))
+	v2.Get("/:company/programs/:id", c.CheckFuncJWT(c.GetMProgramByID, "program-view"))
+	v2.Post("/:company/transaction/voucher/claim", c.CheckFuncJWT(c.PostVoucherClaim, "program-view"))
+	v2.Post("/:company/transaction/voucher/use", c.CheckFuncJWT(c.PostVoucherUse, "program-view"))
+	v2.Get("/:company/vouchers", c.CheckFuncJWT(c.GetVoucherByToken, "program-view"))
+	v2.Get("/:company/transaction/history/:holder", c.CheckFuncJWT(c.GetHolderTrxHistory, "transaction-view"))
+	v2.Get("/:company/transaction/history/:holder/:trx_id", c.CheckFuncJWT(c.GetHolderTrxHistoryDetail, "transaction-view"))
 
 	// GCS
 	v2.Post("/:company/web/file/upload", c.CheckFuncJWT(c.UploadFile, "file-create"))

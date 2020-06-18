@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -116,7 +115,7 @@ func (qp *QueryParam) GetQueryLimit() string {
 func (qp *QueryParam) GetQueryWhereClause(q string, val string) string {
 	company := ``
 	if len(qp.CompanyID) > 0 {
-		company = ` AND company_id = '` + qp.CompanyID + `' `
+		company = ` AND ` + qp.TableAlias + ` company_id = '` + qp.CompanyID + `' `
 	}
 	return q + company + getQClauseFromStruct(qp, val, qp.Model) + getWhereClauseFromStruct(qp, qp.FilterModel)
 }
@@ -340,7 +339,6 @@ func getWhereClauseFromStruct(qp *QueryParam, i interface{}) string {
 	}
 
 	q = q[:len(q)-4]
-	fmt.Println("getWhereClauseFromStruct = ", q)
 	return q
 }
 

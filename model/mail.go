@@ -92,7 +92,7 @@ func GetEmail(transactionID string, companyID string) (ConfirmationEmailRecipien
 func (t Transaction) SendEmailConfirmation() error {
 	// get list email
 	listEmail := []string{}
-	emails, err := GetEmail(t.ID, t.CompanyId)
+	emails, err := GetEmail(t.ID, t.CompanyID)
 	if err != nil {
 		return err
 	}
@@ -140,8 +140,8 @@ func (t Transaction) SendEmailConfirmation() error {
 
 		data := ConfirmationEmailData{
 			Holder:          holderDetail.Name,
-			ProgramName:     t.Programs[0].Name,
-			PartnerName:     t.Partner.Name,
+			ProgramName:     t.Vouchers[0].ProgramName,
+			PartnerName:     t.PartnerName,
 			TransactionCode: t.TransactionCode,
 			TransactionDate: *t.CreatedAt,
 			ListVoucher:     listVoucher,
@@ -156,7 +156,7 @@ func (t Transaction) SendEmailConfirmation() error {
 		recipients = append(recipients, recipient)
 	}
 
-	configs, err := GetConfigs(t.CompanyId, "company")
+	configs, err := GetConfigs(t.CompanyID, "company")
 	if err != nil {
 		return ErrorInternalServer
 	}
