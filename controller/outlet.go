@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-zoo/bone"
@@ -357,7 +358,7 @@ func DeleteBank(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := bone.GetValue(r, "id")
-	p := model.Bank{ID: id}
+	p := model.Bank{ID: u.StringToInt(id)}
 	p.UpdatedBy = accData.AccountID
 	if err := p.Delete(); err != nil {
 		res.SetError(JSONErrResourceNotFound)
@@ -379,6 +380,7 @@ func GetOutletBanks(r *http.Request, outletID string) ([]model.Bank, error) {
 	outletBank := []model.Bank{}
 	err = json.Unmarshal([]byte(outlet.Banks), &outletBank)
 	if err != nil {
+		fmt.Println("err = ", err)
 		return []model.Bank{}, err
 	}
 
