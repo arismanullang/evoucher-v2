@@ -130,21 +130,6 @@ func getCashouts(qp *util.QueryParam, key, value string) (*Cashouts, bool, error
 	return &resd, next, nil
 }
 
-	if err != nil {
-		return []CashoutUnpaid{}, false, err
-	}
-
-	next := false
-	if len(resd) > qp.Count {
-		next = true
-	}
-	if len(resd) < qp.Count {
-		qp.Count = len(resd)
-	}
-
-	return resd, next, nil
-}
-
 // GetCashouts : list Cashout Summary
 func GetCashoutSummary(qp *util.QueryParam) ([]CashoutSummary, bool, error) {
 	return getCashoutSummary(qp, "1", "1")
@@ -307,8 +292,8 @@ func (c *Cashout) Delete() error {
 	return nil
 }
 
-// GetUnpaidReimburse : Get list of unpaid reimburse
-func GetUnpaidReimburse(qp *util.QueryParam, startDate, endDate string) ([]UnpaidReimburse, bool, error) {
+// GetUnpaidCashout : Get list of unpaid cashout
+func GetUnpaidCashout(qp *util.QueryParam, startDate, endDate string) ([]UnpaidCashout, bool, error) {
 
 	q := `
 		SELECT DISTINCT
