@@ -84,38 +84,8 @@ type (
 	}
 )
 
-//GetCashoutsUnpaid : GET list of Unpaid Cashouts
-func GetCashoutsUnpaid(w http.ResponseWriter, r *http.Request) {
-	res := u.NewResponse()
-
-	qp := u.NewQueryParam(r)
-
-	var decoder = schema.NewDecoder()
-	decoder.IgnoreUnknownKeys(true)
-
-	var f CashoutUnpaidFilter
-	if err := decoder.Decode(&f, r.Form); err != nil {
-		res.SetError(JSONErrFatal.SetArgs(err.Error()))
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
-
-	qp.SetFilterModel(f)
-
-	cashout, next, err := model.GetCashoutUnpaid(qp)
-	if err != nil {
-		res.SetError(JSONErrFatal.SetArgs(err.Error()))
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
-
-	res.SetResponse(cashout)
-	res.SetNewPagination(r, qp.Page, next, cashout[0].Count)
-	res.JSON(w, res, http.StatusOK)
-}
-
-//GetUnpaidReimburse : GET list of unpaid reimburse
-func GetUnpaidReimburse(w http.ResponseWriter, r *http.Request) {
+//GetUnpaidCashout : GET list of unpaid cashout
+func GetUnpaidCashout(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	qp := u.NewQueryParam(r)
 
@@ -124,14 +94,14 @@ func GetUnpaidReimburse(w http.ResponseWriter, r *http.Request) {
 
 	qp.SetCompanyID(bone.GetValue(r, "company"))
 
-	unpaidReimburse, next, err := model.GetUnpaidReimburse(qp, startDate, endDate)
+	unpaidReimburse, next, err := model.GetUnpaidCashout(qp, startDate, endDate)
 	if err != nil && err != model.ErrorResourceNotFound {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
 		return
 	}
 
-	list := []model.UnpaidReimburse{}
+	list := []model.UnpaidCashout{}
 	list = append(list, unpaidReimburse...)
 	res.SetResponse(list)
 	if len(unpaidReimburse) > 0 {
@@ -182,27 +152,6 @@ func GetCashoutSummary(w http.ResponseWriter, r *http.Request) {
 
 	res.SetResponse(r)
 	res.SetNewPagination(r, qp.Page, next, cashoutSummary[0].Count)
-	res.JSON(w, res, http.StatusOK)
-}
-
-//GetCashoutUsedVoucher : GET list of Cashout Summary
-func GetCashoutUsedVoucher(w http.ResponseWriter, r *http.Request) {
-	res := u.NewResponse()
-
-	qp := u.NewQueryParam(r)
-	program_id := bone.GetValue(r, "program_id")
-	//add QueryParam Filter for used voucher
-	//qp.
-
-	usedVouchers, next, err := model.GetVouchersByProgramID(program_id, qp)
-	if err != nil {
-		res.SetError(JSONErrFatal.SetArgs(err.Error()))
-		res.JSON(w, res, JSONErrFatal.Status)
-		return
-	}
-
-	res.SetResponse(r)
-	res.SetNewPagination(r, qp.Page, next, usedVouchers[0].Count)
 	res.JSON(w, res, http.StatusOK)
 }
 
@@ -383,7 +332,7 @@ func GetCashoutVouchers(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	companyID := bone.GetValue(r, "company")
-	id := bone.GetValue(r, "id")
+	id := bone.GetValue(r, "cashout_id")
 	qp := u.NewQueryParam(r)
 
 	qp.SetCompanyID(companyID)

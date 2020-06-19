@@ -19,17 +19,9 @@ type (
 		VoucherQty    int        `db:"voucher_qty" json:"voucher_aty,omitempty"`
 		Count         int        `db:"count" json:"-"`
 	}
-	CashoutUnpaid struct {
-		Date           *time.Time `db:"date" json:"date,omitempty"`
-		OutletID       string     `db:"outlet_id" json:"outlet_id,omitempty"`
-		OutletName     string     `db:"outlet_name" json:"outlet_name,omitempty"`
-		TransactionQty int64      `db:"transaction_qty" json:"transaction_qty,omitempty"`
-		TotalValue     float64    `db:"total_value" json:"total_value,omitempty"`
-		Count          int        `db:"count" json:"-"`
-	}
 
-	// UnpaidReimburse : unpaid cashout grouped by outlet
-	UnpaidReimburse struct {
+	// UnpaidCashout : unpaid cashout grouped by outlet
+	UnpaidCashout struct {
 		OutletID          string         `db:"outlet_id" json:"outlet_id,omitempty"`
 		OutletName        string         `db:"outlet_name" json:"outlet_name,omitempty"`
 		OutletDescription types.JSONText `db:"outlet_description" json:"outlet_description,omitempty"`
@@ -138,27 +130,6 @@ func getCashouts(qp *util.QueryParam, key, value string) (*Cashouts, bool, error
 	return &resd, next, nil
 }
 
-// GetCashoutUnpaid : list Cashout Unpaid
-func GetCashoutUnpaid(qp *util.QueryParam) ([]CashoutUnpaid, bool, error) {
-	return getCashoutUnpaid(qp, "1", "1")
-}
-
-func getCashoutUnpaid(qp *util.QueryParam, key, value string) ([]CashoutUnpaid, bool, error) {
-	q, err := qp.GetQueryByDefaultStruct(CashoutSummary{})
-	if err != nil {
-		return []CashoutUnpaid{}, false, err
-	}
-	q += `
-			FROM
-				m_cashout_unpaid
-			WHERE 		
-			 ` + key + ` = ? `
-
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
-	fmt.Println(q)
-	var resd []CashoutUnpaid
-	err = db.Select(&resd, db.Rebind(q), value)
 	if err != nil {
 		return []CashoutUnpaid{}, false, err
 	}
@@ -372,7 +343,7 @@ func GetUnpaidReimburse(qp *util.QueryParam, startDate, endDate string) ([]Unpai
 
 	util.DEBUG("query struct :", q)
 
-	var resv []UnpaidReimburse
+	var resv []UnpaidCashout
 	if err := db.Select(&resv, db.Rebind(q), qp.CompanyID, startDate, endDate); err != nil {
 		fmt.Println(err.Error())
 		return resv, false, err
