@@ -1,11 +1,12 @@
 package controller
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/gilkor/evoucher-v2/model"
 	u "github.com/gilkor/evoucher-v2/util"
 	"github.com/gorilla/schema"
-	"net/http"
-	"strings"
 )
 
 type (
@@ -56,8 +57,8 @@ func GetReportDailyVoucherTransaction(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
-//GetReportDailyVoucherTransactionWithPartner :
-func GetReportDailyVoucherTransactionWithPartner(w http.ResponseWriter, r *http.Request) {
+//GetReportDailyVoucherTransactionWithOutlet :
+func GetReportDailyVoucherTransactionWithOutlet(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	qp := u.NewQueryParam(r)
 
@@ -85,7 +86,7 @@ func GetReportDailyVoucherTransactionWithPartner(w http.ResponseWriter, r *http.
 		return
 	}
 	dates := strings.Split(f.Date, ",")
-	data, next, err := model.GetReportDailyVoucherTransactionWithPartner(dates[0], dates[1], qp)
+	data, next, err := model.GetReportDailyVoucherTransactionWithOutlet(dates[0], dates[1], qp)
 	if err != nil {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)
@@ -97,8 +98,8 @@ func GetReportDailyVoucherTransactionWithPartner(w http.ResponseWriter, r *http.
 	res.JSON(w, res, http.StatusOK)
 }
 
-//GetReportDailyPartnerTransaction :
-func GetReportDailyPartnerTransaction(w http.ResponseWriter, r *http.Request) {
+//GetReportDailyOutletTransaction :
+func GetReportDailyOutletTransaction(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	qp := u.NewQueryParam(r)
 
@@ -126,7 +127,7 @@ func GetReportDailyPartnerTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	dates := strings.Split(f.Date, ",")
-	data, next, err := model.GetReportDailyPartnerTransaction(dates[0], dates[1], qp)
+	data, next, err := model.GetReportDailyOutletTransaction(dates[0], dates[1], qp)
 	if err != nil {
 		res.SetError(JSONErrFatal.SetArgs(err.Error()))
 		res.JSON(w, res, JSONErrFatal.Status)

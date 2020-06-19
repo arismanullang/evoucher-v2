@@ -2,6 +2,7 @@ package model
 
 import (
 	"bytes"
+	"fmt"
 	"time"
 
 	"github.com/gilkor/evoucher-v2/util"
@@ -20,6 +21,7 @@ type (
 		ValidAt           *time.Time         `json:"valid_at,omitempty" db:"valid_at"`
 		ExpiredAt         *time.Time         `json:"expired_at,omitempty" db:"expired_at"`
 		State             string             `json:"state,omitempty" db:"state"`
+		ProgramImageURL   string             `json:"program_img_url,omitempty" db:"program_img_url"`
 		ProgramName       string             `json:"program_name,omitempty" db:"program_name"`
 		ProgramValue      float64            `json:"program_value,omitempty" db:"program_value"`
 		ProgramMaxValue   float64            `json:"program_max_value,omitempty" db:"program_max_value"`
@@ -73,6 +75,7 @@ type (
 		Name      string `schema:"name" filter:"string"`
 		ProgramID string `schema:"program_id" filter:"string"`
 		Holder    string `schema:"holder" filter:"string"`
+		State     string `schema:"state" filter:"enum"`
 		CreatedAt string `schema:"created_at" filter:"date"`
 		CreatedBy string `schema:"created_by" filter:"string"`
 		UpdatedAt string `schema:"updated_at" filter:"date"`
@@ -81,13 +84,38 @@ type (
 	}
 )
 
+//MVoucherFields : fields for 3rd party api
+var MVoucherFields = "id, code, reference, valid_at, expired_at, state"
+
 // GetVouchersByHolder : get list vouchers by Holder
-func GetVouchersByHolder(holder string, qp *util.QueryParam) (Vouchers, error) {
-	vouchers, _, err := getVouchers("holder", holder, qp)
+func GetVouchersByHolder(holder string, qp *util.QueryParam) ([]Voucher, error) {
+	q, err := qp.GetQueryByDefaultStruct(Voucher{})
 	if err != nil {
 		return Vouchers{}, err
 	}
-	return vouchers, nil
+
+	q += `
+		FROM 
+			m_vouchers voucher
+		WHERE holder = ?
+			AND expired_at >= NOW() - INTERVAL '30 days'
+			`
+
+	q = qp.GetQueryWhereClause(q, qp.Q)
+	util.DEBUG("query struct :", q)
+
+	var resv Vouchers
+	err = db.Select(&resv, db.Rebind(q), holder)
+	if err != nil {
+		fmt.Println("err = ", err)
+		return Vouchers{}, err
+	}
+
+	if len(resv) < 1 {
+		return Vouchers{}, nil
+	}
+
+	return resv, err
 }
 
 // GetVouchersByID :  get list vouchers by ID

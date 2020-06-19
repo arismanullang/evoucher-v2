@@ -8,8 +8,8 @@ import (
 )
 
 type (
-	//Partner : represent of partners table model
-	Partner struct {
+	//Outlet : represent of outlets table model
+	Outlet struct {
 		ID          string         `db:"id" json:"id,omitempty"`
 		Name        string         `db:"name" json:"name,omitempty"`
 		Emails      *string        `db:"emails" json:"emails,omitempty"`
@@ -20,14 +20,14 @@ type (
 		UpdatedAt   *time.Time     `db:"updated_at" json:"updated_at,omitempty"`
 		UpdatedBy   string         `db:"updated_by" json:"updated_by,omitempty"`
 		Status      string         `db:"status" json:"status,omitempty"`
-		Banks       types.JSONText `db:"partner_banks" json:"banks,omitempty"`
-		Tags        types.JSONText `db:"partner_tags" json:"tags,omitempty"`
+		Banks       types.JSONText `db:"outlet_banks" json:"banks,omitempty"`
+		Tags        types.JSONText `db:"outlet_tags" json:"tags,omitempty"`
 		Count       int            `db:"count" json:"-"`
 	}
-	//Partners :
-	Partners []Partner
+	//Outlets :
+	Outlets []Outlet
 
-	PartnersWithTags struct {
+	OutletsWithTags struct {
 		ID          string         `db:"id" json:"id,omitempty"`
 		Name        string         `db:"name" json:"name,omitempty"`
 		Description types.JSONText `db:"description" json:"description,omitempty"`
@@ -37,45 +37,47 @@ type (
 		UpdatedAt   *time.Time     `db:"updated_at" json:"updated_at,omitempty"`
 		UpdatedBy   string         `db:"updated_by" json:"updated_by,omitempty"`
 		Status      string         `db:"status" json:"status,omitempty"`
-		Banks       types.JSONText `db:"partner_banks" json:"banks,omitempty"`
-		Tags        types.JSONText `db:"partner_tags" json:"tags,omitempty"`
+		Banks       types.JSONText `db:"outlet_banks" json:"banks,omitempty"`
+		Tags        types.JSONText `db:"outlet_tags" json:"tags,omitempty"`
 	}
 )
 
-//PartnerFields : default table field
-var PartnerFields = []string{"id", "name", "description", "created_at", "created_by", "updated_at", "updated_by", "status"}
+//OutletFields : default table field
+var OutletFields = []string{"id", "name", "description", "created_at", "created_by", "updated_at", "updated_by", "status"}
 
-//GetPartners : get list company by custom filter
-func GetPartners(qp *util.QueryParam) (*Partners, bool, error) {
-	return getPartners("1", "1", qp)
+//MOutletFields : fields for 3rd party api
+var MOutletFields = "id,name,description"
+
+//GetOutlets : get list outlet by custom filter
+func GetOutlets(qp *util.QueryParam) (*Outlets, bool, error) {
+	return getOutlets("1", "1", qp)
 }
 
-//GetPartnerByID : get partner by specified ID
-func GetPartnerByID(qp *util.QueryParam, id string) (*Partner, bool, error) {
-	partners, _, err := getPartners("id", id, qp)
+//GetOutletByID : get outlet by specified ID
+func GetOutletByID(qp *util.QueryParam, id string) (*Outlet, bool, error) {
+	outlets, _, err := getOutlets("id", id, qp)
 	if err != nil {
-		return &Partner{}, false, err
+		return &Outlet{}, false, err
 	}
 
-	if len(*partners) > 0 {
-		partner := (*partners)[0]
-		return &partner, false, nil
+	if len(*outlets) > 0 {
+		outlet := (*outlets)[0]
+		return &outlet, false, nil
 	}
 
-	return &Partner{}, false, ErrorResourceNotFound
+	return &Outlet{}, false, ErrorResourceNotFound
 }
 
-func getPartners(k, v string, qp *util.QueryParam) (*Partners, bool, error) {
+func getOutlets(k, v string, qp *util.QueryParam) (*Outlets, bool, error) {
 
-	q, err := qp.GetQueryByDefaultStruct(Partner{})
+	q, err := qp.GetQueryByDefaultStruct(Outlet{})
 	if err != nil {
-		return &Partners{}, false, err
+		return &Outlets{}, false, err
 	}
-	// q := qp.GetQueryFields(PartnerFields)
 
 	q += `
 			FROM
-				m_partners partner
+				m_outlets outlet
 			WHERE 
 				status = ?
 			AND ` + k + ` = ?`
@@ -85,13 +87,13 @@ func getPartners(k, v string, qp *util.QueryParam) (*Partners, bool, error) {
 	// fmt.Println(q)
 	util.DEBUG("query struct :", q)
 	// query := "select row_to_json(row) from (" + q + ") row"
-	var resd Partners
+	var resd Outlets
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, v)
 	if err != nil {
-		return &Partners{}, false, err
+		return &Outlets{}, false, err
 	}
 	if len(resd) < 1 {
-		return &Partners{}, false, ErrorResourceNotFound
+		return &Outlets{}, false, ErrorResourceNotFound
 	}
 	next := false
 	if len(resd) > qp.Count {
@@ -104,33 +106,33 @@ func getPartners(k, v string, qp *util.QueryParam) (*Partners, bool, error) {
 	return &resd, next, nil
 }
 
-//GetPartnersByTags : get partner by tag.id
-func GetPartnersByTags(qp *util.QueryParam, v string) (*Partners, bool, error) {
-	q, err := qp.GetQueryByDefaultStruct(Partner{})
+//GetOutletsByTags : get outlet by tag.id
+func GetOutletsByTags(qp *util.QueryParam, v string) (*Outlets, bool, error) {
+	q, err := qp.GetQueryByDefaultStruct(Outlet{})
 	if err != nil {
-		return &Partners{}, false, err
+		return &Outlets{}, false, err
 	}
 
 	q += `
 			FROM
-				m_partners partner,
+				m_outlets outlet,
 				object_tags object_tag
 			WHERE 
-				partner.status = ?
+				outlet.status = ?
 			AND object_tag.status = ?
-			AND partner.id = object_tag.object_id
+			AND outlet.id = object_tag.object_id
 			AND object_tag.tag_id = ?`
 
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	// fmt.Println(q)
 	util.DEBUG("query struct :", q)
-	var resd Partners
+	var resd Outlets
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, StatusCreated, v)
 	if err != nil {
-		return &Partners{}, false, err
+		return &Outlets{}, false, err
 	}
 	if len(resd) < 1 {
-		return &Partners{}, false, ErrorResourceNotFound
+		return &Outlets{}, false, ErrorResourceNotFound
 	}
 	next := false
 	if len(resd) > qp.Count {
@@ -144,7 +146,7 @@ func GetPartnersByTags(qp *util.QueryParam, v string) (*Partners, bool, error) {
 }
 
 //Insert : save data to database
-func (p *Partner) Insert() (*Partners, error) {
+func (p *Outlet) Insert() (*Outlets, error) {
 	tx, err := db.Beginx()
 	if err != nil {
 		return nil, err
@@ -152,7 +154,7 @@ func (p *Partner) Insert() (*Partners, error) {
 	defer tx.Rollback()
 
 	q := `INSERT INTO 
-				partners ( name, description, emails, company_id, created_by, updated_by, status)
+				outlets ( name, description, emails, company_id, created_by, updated_by, status)
 			VALUES 
 				( ?, ?, ?, ?, ?, ?, ?)
 			RETURNING
@@ -162,7 +164,7 @@ func (p *Partner) Insert() (*Partners, error) {
 	// if err != nil {
 	// 	return nil, err
 	// }
-	var res Partners
+	var res Outlets
 	util.DEBUG(q)
 	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Description, p.Emails, p.CompanyID, p.CreatedBy, p.CreatedBy, StatusCreated)
 	if err != nil {
@@ -179,7 +181,7 @@ func (p *Partner) Insert() (*Partners, error) {
 }
 
 //Update : modify data
-func (p *Partner) Update() error {
+func (p *Outlet) Update() error {
 	tx, err := db.Beginx()
 	if err != nil {
 		return err
@@ -187,7 +189,7 @@ func (p *Partner) Update() error {
 	defer tx.Rollback()
 
 	q := `UPDATE
-				partners 
+				outlets 
 			SET
 				name = ?,
 				emails = ?,
@@ -199,7 +201,7 @@ func (p *Partner) Update() error {
 			RETURNING
 			id, name, emails, created_at, created_by, updated_at, updated_by, status
 	`
-	var res []Partner
+	var res []Outlet
 	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Emails, p.Description, p.UpdatedBy, p.ID)
 	if err != nil {
 		return err
@@ -214,7 +216,7 @@ func (p *Partner) Update() error {
 }
 
 //Delete : soft delated data by updateting row status to "deleted"
-func (p *Partner) Delete() error {
+func (p *Outlet) Delete() error {
 	tx, err := db.Beginx()
 	if err != nil {
 		return err
@@ -222,7 +224,7 @@ func (p *Partner) Delete() error {
 	defer tx.Rollback()
 
 	q := `UPDATE
-				partners 
+				outlets 
 			SET
 				updated_at = now(),
 				updated_by = ?
@@ -232,7 +234,7 @@ func (p *Partner) Delete() error {
 			RETURNING
 			id, name, description, created_at, created_by, updated_at, updated_by, status
 	`
-	var res []Partner
+	var res []Outlet
 	err = tx.Select(&res, tx.Rebind(q), p.UpdatedBy, StatusDeleted, p.ID)
 	if err != nil {
 		return err
@@ -246,8 +248,8 @@ func (p *Partner) Delete() error {
 }
 
 // //DecodeDescription :
-// func (p *Partners) DecodeDescription(i interface{}) *Partners {
-// 	data := make(Partners, len(*p))
+// func (p *Outlets) DecodeDescription(i interface{}) *Outlets {
+// 	data := make(Outlets, len(*p))
 // 	for k, v := range *p {
 // 		data[k].ID = v.ID
 // 		data[k].Name = v.Name

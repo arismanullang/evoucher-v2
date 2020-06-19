@@ -9,6 +9,7 @@ import (
 	"github.com/gilkor/evoucher-v2/model"
 	u "github.com/gilkor/evoucher-v2/util"
 	"github.com/go-zoo/bone"
+	"github.com/gorilla/schema"
 	"github.com/jmoiron/sqlx/types"
 )
 
@@ -163,10 +164,12 @@ func GetPublicVoucherByID(w http.ResponseWriter, r *http.Request) {
 	qp := u.NewQueryParam(r)
 	qp.Count = -1
 	encodedVoucherID := r.FormValue("x")
-	// encodedCompanyID := r.FormValue("y")
+	encodedCompanyID := r.FormValue("y")
 
 	voucherID := u.StrDecode(encodedVoucherID)
-	// companyID := u.StrDecode(encodedCompanyID)
+	companyID := u.StrDecode(encodedCompanyID)
+
+	qp.SetCompanyID(companyID)
 
 	voucher, err := model.GetVoucherByID(voucherID, qp)
 	if err != nil {
@@ -176,11 +179,12 @@ func GetPublicVoucherByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	program := model.Program{}
 	vouchers := model.Vouchers{}
-	partnersByProgram := model.Partners{}
 
-	detailProgram, err := model.GetProgramByID(voucher.ProgramID, qp)
+	r.Form.Set("fields", model.MProgramFields)
+	qp2 := u.NewQueryParam(r)
+	qp2.SetCompanyID(companyID)
+	program, err := model.GetProgramByID(voucher.ProgramID, qp2)
 	if err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrBadRequest)
@@ -188,63 +192,54 @@ func GetPublicVoucherByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	program.ID = detailProgram.ID
-	program.Name = detailProgram.Name
-	program.Type = detailProgram.Type
-	program.Value = detailProgram.Value
-	program.MaxValue = detailProgram.MaxValue
-	program.StartDate = detailProgram.StartDate
-	program.EndDate = detailProgram.EndDate
-	program.Description = detailProgram.Description
-	program.ImageURL = detailProgram.ImageURL
-	program.Price = detailProgram.Price
-	program.ProgramChannels = detailProgram.ProgramChannels
-	program.State = detailProgram.State
-	program.Status = detailProgram.Status
-
-	tempVoucher := model.Voucher{
-		ID:        voucher.ID,
-		Code:      voucher.Code,
-		ExpiredAt: voucher.ExpiredAt,
-		ValidAt:   voucher.ValidAt,
-		State:     voucher.State,
+	r.Form.Set("fields", model.MOutletFields)
+	qp3 := u.NewQueryParam(r)
+	qp3.SetCompanyID(companyID)
+	outlets, _, err := model.GetOutletByProgramID(voucher.ProgramID, qp3)
+	if err != nil {
+		res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
 	}
-	vouchers = append(vouchers, tempVoucher)
 
+	program.Outlets = *outlets
+	vouchers = append(vouchers, *voucher)
 	program.Vouchers = vouchers
-
-	for _, outlet := range detailProgram.Partners {
-		tempOutlet := model.Partner{
-			ID:          outlet.ID,
-			Name:        outlet.Name,
-			Description: outlet.Description,
-			Status:      outlet.Status,
-		}
-		partnersByProgram = append(partnersByProgram, tempOutlet)
-	}
-
-	program.Partners = partnersByProgram
 
 	res.SetResponse(program)
 	res.JSON(w, res, http.StatusOK)
 }
 
-//GetVoucherByHolder : GET list of program and vouchers by holder
-func GetVoucherByHolder(w http.ResponseWriter, r *http.Request) {
+//GetVoucherByToken : GET list of program and vouchers by holder juno token
+func GetVoucherByToken(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
+	// r.Form.Set("fields", model.MVoucherFields)
 	qp := u.NewQueryParam(r)
 	qp.Count = -1
-	accountToken := r.FormValue("token")
+	qp.Sort = "expired_at-"
+	token := r.FormValue("token")
 
-	claims, err := model.VerifyAccountToken(accountToken)
+	qp.SetCompanyID(bone.GetValue(r, "company"))
+	var f model.VoucherFilter
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+	if err := decoder.Decode(&f, r.Form); err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	qp.SetFilterModel(f)
+
+	accData, err := model.GetSessionDataJWT(token)
 	if err != nil {
-		u.DEBUG(err)
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
 		return
 	}
 
-	vouchers, err := model.GetVouchersByHolder(claims.AccountID, qp)
+	// vouchers, _, err := model.GetVouchers(qp)
+	vouchers, err := model.GetVouchersByHolder(accData.AccountID, qp)
 	if err != nil {
 		u.DEBUG(err)
 		res.SetError(JSONErrBadRequest)
@@ -252,72 +247,7 @@ func GetVoucherByHolder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	distinctProgram := []string{}
-	for _, v := range vouchers {
-		if !u.StringInSlice(v.ProgramID, distinctProgram) {
-			distinctProgram = append(distinctProgram, v.ProgramID)
-		}
-	}
-
-	listPrograms := model.Programs{}
-	for _, programID := range distinctProgram {
-
-		program := model.Program{}
-		vouchersByProgram := model.Vouchers{}
-		partnersByProgram := model.Partners{}
-
-		detailProgram, err := model.GetProgramByID(programID, qp)
-		if err != nil {
-			u.DEBUG(err)
-			res.SetError(JSONErrBadRequest)
-			res.JSON(w, res, JSONErrBadRequest.Status)
-			return
-		}
-
-		program.ID = detailProgram.ID
-		program.Name = detailProgram.Name
-		program.Type = detailProgram.Type
-		program.Value = detailProgram.Value
-		program.MaxValue = detailProgram.MaxValue
-		program.StartDate = detailProgram.StartDate
-		program.EndDate = detailProgram.EndDate
-		program.Description = detailProgram.Description
-		program.ImageURL = detailProgram.ImageURL
-		program.Price = detailProgram.Price
-		program.ProgramChannels = detailProgram.ProgramChannels
-		program.State = detailProgram.State
-		program.Status = detailProgram.Status
-
-		for _, voucher := range vouchers {
-			if voucher.ProgramID == programID {
-				tempVoucher := model.Voucher{
-					ID:        voucher.ID,
-					Code:      voucher.Code,
-					ExpiredAt: voucher.ExpiredAt,
-					ValidAt:   voucher.ValidAt,
-					State:     voucher.State,
-				}
-				vouchersByProgram = append(vouchersByProgram, tempVoucher)
-			}
-		}
-		program.Vouchers = vouchersByProgram
-
-		for _, outlet := range detailProgram.Partners {
-			tempOutlet := model.Partner{
-				ID:          outlet.ID,
-				Name:        outlet.Name,
-				Description: outlet.Description,
-				Status:      outlet.Status,
-			}
-			partnersByProgram = append(partnersByProgram, tempOutlet)
-		}
-
-		program.Partners = partnersByProgram
-
-		listPrograms = append(listPrograms, program)
-	}
-
-	res.SetResponse(listPrograms)
+	res.SetResponse(vouchers)
 	res.JSON(w, res, http.StatusOK)
 }
 

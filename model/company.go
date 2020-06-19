@@ -8,7 +8,7 @@ import (
 )
 
 type (
-	//Company : represent of partners table model
+	//Company : represent of company table model
 	Company struct {
 		ID           string     `db:"id" json:"id,omitempty"`
 		Name         string     `db:"name" json:"name,omitempty"`

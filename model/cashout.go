@@ -11,34 +11,26 @@ import (
 type (
 	CashoutSummary struct {
 		Date          *time.Time `db:"date" json:"date,omitempty"`
-		PartnerID     string     `db:"partner_id" json:"partner_id,omitempty"`
-		PartnerName   string     `db:"partner_name" json:"partner_name,omitempty"`
+		OutletID      string     `db:"outlet_id" json:"outlet_id,omitempty"`
+		OutletName    string     `db:"outlet_name" json:"outlet_name,omitempty"`
 		UnpaidAmount  float64    `db:"unpaid_amount" json:"unpaid_amount,omitempty"`
 		CashoutAmount float64    `db:"cashout_amount" json:"cashout_amount,omitempty"`
 		TotalAmount   float64    `db:"total_amount" json:"total_amount,omitempty"`
 		VoucherQty    int        `db:"voucher_qty" json:"voucher_aty,omitempty"`
 		Count         int        `db:"count" json:"-"`
 	}
-	CashoutUnpaid struct {
-		Date           *time.Time `db:"date" json:"date,omitempty"`
-		PartnerID      string     `db:"partner_id" json:"partner_id,omitempty"`
-		PartnerName    string     `db:"partner_name" json:"partner_name,omitempty"`
-		TransactionQty int64      `db:"transaction_qty" json:"transaction_qty,omitempty"`
-		TotalValue     float64    `db:"total_value" json:"total_value,omitempty"`
-		Count          int        `db:"count" json:"-"`
-	}
 
-	// UnpaidReimburse : unpaid cashout grouped by partner
-	UnpaidReimburse struct {
-		PartnerID          string         `db:"partner_id" json:"partner_id,omitempty"`
-		PartnerName        string         `db:"partner_name" json:"partner_name,omitempty"`
-		PartnerDescription types.JSONText `db:"partner_description" json:"partner_description,omitempty"`
-		PartnerEmails      *string        `db:"partner_emails" json:"partner_emails,omitempty"`
-		CompanyID          string         `db:"company_id" json:"company_id"`
-		TransactionQty     int64          `db:"transaction_qty" json:"transaction_qty,omitempty"`
-		VouchersQty        int64          `db:"vouchers_qty" json:"vouchers_qty,omitempty"`
-		TotalValue         float64        `db:"total_value" json:"total_value,omitempty"`
-		Count              int            `db:"count" json:"-"`
+	// UnpaidCashout : unpaid cashout grouped by outlet
+	UnpaidCashout struct {
+		OutletID          string         `db:"outlet_id" json:"outlet_id,omitempty"`
+		OutletName        string         `db:"outlet_name" json:"outlet_name,omitempty"`
+		OutletDescription types.JSONText `db:"outlet_description" json:"outlet_description,omitempty"`
+		OutletEmails      *string        `db:"outlet_emails" json:"outlet_emails,omitempty"`
+		CompanyID         string         `db:"company_id" json:"company_id"`
+		TransactionQty    int64          `db:"transaction_qty" json:"transaction_qty,omitempty"`
+		VouchersQty       int64          `db:"vouchers_qty" json:"vouchers_qty,omitempty"`
+		TotalValue        float64        `db:"total_value" json:"total_value,omitempty"`
+		Count             int            `db:"count" json:"-"`
 	}
 
 	// VoucherTransaction : voucher with transaction detail
@@ -60,8 +52,8 @@ type (
 		ID              string         `db:"id" json:"id,omitempty"`
 		CompanyID       string         `db:"company_id" json:"company_id,omitempty"`
 		Code            string         `db:"code" json:"code,omitempty"`
-		PartnerName     string         `db:"partner_name" json:"partner_name,omitempty"`
-		PartnerID       string         `db:"partner_id" json:"partner_id,omitempty"`
+		OutletName      string         `db:"outlet_name" json:"outlet_name,omitempty"`
+		OutletID        string         `db:"outlet_id" json:"outlet_id,omitempty"`
 		BankName        string         `db:"bank_name" json:"bank_name,omitempty"`
 		BankCompanyName string         `db:"bank_company_name" json:"bank_company_name"`
 		BankAccount     string         `db:"bank_account" json:"bank_account,omitempty"`
@@ -138,42 +130,6 @@ func getCashouts(qp *util.QueryParam, key, value string) (*Cashouts, bool, error
 	return &resd, next, nil
 }
 
-// GetCashoutUnpaid : list Cashout Unpaid
-func GetCashoutUnpaid(qp *util.QueryParam) ([]CashoutUnpaid, bool, error) {
-	return getCashoutUnpaid(qp, "1", "1")
-}
-
-func getCashoutUnpaid(qp *util.QueryParam, key, value string) ([]CashoutUnpaid, bool, error) {
-	q, err := qp.GetQueryByDefaultStruct(CashoutSummary{})
-	if err != nil {
-		return []CashoutUnpaid{}, false, err
-	}
-	q += `
-			FROM
-				m_cashout_unpaid
-			WHERE 		
-			 ` + key + ` = ? `
-
-	q += qp.GetQuerySort()
-	q += qp.GetQueryLimit()
-	fmt.Println(q)
-	var resd []CashoutUnpaid
-	err = db.Select(&resd, db.Rebind(q), value)
-	if err != nil {
-		return []CashoutUnpaid{}, false, err
-	}
-
-	next := false
-	if len(resd) > qp.Count {
-		next = true
-	}
-	if len(resd) < qp.Count {
-		qp.Count = len(resd)
-	}
-
-	return resd, next, nil
-}
-
 // GetCashouts : list Cashout Summary
 func GetCashoutSummary(qp *util.QueryParam) ([]CashoutSummary, bool, error) {
 	return getCashoutSummary(qp, "1", "1")
@@ -221,7 +177,7 @@ func (c *Cashout) Insert() (*[]Cashout, error) {
 	q := `INSERT INTO cashouts ( 
 					company_id
 					, code 
-					, partner_id 
+					, outlet_id 
 					, bank_name
 					, bank_company_name
 					, bank_account
@@ -238,7 +194,7 @@ func (c *Cashout) Insert() (*[]Cashout, error) {
 				id
 				, company_id
 				, code 
-				, partner_id 
+				, outlet_id 
 				, bank_name
 				, bank_company_name
 				, bank_account
@@ -251,7 +207,7 @@ func (c *Cashout) Insert() (*[]Cashout, error) {
 	`
 
 	var res []Cashout
-	err = tx.Select(&res, tx.Rebind(q), c.CompanyID, c.Code, c.PartnerID, c.BankName, c.BankCompanyName, c.BankAccount, c.ReferenceNo, c.Amount, c.PaymentMethod, c.CreatedBy, c.UpdatedBy, StatusCreated)
+	err = tx.Select(&res, tx.Rebind(q), c.CompanyID, c.Code, c.OutletID, c.BankName, c.BankCompanyName, c.BankAccount, c.ReferenceNo, c.Amount, c.PaymentMethod, c.CreatedBy, c.UpdatedBy, StatusCreated)
 	if err != nil {
 		return nil, err
 	}
@@ -299,7 +255,7 @@ func (c *Cashout) Delete() error {
 				id
 				, account_id
 				, code 
-				, partner_id 
+				, outlet_id 
 				, bank_account
 				, amount 
 				, payment_method
@@ -336,15 +292,15 @@ func (c *Cashout) Delete() error {
 	return nil
 }
 
-// GetUnpaidReimburse : Get list of unpaid reimburse
-func GetUnpaidReimburse(qp *util.QueryParam, startDate, endDate string) ([]UnpaidReimburse, bool, error) {
+// GetUnpaidCashout : Get list of unpaid cashout
+func GetUnpaidCashout(qp *util.QueryParam, startDate, endDate string) ([]UnpaidCashout, bool, error) {
 
 	q := `
 		SELECT DISTINCT
-			p.id AS partner_id,
-			p.name AS partner_name,
-			p.description AS partner_description,
-			p.emails AS partner_emails,
+			p.id AS outlet_id,
+			p.name AS outlet_name,
+			p.description AS outlet_description,
+			p.emails AS outlet_emails,
 			p.company_id,
 			count(DISTINCT t.id) AS transaction_qty,
 			COALESCE(sum(
@@ -357,8 +313,8 @@ func GetUnpaidReimburse(qp *util.QueryParam, startDate, endDate string) ([]Unpai
 					WHEN v.state = 'used'::voucher_state THEN 1 * pr.max_value
 					ELSE 0
 				END), 0::bigint) AS total_value
-		FROM partners p
-			LEFT JOIN transactions t ON p.id = t.partner_id
+		FROM outlets p
+			LEFT JOIN transactions t ON p.id = t.outlet_id
 			LEFT JOIN transaction_details td ON t.id = td.transaction_id
 			LEFT JOIN vouchers v ON v.id = td.voucher_id
 			LEFT JOIN programs pr ON pr.id = v.program_id
@@ -372,7 +328,7 @@ func GetUnpaidReimburse(qp *util.QueryParam, startDate, endDate string) ([]Unpai
 
 	util.DEBUG("query struct :", q)
 
-	var resv []UnpaidReimburse
+	var resv []UnpaidCashout
 	if err := db.Select(&resv, db.Rebind(q), qp.CompanyID, startDate, endDate); err != nil {
 		fmt.Println(err.Error())
 		return resv, false, err
@@ -394,7 +350,7 @@ func GetUnpaidReimburse(qp *util.QueryParam, startDate, endDate string) ([]Unpai
 }
 
 // GetUnpaidVouchersByOutlet : Get list of unpaid vouchers by outlet transaction
-func GetUnpaidVouchersByOutlet(qp *util.QueryParam, partnerID, startDate, endDate string) ([]VoucherTransaction, bool, error) {
+func GetUnpaidVouchersByOutlet(qp *util.QueryParam, outletID, startDate, endDate string) ([]VoucherTransaction, bool, error) {
 
 	q := `
 		SELECT DISTINCT
@@ -410,7 +366,7 @@ func GetUnpaidVouchersByOutlet(qp *util.QueryParam, partnerID, startDate, endDat
 		FROM vouchers as v
 			JOIN transaction_details as td ON td.voucher_id = v.id
 			JOIN transactions as t ON td.transaction_id = t.id
-			JOIN partners as p ON t.partner_id = p.id
+			JOIN outlets as p ON t.outlet_id = p.id
 			JOIN programs as pr ON v.program_id = pr.id
 		WHERE
 			v.state = 'used'
@@ -425,7 +381,7 @@ func GetUnpaidVouchersByOutlet(qp *util.QueryParam, partnerID, startDate, endDat
 	util.DEBUG("query struct :", q)
 
 	var resv []VoucherTransaction
-	if err := db.Select(&resv, db.Rebind(q), qp.CompanyID, partnerID, startDate, endDate); err != nil {
+	if err := db.Select(&resv, db.Rebind(q), qp.CompanyID, outletID, startDate, endDate); err != nil {
 		fmt.Println(err.Error())
 		return resv, false, err
 	}
