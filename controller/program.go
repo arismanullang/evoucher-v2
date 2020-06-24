@@ -17,7 +17,9 @@ func PostProgram(w http.ResponseWriter, r *http.Request) {
 	qp := u.NewQueryParam(r)
 
 	token := r.FormValue("token")
-	accData, err := model.GetSessionDataJWT(token)
+	companyID := bone.GetValue(r, "company")
+
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
@@ -150,8 +152,9 @@ func UpdateProgram(w http.ResponseWriter, r *http.Request) {
 
 	id := bone.GetValue(r, "id")
 	token := r.FormValue("token")
+	companyID := bone.GetValue(r, "company")
 
-	accData, err := model.GetSessionDataJWT(token)
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)

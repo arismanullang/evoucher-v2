@@ -165,6 +165,8 @@ func init() {
 	v2.Get("/:company/web/accounts", c.CheckFuncJWT(c.GetAccounts, "member-view"))
 	v2.Get("/:company/web/accounts/:id", c.CheckFuncJWT(c.GetAccountByID, "member-view"))
 
+	v2.GetFunc("/:company/juno/roles", c.GetJunoaBasicRole)
+
 	router = r
 }
 

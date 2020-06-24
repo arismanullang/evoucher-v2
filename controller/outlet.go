@@ -45,10 +45,11 @@ type (
 //PostOutlet : POST outlet data
 func PostOutlet(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
-
 	token := r.FormValue("token")
 
-	accData, err := model.GetSessionDataJWT(token)
+	companyID := bone.GetValue(r, "company")
+
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
@@ -126,10 +127,11 @@ func GetOutletByID(w http.ResponseWriter, r *http.Request) {
 // UpdateOutlet :
 func UpdateOutlet(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
-
 	token := r.FormValue("token")
 
-	accData, err := model.GetSessionDataJWT(token)
+	companyID := bone.GetValue(r, "company")
+
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
@@ -161,7 +163,9 @@ func DeleteOutlet(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	token := r.FormValue("token")
 
-	accData, err := model.GetSessionDataJWT(token)
+	companyID := bone.GetValue(r, "company")
+
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
@@ -184,7 +188,9 @@ func PostOutletTags(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	token := r.FormValue("token")
 
-	accData, err := model.GetSessionDataJWT(token)
+	companyID := bone.GetValue(r, "company")
+
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
@@ -237,7 +243,9 @@ func PostBank(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	token := r.FormValue("token")
 
-	accData, err := model.GetSessionDataJWT(token)
+	companyID := bone.GetValue(r, "company")
+
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
@@ -316,10 +324,11 @@ func GetBankByOutletID(w http.ResponseWriter, r *http.Request) {
 // UpdateBank :
 func UpdateBank(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
-
 	token := r.FormValue("token")
 
-	accData, err := model.GetSessionDataJWT(token)
+	companyID := bone.GetValue(r, "company")
+
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
@@ -351,7 +360,9 @@ func DeleteBank(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	token := r.FormValue("token")
 
-	accData, err := model.GetSessionDataJWT(token)
+	companyID := bone.GetValue(r, "company")
+
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)

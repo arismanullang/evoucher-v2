@@ -15,7 +15,9 @@ func PostChannel(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	token := r.FormValue("token")
 
-	accData, err := model.GetSessionDataJWT(token)
+	companyID := bone.GetValue(r, "company")
+
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
@@ -110,7 +112,9 @@ func UpdateChannel(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	token := r.FormValue("token")
 
-	accData, err := model.GetSessionDataJWT(token)
+	companyID := bone.GetValue(r, "company")
+
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
@@ -142,7 +146,9 @@ func DeleteChannel(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	token := r.FormValue("token")
 
-	accData, err := model.GetSessionDataJWT(token)
+	companyID := bone.GetValue(r, "company")
+
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
