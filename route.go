@@ -102,15 +102,17 @@ func init() {
 
 	v2.Get("/:company/web/cashout/summary", c.CheckFuncJWT(c.GetCashoutSummary, "cashout-view"))
 
-	v2.Get("/:company/web/cashout/paid/list", c.CheckFuncJWT(c.GetCashouts, "transaction-view"))
-	v2.Get("/:company/web/cashout/unpaid/list", c.CheckFuncJWT(c.GetUnpaidCashout, "transaction-view"))
-	v2.Get("/:company/web/cashout/unpaid/vouchers/:outlet_id", c.CheckFuncJWT(c.GetUnpaidVouchersByOutlet, "transaction-view"))
+	v2.Get("/:company/web/cashout", c.CheckFuncJWT(c.GetCashouts, "transaction-view"))
+	v2.Get("/:company/web/cashout/outlet/search", c.CheckFuncJWT(c.GetUnpaidCashout, "transaction-view"))
+	v2.Get("/:company/web/cashout/outlet/vouchers/:outlet_id", c.CheckFuncJWT(c.GetUnpaidVouchersByOutlet, "transaction-view"))
 	v2.Post("/:company/web/cashout/create", c.CheckFuncJWT(c.PostCashout, "transaction-view"))
+	v2.Put("/:company/web/cashout/approval/:cashout_id", c.CheckFuncJWT(c.ApproveCashout, "transaction-view"))
+	v2.Post("/:company/web/cashout/attachment/:cashout_id", c.CheckFuncJWT(c.PostCashoutAttachment, "transaction-view"))
+
 	v2.Get("/:company/web/cashout/:id", c.CheckFuncJWT(c.GetCashoutByID, "transaction-view"))
 	v2.Get("/:company/web/cashout/vouchers/:cashout_id", c.CheckFuncJWT(c.GetCashoutVouchers, "transaction-view"))
 
 	// v2.Post("/:company/web/cashout/void", c.CheckFuncJWT(c.VoidCashout, "cashout-view"))
-	// v2.Put("/:company/web/cashout/approval", c.CheckFuncJWT(c.PutApprovecashout, "cashout-approval"))
 
 	// v2.GetFunc("/:company/web/vouchers/report", c.GetVoucherReport)
 
@@ -143,7 +145,7 @@ func init() {
 	// config
 	v2.Get("/:company/web/config", c.CheckFuncJWT(c.GetConfigs, "setting-view"))
 	v2.Post("/:company/web/config/:category", c.CheckFuncJWT(c.SetConfig, "setting-create"))
-	v2.Put("/:company/web/config", c.CheckFuncJWT(c.UpdateConfig, "setting-edit"))
+	// v2.Put("/:company/web/config", c.CheckFuncJWT(c.UpdateConfig, "setting-edit"))
 
 	// public
 	v2.GetFunc("/:company/web/public/voucher", c.GetPublicVoucherByID)

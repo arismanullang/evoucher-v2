@@ -59,6 +59,7 @@ type (
 		BankAccount     string         `db:"bank_account" json:"bank_account,omitempty"`
 		ReferenceNo     string         `db:"reference_no" json:"reference_no,omitempty"`
 		Amount          float64        `db:"amount" json:"amount,omitempty"`
+		AttachmentUrl   string         `db:"attachment_url" json:"attachment_url,omitempty"`
 		PaymentMethod   string         `db:"payment_method" json:"payment_method,omitempty"`
 		CreatedAt       *time.Time     `db:"created_at" json:"created_at,omitempty"`
 		CreatedBy       string         `db:"created_by" json:"created_by,omitempty"`
@@ -83,8 +84,18 @@ type (
 )
 
 // GetCashoutByID :  get list Cashouts by ID
-func GetCashoutByID(id string, qp *util.QueryParam) (*Cashouts, bool, error) {
-	return getCashouts(qp, "id", id)
+func GetCashoutByID(id string, qp *util.QueryParam) (*Cashout, error) {
+	cashouts, _, err := getCashouts(qp, "id", id)
+	if err != nil {
+		return &Cashout{}, err
+	}
+
+	if len(*cashouts) > 0 {
+		cashout := (*cashouts)[0]
+		return &cashout, nil
+	}
+
+	return &Cashout{}, ErrorResourceNotFound
 }
 
 // GetCashouts : list Cashout
@@ -100,16 +111,14 @@ func getCashouts(qp *util.QueryParam, key, value string) (*Cashouts, bool, error
 	q += `
 			FROM
 				m_cashouts cashout
-			WHERE 
-				status = ?			
-			AND ` + key + ` = ?`
+			WHERE ` + key + ` = ?`
 
 	q = qp.GetQueryWhereClause(q, qp.Q)
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 
 	fmt.Println(q)
 	var resd Cashouts
-	err = db.Select(&resd, db.Rebind(q), StatusCreated, value)
+	err = db.Select(&resd, db.Rebind(q), value)
 	if err != nil {
 		return &Cashouts{}, false, err
 	}
@@ -449,4 +458,67 @@ func GetCashoutVouchers(qp *util.QueryParam, cashoutID string) ([]VoucherTransac
 		qp.Count = len(resv)
 	}
 	return resv, next, nil
+}
+
+func (c *Cashout) Update() (*Cashout, error) {
+	tx, err := db.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	q := `UPDATE
+				cashouts 
+			SET
+				attachment_url = ?,
+				updated_at = now(),
+				updated_by = ?,					
+				status = ?
+			WHERE 
+				id = ?
+			RETURNING
+				id
+				, code
+				, bank_name
+				, bank_company_name
+				, bank_account
+				, reference_no
+				, amount
+				, attachment_url
+				, payment_method
+				, created_at
+				, created_by
+				, updated_at
+				, updated_by
+				, status
+				
+	`
+	var res []Cashout
+	err = tx.Select(&res, tx.Rebind(q), c.AttachmentUrl, c.UpdatedBy, c.Status, c.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if c.Status == StatusApproved {
+		//insert approval_log
+		approvalLog := ApprovalLog{
+			ObjectID:       c.ID,
+			ObjectCategory: "cashout",
+			CreatedBy:      c.UpdatedBy,
+			Status:         StatusCreated,
+		}
+
+		fmt.Println("approval log = ", approvalLog)
+		err = approvalLog.Insert()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+
+	return &res[0], nil
 }
