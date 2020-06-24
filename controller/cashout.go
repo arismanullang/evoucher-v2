@@ -214,7 +214,7 @@ func PostCashout(w http.ResponseWriter, r *http.Request) {
 
 	companyID := bone.GetValue(r, "company")
 
-	accData, err := model.GetSessionDataJWT(token)
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)

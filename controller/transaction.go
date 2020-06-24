@@ -224,7 +224,7 @@ func PostVoucherUse(w http.ResponseWriter, r *http.Request) {
 	qp := u.NewQueryParam(r)
 	err := decoder.Decode(&req)
 
-	accData, err := model.GetSessionDataJWT(token)
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
@@ -489,7 +489,7 @@ func PostVoucherClaim(w http.ResponseWriter, r *http.Request) {
 	companyID := bone.GetValue(r, "company")
 	token := r.FormValue("token")
 
-	accData, err := model.GetSessionDataJWT(token)
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)

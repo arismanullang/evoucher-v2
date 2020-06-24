@@ -218,8 +218,9 @@ func GetVoucherByToken(w http.ResponseWriter, r *http.Request) {
 	qp.Count = -1
 	qp.Sort = "expired_at-"
 	token := r.FormValue("token")
+	companyID := bone.GetValue(r, "company")
 
-	qp.SetCompanyID(bone.GetValue(r, "company"))
+	qp.SetCompanyID(companyID)
 	var f model.VoucherFilter
 	var decoder = schema.NewDecoder()
 	decoder.IgnoreUnknownKeys(true)
@@ -231,7 +232,7 @@ func GetVoucherByToken(w http.ResponseWriter, r *http.Request) {
 
 	qp.SetFilterModel(f)
 
-	accData, err := model.GetSessionDataJWT(token)
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)

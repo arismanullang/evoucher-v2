@@ -15,8 +15,9 @@ func PostTag(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	token := r.FormValue("token")
+	companyID := bone.GetValue(r, "company")
 
-	accData, err := model.GetSessionDataJWT(token)
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
@@ -137,7 +138,9 @@ func UpdateTag(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	token := r.FormValue("token")
 
-	accData, err := model.GetSessionDataJWT(token)
+	companyID := bone.GetValue(r, "company")
+
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
@@ -169,7 +172,9 @@ func DeleteTag(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 	token := r.FormValue("token")
 
-	accData, err := model.GetSessionDataJWT(token)
+	companyID := bone.GetValue(r, "company")
+
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
