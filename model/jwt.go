@@ -41,7 +41,9 @@ type (
 	//SessionData token auth
 	SessionData struct {
 		AccountID         string `json:"account_id"`
+		CompanyID         string `json:"company_id"`
 		Username          string `json:"username"`
+		ClientKey         string `json:"client_key"`
 		Name              string `json:"name"`
 		MobileCallingCode string `json:"mobile_caling_code"`
 		MobileNo          string `json:"mobile_no"`
@@ -91,7 +93,7 @@ func VerifyJWT(tokenString string) (*jwt.Token, error) {
 	})
 }
 
-func GetSessionDataJWT(tokenString string) (SessionData, error) {
+func GetSessionDataJWT(tokenString, companyId string) (SessionData, error) {
 	token, err := VerifyJWT(tokenString)
 	if err != nil {
 		return SessionData{}, err
@@ -100,6 +102,8 @@ func GetSessionDataJWT(tokenString string) (SessionData, error) {
 	if claims, ok := token.Claims.(*JWTJunoClaims); ok && token.Valid {
 		accData := SessionData{
 			AccountID:         claims.AccountID,
+			CompanyID:         claims.Audience,
+			ClientKey:         claims.ClientKey,
 			Username:          claims.Username,
 			Name:              claims.Name,
 			MobileCallingCode: claims.MobileCallingCode,
@@ -107,6 +111,10 @@ func GetSessionDataJWT(tokenString string) (SessionData, error) {
 			Email:             claims.Email,
 			Gender:            claims.Gender,
 		}
+		if accData.CompanyID != companyId {
+			return SessionData{}, ErrorForbidden
+		}
+
 		return accData, nil
 	}
 	return SessionData{}, ErrorUnexpected
