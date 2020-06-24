@@ -21,8 +21,8 @@ const (
 	VoucherStateUsed = "used"
 	// VoucherStatePaid state
 	VoucherStatePaid = "paid"
-	// HolderTypePartner tag
-	HolderTypePartner = "partner"
+	// HolderTypeOutlet tag
+	HolderTypeOutlet = "outlet"
 	// HolderTypeCustomer tag
 	HolderTypeCustomer = "customer"
 
@@ -49,7 +49,8 @@ var (
 	// ErrorInvalidToken :
 	ErrorInvalidToken = errors.New("Invalid Token")
 	// ErrorExpiredToken :
-	ErrorExpiredToken = errors.New("Token has expired")
+	ErrorExpiredToken  = errors.New("Token has expired")
+	ErrorTokenNotFound = errors.New("Token not found")
 
 	// ErrorMaxAssignByDay :
 	ErrorMaxAssignByDay = errors.New("You have reach the maximum limit of voucher today, try again tomorrow")
@@ -70,4 +71,6 @@ var (
 	ErrorVoucherPaid        = errors.New("Voucher has been paid")
 	ErrorVoucherExpired     = errors.New("Voucher has expired")
 	ErrorVoucherInvalidTime = errors.New("Voucher can't be used at current time, please check the terms & conditions")
+
+	ErrorBankNotFound = errors.New("Please complete the outlet bank details")
 )

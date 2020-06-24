@@ -12,7 +12,6 @@ import (
 var StorageBucket *storage.BucketHandle
 
 func GcsInit() error {
-	fmt.Println("init gcs")
 	var err error
 	gcsBucket := os.Getenv("GCS_BUCKET")
 	StorageBucket, err = configureStorage(gcsBucket)

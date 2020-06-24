@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -59,25 +58,7 @@ func UploadFileFromForm(r *http.Request, formField, directory string) (url strin
 	// random filename, retaining existing extension. -> v2 used to add folder
 	name := "v2/" + directory + formField + ext
 
-	fmt.Println("filename = ", name)
-	b, err := json.Marshal(model.StorageBucket)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println("storageBucket = ", string(b))
-	fmt.Println("storageBucket = ", model.StorageBucket)
-
 	ctx := context.Background()
-	acls, err := model.StorageBucket.ACL().List(ctx)
-	if err != nil {
-		// TODO: Handle error.
-	}
-	for _, rule := range acls {
-		fmt.Printf("%s has role %s\n", rule.Entity, rule.Role)
-	}
-
-	fmt.Println("acl = ", acls)
 
 	w := model.StorageBucket.Object(name).NewWriter(ctx)
 	w.ACL = []storage.ACLRule{{Entity: storage.AllUsers, Role: storage.RoleReader}}

@@ -12,6 +12,7 @@ type (
 	Channel struct {
 		ID          string         `db:"id" json:"id,omitempty"`
 		Name        string         `db:"name" json:"name,omitempty"`
+		CompanyID   string         `db:"company_id" json:"company_id"`
 		Description types.JSONText `db:"description" json:"description,omitempty"`
 		IsSuper     bool           `db:"is_super" json:"is_super,omitempty"`
 		CreatedAt   *time.Time     `db:"created_at" json:"created_at,omitempty"`
@@ -152,7 +153,7 @@ func (p *Channel) Insert() (*Channels, error) {
 	// }
 	var res Channels
 	// util.DEBUG(p.Bank)
-	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Description, p.IsSuper, p.CreatedBy, p.CreatedBy, StatusCreated)
+	err = tx.Select(&res, tx.Rebind(q), p.Name, p.Description, p.CompanyID, p.IsSuper, p.CreatedBy, p.CreatedBy, StatusCreated)
 	if err != nil {
 		return nil, err
 	}

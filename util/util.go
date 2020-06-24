@@ -27,6 +27,9 @@ const (
 
 	// TRANSACTION_CODE_LENGTH =
 	TRANSACTION_CODE_LENGTH = 10
+
+	CASHOUT_PREFIX_LENGTH = 5
+	CASHOUT_CODE_LENGTH   = 5
 )
 
 //StandardizeSpaces : trim redundant spaces

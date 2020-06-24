@@ -30,7 +30,7 @@ type (
 		UpdatedAt       *time.Time     `db:"updated_at" json:"updated_at,omitempty"`
 		UpdatedBy       string         `db:"updated_by" json:"updated_by,omitempty"`
 		Status          string         `db:"status" json:"status,omitempty"`
-		Partners        Partners       `json:"partners,omitempty"`
+		Outlets         Outlets        `json:"outlets,omitempty"`
 		Vouchers        Vouchers       `json:"vouchers,omitempty"`
 		VoucherFormat   types.JSONText `db:"voucher_format" json:"voucher_format,omitempty"`
 		IsReimburse     bool           `db:"is_reimburse" json:"is_reimburse,omitempty"`
@@ -41,12 +41,15 @@ type (
 		Count           int            `db:"count" json:"-"`
 		ClaimedVoucher  int            `db:"claimed" json:"claimed"`
 		UsedVoucher     int            `db:"used" json:"used"`
-		PaidVoucher     int            `db:"paid" json:"paid"`
+		PaidVoucher     int            `db:"paid" json:"paid,omitempty"`
 		// WithTransactionCount bool       `json:"with_transaction_count,omitempty"`
 	}
 	// Programs : base model
 	Programs []Program
 )
+
+//MProgramFields : fields for 3rd party api
+var MProgramFields = "id, name, type, value, max_value, rule, start_date, end_date, description, image_url, stock, is_reimburse, claimed, used"
 
 // GetProgramByHolder :
 func GetProgramByHolder(id string, qp *util.QueryParam) (*Programs, bool, error) {
@@ -60,13 +63,10 @@ func GetProgramByID(id string, qp *util.QueryParam) (*Program, error) {
 	if err != nil {
 		return &Program{}, errors.New("Failed when select on program ," + err.Error())
 	}
-	program := &(*programs)[0]
-	//get partner
-	partners, _, err := GetPartnerByProgramID(program.ID, qp)
-	if err != nil {
-		return &Program{}, errors.New("Failed when select on program partners ," + err.Error())
+	if len(*programs) < 1 {
+		return &Program{}, nil
 	}
-	program.Partners = *partners
+	program := &(*programs)[0]
 
 	return program, nil
 }
@@ -90,13 +90,14 @@ func getPrograms(key, value string, qp *util.QueryParam) (*Programs, bool, error
 
 	q = qp.GetQueryWhereClause(q, qp.Q)
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
+	util.DEBUG(q)
 	var resd Programs
 	err = db.Select(&resd, db.Rebind(q), StatusCreated, value)
 	if err != nil {
 		return &Programs{}, false, errors.New("Failed when select on program ," + err.Error())
 	}
 	if len(resd) < 1 {
-		return &Programs{}, false, errors.New("Failed when select on program ," + ErrorResourceNotFound.Error())
+		return &Programs{}, false, nil
 	}
 
 	next := false
@@ -183,7 +184,7 @@ func (p *Program) Insert() (*Programs, error) {
 		util.DEBUG(channelID)
 		err = tx.Select(&res, tx.Rebind(q), p.CompanyID, p.Name, p.Type, p.Value, p.Price, p.MaxValue, p.StartDate, p.EndDate,
 			p.Description, p.ImageURL, p.Template, util.StandardizeSpaces(p.Rule.String()), p.State, p.Stock, p.IsReimburse, channelID,
-			util.StandardizeSpaces(p.VoucherFormat.String()), p.CreatedBy, p.UpdatedBy, StatusCreated)
+			util.StandardizeSpaces(p.VoucherFormat.String()), p.CreatedBy, p.CreatedBy, StatusCreated)
 		if err != nil {
 			return nil, err
 		}
@@ -191,9 +192,9 @@ func (p *Program) Insert() (*Programs, error) {
 
 	//update returning ID into obj program
 	p.ID = res[0].ID
-	//insert program partners
-	if err := NewProgramPartners(p.ID, p.Partners).Upsert(tx); err != nil {
-		return nil, errors.New("Failed when insert new partners ," + err.Error())
+	//insert program outlets
+	if err := NewProgramOutlets(p.ID, p.Outlets).Upsert(tx); err != nil {
+		return nil, errors.New("Failed when insert new outlets ," + err.Error())
 	}
 
 	err = tx.Commit()
@@ -229,6 +230,8 @@ func (p *Program) Update() error {
 					, rule = ?
 					, state = ?
 					, stock = ?
+					, is_reimburse = ?
+					, updated_at = now()
 					, updated_by = ?		
 			WHERE 
 				id = ?
@@ -263,7 +266,7 @@ func (p *Program) Update() error {
 	util.DEBUG(q)
 	var res []Program
 	err = tx.Select(&res, tx.Rebind(q), p.CompanyID, p.Name, p.Type, p.Value, p.Price, p.MaxValue, p.StartDate, p.EndDate,
-		p.Description, p.ImageURL, p.Template, p.Rule, p.State, p.Stock, p.UpdatedBy, p.ID)
+		p.Description, p.ImageURL, p.Template, p.Rule, p.State, p.Stock, p.IsReimburse, p.UpdatedBy, p.ID)
 	if err != nil {
 		return err
 	}
@@ -284,9 +287,9 @@ func (p *Program) Delete() error {
 	}
 	defer tx.Rollback()
 
-	//delete partners
-	if err := NewProgramPartners(p.ID, p.Partners).Delete(tx); err != nil {
-		return errors.New("Failed when delete partners ," + err.Error())
+	//delete outlets
+	if err := NewProgramOutlets(p.ID, p.Outlets).Delete(tx); err != nil {
+		return errors.New("Failed when delete outlets ," + err.Error())
 	}
 
 	q := `UPDATE

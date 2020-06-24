@@ -12,8 +12,8 @@ type (
 	//Bank :
 	Bank struct {
 		// Bank            string `json:"bank,omitempty"`
-		ID              string     `db:"id" json:"id,omitempty"`
-		PartnerID       string     `db:"partner_id" json:"partner_id"`
+		ID              int        `db:"id" json:"id,omitempty"`
+		OutletID        string     `db:"outlet_id" json:"outlet_id"`
 		BankName        string     `db:"bank_name" json:"bank_name,omitempty"`
 		BankBranch      string     `db:"bank_branch" json:"bank_branch,omitempty"`
 		BankAccount     string     `db:"bank_account" json:"bank_account,omitempty"`
@@ -44,9 +44,9 @@ func GetBankByID(qp *util.QueryParam, id string) (*Banks, bool, error) {
 	return getBanks("id", id, qp)
 }
 
-//GetBankByPartnerID : get bank by specified partner ID
-func GetBankByPartnerID(qp *util.QueryParam, id string) (*Banks, bool, error) {
-	return getBanks("partner_id", id, qp)
+//GetBankByOutletID : get bank by specified outlet ID
+func GetBankByOutletID(qp *util.QueryParam, id string) (*Banks, bool, error) {
+	return getBanks("outlet_id", id, qp)
 }
 
 func getBanks(k, v string, qp *util.QueryParam) (*Banks, bool, error) {
@@ -59,7 +59,7 @@ func getBanks(k, v string, qp *util.QueryParam) (*Banks, bool, error) {
 
 	q += `
 			FROM
-				partner_banks bank
+				outlet_banks bank
 			WHERE 
 				status = ?
 			AND ` + k + ` = ?`
@@ -95,7 +95,7 @@ func (p *Bank) Insert() (*Banks, error) {
 	defer tx.Rollback()
 
 	q := `INSERT INTO 
-				partner_banks ( partner_id
+				outlet_banks ( outlet_id
 					, bank_name
 					, bank_branch
 					, bank_account
@@ -113,7 +113,7 @@ func (p *Bank) Insert() (*Banks, error) {
 				( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 			RETURNING
 				id
-				, partner_id
+				, outlet_id
 				, bank_name
 				, bank_branch
 				, bank_account
@@ -134,7 +134,7 @@ func (p *Bank) Insert() (*Banks, error) {
 	// }
 	var res Banks
 	// util.DEBUG(p.Bank)
-	err = tx.Select(&res, tx.Rebind(q), p.PartnerID, p.BankName, p.BankBranch, p.BankAccount, p.BankAccountName,
+	err = tx.Select(&res, tx.Rebind(q), p.OutletID, p.BankName, p.BankBranch, p.BankAccount, p.BankAccountName,
 		p.CompanyName, p.Name, p.Phone, p.Email, p.CreatedAt, p.CreatedBy, p.CreatedAt, p.CreatedBy, StatusCreated)
 	if err != nil {
 		return nil, err
@@ -156,7 +156,7 @@ func (p *Bank) Update() error {
 	defer tx.Rollback()
 
 	q := `UPDATE
-				partner_banks 
+				outlet_banks 
 			SET
 			bank_name = ?
 			, bank_branch = ?
@@ -170,10 +170,10 @@ func (p *Bank) Update() error {
 			, updated_by = ?
 			, status = ?				
 			WHERE 
-				partner_id = ?	
+				outlet_id = ?	
 			RETURNING
 			id
-			, partner_id
+			, outlet_id
 			, bank_name
 			, bank_branch
 			, bank_account
@@ -190,7 +190,7 @@ func (p *Bank) Update() error {
 	`
 	var res []Bank
 	err = tx.Select(&res, tx.Rebind(q), p.BankName, p.BankBranch, p.BankAccount, p.BankAccountName,
-		p.CompanyName, p.Name, p.Phone, p.Email, p.UpdatedAt, p.UpdatedBy, p.Status, p.PartnerID)
+		p.CompanyName, p.Name, p.Phone, p.Email, p.UpdatedAt, p.UpdatedBy, p.Status, p.OutletID)
 	if err != nil {
 		return err
 	}
@@ -212,7 +212,7 @@ func (p *Bank) Delete() error {
 	defer tx.Rollback()
 
 	q := `UPDATE
-				partner_banks 
+				outlet_banks 
 			SET
 				updated_at = now(),
 				updated_by = ?,
@@ -221,7 +221,7 @@ func (p *Bank) Delete() error {
 				id = ?	
 			RETURNING
 			id
-			, partner_id
+			, outlet_id
 			, bank_name
 			, bank_branch
 			, bank_account

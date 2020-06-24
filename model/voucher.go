@@ -3,7 +3,6 @@ package model
 import (
 	"bytes"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/gilkor/evoucher-v2/util"
@@ -13,21 +12,26 @@ import (
 type (
 	//Voucher model
 	Voucher struct {
-		ID           string         `json:"id,omitempty" db:"id"`
-		Code         string         `json:"code,omitempty" db:"code"`
-		ReferenceNo  string         `json:"reference_no,omitempty" db:"reference_no"`
-		Holder       *string        `json:"holder,omitempty" db:"holder"`
-		HolderDetail types.JSONText `json:"holder_detail,omitempty" db:"holder_detail"`
-		ProgramID    string         `json:"program_id,omitempty" db:"program_id"`
-		ValidAt      *time.Time     `json:"valid_at,omitempty" db:"valid_at"`
-		ExpiredAt    *time.Time     `json:"expired_at,omitempty" db:"expired_at"`
-		State        string         `json:"state,omitempty" db:"state"`
-		CreatedBy    string         `json:"created_by,omitempty" db:"created_by"`
-		CreatedAt    *time.Time     `json:"created_at,omitempty" db:"created_at"`
-		UpdatedBy    string         `json:"updated_by,omitempty" db:"updated_by"`
-		UpdatedAt    *time.Time     `json:"updated_at,omitempty" db:"updated_at"`
-		Status       string         `json:"status,omitempty" db:"status"`
-		Count        int            `db:"count" json:"-"`
+		ID                string             `json:"id,omitempty" db:"id"`
+		Code              string             `json:"code,omitempty" db:"code"`
+		ReferenceNo       string             `json:"reference_no,omitempty" db:"reference_no"`
+		Holder            *string            `json:"holder,omitempty" db:"holder"`
+		HolderDetail      types.JSONText     `json:"holder_detail,omitempty" db:"holder_detail"`
+		ProgramID         string             `json:"program_id,omitempty" db:"program_id"`
+		ValidAt           *time.Time         `json:"valid_at,omitempty" db:"valid_at"`
+		ExpiredAt         *time.Time         `json:"expired_at,omitempty" db:"expired_at"`
+		State             string             `json:"state,omitempty" db:"state"`
+		ProgramImageURL   string             `json:"program_img_url,omitempty" db:"program_img_url"`
+		ProgramName       string             `json:"program_name,omitempty" db:"program_name"`
+		ProgramValue      float64            `json:"program_value,omitempty" db:"program_value"`
+		ProgramMaxValue   float64            `json:"program_max_value,omitempty" db:"program_max_value"`
+		CreatedBy         string             `json:"created_by,omitempty" db:"created_by"`
+		CreatedAt         *time.Time         `json:"created_at,omitempty" db:"created_at"`
+		UpdatedBy         string             `json:"updated_by,omitempty" db:"updated_by"`
+		UpdatedAt         *time.Time         `json:"updated_at,omitempty" db:"updated_at"`
+		Status            string             `json:"status,omitempty" db:"status"`
+		Count             int                `db:"count" json:"-"`
+		TransactionDetail *TransactionDetail `json:"transaction_detail,omitempty"`
 	}
 	//Vouchers :
 	Vouchers []Voucher
@@ -71,6 +75,7 @@ type (
 		Name      string `schema:"name" filter:"string"`
 		ProgramID string `schema:"program_id" filter:"string"`
 		Holder    string `schema:"holder" filter:"string"`
+		State     string `schema:"state" filter:"enum"`
 		CreatedAt string `schema:"created_at" filter:"date"`
 		CreatedBy string `schema:"created_by" filter:"string"`
 		UpdatedAt string `schema:"updated_at" filter:"date"`
@@ -79,13 +84,38 @@ type (
 	}
 )
 
+//MVoucherFields : fields for 3rd party api
+var MVoucherFields = "id, code, reference, valid_at, expired_at, state"
+
 // GetVouchersByHolder : get list vouchers by Holder
-func GetVouchersByHolder(holder string, qp *util.QueryParam) (Vouchers, error) {
-	vouchers, _, err := getVouchers("holder", holder, qp)
+func GetVouchersByHolder(holder string, qp *util.QueryParam) ([]Voucher, error) {
+	q, err := qp.GetQueryByDefaultStruct(Voucher{})
 	if err != nil {
 		return Vouchers{}, err
 	}
-	return vouchers, nil
+
+	q += `
+		FROM 
+			m_vouchers voucher
+		WHERE holder = ?
+			AND expired_at >= NOW() - INTERVAL '30 days'
+			`
+
+	q = qp.GetQueryWhereClause(q, qp.Q)
+	util.DEBUG("query struct :", q)
+
+	var resv Vouchers
+	err = db.Select(&resv, db.Rebind(q), holder)
+	if err != nil {
+		fmt.Println("err = ", err)
+		return Vouchers{}, err
+	}
+
+	if len(resv) < 1 {
+		return Vouchers{}, nil
+	}
+
+	return resv, err
 }
 
 // GetVouchersByID :  get list vouchers by ID
@@ -141,7 +171,7 @@ func getVouchers(key, value string, qp *util.QueryParam) ([]Voucher, bool, error
 	}
 	q += `
 			FROM
-				vouchers voucher
+				m_vouchers voucher
 			WHERE 
 				status = ?			
 			AND ` + key + ` = ?`
@@ -477,70 +507,4 @@ func (vs *Vouchers) Insert() (*Vouchers, error) {
 	tx.Commit()
 	*vs = res
 	return &res, nil
-}
-
-// AssignVoucher :
-func (ivr *InjectVoucherByHolderRequest) AssignVoucher() (string, error) {
-	tx, err := db.Beginx()
-	if err != nil {
-		return "", err
-	}
-	defer tx.Rollback()
-
-	var finalResult []string
-	var totalVoucherIDs []string
-
-	for _, assignData := range ivr.AssignData {
-
-		q := `
-		UPDATE vouchers
-		SET
-			holder = ?
-			, holder_detail = ?
-			, reference_no = ?
-			, valid_at = ?
-			, expired_at = ?
-			, updated_by = ?
-			, updated_at = ?
-			, assigned_at = ?
-		WHERE
-			id IN (`
-
-		for idx, value := range assignData.VoucherIDs {
-			if idx != 0 {
-				q += `,`
-			}
-			q += `'` + value + `'`
-		}
-
-		q += `) 
-			AND holder = ''
-			AND program_id = ?
-		RETURNING id
-	`
-		var result []string
-		totalVoucherIDs = append(totalVoucherIDs, assignData.VoucherIDs...)
-		if err := tx.Select(&result, tx.Rebind(q), ivr.HolderID, ivr.HolderDetail, ivr.ReferenceNo, assignData.ValidAt, assignData.ExpiredAt, ivr.UpdatedBy, time.Now(), time.Now(), assignData.ProgramID); err != nil {
-			return "", err
-		}
-
-		//add result to finalResult for checking purpose
-		if len(result) > 0 {
-			finalResult = append(finalResult, result...)
-		} else if len(result) == 0 {
-			return strings.Join(totalVoucherIDs, ","), ErrorResourceNotFound
-		}
-	}
-
-	// check if all requested vouchers is accepted
-	if len(finalResult) != len(totalVoucherIDs) {
-		return "", ErrorInternalServer
-	}
-
-	if err := tx.Commit(); err != nil {
-		fmt.Println("err commit = ", err)
-		return "", err
-	}
-
-	return strings.Join(finalResult, ","), nil
 }
