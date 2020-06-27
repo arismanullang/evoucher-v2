@@ -2,7 +2,9 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gilkor/evoucher-v2/model"
@@ -181,8 +183,11 @@ func GetCashoutByID(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
+	companyID := bone.GetValue(r, "company_id")
 	id := bone.GetValue(r, "id")
-	cashout, _, err := model.GetCashoutByID(id, qp)
+
+	qp.SetCompanyID(companyID)
+	cashout, err := model.GetCashoutByID(id, qp)
 	if err != nil {
 		res.SetError(JSONErrResourceNotFound)
 		res.JSON(w, res, JSONErrResourceNotFound.Status)
@@ -350,4 +355,138 @@ func GetCashoutVouchers(w http.ResponseWriter, r *http.Request) {
 
 	res.SetResponse(voucherTransactions)
 	res.JSON(w, res, http.StatusCreated)
+}
+
+// ApproveCashout :
+func ApproveCashout(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+
+	qp := u.NewQueryParam(r)
+	companyID := bone.GetValue(r, "company_id")
+	cashoutID := bone.GetValue(r, "cashout_id")
+
+	qp.SetCompanyID(companyID)
+
+	token := r.FormValue("token")
+
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
+
+	cashout, err := model.GetCashoutByID(cashoutID, qp)
+	if err != nil {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
+
+	if cashout.Status == model.StatusApproved {
+		res.SetError(JSONErrBadRequest.SetArgs("cashout already approved"))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	cashout.UpdatedBy = accData.AccountID
+	cashout.Status = model.StatusApproved
+
+	cashoutRes, err := cashout.Update()
+	if err != nil {
+		res.SetErrorWithDetail(JSONErrFatal, err)
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(cashoutRes)
+	res.JSON(w, res, http.StatusOK)
+}
+
+func PostCashoutAttachment(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	cashoutID := bone.GetValue(r, "cashout_id")
+	companyID := bone.GetValue(r, "company_id")
+	token := r.FormValue("token")
+
+	qp := u.NewQueryParam(r)
+	qp.SetCompanyID(companyID)
+
+	accData, err := model.GetSessionDataJWT(token)
+	if err != nil {
+		res.SetError(JSONErrUnauthorized)
+		res.JSON(w, res, JSONErrUnauthorized.Status)
+		return
+	}
+
+	cashout, err := model.GetCashoutByID(cashoutID, qp)
+	if err != nil {
+		res.SetError(JSONErrResourceNotFound)
+		res.JSON(w, res, JSONErrResourceNotFound.Status)
+		return
+	}
+
+	if strings.Trim(cashout.AttachmentUrl, " ") != "" {
+		res.SetError(JSONErrBadRequest.SetArgs("attachment has been submitted"))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	if cashout.Status != model.StatusApproved {
+		res.SetError(JSONErrBadRequest.SetArgs("cashout need to be approved first"))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	err = r.ParseMultipartForm(2 << 20)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	attachmentURL := ""
+	if len(r.MultipartForm.File) > 0 {
+		for key := range r.MultipartForm.File {
+			sourceURL, err := UploadFileFromForm(r, key, "cashout_attachment/"+cashoutID+"/")
+			if err != nil {
+				res.SetError(JSONErrBadRequest.SetArgs(err.Error()))
+				res.JSON(w, res, JSONErrFatal.Status)
+				return
+			}
+
+			fmt.Println("key-> "+key+" = ", sourceURL)
+			attachmentURL = sourceURL
+		}
+	}
+
+	referenceNo := ""
+	if len(r.MultipartForm.Value) > 0 {
+		for key := range r.MultipartForm.Value {
+			if key == "reference_no" {
+				referenceNo = r.FormValue(key)
+			}
+		}
+	}
+
+	if attachmentURL == "" {
+		res.SetError(JSONErrBadRequest.SetArgs("attachment is empty"))
+		res.JSON(w, res, JSONErrBadRequest.Status)
+		return
+	}
+
+	cashout.ReferenceNo = referenceNo
+	cashout.UpdatedBy = accData.AccountID
+	cashout.AttachmentUrl = attachmentURL
+	cashout.Status = model.StatusPaid
+
+	response, err := cashout.Update()
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(response)
+	res.JSON(w, res, http.StatusOK)
 }

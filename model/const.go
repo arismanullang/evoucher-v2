@@ -9,6 +9,10 @@ const (
 	StatusDeleted = "deleted"
 	//StatusSubmitted row satus "submitted"
 	StatusSubmitted = "submitted"
+	//StatusApproved row satus "approved"
+	StatusApproved = "approved"
+	//StatusPaid row satus "paid"
+	StatusPaid = "paid"
 	// VoucherFormatTypeFix type
 	VoucherFormatTypeFix = "fix"
 	// VoucherFormatTypeRandom type
