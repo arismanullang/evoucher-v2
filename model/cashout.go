@@ -116,7 +116,6 @@ func getCashouts(qp *util.QueryParam, key, value string) (*Cashouts, bool, error
 	q = qp.GetQueryWhereClause(q, qp.Q)
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 
-	fmt.Println(q)
 	var resd Cashouts
 	err = db.Select(&resd, db.Rebind(q), value)
 	if err != nil {
@@ -470,6 +469,7 @@ func (c *Cashout) Update() (*Cashout, error) {
 	q := `UPDATE
 				cashouts 
 			SET
+				reference_no = ?,
 				attachment_url = ?,
 				updated_at = now(),
 				updated_by = ?,					
@@ -494,7 +494,7 @@ func (c *Cashout) Update() (*Cashout, error) {
 				
 	`
 	var res []Cashout
-	err = tx.Select(&res, tx.Rebind(q), c.AttachmentUrl, c.UpdatedBy, c.Status, c.ID)
+	err = tx.Select(&res, tx.Rebind(q), c.ReferenceNo, c.AttachmentUrl, c.UpdatedBy, c.Status, c.ID)
 	if err != nil {
 		return nil, err
 	}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gilkor/evoucher-v2/model"
@@ -425,7 +426,7 @@ func PostCashoutAttachment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if cashout.AttachmentUrl != "" {
+	if strings.Trim(cashout.AttachmentUrl, " ") != "" {
 		res.SetError(JSONErrBadRequest.SetArgs("attachment has been submitted"))
 		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
@@ -459,12 +460,22 @@ func PostCashoutAttachment(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	referenceNo := ""
+	if len(r.MultipartForm.Value) > 0 {
+		for key := range r.MultipartForm.Value {
+			if key == "reference_no" {
+				referenceNo = r.FormValue(key)
+			}
+		}
+	}
+
 	if attachmentURL == "" {
 		res.SetError(JSONErrBadRequest.SetArgs("attachment is empty"))
 		res.JSON(w, res, JSONErrBadRequest.Status)
 		return
 	}
 
+	cashout.ReferenceNo = referenceNo
 	cashout.UpdatedBy = accData.AccountID
 	cashout.AttachmentUrl = attachmentURL
 	cashout.Status = model.StatusPaid
