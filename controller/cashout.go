@@ -369,7 +369,7 @@ func ApproveCashout(w http.ResponseWriter, r *http.Request) {
 
 	token := r.FormValue("token")
 
-	accData, err := model.GetSessionDataJWT(token)
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)
@@ -412,7 +412,7 @@ func PostCashoutAttachment(w http.ResponseWriter, r *http.Request) {
 	qp := u.NewQueryParam(r)
 	qp.SetCompanyID(companyID)
 
-	accData, err := model.GetSessionDataJWT(token)
+	accData, err := model.GetSessionDataJWT(token, companyID)
 	if err != nil {
 		res.SetError(JSONErrUnauthorized)
 		res.JSON(w, res, JSONErrUnauthorized.Status)

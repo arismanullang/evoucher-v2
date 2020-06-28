@@ -35,7 +35,7 @@ func CheckJWT(f http.Handler, access string) http.Handler {
 		}
 
 		configs, err := model.GetConfigs(companyId, "juno")
-		if accData.ClientKey != configs["client_key"].(string) {
+		if len(configs) > 0 && accData.ClientKey != configs["client_key"].(string) {
 			token, err = GetVoucherToken(token, accData.AccountID, configs["client_key"].(string))
 			if err != nil {
 				res.SetError(JSONErrUnauthorized)
