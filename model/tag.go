@@ -253,6 +253,15 @@ func (t *Tag) Delete() error {
 	if err != nil {
 		return err
 	}
+
+	var res2 ObjectTags
+	q2 := `DELETE FROM object_tags 
+			WHERE tag_id = ?`
+	err = tx.Select(&res2, tx.Rebind(q2), t.ID)
+	if err != nil {
+		return err
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		return err
