@@ -326,12 +326,12 @@ func (t *ObjectTag) Insert() (*ObjectTags, error) {
 	var res ObjectTags
 
 	if isDelete {
-		q := `DELETE FROM object_tags WHERE tag_id in (`
+		q := `DELETE FROM object_tags WHERE tag_id IN (`
 
 		valuestr := valuesDelete.String()
 		q += valuestr[:len(valuestr)-1]
-		q += ")"
-		util.DEBUG(q, argsDelete)
+		q += `) 
+			AND object_id = '` + t.ObjectID + `'`
 		err = tx.Select(&res, tx.Rebind(q), argsDelete...)
 		if err != nil {
 			return nil, err
