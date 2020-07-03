@@ -93,7 +93,7 @@ func getOutlets(k, v string, qp *util.QueryParam) (*Outlets, bool, error) {
 		return &Outlets{}, false, err
 	}
 	if len(resd) < 1 {
-		return &Outlets{}, false, ErrorResourceNotFound
+		return &Outlets{}, false, nil
 	}
 	next := false
 	if len(resd) > qp.Count {

@@ -156,6 +156,7 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()
 
 	qp := u.NewQueryParam(r)
+	qp.SetCompanyID(bone.GetValue(r, "company"))
 
 	result, next, err := model.GetTransactions(qp)
 	if err != nil {

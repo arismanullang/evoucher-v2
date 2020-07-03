@@ -102,7 +102,7 @@ func getTags(k, v string, qp *util.QueryParam) (*Tags, bool, error) {
 		return &Tags{}, false, err
 	}
 	if len(resd) < 1 {
-		return &Tags{}, false, ErrorResourceNotFound
+		return &Tags{}, false, nil
 	}
 	next := false
 	if len(resd) > qp.Count {
