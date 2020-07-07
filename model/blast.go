@@ -195,7 +195,7 @@ func getBlasts(k, v string, qp *util.QueryParam) (*Blasts, bool, error) {
 		return &Blasts{}, false, err
 	}
 	if len(resd) < 1 {
-		return &Blasts{}, false, ErrorResourceNotFound
+		return &Blasts{}, false, nil
 	}
 	next := false
 	if len(resd) > qp.Count {

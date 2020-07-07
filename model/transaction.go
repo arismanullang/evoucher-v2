@@ -129,7 +129,7 @@ func getTransactions(k, v string, qp *util.QueryParam) (*Transactions, bool, err
 		return &Transactions{}, false, err
 	}
 	if len(resd) < 1 {
-		return &Transactions{}, false, ErrorResourceNotFound
+		return &Transactions{}, false, nil
 	}
 	next := false
 	if len(resd) > qp.Count {

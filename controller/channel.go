@@ -86,7 +86,9 @@ func GetChannels(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res.SetResponse(channels)
-	res.SetNewPagination(r, qp.Page, next, (*channels)[0].Count)
+	if len(*channels) > 0 {
+		res.SetNewPagination(r, qp.Page, next, (*channels)[0].Count)
+	}
 	res.JSON(w, res, http.StatusOK)
 }
 
