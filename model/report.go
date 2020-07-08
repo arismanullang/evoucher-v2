@@ -53,24 +53,27 @@ func GetReportDailyVoucherTransaction(dateFrom, dateTo string, qp *util.QueryPar
 						   else 0 end)
 									  as voucher_qty,
 				   sum(case
-						   when t.id is not null then v.voucher_value
+						   when t.id is not null then p.value
 						   else 0 end)
 									  as total_transaction,
 				   sum(case
-						   when c.id is not null then v.voucher_value
+						   when c.id is not null then p.value
 						   else 0 end)
 									  as total_reimburse,
 				   sum(case
-						   when v.id is not null then v.voucher_value
+						   when v.id is not null then p.value
 						   else 0 end)
 									  as total_voucher
-			FROM vouchers v
+			FROM programs p,
+				 vouchers v
 					 LEFT JOIN transaction_details td on td.voucher_id = v.id AND td.status = 'created'
 					 LEFT JOIN transactions t on td.transaction_id = t.id AND t.status = 'created'
 					 LEFT JOIN cashout_details cd on v.id = cd.voucher_id AND cd.status = 'created'
 					 LEFT JOIN cashouts c on cd.cashout_id = c.id AND c.status = 'created'
 			WHERE v.created_at BETWEEN '` + dateFrom + ` 00:00:00+07'::timestamp AND '` + dateTo + ` 23:59:59+07'::timestamp 
+			  AND v.program_id = p.id
 			  AND v.status = 'created'
+			  AND p.status = 'created'
 			GROUP BY date `
 
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())

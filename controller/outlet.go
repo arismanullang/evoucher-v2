@@ -107,6 +107,37 @@ func GetOutlets(w http.ResponseWriter, r *http.Request) {
 	res.JSON(w, res, http.StatusOK)
 }
 
+//GetOutletTransaction : GET list transaction of outlets
+func GetOutletTransactions(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	qp := u.NewQueryParam(r)
+
+	qp.SetCompanyID(bone.GetValue(r, "company"))
+
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+
+	var f ReportFilter
+	if err := decoder.Decode(&f, r.Form); err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	qp.SetFilterModel(f)
+
+	outlets, next, err := model.GetOutlets(qp)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(outlets)
+	res.SetNewPagination(r, qp.Page, next, (*outlets)[0].Count)
+	res.JSON(w, res, http.StatusOK)
+}
+
 //GetOutletByID : GET
 func GetOutletByID(w http.ResponseWriter, r *http.Request) {
 	res := u.NewResponse()

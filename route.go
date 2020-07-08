@@ -129,10 +129,10 @@ func init() {
 
 	//REPORT
 	v2.GetFunc("/:company/report/outlet-transaction", c.GetReportDailyVoucherTransactionWithOutlet)
-	v2.GetFunc("/:company/report/topoutlet", c.GetReportDailyVoucherTransaction)
-	v2.GetFunc("/:company/report/", c.GetReportDailyOutletTransaction)
-	v2.GetFunc("/:company/report/topoutlet", c.GetReportMonthlyOutletTransaction)
-	v2.GetFunc("/:company/report/topoutlet", c.GetReportYearlyOutletTransaction)
+	v2.GetFunc("/:company/report/voucher/summary-transaction-daily", c.GetReportDailyVoucherTransaction)
+	v2.GetFunc("/:company/report/outlet/summary-transaction-daily", c.GetReportDailyOutletTransaction)
+	v2.GetFunc("/:company/report/outlet/summary-transaction-monthly", c.GetReportMonthlyOutletTransaction)
+	v2.GetFunc("/:company/report/outlet/summary-transaction-yearly", c.GetReportYearlyOutletTransaction)
 
 	// blast
 	v2.Get("/:company/web/blasts", c.CheckFuncJWT(c.GetBlasts, "blast-view"))
