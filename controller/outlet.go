@@ -103,7 +103,9 @@ func GetOutlets(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res.SetResponse(outlets)
-	res.SetNewPagination(r, qp.Page, next, (*outlets)[0].Count)
+	if len(*outlets) > 0 {
+		res.SetNewPagination(r, qp.Page, next, (*outlets)[0].Count)
+	}
 	res.JSON(w, res, http.StatusOK)
 }
 

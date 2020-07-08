@@ -78,7 +78,7 @@ func getChannels(k, v string, qp *util.QueryParam) (*Channels, bool, error) {
 		return &Channels{}, false, err
 	}
 	if len(resd) < 1 {
-		return &Channels{}, false, ErrorResourceNotFound
+		return &Channels{}, false, nil
 	}
 	next := false
 	if len(resd) > qp.Count {
