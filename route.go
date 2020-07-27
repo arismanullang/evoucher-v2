@@ -128,11 +128,13 @@ func init() {
 	v2.GetFunc("/:company/dashboard/voucherusage", c.GetDashboardVoucherUsage)
 
 	//REPORT
-	v2.GetFunc("/:company/report/outlet-transaction", c.GetReportDailyVoucherTransactionWithOutlet)
-	v2.GetFunc("/:company/report/voucher/summary-transaction-daily", c.GetReportDailyVoucherTransaction)
-	v2.GetFunc("/:company/report/outlet/summary-transaction-daily", c.GetReportDailyOutletTransaction)
-	v2.GetFunc("/:company/report/outlet/summary-transaction-monthly", c.GetReportMonthlyOutletTransaction)
-	v2.GetFunc("/:company/report/outlet/summary-transaction-yearly", c.GetReportYearlyOutletTransaction)
+	v2.GetFunc("/:company/web/report/outlet-transaction", c.GetReportDailyVoucherTransactionWithOutlet)
+	v2.GetFunc("/:company/web/report/voucher/summary-transaction-daily", c.GetReportDailyVoucherTransaction)
+	v2.GetFunc("/:company/web/report/outlet/summary-transaction-daily", c.GetReportDailyOutletTransaction)
+	v2.GetFunc("/:company/web/report/outlet/summary-transaction-monthly", c.GetReportMonthlyOutletTransaction)
+	v2.GetFunc("/:company/web/report/outlet/summary-transaction-yearly", c.GetReportYearlyOutletTransaction)
+	v2.GetFunc("/:company/web/report/program/summary-transaction", c.GetReportProgramTransaction)
+	v2.GetFunc("/:company/web/report/program/summary-transaction-daily", c.GetReportProgramTransactionDaily)
 
 	// blast
 	v2.Get("/:company/web/blasts", c.CheckFuncJWT(c.GetBlasts, "blast-view"))

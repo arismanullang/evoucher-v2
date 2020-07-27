@@ -15,7 +15,22 @@ type ReportOutletTransaction struct {
 	VoucherQty       int64      `db:"voucher_qty" json:"voucher_qty,omitempty"`
 	ReimburseQty     int64      `db:"reimburse_qty" json:"reimburse_qty,omitempty"`
 	TransactionQty   int64      `db:"transaction_qty" json:"transaction_qty,omitempty"`
-	TotalReimbursse  float64    `db:"total_reimburse" json:"total_reimburse,omitempty"`
+	TotalReimburse   float64    `db:"total_reimburse" json:"total_reimburse,omitempty"`
+	TotalTransaction float64    `db:"total_transaction" json:"total_transaction,omitempty"`
+	Count            int        `db:"count" json:"-"`
+}
+
+type ReportProgramTransaction struct {
+	Date             *time.Time `db:"date" json:"date,omitempty"`
+	Month            int        `db:"month" json:"month,omitempty"`
+	Year             int        `db:"year" json:"year,omitempty"`
+	ProgramID        string     `db:"id" json:"id,omitempty"`
+	ProgramName      string     `db:"name" json:"name,omitempty"`
+	VoucherQty       int64      `db:"voucher_qty" json:"voucher_qty,omitempty"`
+	ReimburseQty     int64      `db:"reimburse_qty" json:"reimburse_qty,omitempty"`
+	TransactionQty   int64      `db:"transaction_qty" json:"transaction_qty,omitempty"`
+	TotalVoucher     float64    `db:"total_voucher" json:"total_voucher,omitempty"`
+	TotalReimburse   float64    `db:"total_reimburse" json:"total_reimburse,omitempty"`
 	TotalTransaction float64    `db:"total_transaction" json:"total_transaction,omitempty"`
 	Count            int        `db:"count" json:"-"`
 }
@@ -79,7 +94,7 @@ func GetReportDailyVoucherTransaction(dateFrom, dateTo string, qp *util.QueryPar
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	util.DEBUG(q)
 	var resd []ReportReimburse
-	err := db.Select(&resd, db.Rebind(q), StatusCreated)
+	err := db.Select(&resd, db.Rebind(q))
 	if err != nil {
 		return []ReportReimburse{}, false, err
 	}
@@ -143,7 +158,7 @@ func GetReportDailyVoucherTransactionWithOutlet(dateFrom, dateTo string, qp *uti
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 	util.DEBUG(q)
 	var resd []ReportReimburse
-	err := db.Select(&resd, db.Rebind(q), StatusCreated)
+	err := db.Select(&resd, db.Rebind(q))
 	if err != nil {
 		return []ReportReimburse{}, false, err
 	}
@@ -161,7 +176,7 @@ func GetReportDailyVoucherTransactionWithOutlet(dateFrom, dateTo string, qp *uti
 
 func GetReportDailyOutletTransaction(dateFrom, dateTo string, qp *util.QueryParam) ([]ReportOutletTransaction, bool, error) {
 	q := `
-			SELECT date                 as transaction_year,
+			SELECT date                 as transaction_date,
 				   id                   as outlet_id,
 				   name                 as outlet_name,
 				   sum(trans)           as transaction_qty,
@@ -170,7 +185,7 @@ func GetReportDailyOutletTransaction(dateFrom, dateTo string, qp *util.QueryPara
 				   sum(reimburse_qty)   as reimburse_qty,
 				   sum(total_reimburse) as total_reimburse
 			FROM (
-					 SELECT EXTRACT(YEAR FROM t.created_at) as date,
+					 SELECT date(t.created_at) as date,
 							p.id,
 							p.name,
 							sum(1)                          as trans,
@@ -186,7 +201,7 @@ func GetReportDailyOutletTransaction(dateFrom, dateTo string, qp *util.QueryPara
 					   AND t.created_at BETWEEN '` + dateFrom + ` 00:00:00+07'::timestamp AND '` + dateTo + ` 23:59:59+07'::timestamp 
 					 GROUP BY date, p.id, p.name
 					 UNION ALL
-					 SELECT EXTRACT(YEAR FROM t.created_at) as date,
+					 SELECT date(t.created_at) as date,
 							p.id,
 							p.name,
 							0                               as trans,
@@ -217,7 +232,7 @@ func GetReportDailyOutletTransaction(dateFrom, dateTo string, qp *util.QueryPara
 	//ORDER BY year, month `
 	util.DEBUG(q)
 	var resd []ReportOutletTransaction
-	err := db.Select(&resd, db.Rebind(q), StatusCreated)
+	err := db.Select(&resd, db.Rebind(q))
 	if err != nil {
 		return []ReportOutletTransaction{}, false, err
 	}
@@ -264,7 +279,7 @@ func GetReportMonthlyOutletTransaction(dateFrom, dateTo string, qp *util.QueryPa
 	//ORDER BY year, month `
 	util.DEBUG(q)
 	var resd []ReportOutletTransaction
-	err := db.Select(&resd, db.Rebind(q), StatusCreated)
+	err := db.Select(&resd, db.Rebind(q))
 	if err != nil {
 		return []ReportOutletTransaction{}, false, err
 	}
@@ -311,9 +326,128 @@ func GetReportYearlyOutletTransaction(dateFrom, dateTo string, qp *util.QueryPar
 	//ORDER BY year, month `
 	util.DEBUG(q)
 	var resd []ReportOutletTransaction
-	err := db.Select(&resd, db.Rebind(q), StatusCreated)
+	err := db.Select(&resd, db.Rebind(q))
 	if err != nil {
 		return []ReportOutletTransaction{}, false, err
+	}
+
+	next := false
+	if len(resd) > qp.Count {
+		next = true
+	}
+	if len(resd) < qp.Count {
+		qp.Count = len(resd)
+	}
+
+	return resd, next, nil
+}
+
+func GetReportProgramTransaction(dateFrom, dateTo string, qp *util.QueryParam) ([]ReportProgramTransaction, bool, error) {
+	q := `
+		SELECT p.id,
+			   p.name,
+			   sum(case
+					   when t.id is not null then 1
+					   else 0 end)
+								  as transaction_qty,
+			   sum(case
+					   when c.id is not null then 1
+					   else 0 end)
+								  as reimburse_qty,
+			   sum(case
+					   when v.id is not null then 1
+					   else 0 end)
+								  as voucher_qty,
+			   sum(case
+					   when t.id is not null then p.value
+					   else 0 end)
+								  as total_transaction,
+			   sum(case
+					   when c.id is not null then p.value
+					   else 0 end)
+								  as total_reimburse,
+			   sum(case
+					   when v.id is not null then p.value
+					   else 0 end)
+								  as total_voucher
+		FROM programs p,
+			 vouchers v
+				 LEFT JOIN transaction_details td on td.voucher_id = v.id AND td.status = 'created'
+				 LEFT JOIN transactions t on td.transaction_id = t.id AND t.status = 'created'
+				 LEFT JOIN cashout_details cd on v.id = cd.voucher_id AND cd.status = 'created'
+				 LEFT JOIN cashouts c on cd.cashout_id = c.id AND c.status = 'created'
+		WHERE v.created_at BETWEEN '2000-01-01 00:00:00+07'::timestamp AND '2020-12-30 23:59:59+07'::timestamp
+		  AND v.program_id = p.id
+		  AND v.status = 'created'
+		  AND p.status = 'created'
+		GROUP BY p.id, p.name `
+
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
+	//ORDER BY year, month `
+	util.DEBUG(q)
+	var resd []ReportProgramTransaction
+	err := db.Select(&resd, db.Rebind(q))
+	if err != nil {
+		return []ReportProgramTransaction{}, false, err
+	}
+
+	next := false
+	if len(resd) > qp.Count {
+		next = true
+	}
+	if len(resd) < qp.Count {
+		qp.Count = len(resd)
+	}
+
+	return resd, next, nil
+}
+
+func GetReportProgramTransactionDaily(dateFrom, dateTo string, qp *util.QueryParam) ([]ReportProgramTransaction, bool, error) {
+	q := `
+		SELECT p.id, p.name, date(v.created_at) as date,
+			   sum(case
+					   when t.id is not null then 1
+					   else 0 end)
+								  as transaction_qty,
+			   sum(case
+					   when c.id is not null then 1
+					   else 0 end)
+								  as reimburse_qty,
+			   sum(case
+					   when v.id is not null then 1
+					   else 0 end)
+								  as voucher_qty,
+			   sum(case
+					   when t.id is not null then p.value
+					   else 0 end)
+								  as total_transaction,
+			   sum(case
+					   when c.id is not null then p.value
+					   else 0 end)
+								  as total_reimburse,
+			   sum(case
+					   when v.id is not null then p.value
+					   else 0 end)
+								  as total_voucher
+		FROM programs p,
+			 vouchers v
+				 LEFT JOIN transaction_details td on td.voucher_id = v.id AND td.status = 'created'
+				 LEFT JOIN transactions t on td.transaction_id = t.id AND t.status = 'created'
+				 LEFT JOIN cashout_details cd on v.id = cd.voucher_id AND cd.status = 'created'
+				 LEFT JOIN cashouts c on cd.cashout_id = c.id AND c.status = 'created'
+		WHERE v.created_at BETWEEN '` + dateFrom + ` 00:00:00+07'::timestamp AND '` + dateTo + ` 23:59:59+07'::timestamp 
+		  AND v.program_id = p.id
+		  AND v.status = 'created'
+		  AND p.status = 'created'
+		GROUP BY date, p.id, p.name `
+
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
+	//ORDER BY year, month `
+	util.DEBUG(q)
+	var resd []ReportProgramTransaction
+	err := db.Select(&resd, db.Rebind(q))
+	if err != nil {
+		return []ReportProgramTransaction{}, false, err
 	}
 
 	next := false

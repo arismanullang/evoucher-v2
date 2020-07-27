@@ -13,5 +13,6 @@ const (
 
 //DEBUG debug
 func DEBUG(i ...interface{}) {
-	fmt.Println(tagDebug, ToStringOneLine(i))
+	//fmt.Println(tagDebug, ToStringOneLine(i))
+	fmt.Println(tagDebug, i)
 }

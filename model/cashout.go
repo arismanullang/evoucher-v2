@@ -330,7 +330,7 @@ func GetUnpaidCashout(qp *util.QueryParam, startDate, endDate string) ([]UnpaidC
 			AND pr.is_reimburse = true
 			AND p.company_id = ?
 			AND t.created_at BETWEEN ? AND ?
-		GROUP BY p.id, p.name`
+		GROUP BY p.id, p.name, p.description, p.emails, p.company_id`
 
 	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
 
