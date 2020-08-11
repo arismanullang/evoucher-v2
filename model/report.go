@@ -248,6 +248,83 @@ func GetReportDailyOutletTransaction(dateFrom, dateTo string, qp *util.QueryPara
 	return resd, next, nil
 }
 
+func GetReportDailyOutletTransactionById(id, dateFrom, dateTo string, qp *util.QueryParam) ([]ReportOutletTransaction, bool, error) {
+	q := `
+			SELECT date                 as transaction_date,
+				   id                   as outlet_id,
+				   name                 as outlet_name,
+				   sum(trans)           as transaction_qty,
+				   sum(vouc)            as voucher_qty,
+				   sum(amount)          as total_transaction,
+				   sum(reimburse_qty)   as reimburse_qty,
+				   sum(total_reimburse) as total_reimburse
+			FROM (
+					 SELECT date(t.created_at) as date,
+							p.id,
+							p.name,
+							sum(1)                          as trans,
+							0                               as vouc,
+							sum(t.total_amount)             as amount,
+							0                               as reimburse_qty,
+							0                               as total_reimburse
+					 FROM transactions t,
+						  outlets p
+					 WHERE p.id = ?
+					   AND t.outlet_id = p.id
+					   AND t.status = 'created'
+					   AND p.status = 'created'
+					   AND t.created_at BETWEEN '` + dateFrom + ` 00:00:00+07'::timestamp AND '` + dateTo + ` 23:59:59+07'::timestamp 
+					 GROUP BY date, p.id, p.name
+					 UNION ALL
+					 SELECT date(t.created_at) as date,
+							p.id,
+							p.name,
+							0                               as trans,
+							sum(1)                          as vouc,
+							0                               as amount,
+							sum(case
+									when cd.id is not null then 1
+									else 0 end)             as reimburse_qty,
+							sum(case
+									when c.id is not null then c.amount
+									else 0 end)             as total_reimburse
+					 FROM transactions t,
+						  outlets p,
+						  transaction_details td
+							  LEFT JOIN cashout_details cd ON cd.voucher_id = td.voucher_id AND cd.status = 'created'
+							  LEFT JOIN cashouts c ON cd.cashout_id = c.id AND c.status = 'created'
+					 WHERE p.id = ?
+					   AND t.outlet_id = p.id
+					   AND t.id = td.transaction_id
+					   AND t.status = 'created'
+					   AND td.status = 'created'
+					   AND p.status = 'created'
+					   AND t.created_at BETWEEN '` + dateFrom + ` 00:00:00+07'::timestamp AND '` + dateTo + ` 23:59:59+07'::timestamp 
+					 GROUP BY date, p.id, p.name
+				 ) as x
+			GROUP BY date, id, name `
+
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
+	//ORDER BY year, month `
+	util.DEBUG(q)
+	var resd []ReportOutletTransaction
+	err := db.Select(&resd, db.Rebind(q), id, id)
+	if err != nil {
+		util.DEBUG(err)
+		return []ReportOutletTransaction{}, false, err
+	}
+
+	next := false
+	if len(resd) > qp.Count {
+		next = true
+	}
+	if len(resd) < qp.Count {
+		qp.Count = len(resd)
+	}
+
+	return resd, next, nil
+}
+
 func GetReportMonthlyOutletTransaction(dateFrom, dateTo string, qp *util.QueryParam) ([]ReportOutletTransaction, bool, error) {
 	q := `
 			SELECT date as transaction_month, id as outlet_id, name as outlet_name, sum(trans) as transaction_qty, sum(vouc) as voucher_qty, sum(amount) as total_transaction
@@ -446,6 +523,66 @@ func GetReportProgramTransactionDaily(dateFrom, dateTo string, qp *util.QueryPar
 	util.DEBUG(q)
 	var resd []ReportProgramTransaction
 	err := db.Select(&resd, db.Rebind(q))
+	if err != nil {
+		return []ReportProgramTransaction{}, false, err
+	}
+
+	next := false
+	if len(resd) > qp.Count {
+		next = true
+	}
+	if len(resd) < qp.Count {
+		qp.Count = len(resd)
+	}
+
+	return resd, next, nil
+}
+
+func GetReportProgramTransactionDailyById(id, dateFrom, dateTo string, qp *util.QueryParam) ([]ReportProgramTransaction, bool, error) {
+	q := `
+		SELECT p.id, p.name, date(v.created_at) as date,
+			   sum(case
+					   when t.id is not null then 1
+					   else 0 end)
+								  as transaction_qty,
+			   sum(case
+					   when c.id is not null then 1
+					   else 0 end)
+								  as reimburse_qty,
+			   sum(case
+					   when v.id is not null then 1
+					   else 0 end)
+								  as voucher_qty,
+			   sum(case
+					   when t.id is not null then p.value
+					   else 0 end)
+								  as total_transaction,
+			   sum(case
+					   when c.id is not null then p.value
+					   else 0 end)
+								  as total_reimburse,
+			   sum(case
+					   when v.id is not null then p.value
+					   else 0 end)
+								  as total_voucher
+		FROM programs p,
+			 vouchers v
+				 LEFT JOIN transaction_details td on td.voucher_id = v.id AND td.status = 'created'
+				 LEFT JOIN transactions t on td.transaction_id = t.id AND t.status = 'created'
+				 LEFT JOIN cashout_details cd on v.id = cd.voucher_id AND cd.status = 'created'
+				 LEFT JOIN cashouts c on cd.cashout_id = c.id AND c.status = 'created'
+		WHERE v.created_at BETWEEN '` + dateFrom + ` 00:00:00+07'::timestamp AND '` + dateTo + ` 23:59:59+07'::timestamp 
+		  AND v.program_id = p.id
+		  AND p.id = ?
+		  AND v.status = 'created'
+		  AND p.status = 'created'
+		GROUP BY date, p.id, p.name `
+
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
+	//ORDER BY year, month `
+	util.DEBUG(q)
+	var resd []ReportProgramTransaction
+	err := db.Select(&resd, db.Rebind(q), id)
 	if err != nil {
 		return []ReportProgramTransaction{}, false, err
 	}
