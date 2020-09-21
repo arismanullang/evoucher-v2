@@ -405,3 +405,93 @@ func GetReportProgramTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 	res.JSON(w, res, http.StatusOK)
 }
+
+//DEMOGRAFI
+
+//GetDemografiGender :
+func GetDemografiGender(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	qp := u.NewQueryParam(r)
+
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+
+	data, next, err := model.GetDemografiGender(qp)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(data)
+	if len(data) > 0 {
+		res.SetNewPagination(r, qp.Page, next, data[0].Count)
+	}
+	res.JSON(w, res, http.StatusOK)
+}
+
+//GetDemografiLocation
+func GetDemografiLocation(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	qp := u.NewQueryParam(r)
+
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+
+	data, next, err := model.GetDemografiLocation(qp)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(data)
+	if len(data) > 0 {
+		res.SetNewPagination(r, qp.Page, next, data[0].Count)
+	}
+	res.JSON(w, res, http.StatusOK)
+}
+
+//GetDemografiAge
+func GetDemografiAge(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	qp := u.NewQueryParam(r)
+
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+
+	data, next, err := model.GetDemografiAge(qp)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(data)
+	if len(data) > 0 {
+		res.SetNewPagination(r, qp.Page, next, data[0].Count)
+	}
+	res.JSON(w, res, http.StatusOK)
+}
+
+//GetDemografiMarital
+func GetDemografiMarital(w http.ResponseWriter, r *http.Request) {
+	res := u.NewResponse()
+	qp := u.NewQueryParam(r)
+
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+
+	data, next, err := model.GetDemografiMarital(qp)
+	if err != nil {
+		res.SetError(JSONErrFatal.SetArgs(err.Error()))
+		res.JSON(w, res, JSONErrFatal.Status)
+		return
+	}
+
+	res.SetResponse(data)
+	if len(data) > 0 {
+		res.SetNewPagination(r, qp.Page, next, data[0].Count)
+	}
+	res.JSON(w, res, http.StatusOK)
+}

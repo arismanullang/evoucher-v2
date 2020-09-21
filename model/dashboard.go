@@ -14,13 +14,16 @@ type (
 		Count  int     `db:"count" json:"-"`
 	}
 	DashboardTopProgram struct {
-		ProgramID         string     `db:"program_id" json:"program_id,omitempty"`
-		ProgramName       string     `db:"program_name" json:"program_name,omitempty"`
-		ProgramdStartDate *time.Time `db:"program_start_date" json:"program_start_date,omitempty"`
-		ProgramdEndDate   *time.Time `db:"program_end_date" json:"program_end_date,omitempty"`
-		VoucherClaim      int64      `db:"voucher_claim" json:"voucher_claim,omitempty"`
-		VoucherUsed       int64      `db:"voucher_used" json:"voucher_used,omitempty"`
-		Count             int        `db:"count" json:"-"`
+		ProgramID        string     `db:"program_id" json:"program_id,omitempty"`
+		ProgramName      string     `db:"program_name" json:"program_name,omitempty"`
+		ProgramStartDate *time.Time `db:"program_start_date" json:"program_start_date,omitempty"`
+		ProgramEndDate   *time.Time `db:"program_end_date" json:"program_end_date,omitempty"`
+		VoucherClaim     *int64     `db:"voucher_claim" json:"voucher_claim,omitempty"`
+		VoucherUsed      *int64     `db:"voucher_used" json:"voucher_used,omitempty"`
+		VoucherPrice     *float64   `db:"voucher_price" json:"voucher_price,omitempty"`
+		VoucherStock     *int64     `db:"voucher_stock" json:"voucher_stock,omitempty"`
+		Status           string     `db:"status" json:"status,omitempty"`
+		Count            int        `db:"count" json:"-"`
 	}
 	DashboardTopOutlet struct {
 		TransactionDate *time.Time `db:"transaction_date" json:"transaction_date,omitempty"`
@@ -36,7 +39,7 @@ type (
 func GetDashboardVoucherUsage(dateFrom, dateTo string, qp *util.QueryParam) ([]DashboardVoucherUsage, bool, error) {
 	q := `
 			SELECT 
-				EXTRACT(YEAR FROM created_at) as year, EXTRACT(MONTH FROM created_at) as month, sum(transactions.discount_value) as amount 
+				EXTRACT(YEAR FROM created_at) as year, EXTRACT(MONTH FROM created_at) as month, sum(transactions.total_amount) as amount 
 			FROM transactions
 			WHERE 
 				status = ?  
@@ -69,19 +72,22 @@ func GetDashboardVoucherUsage(dateFrom, dateTo string, qp *util.QueryParam) ([]D
 func GetDashboardTopProgram(dateFrom, dateTo string, qp *util.QueryParam) ([]DashboardTopProgram, bool, error) {
 	q := `
 			SELECT
-				p.id, p.name, p.created_at, p.end_date, sum(case
+				p.id as "program_id", p.name as "program_name", p.created_at as "program_start_date", p.end_date as "program_end_date", sum(case
 				when v.id is not null then 1
 				else 0 end)
-					as claim,
+					as "voucher_claim",
 				   sum(case
 				when t.id is not null then 1
-				else 0 end) as used
+				else 0 end) as "voucher_used",
+				p.max_value voucher_price,
+				p.stock voucher_stock,
+				p.status
 			FROM
 				programs p
 				LEFT JOIN vouchers v ON p.id = v.program_id AND v.status = 'created'
 				LEFT JOIN transaction_details td ON td.voucher_id = v.id AND p.status = 'created'
 				LEFT JOIN transactions t ON t.id = td.transaction_id AND t.status = 'created'
-			WHERE p.status = 'created'
+			WHERE p.status = ?
 				AND t.created_at BETWEEN '` + dateFrom + ` 00:00:00+07'::timestamp AND '` + dateTo + ` 23:59:59+07'::timestamp `
 
 	q += ` GROUP BY p.id, p.name `
@@ -109,12 +115,12 @@ func GetDashboardTopOutlet(dateFrom, dateTo string, qp *util.QueryParam) ([]Dash
 	q := `
 			SELECT date as transaction_date, id as outlet_id, name as outlet_name, sum(trans) as transaction_qty, sum(vouc) as voucher_qty, sum(amount) as total_amount
 			FROM (
-					 SELECT date(t.created_at) as date, p.id, p.name, sum(1) as trans, 0 as vouc, sum(t.discount_value) as amount
+					 SELECT date(t.created_at) as date, p.id, p.name, sum(1) as trans, 0 as vouc, sum(t.total_amount) as amount
 					 FROM transactions t,
 						  outlets p
 					 WHERE t.outlet_id = p.id
-					   AND t.status = 'created'
-					   AND p.status = 'created'
+					   AND t.status = ?
+					   AND p.status = ?
 					   AND t.created_at BETWEEN '` + dateFrom + ` 00:00:00+07'::timestamp AND '` + dateTo + ` 23:59:59+07'::timestamp 
 					 GROUP BY date, p.id, p.name
 					 UNION ALL
@@ -124,9 +130,9 @@ func GetDashboardTopOutlet(dateFrom, dateTo string, qp *util.QueryParam) ([]Dash
 						  outlets p
 					 WHERE t.outlet_id = p.id
 					   AND t.id = td.transaction_id
-					   AND t.status = 'created'
-					   AND td.status = 'created'
-					   AND p.status = 'created'
+					   AND t.status = ?
+					   AND td.status = ?
+					   AND p.status = ?
 					   AND t.created_at BETWEEN '` + dateFrom + ` 00:00:00+07'::timestamp AND '` + dateTo + ` 23:59:59+07'::timestamp 
 					 GROUP BY date, p.id, p.name
 				 ) as x
@@ -136,7 +142,7 @@ func GetDashboardTopOutlet(dateFrom, dateTo string, qp *util.QueryParam) ([]Dash
 	//ORDER BY year, month `
 	util.DEBUG(q)
 	var resd []DashboardTopOutlet
-	err := db.Select(&resd, db.Rebind(q), StatusCreated)
+	err := db.Select(&resd, db.Rebind(q), StatusCreated, StatusCreated, StatusCreated, StatusCreated, StatusCreated)
 	if err != nil {
 		return []DashboardTopOutlet{}, false, err
 	}

@@ -12,11 +12,11 @@ type ReportOutletTransaction struct {
 	TransactionYear  int        `db:"transaction_year" json:"transaction_year,omitempty"`
 	OutletID         string     `db:"outlet_id" json:"outlet_id,omitempty"`
 	OutletName       string     `db:"outlet_name" json:"outlet_name,omitempty"`
-	VoucherQty       int64      `db:"voucher_qty" json:"voucher_qty,omitempty"`
-	ReimburseQty     int64      `db:"reimburse_qty" json:"reimburse_qty,omitempty"`
-	TransactionQty   int64      `db:"transaction_qty" json:"transaction_qty,omitempty"`
-	TotalReimburse   float64    `db:"total_reimburse" json:"total_reimburse,omitempty"`
-	TotalTransaction float64    `db:"total_transaction" json:"total_transaction,omitempty"`
+	VoucherQty       *int64     `db:"voucher_qty" json:"voucher_qty,omitempty"`
+	ReimburseQty     *int64     `db:"reimburse_qty" json:"reimburse_qty,omitempty"`
+	TransactionQty   *int64     `db:"transaction_qty" json:"transaction_qty,omitempty"`
+	TotalReimburse   *float64   `db:"total_reimburse" json:"total_reimburse,omitempty"`
+	TotalTransaction *float64   `db:"total_transaction" json:"total_transaction,omitempty"`
 	Count            int        `db:"count" json:"-"`
 }
 
@@ -26,12 +26,12 @@ type ReportProgramTransaction struct {
 	Year             int        `db:"year" json:"year,omitempty"`
 	ProgramID        string     `db:"id" json:"id,omitempty"`
 	ProgramName      string     `db:"name" json:"name,omitempty"`
-	VoucherQty       int64      `db:"voucher_qty" json:"voucher_qty,omitempty"`
-	ReimburseQty     int64      `db:"reimburse_qty" json:"reimburse_qty,omitempty"`
-	TransactionQty   int64      `db:"transaction_qty" json:"transaction_qty,omitempty"`
-	TotalVoucher     float64    `db:"total_voucher" json:"total_voucher,omitempty"`
-	TotalReimburse   float64    `db:"total_reimburse" json:"total_reimburse,omitempty"`
-	TotalTransaction float64    `db:"total_transaction" json:"total_transaction,omitempty"`
+	VoucherQty       *int64     `db:"voucher_qty" json:"voucher_qty,omitempty"`
+	ReimburseQty     *int64     `db:"reimburse_qty" json:"reimburse_qty,omitempty"`
+	TransactionQty   *int64     `db:"transaction_qty" json:"transaction_qty,omitempty"`
+	TotalVoucher     *float64   `db:"total_voucher" json:"total_voucher,omitempty"`
+	TotalReimburse   *float64   `db:"total_reimburse" json:"total_reimburse,omitempty"`
+	TotalTransaction *float64   `db:"total_transaction" json:"total_transaction,omitempty"`
 	Count            int        `db:"count" json:"-"`
 }
 
@@ -43,9 +43,9 @@ type ReportReimburse struct {
 	OutletName       string     `db:"outlet_name" json:"outlet_name,omitempty"`
 	ProgramID        string     `db:"program_id" json:"program_id,omitempty"`
 	ProgramName      string     `db:"program_name" json:"program_name,omitempty"`
-	VoucherQty       int64      `db:"voucher_qty" json:"voucher_qty,omitempty"`
-	TransactionQty   int64      `db:"transaction_qty" json:"transaction_qty,omitempty"`
-	ReimburseQty     int64      `db:"reimburse_qty" json:"reimburse_qty,omitempty"`
+	VoucherQty       *int64     `db:"voucher_qty" json:"voucher_qty,omitempty"`
+	TransactionQty   *int64     `db:"transaction_qty" json:"transaction_qty,omitempty"`
+	ReimburseQty     *int64     `db:"reimburse_qty" json:"reimburse_qty,omitempty"`
 	TotalTransaction float64    `db:"total_transaction" json:"total_transaction,omitempty"`
 	TotalReimburse   float64    `db:"total_reimburse" json:"total_reimburse,omitempty"`
 	TotalVoucher     float64    `db:"total_voucher" json:"total_voucher,omitempty"`
@@ -436,15 +436,15 @@ func GetReportProgramTransaction(dateFrom, dateTo string, qp *util.QueryParam) (
 					   else 0 end)
 								  as voucher_qty,
 			   sum(case
-					   when t.id is not null then p.value
+					   when t.id is not null then p.max_value
 					   else 0 end)
 								  as total_transaction,
 			   sum(case
-					   when c.id is not null then p.value
+					   when c.id is not null then p.max_value
 					   else 0 end)
 								  as total_reimburse,
 			   sum(case
-					   when v.id is not null then p.value
+					   when v.id is not null then p.max_value
 					   else 0 end)
 								  as total_voucher
 		FROM programs p,
@@ -453,7 +453,7 @@ func GetReportProgramTransaction(dateFrom, dateTo string, qp *util.QueryParam) (
 				 LEFT JOIN transactions t on td.transaction_id = t.id AND t.status = 'created'
 				 LEFT JOIN cashout_details cd on v.id = cd.voucher_id AND cd.status = 'created'
 				 LEFT JOIN cashouts c on cd.cashout_id = c.id AND c.status = 'created'
-		WHERE v.created_at BETWEEN '2000-01-01 00:00:00+07'::timestamp AND '2020-12-30 23:59:59+07'::timestamp
+		WHERE v.created_at BETWEEN '` + dateFrom + ` 00:00:00+07'::timestamp AND '` + dateTo + ` 23:59:59+07'::timestamp
 		  AND v.program_id = p.id
 		  AND v.status = 'created'
 		  AND p.status = 'created'
@@ -495,15 +495,15 @@ func GetReportProgramTransactionDaily(dateFrom, dateTo string, qp *util.QueryPar
 					   else 0 end)
 								  as voucher_qty,
 			   sum(case
-					   when t.id is not null then p.value
+					   when t.id is not null then p.max_value
 					   else 0 end)
 								  as total_transaction,
 			   sum(case
-					   when c.id is not null then p.value
+					   when c.id is not null then p.max_value
 					   else 0 end)
 								  as total_reimburse,
 			   sum(case
-					   when v.id is not null then p.value
+					   when v.id is not null then p.max_value
 					   else 0 end)
 								  as total_voucher
 		FROM programs p,
@@ -554,15 +554,15 @@ func GetReportProgramTransactionDailyById(id, dateFrom, dateTo string, qp *util.
 					   else 0 end)
 								  as voucher_qty,
 			   sum(case
-					   when t.id is not null then p.value
+					   when t.id is not null then p.max_value
 					   else 0 end)
 								  as total_transaction,
 			   sum(case
-					   when c.id is not null then p.value
+					   when c.id is not null then p.max_value
 					   else 0 end)
 								  as total_reimburse,
 			   sum(case
-					   when v.id is not null then p.value
+					   when v.id is not null then p.max_value
 					   else 0 end)
 								  as total_voucher
 		FROM programs p,
@@ -585,6 +585,136 @@ func GetReportProgramTransactionDailyById(id, dateFrom, dateTo string, qp *util.
 	err := db.Select(&resd, db.Rebind(q), id)
 	if err != nil {
 		return []ReportProgramTransaction{}, false, err
+	}
+
+	next := false
+	if len(resd) > qp.Count {
+		next = true
+	}
+	if len(resd) < qp.Count {
+		qp.Count = len(resd)
+	}
+
+	return resd, next, nil
+}
+
+//DEMOGRAFI
+
+type MemberDemografi struct {
+	Gender        string `db:"gender" json:"gender,omitempty"`
+	MaritalStatus string `db:"marital_status" json:"marital_status,omitempty"`
+	LocationName  string `db:"location_name" json:"location_name,omitempty"`
+	Age1723       *int   `db:"age1723" json:"age1723,omitempty"`
+	Age2433       *int   `db:"age2433" json:"age2433,omitempty"`
+	Age3444       *int   `db:"age3444" json:"age3444,omitempty"`
+	Age4556       *int   `db:"age4556" json:"age4556,omitempty"`
+	Age5770       *int   `db:"age5770" json:"age5770,omitempty"`
+	Total         *int   `db:"total" json:"total,omitempty"`
+	Count         int    `db:"count" json:"-"`
+}
+
+func GetDemografiGender(qp *util.QueryParam) ([]MemberDemografi, bool, error) {
+	q := `
+		SELECT a.gender, count(*) as total
+		FROM accounts a
+		GROUP BY a.gender`
+
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
+	util.DEBUG(q)
+	var resd []MemberDemografi
+	err := db.Select(&resd, db.Rebind(q))
+	if err != nil {
+		return []MemberDemografi{}, false, err
+	}
+
+	next := false
+	if len(resd) > qp.Count {
+		next = true
+	}
+	if len(resd) < qp.Count {
+		qp.Count = len(resd)
+	}
+
+	return resd, next, nil
+}
+
+func GetDemografiLocation(qp *util.QueryParam) ([]MemberDemografi, bool, error) {
+	q := `
+		SELECT a.birthplace as location_name, count(*) as total
+		FROM accounts a
+		GROUP BY a.birthplace`
+
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
+	util.DEBUG(q)
+	var resd []MemberDemografi
+	err := db.Select(&resd, db.Rebind(q))
+	if err != nil {
+		return []MemberDemografi{}, false, err
+	}
+
+	next := false
+	if len(resd) > qp.Count {
+		next = true
+	}
+	if len(resd) < qp.Count {
+		qp.Count = len(resd)
+	}
+
+	return resd, next, nil
+}
+
+func GetDemografiAge(qp *util.QueryParam) ([]MemberDemografi, bool, error) {
+	q := `
+		SELECT a.gender,
+			sum(case when date_part('years', age(now(), birthdate)) between 17 and 23
+			  then 1
+				else 0 end) as "age1723",
+			sum(case when date_part('years', age(now(), a.birthdate)) between 24 and 33
+			  then 1
+				else 0 end) as "age2433",
+			sum(case when date_part('years', age(now(), a.birthdate)) between 34 and 44
+			  then 1
+				else 0 end) as "age3444",
+			sum(case when date_part('years', age(now(), a.birthdate)) between 45 and 56
+			  then 1
+				else 0 end) as "age4556",
+			sum(case when date_part('years', age(now(), a.birthdate)) between 57 and 70
+			  then 1
+				else 0 end) as "age5770", count(*) TOTAL
+		FROM accounts a
+		GROUP BY a.gender`
+
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
+	util.DEBUG(q)
+	var resd []MemberDemografi
+	err := db.Select(&resd, db.Rebind(q))
+	if err != nil {
+		return []MemberDemografi{}, false, err
+	}
+
+	next := false
+	if len(resd) > qp.Count {
+		next = true
+	}
+	if len(resd) < qp.Count {
+		qp.Count = len(resd)
+	}
+
+	return resd, next, nil
+}
+
+func GetDemografiMarital(qp *util.QueryParam) ([]MemberDemografi, bool, error) {
+	q := `
+		SELECT a.marital_status, count(*) as total
+		FROM accounts a
+		GROUP BY a.marital_status`
+
+	q = qp.GetQueryWithPagination(q, qp.GetQuerySort(), qp.GetQueryLimit())
+	util.DEBUG(q)
+	var resd []MemberDemografi
+	err := db.Select(&resd, db.Rebind(q))
+	if err != nil {
+		return []MemberDemografi{}, false, err
 	}
 
 	next := false

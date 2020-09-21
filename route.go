@@ -123,9 +123,9 @@ func init() {
 	// v2.GetFunc("/:company/web/debug/pprof/trace", pprof.Trace)
 
 	//Dashboard
-	v2.GetFunc("/:company/dashboard/topoutlet", c.GetDashboardTopOutlet)
-	v2.GetFunc("/:company/dashboard/topprogram", c.GetDashboardTopProgram)
-	v2.GetFunc("/:company/dashboard/voucherusage", c.GetDashboardVoucherUsage)
+	v2.GetFunc("/:company/web/dashboard/topoutlet", c.GetDashboardTopOutlet)
+	v2.GetFunc("/:company/web/dashboard/topprogram", c.GetDashboardTopProgram)
+	v2.GetFunc("/:company/web/dashboard/voucherusage", c.GetDashboardVoucherUsage)
 
 	//REPORT
 	v2.GetFunc("/:company/web/report/outlet-transaction", c.GetReportDailyVoucherTransactionWithOutlet)
@@ -137,6 +137,17 @@ func init() {
 	v2.GetFunc("/:company/web/report/program/summary-transaction", c.GetReportProgramTransaction)
 	v2.GetFunc("/:company/web/report/program/summary-transaction-daily", c.GetReportProgramTransactionDaily)
 	v2.GetFunc("/:company/web/report/program/summary-transaction-daily/:id", c.GetReportProgramIdTransactionDaily)
+
+	//demografi
+	v2.GetFunc("/:company/web/report/demografi/gender", c.GetDemografiGender)
+	v2.GetFunc("/:company/web/report/demografi/location", c.GetDemografiLocation)
+	v2.GetFunc("/:company/web/report/demografi/age", c.GetDemografiAge)
+	v2.GetFunc("/:company/web/report/demografi/marital", c.GetDemografiMarital)
+	//demografi
+	//v2.GetFunc("/:company/web/report/demografi/gender", c.GetDemografiGender)
+	//v2.GetFunc("/:company/web/report/demografi/location", c.GetDemografiLocation)
+	//v2.GetFunc("/:company/web/report/demografi/age", c.GetDemografiAge)
+	//v2.GetFunc("/:company/web/report/demografi/marital", c.GetDemografiMarital)
 
 	// blast
 	v2.Get("/:company/web/blasts", c.CheckFuncJWT(c.GetBlasts, "blast-view"))
